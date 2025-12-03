@@ -1,0 +1,5 @@
+{
+  "name": "Kindle Highlights Manager",
+  "description": "A modern web application to organize, review, and retain knowledge from Kindle highlights using Spaced Repetition.",
+  "requestFramePermissions": []
+}
