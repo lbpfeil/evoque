@@ -12,6 +12,16 @@ interface ParsedEntry {
   rawDate: string;
 }
 
+const generateUUID = (): string => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+};
+
 const parseLocation = (locString: string): { start: number, end: number } => {
   if (!locString) return { start: 0, end: 0 };
 
@@ -24,6 +34,43 @@ const parseLocation = (locString: string): { start: number, end: number } => {
     start: isNaN(start) ? 0 : start,
     end: isNaN(end) ? 0 : end
   };
+};
+
+const parseDate = (dateString: string): string => {
+  try {
+    // Try standard parsing first
+    const standardDate = Date.parse(dateString);
+    if (!isNaN(standardDate)) return new Date(standardDate).toISOString();
+
+    // Handle Portuguese format: "terça-feira, 22 de julho de 2025 02:05:09"
+    // Regex to extract: day, month, year, time
+    const ptRegex = /(\d{1,2})\s+de\s+([a-zç]+)\s+de\s+(\d{4})\s+(\d{2}:\d{2}:\d{2})/i;
+    const match = dateString.match(ptRegex);
+
+    if (match) {
+      const day = parseInt(match[1], 10);
+      const monthStr = match[2].toLowerCase();
+      const year = parseInt(match[3], 10);
+      const time = match[4];
+
+      const months: { [key: string]: number } = {
+        'janeiro': 0, 'fevereiro': 1, 'março': 2, 'abril': 3, 'maio': 4, 'junho': 5,
+        'julho': 6, 'agosto': 7, 'setembro': 8, 'outubro': 9, 'novembro': 10, 'dezembro': 11
+      };
+
+      if (months[monthStr] !== undefined) {
+        const date = new Date(year, months[monthStr], day);
+        const [hours, minutes, seconds] = time.split(':').map(Number);
+        date.setHours(hours, minutes, seconds);
+        return date.toISOString();
+      }
+    }
+
+    return new Date().toISOString();
+  } catch (e) {
+    console.warn('Failed to parse date:', dateString, e);
+    return new Date().toISOString();
+  }
 };
 
 export const parseMyClippings = (text: string): { books: Book[], highlights: Highlight[] } => {
@@ -48,8 +95,8 @@ export const parseMyClippings = (text: string): { books: Book[], highlights: Hig
 
       // Check type
       let type: ParsedEntry['type'] = 'Highlight';
-      if (metaLine.includes('Note') || metaLine.includes('Nota')) type = 'Note';
-      else if (metaLine.includes('Bookmark')) type = 'Bookmark';
+      if (/Note|Nota/i.test(metaLine)) type = 'Note';
+      else if (/Bookmark|Marcador/i.test(metaLine)) type = 'Bookmark';
 
       if (type === 'Bookmark') return;
 
@@ -65,13 +112,17 @@ export const parseMyClippings = (text: string): { books: Book[], highlights: Hig
       let rawDate = '';
       if (dateMatch) {
         rawDate = dateMatch[1];
-        // Attempt to parse date, fallback to now if invalid
-        const parsed = Date.parse(rawDate);
-        if (!isNaN(parsed)) dateAdded = new Date(parsed).toISOString();
+        dateAdded = parseDate(rawDate);
       }
 
       // Content
-      const content = lines.slice(3).join('\n').trim();
+      // Skip empty lines between metadata and content
+      let contentStartIndex = 2;
+      while (lines[contentStartIndex] && lines[contentStartIndex].trim() === '') {
+        contentStartIndex++;
+      }
+      const content = lines.slice(contentStartIndex).join('\n').trim();
+
       if (!content) return;
 
       // Generate Book ID
@@ -130,7 +181,7 @@ export const parseMyClippings = (text: string): { books: Book[], highlights: Hig
     });
 
     finalHighlights.push({
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       bookId,
       text: ph.content,
       location: ph.location,

@@ -96,31 +96,17 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     try {
       const { books: parsedBooks, highlights: parsedHighlights } = parseMyClippings(text);
 
-      // Merge Books
-      let newBooksCount = 0;
-      const updatedBooks = [...books];
-      parsedBooks.forEach(pb => {
-        const exists = updatedBooks.find(b => b.id === pb.id);
-        if (!exists) {
-          updatedBooks.push(pb);
-          newBooksCount++;
-        } else {
-          // Update existing book meta
-          exists.highlightCount = Math.max(exists.highlightCount, pb.highlightCount);
-        }
-      });
-
-      // Merge Highlights
+      // 1. Merge Highlights first to get the complete set
       let newHighlightsCount = 0;
-      const updatedHighlights = [...highlights];
-      const updatedCards = [...studyCards];
+      const nextHighlights = [...highlights];
+      const nextCards = [...studyCards];
 
       parsedHighlights.forEach(ph => {
-        const exists = updatedHighlights.find(h => h.text === ph.text && h.bookId === ph.bookId);
+        const exists = nextHighlights.find(h => h.text === ph.text && h.bookId === ph.bookId);
         if (!exists) {
-          updatedHighlights.push({ ...ph, importedAt: new Date().toISOString() });
+          nextHighlights.push({ ...ph, importedAt: new Date().toISOString() });
           // Create a new study card for this highlight
-          updatedCards.push({
+          nextCards.push({
             id: crypto.randomUUID(),
             highlightId: ph.id,
             easeFactor: 2.5,
@@ -132,19 +118,33 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
         }
       });
 
-      // Update book counts accurately
-      updatedBooks.forEach(b => {
-        b.highlightCount = updatedHighlights.filter(h => h.bookId === b.id).length;
+      // 2. Merge Books and update counts based on nextHighlights
+      let newBooksCount = 0;
+
+      // Start with existing books, mapped to new objects to avoid mutation if we change them
+      const booksMap = new Map<string, Book>(books.map(b => [b.id, { ...b }]));
+
+      parsedBooks.forEach(pb => {
+        if (!booksMap.has(pb.id)) {
+          booksMap.set(pb.id, pb);
+          newBooksCount++;
+        }
       });
 
-      setBooks(updatedBooks);
-      setHighlights(updatedHighlights);
-      setStudyCards(updatedCards);
+      // 3. Recalculate counts for ALL books in the map
+      const nextBooks = Array.from(booksMap.values()).map(b => {
+        const count = nextHighlights.filter(h => h.bookId === b.id).length;
+        return { ...b, highlightCount: count };
+      });
+
+      setBooks(nextBooks);
+      setHighlights(nextHighlights);
+      setStudyCards(nextCards);
 
       return { newBooks: newBooksCount, newHighlights: newHighlightsCount };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to import data:', error);
-      throw new Error('Failed to process the file. Please ensure it is a valid My Clippings.txt file.');
+      throw new Error(error.message || 'Failed to process the file. Please ensure it is a valid My Clippings.txt file.');
     }
   };
 
