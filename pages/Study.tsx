@@ -1,50 +1,111 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useStore } from '../components/StoreContext';
 import { calculateNextReview } from '../services/sm2';
-import { Brain, Check, RefreshCw, X, ArrowRight } from 'lucide-react';
+import { Brain, Check, RefreshCw, ArrowRight, Edit2, Clock, Target, Zap } from 'lucide-react';
 import { StudyCard, Highlight } from '../types';
 
 const Study = () => {
-  const { getCardsDue, highlights, updateCard, books } = useStore();
+  const { getCardsDue, highlights, updateCard, updateHighlight, books } = useStore();
   const [queue, setQueue] = useState<StudyCard[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
   const [sessionComplete, setSessionComplete] = useState(false);
-  const [stats, setStats] = useState({ reviewed: 0, correct: 0 });
+  const [stats, setStats] = useState({ reviewed: 0, correct: 0, streak: 0, startTime: Date.now() });
+
+  // Note editing state
+  const [isEditingNote, setIsEditingNote] = useState(false);
+  const [editedNote, setEditedNote] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     const due = getCardsDue();
-    // Shuffle queue roughly
-    setQueue(due.sort(() => Math.random() - 0.5).slice(0, 20)); // Limit to 20 for session
+    setQueue(due.sort(() => Math.random() - 0.5).slice(0, 20));
   }, []);
 
   const currentCard = queue[currentIndex];
+  const currentHighlight = currentCard ? highlights.find(h => h.id === currentCard.highlightId) : null;
+  const currentBook = currentHighlight ? books.find(b => b.id === currentHighlight.bookId) : null;
 
-  const currentHighlight = currentCard
-    ? highlights.find(h => h.id === currentCard.highlightId)
-    : null;
-
-  const currentBook = currentHighlight
-    ? books.find(b => b.id === currentHighlight.bookId)
-    : null;
-
-  const handleResponse = (quality: number) => {
+  const handleResponse = useCallback((quality: number) => {
     if (!currentCard) return;
 
     const updatedCard = calculateNextReview(currentCard, quality);
     updateCard(updatedCard);
 
+    const isCorrect = quality >= 3;
     setStats(prev => ({
       reviewed: prev.reviewed + 1,
-      correct: prev.correct + (quality >= 3 ? 1 : 0)
+      correct: prev.correct + (isCorrect ? 1 : 0),
+      streak: isCorrect ? prev.streak + 1 : 0,
+      startTime: prev.startTime
     }));
 
     if (currentIndex < queue.length - 1) {
       setCurrentIndex(prev => prev + 1);
       setShowAnswer(false);
+      setIsEditingNote(false);
     } else {
       setSessionComplete(true);
     }
+  }, [currentCard, currentIndex, queue.length, updateCard]);
+
+  const handleSaveNote = useCallback(async () => {
+    if (!currentHighlight) return;
+
+    setIsSaving(true);
+    updateHighlight(currentHighlight.id, { note: editedNote });
+
+    setTimeout(() => {
+      setIsSaving(false);
+      setIsEditingNote(false);
+    }, 300);
+  }, [currentHighlight, editedNote, updateHighlight]);
+
+  const handleEditNote = useCallback(() => {
+    if (!currentHighlight) return;
+    setEditedNote(currentHighlight.note || '');
+    setIsEditingNote(true);
+  }, [currentHighlight]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // ESC saves when editing
+      if (isEditingNote && e.key === 'Escape') {
+        e.preventDefault();
+        handleSaveNote();
+        return;
+      }
+
+      // Don't trigger other shortcuts when editing
+      if (isEditingNote) return;
+
+      switch (e.key) {
+        case ' ':
+          e.preventDefault();
+          if (!showAnswer) setShowAnswer(true);
+          break;
+        case '1':
+          if (showAnswer) handleResponse(2);
+          break;
+        case '2':
+          if (showAnswer) handleResponse(4);
+          break;
+        case 'e':
+        case 'E':
+          if (showAnswer) handleEditNote();
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [showAnswer, isEditingNote, handleResponse, handleEditNote, handleSaveNote]);
+
+  const getAverageTime = () => {
+    if (stats.reviewed === 0) return 0;
+    const elapsed = (Date.now() - stats.startTime) / 1000;
+    return Math.round(elapsed / stats.reviewed);
   };
 
   if (queue.length === 0 && !sessionComplete) {
@@ -93,14 +154,33 @@ const Study = () => {
   if (!currentHighlight || !currentBook) return <div className="p-10 text-center text-zinc-500">Loading card...</div>;
 
   return (
-    <div className="max-w-2xl mx-auto h-[calc(100vh-140px)] flex flex-col justify-center">
-      {/* Progress Bar */}
-      <div className="mb-8">
-        <div className="flex justify-between text-xs font-medium text-zinc-400 mb-3 uppercase tracking-wider">
-          <span>Card {currentIndex + 1} / {queue.length}</span>
-          <span className="truncate max-w-[200px]">{currentBook.title}</span>
+    <div className="h-full flex flex-col">
+      {/* Compact Header */}
+      <div className="px-4 py-3 border-b border-zinc-200">
+        <div className="flex items-center justify-between text-xs">
+          <div className="text-zinc-400 font-medium">
+            CARD {currentIndex + 1} / {queue.length}
+          </div>
+
+          {/* Compact Stats */}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1.5">
+              <Target className="w-3 h-3 text-zinc-400" />
+              <span className="text-zinc-600">{stats.reviewed}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Zap className="w-3 h-3 text-zinc-400" />
+              <span className="text-zinc-600">{stats.streak}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Clock className="w-3 h-3 text-zinc-400" />
+              <span className="text-zinc-600">{getAverageTime()}s</span>
+            </div>
+          </div>
         </div>
-        <div className="h-1 bg-zinc-200 rounded-full overflow-hidden">
+
+        {/* Thin Progress Bar */}
+        <div className="h-px bg-zinc-200 mt-3">
           <div
             className="h-full bg-black transition-all duration-300 ease-out"
             style={{ width: `${((currentIndex) / queue.length) * 100}%` }}
@@ -108,63 +188,99 @@ const Study = () => {
         </div>
       </div>
 
-      {/* Card */}
-      <div className="flex-1 bg-white rounded-md border border-zinc-200 shadow-sm flex flex-col relative min-h-[400px]">
-        <div className="p-10 md:p-16 flex-1 flex flex-col items-center justify-center text-center">
-          {currentBook && (
-            <div className="mb-8 flex flex-col items-center gap-3">
-              <img
-                src={currentBook.coverUrl}
-                alt={currentBook.title}
-                className="w-16 h-24 object-cover rounded-sm shadow-md"
-              />
-              <p className="text-xs text-zinc-400 font-medium uppercase tracking-wider max-w-[200px] truncate">
-                {currentBook.title}
-              </p>
+      {/* Main Content */}
+      <div className="flex-1 flex items-center justify-center px-6 py-8">
+        <div className="max-w-2xl w-full space-y-6">
+          {/* Book Info - Compact */}
+          <div className="flex items-center gap-2.5">
+            <img
+              src={currentBook.coverUrl}
+              alt={currentBook.title}
+              className="w-8 h-12 object-cover rounded-sm shadow-sm"
+            />
+            <div>
+              <h3 className="text-xs font-semibold text-zinc-900">{currentBook.title}</h3>
+              <p className="text-[10px] text-zinc-400">{currentBook.author}</p>
             </div>
-          )}
-          <h3 className="text-2xl md:text-3xl font-serif text-zinc-800 leading-relaxed">
-            {currentHighlight.text}
-          </h3>
+          </div>
 
-          {showAnswer && currentHighlight.note && (
-            <div className="mt-8 p-6 bg-zinc-50 border-l-2 border-zinc-900 text-zinc-800 text-left w-full max-w-lg animate-fade-in-up rounded-sm">
-              <span className="font-bold text-xs uppercase tracking-wider text-zinc-400 block mb-2">My Note</span>
-              {currentHighlight.note}
-            </div>
-          )}
+          {/* Highlight Text */}
+          <div>
+            <blockquote className="text-xl md:text-2xl font-serif text-zinc-800 leading-relaxed">
+              "{currentHighlight.text}"
+            </blockquote>
+          </div>
 
-          {showAnswer && !currentHighlight.note && (
-            <div className="mt-8 text-zinc-400 italic font-serif animate-fade-in-up">
-              (No note attached)
+          {/* Answer Section */}
+          {showAnswer && (
+            <div className="animate-fade-in-up">
+              {isEditingNote ? (
+                <div className="bg-zinc-50 border border-zinc-200 rounded-md p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] uppercase tracking-wider text-zinc-400 font-semibold">Edit Note</span>
+                    {isSaving && <Clock className="w-3 h-3 text-zinc-400 animate-spin" />}
+                  </div>
+                  <textarea
+                    value={editedNote}
+                    onChange={(e) => setEditedNote(e.target.value)}
+                    className="w-full bg-white border border-zinc-200 rounded-sm p-3 text-sm text-zinc-800 focus:outline-none focus:ring-1 focus:ring-black focus:border-black resize-none"
+                    rows={3}
+                    placeholder="Add your note here..."
+                    autoFocus
+                  />
+                  <p className="text-[10px] text-zinc-400 mt-2">Press ESC to save</p>
+                </div>
+              ) : (
+                <div className="bg-zinc-50 border-l-2 border-black rounded-sm p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] uppercase tracking-wider text-zinc-400 font-semibold">My Note</span>
+                    <button
+                      onClick={handleEditNote}
+                      className="p-1 text-zinc-400 hover:text-black transition-colors"
+                      title="Edit Note (E)"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  {currentHighlight.note ? (
+                    <p className="text-sm text-zinc-700 leading-relaxed">{currentHighlight.note}</p>
+                  ) : (
+                    <p className="text-sm text-zinc-400 italic">No note attached. Press E to add one.</p>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
+      </div>
 
-        {/* Controls */}
-        <div className="p-8 border-t border-zinc-100">
+      {/* Compact Controls */}
+      <div className="px-6 pb-6">
+        <div className="max-w-2xl mx-auto">
           {!showAnswer ? (
             <button
               onClick={() => setShowAnswer(true)}
-              className="w-full py-4 bg-black hover:bg-zinc-800 text-white rounded-md font-medium text-lg shadow-lg shadow-zinc-200 transition-all active:scale-[0.99]"
+              className="w-full py-3 bg-black hover:bg-zinc-800 text-white rounded-md font-medium text-sm transition-all active:scale-[0.99]"
             >
-              Reveal
+              Reveal <span className="text-xs text-zinc-400 ml-2">(Space)</span>
             </button>
           ) : (
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-2 gap-3">
               <button
-                onClick={() => handleResponse(2)} // Fail
-                className="py-4 bg-white border border-zinc-200 text-zinc-500 hover:text-zinc-900 hover:border-zinc-400 rounded-md font-medium text-base flex items-center justify-center gap-2 transition-colors"
+                onClick={() => handleResponse(2)}
+                disabled={isEditingNote}
+                className="py-3 bg-white border border-zinc-200 text-zinc-600 hover:text-zinc-900 hover:border-zinc-400 rounded-md font-medium text-sm flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <RefreshCw className="w-4 h-4" />
-                Review again
+                <RefreshCw className="w-3.5 h-3.5" />
+                Again <span className="text-xs text-zinc-400">(1)</span>
               </button>
               <button
-                onClick={() => handleResponse(4)} // Good
-                className="py-4 bg-black hover:bg-zinc-800 text-white rounded-md font-medium text-base flex items-center justify-center gap-2 shadow-lg shadow-zinc-200 transition-all"
+                onClick={() => handleResponse(4)}
+                disabled={isEditingNote}
+                className="py-3 bg-black hover:bg-zinc-800 text-white rounded-md font-medium text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Next Card
-                <ArrowRight className="w-4 h-4" />
+                Good <span className="text-xs text-zinc-300">(2)</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
           )}
