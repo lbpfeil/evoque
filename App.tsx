@@ -12,7 +12,7 @@ import { StoreProvider } from './components/StoreContext';
 const AppLayout = ({ children }: React.PropsWithChildren) => (
   <div className="min-h-screen bg-zinc-50 flex text-zinc-900 font-sans antialiased">
     <Sidebar />
-    <main className="flex-1 md:ml-64 p-6 md:p-12 overflow-y-auto h-screen">
+    <main className="flex-1 md:ml-56 p-4 md:p-8 overflow-y-auto h-screen">
       <div className="max-w-6xl mx-auto">
         {children}
       </div>

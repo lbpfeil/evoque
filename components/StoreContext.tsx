@@ -44,7 +44,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
 
   const importData = (text: string) => {
     const { books: parsedBooks, highlights: parsedHighlights } = parseMyClippings(text);
-    
+
     // Merge Books
     let newBooksCount = 0;
     const updatedBooks = [...books];
@@ -67,20 +67,20 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     parsedHighlights.forEach(ph => {
       const exists = updatedHighlights.find(h => h.text === ph.text && h.bookId === ph.bookId);
       if (!exists) {
-        updatedHighlights.push(ph);
+        updatedHighlights.push({ ...ph, importedAt: new Date().toISOString() });
         // Create a new study card for this highlight
         updatedCards.push({
-            id: crypto.randomUUID(),
-            highlightId: ph.id,
-            easeFactor: 2.5,
-            interval: 0,
-            repetitions: 0,
-            nextReviewDate: new Date().toISOString()
+          id: crypto.randomUUID(),
+          highlightId: ph.id,
+          easeFactor: 2.5,
+          interval: 0,
+          repetitions: 0,
+          nextReviewDate: new Date().toISOString()
         });
         newHighlightsCount++;
       }
     });
-    
+
     // Update book counts accurately
     updatedBooks.forEach(b => {
       b.highlightCount = updatedHighlights.filter(h => h.bookId === b.id).length;
@@ -103,7 +103,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
   };
 
   const getBook = (id: string) => books.find(b => b.id === id);
-  
+
   const getBookHighlights = (bookId: string) => highlights.filter(h => h.bookId === bookId);
 
   const deleteHighlight = (id: string) => {
@@ -114,7 +114,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     setHighlights(prev => prev.filter(h => h.id !== id));
     // Remove associated study card
     setStudyCards(prev => prev.filter(c => c.highlightId !== id));
-    
+
     // Update book count
     setBooks(prev => prev.map(b => {
       if (b.id === highlight.bookId) {
@@ -127,7 +127,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
   const bulkDeleteHighlights = (ids: string[]) => {
     const idsSet = new Set(ids);
     const affectedBookIds = new Set<string>();
-    
+
     highlights.forEach(h => {
       if (idsSet.has(h.id)) affectedBookIds.add(h.bookId);
     });
@@ -152,12 +152,12 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
   };
 
   return (
-    <StoreContext.Provider value={{ 
-      books, 
-      highlights, 
-      studyCards, 
-      importData, 
-      getCardsDue, 
+    <StoreContext.Provider value={{
+      books,
+      highlights,
+      studyCards,
+      importData,
+      getCardsDue,
       updateCard,
       getBook,
       getBookHighlights,

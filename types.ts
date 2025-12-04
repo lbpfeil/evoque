@@ -16,6 +16,7 @@ export interface Highlight {
   dateAdded: string;
   page?: string;
   isFavorite?: boolean;
+  importedAt?: string;
 }
 
 export interface StudyCard {
