@@ -1,9 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { useStore } from '../components/StoreContext';
-import { Search, Filter, Trash2, Edit2, Check, X, Book, ArrowUpDown, Plus, Minus, Brain } from 'lucide-react';
+import { Search, Filter, Trash2, Edit2, Check, X, Book, ArrowUpDown, Plus, Minus, Brain, TrendingUp } from 'lucide-react';
 import { SortOption } from '../types';
 import HighlightStats from '../components/HighlightStats';
 import BookContextModal from '../components/BookContextModal';
+import HighlightHistoryModal from '../components/HighlightHistoryModal';
 
 const Highlights = () => {
   const {
@@ -32,6 +33,9 @@ const Highlights = () => {
 
   // Book context modal
   const [modalBookId, setModalBookId] = useState<string | null>(null);
+
+  // Stats modal
+  const [statsHighlightId, setStatsHighlightId] = useState<string | null>(null);
 
   // Filter and sort logic
   const filteredAndSortedHighlights = useMemo(() => {
@@ -349,7 +353,7 @@ const Highlights = () => {
                     </td>
                     <td className="px-3 py-2 align-top text-right">
                       {isEditing ? (
-                        <div className="flex flex-col gap-1 items-end">
+                        <div className="flex flex-row gap-1 items-center justify-end">
                           <button
                             onClick={saveEdit}
                             className="p-1 bg-black text-white rounded-sm hover:bg-zinc-800"
@@ -366,7 +370,7 @@ const Highlights = () => {
                           </button>
                         </div>
                       ) : (
-                        <div className="flex flex-col gap-1 items-end opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex flex-row gap-1 items-center justify-end opacity-0 group-hover:opacity-100 transition-opacity">
                           {isInStudy ? (
                             <button
                               onClick={() => removeFromStudy(highlight.id)}
@@ -384,6 +388,13 @@ const Highlights = () => {
                               <Plus className="w-3 h-3" />
                             </button>
                           )}
+                          <button
+                            onClick={() => setStatsHighlightId(highlight.id)}
+                            className="p-1 text-zinc-400 hover:text-blue-600 hover:bg-blue-50 rounded-sm transition-colors"
+                            title="View Stats"
+                          >
+                            <TrendingUp className="w-3 h-3" />
+                          </button>
                           <button
                             onClick={() => startEditing(highlight)}
                             className="p-1 text-zinc-400 hover:text-black hover:bg-zinc-100 rounded-sm transition-colors"
@@ -413,6 +424,7 @@ const Highlights = () => {
 
       {/* Book Context Modal */}
       <BookContextModal bookId={modalBookId} onClose={() => setModalBookId(null)} />
+      <HighlightHistoryModal highlightId={statsHighlightId} onClose={() => setStatsHighlightId(null)} />
     </div>
   );
 };

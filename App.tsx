@@ -8,6 +8,7 @@ import Highlights from './pages/Highlights';
 import Import from './pages/Import';
 import Study from './pages/Study';
 import { StoreProvider } from './components/StoreContext';
+import ErrorBoundary from './components/ErrorBoundary';
 
 const AppLayout = ({ children }: React.PropsWithChildren) => (
   <div className="min-h-screen bg-zinc-50 flex text-zinc-900 font-sans antialiased">
@@ -22,21 +23,23 @@ const AppLayout = ({ children }: React.PropsWithChildren) => (
 
 const App = () => {
   return (
-    <StoreProvider>
-      <HashRouter>
-        <AppLayout>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/library" element={<Library />} />
-            <Route path="/library/:bookId" element={<BookDetails />} />
-            <Route path="/highlights" element={<Highlights />} />
-            <Route path="/import" element={<Import />} />
-            <Route path="/study" element={<Study />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </AppLayout>
-      </HashRouter>
-    </StoreProvider>
+    <ErrorBoundary>
+      <StoreProvider>
+        <HashRouter>
+          <AppLayout>
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/library" element={<Library />} />
+              <Route path="/library/:bookId" element={<BookDetails />} />
+              <Route path="/highlights" element={<Highlights />} />
+              <Route path="/import" element={<Import />} />
+              <Route path="/study" element={<Study />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </AppLayout>
+        </HashRouter>
+      </StoreProvider>
+    </ErrorBoundary>
   );
 };
 

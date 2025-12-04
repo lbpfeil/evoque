@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Book, Highlight, StudyCard, StudyStatus } from '../types';
+import { Book, Highlight, StudyCard, StudyStatus, UserSettings, StudySession, ReviewLog } from '../types';
 import { MOCK_BOOKS, MOCK_HIGHLIGHTS, MOCK_CARDS } from '../services/mockData';
 import { parseMyClippings } from '../services/parser';
 
@@ -19,6 +19,15 @@ interface StoreContextType {
   removeFromStudy: (highlightId: string) => void;
   bulkAddToStudy: (highlightIds: string[]) => void;
   getHighlightStudyStatus: (highlightId: string) => StudyStatus;
+  settings: UserSettings;
+  updateSettings: (settings: Partial<UserSettings>) => void;
+  currentSession: StudySession | null;
+  startSession: () => void;
+  submitReview: (cardId: string, quality: number) => void;
+  resetSession: () => void;
+  sessionStats: { reviewed: number; correct: number; streak: number };
+  reviewLogs: ReviewLog[];
+  isLoaded: boolean;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -27,74 +36,116 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
   const [books, setBooks] = useState<Book[]>(MOCK_BOOKS);
   const [highlights, setHighlights] = useState<Highlight[]>(MOCK_HIGHLIGHTS);
   const [studyCards, setStudyCards] = useState<StudyCard[]>(MOCK_CARDS);
+  const [settings, setSettings] = useState<UserSettings>({
+    maxReviewsPerDay: 15,
+    newCardsPerDay: 10
+  });
+  const [currentSession, setCurrentSession] = useState<StudySession | null>(null);
+  const [reviewLogs, setReviewLogs] = useState<ReviewLog[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load from local storage on mount (simplified)
+  // Load from local storage on mount
   useEffect(() => {
-    const savedBooks = localStorage.getItem('khm_books');
-    const savedHighlights = localStorage.getItem('khm_highlights');
-    const savedCards = localStorage.getItem('khm_cards');
+    try {
+      const savedBooks = localStorage.getItem('khm_books');
+      const savedHighlights = localStorage.getItem('khm_highlights');
+      const savedCards = localStorage.getItem('khm_cards');
+      const savedSettings = localStorage.getItem('khm_settings');
+      const savedSession = localStorage.getItem('khm_session');
+      const savedLogs = localStorage.getItem('khm_logs');
 
-    if (savedBooks) setBooks(JSON.parse(savedBooks));
-    if (savedHighlights) setHighlights(JSON.parse(savedHighlights));
-    if (savedCards) setStudyCards(JSON.parse(savedCards));
+      if (savedBooks) {
+        const parsed = JSON.parse(savedBooks);
+        if (Array.isArray(parsed)) setBooks(parsed);
+      }
+      if (savedHighlights) {
+        const parsed = JSON.parse(savedHighlights);
+        if (Array.isArray(parsed)) setHighlights(parsed);
+      }
+      if (savedCards) {
+        const parsed = JSON.parse(savedCards);
+        if (Array.isArray(parsed)) setStudyCards(parsed);
+      }
+      if (savedSettings) setSettings(JSON.parse(savedSettings));
+      if (savedSession) setCurrentSession(JSON.parse(savedSession));
+      if (savedLogs) {
+        const parsed = JSON.parse(savedLogs);
+        if (Array.isArray(parsed)) setReviewLogs(parsed);
+      }
+    } catch (error) {
+      console.error('Failed to load data from local storage:', error);
+    } finally {
+      setIsLoaded(true);
+    }
   }, []);
 
   // Save to local storage on change
   useEffect(() => {
+    if (!isLoaded) return;
+
     localStorage.setItem('khm_books', JSON.stringify(books));
     localStorage.setItem('khm_highlights', JSON.stringify(highlights));
     localStorage.setItem('khm_cards', JSON.stringify(studyCards));
-  }, [books, highlights, studyCards]);
+    localStorage.setItem('khm_settings', JSON.stringify(settings));
+    if (currentSession) localStorage.setItem('khm_session', JSON.stringify(currentSession));
+    else localStorage.removeItem('khm_session');
+    localStorage.setItem('khm_logs', JSON.stringify(reviewLogs));
+  }, [books, highlights, studyCards, settings, currentSession, reviewLogs, isLoaded]);
 
   const importData = (text: string) => {
-    const { books: parsedBooks, highlights: parsedHighlights } = parseMyClippings(text);
+    try {
+      const { books: parsedBooks, highlights: parsedHighlights } = parseMyClippings(text);
 
-    // Merge Books
-    let newBooksCount = 0;
-    const updatedBooks = [...books];
-    parsedBooks.forEach(pb => {
-      const exists = updatedBooks.find(b => b.id === pb.id);
-      if (!exists) {
-        updatedBooks.push(pb);
-        newBooksCount++;
-      } else {
-        // Update existing book meta
-        exists.highlightCount = Math.max(exists.highlightCount, pb.highlightCount);
-      }
-    });
+      // Merge Books
+      let newBooksCount = 0;
+      const updatedBooks = [...books];
+      parsedBooks.forEach(pb => {
+        const exists = updatedBooks.find(b => b.id === pb.id);
+        if (!exists) {
+          updatedBooks.push(pb);
+          newBooksCount++;
+        } else {
+          // Update existing book meta
+          exists.highlightCount = Math.max(exists.highlightCount, pb.highlightCount);
+        }
+      });
 
-    // Merge Highlights
-    let newHighlightsCount = 0;
-    const updatedHighlights = [...highlights];
-    const updatedCards = [...studyCards];
+      // Merge Highlights
+      let newHighlightsCount = 0;
+      const updatedHighlights = [...highlights];
+      const updatedCards = [...studyCards];
 
-    parsedHighlights.forEach(ph => {
-      const exists = updatedHighlights.find(h => h.text === ph.text && h.bookId === ph.bookId);
-      if (!exists) {
-        updatedHighlights.push({ ...ph, importedAt: new Date().toISOString() });
-        // Create a new study card for this highlight
-        updatedCards.push({
-          id: crypto.randomUUID(),
-          highlightId: ph.id,
-          easeFactor: 2.5,
-          interval: 0,
-          repetitions: 0,
-          nextReviewDate: new Date().toISOString()
-        });
-        newHighlightsCount++;
-      }
-    });
+      parsedHighlights.forEach(ph => {
+        const exists = updatedHighlights.find(h => h.text === ph.text && h.bookId === ph.bookId);
+        if (!exists) {
+          updatedHighlights.push({ ...ph, importedAt: new Date().toISOString() });
+          // Create a new study card for this highlight
+          updatedCards.push({
+            id: crypto.randomUUID(),
+            highlightId: ph.id,
+            easeFactor: 2.5,
+            interval: 0,
+            repetitions: 0,
+            nextReviewDate: new Date().toISOString()
+          });
+          newHighlightsCount++;
+        }
+      });
 
-    // Update book counts accurately
-    updatedBooks.forEach(b => {
-      b.highlightCount = updatedHighlights.filter(h => h.bookId === b.id).length;
-    });
+      // Update book counts accurately
+      updatedBooks.forEach(b => {
+        b.highlightCount = updatedHighlights.filter(h => h.bookId === b.id).length;
+      });
 
-    setBooks(updatedBooks);
-    setHighlights(updatedHighlights);
-    setStudyCards(updatedCards);
+      setBooks(updatedBooks);
+      setHighlights(updatedHighlights);
+      setStudyCards(updatedCards);
 
-    return { newBooks: newBooksCount, newHighlights: newHighlightsCount };
+      return { newBooks: newBooksCount, newHighlights: newHighlightsCount };
+    } catch (error) {
+      console.error('Failed to import data:', error);
+      throw new Error('Failed to process the file. Please ensure it is a valid My Clippings.txt file.');
+    }
   };
 
   const getCardsDue = () => {
@@ -119,6 +170,20 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     // Remove associated study card
     setStudyCards(prev => prev.filter(c => c.highlightId !== id));
 
+    // Remove from current session if present
+    if (currentSession) {
+      setCurrentSession(prev => {
+        if (!prev) return null;
+        const cardToRemove = studyCards.find(c => c.highlightId === id);
+        if (!cardToRemove) return prev;
+        return {
+          ...prev,
+          cardIds: prev.cardIds.filter(cid => cid !== cardToRemove.id),
+          completedIds: prev.completedIds.filter(cid => cid !== cardToRemove.id)
+        };
+      });
+    }
+
     // Update book count
     setBooks(prev => prev.map(b => {
       if (b.id === highlight.bookId) {
@@ -138,6 +203,22 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
 
     setHighlights(prev => prev.filter(h => !idsSet.has(h.id)));
     setStudyCards(prev => prev.filter(c => !idsSet.has(c.highlightId)));
+
+    // Remove from current session
+    if (currentSession) {
+      setCurrentSession(prev => {
+        if (!prev) return null;
+        // Find all card IDs associated with these highlights
+        const cardsToRemove = studyCards.filter(c => idsSet.has(c.highlightId)).map(c => c.id);
+        const cardsToRemoveSet = new Set(cardsToRemove);
+
+        return {
+          ...prev,
+          cardIds: prev.cardIds.filter(cid => !cardsToRemoveSet.has(cid)),
+          completedIds: prev.completedIds.filter(cid => !cardsToRemoveSet.has(cid))
+        };
+      });
+    }
 
     // Re-calculate counts for affected books
     setBooks(prev => prev.map(b => {
@@ -209,6 +290,71 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     return 'learning';
   };
 
+  const updateSettings = (newSettings: Partial<UserSettings>) => {
+    setSettings(prev => ({ ...prev, ...newSettings }));
+  };
+
+  const startSession = () => {
+    const today = new Date().toDateString();
+
+    if (currentSession && new Date(currentSession.date).toDateString() === today) {
+      return;
+    }
+
+    const due = getCardsDue();
+    if (due.length === 0) return;
+
+    const sortedDue = [...due].sort((a, b) => new Date(a.nextReviewDate).getTime() - new Date(b.nextReviewDate).getTime());
+
+    const sessionCards = sortedDue.slice(0, settings.maxReviewsPerDay);
+
+    setCurrentSession({
+      id: crypto.randomUUID(),
+      date: new Date().toISOString(),
+      cardIds: sessionCards.map(c => c.id),
+      completedIds: [],
+      results: []
+    });
+  };
+
+  const submitReview = (cardId: string, quality: number) => {
+    if (!currentSession) return;
+
+    const card = studyCards.find(c => c.id === cardId);
+    if (!card) return;
+
+    const isCorrect = quality >= 3;
+
+    setCurrentSession(prev => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        completedIds: [...prev.completedIds, cardId],
+        results: [...prev.results, { cardId, quality, timestamp: Date.now() }]
+      };
+    });
+
+    setReviewLogs(prev => [...prev, {
+      id: crypto.randomUUID(),
+      cardId,
+      quality,
+      reviewedAt: new Date().toISOString(),
+      interval: card.interval,
+      easeFactor: card.easeFactor
+    }]);
+  };
+
+  const resetSession = () => {
+    setCurrentSession(null);
+    localStorage.removeItem('khm_session');
+  };
+
+  const sessionStats = {
+    reviewed: currentSession?.completedIds.length || 0,
+    correct: currentSession?.results.filter(r => r.quality >= 3).length || 0,
+    streak: 0
+  };
+
   return (
     <StoreContext.Provider value={{
       books,
@@ -225,7 +371,16 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       addToStudy,
       removeFromStudy,
       bulkAddToStudy,
-      getHighlightStudyStatus
+      getHighlightStudyStatus,
+      settings,
+      updateSettings,
+      currentSession,
+      startSession,
+      submitReview,
+      resetSession,
+      sessionStats,
+      reviewLogs,
+      isLoaded
     }}>
       {children}
     </StoreContext.Provider>

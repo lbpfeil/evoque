@@ -1,53 +1,66 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useStore } from '../components/StoreContext';
 import { calculateNextReview } from '../services/sm2';
-import { Brain, Check, RefreshCw, ArrowRight, Edit2, Clock, Target, Zap } from 'lucide-react';
+import { Brain, Check, RefreshCw, ArrowRight, Edit2, Clock, Target, Zap, List } from 'lucide-react';
 import { StudyCard, Highlight } from '../types';
 
 const Study = () => {
-  const { getCardsDue, highlights, updateCard, updateHighlight, books } = useStore();
-  const [queue, setQueue] = useState<StudyCard[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [showAnswer, setShowAnswer] = useState(false);
-  const [sessionComplete, setSessionComplete] = useState(false);
-  const [stats, setStats] = useState({ reviewed: 0, correct: 0, streak: 0, startTime: Date.now() });
+  const navigate = useNavigate();
+  const {
+    getCardsDue,
+    highlights,
+    updateCard,
+    updateHighlight,
+    books,
+    currentSession,
+    startSession,
+    submitReview,
+    sessionStats,
+    studyCards,
+    isLoaded,
+    resetSession
+  } = useStore();
 
-  // Note editing state
+  const [showAnswer, setShowAnswer] = useState(false);
   const [isEditingNote, setIsEditingNote] = useState(false);
   const [editedNote, setEditedNote] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [showQueueInfo, setShowQueueInfo] = useState(false);
 
-  useEffect(() => {
-    const due = getCardsDue();
-    setQueue(due.sort(() => Math.random() - 0.5).slice(0, 20));
-  }, []);
+  // Derived state from session
+  const queueIds = currentSession ? currentSession.cardIds : [];
+  const completedCount = currentSession ? currentSession.completedIds.length : 0;
+  const currentIndex = completedCount;
+  const sessionComplete = queueIds.length > 0 && currentIndex >= queueIds.length;
 
-  const currentCard = queue[currentIndex];
+  const currentCardId = queueIds[currentIndex];
+  // Find card in studyCards (which might be updated)
+  const currentCard = studyCards.find(c => c.id === currentCardId);
   const currentHighlight = currentCard ? highlights.find(h => h.id === currentCard.highlightId) : null;
   const currentBook = currentHighlight ? books.find(b => b.id === currentHighlight.bookId) : null;
+
+  const totalDue = getCardsDue().length;
+
+  useEffect(() => {
+    if (isLoaded) {
+      startSession();
+    }
+  }, [isLoaded]);
 
   const handleResponse = useCallback((quality: number) => {
     if (!currentCard) return;
 
+    // 1. Update Card (SM-2 Algorithm)
     const updatedCard = calculateNextReview(currentCard, quality);
     updateCard(updatedCard);
 
-    const isCorrect = quality >= 3;
-    setStats(prev => ({
-      reviewed: prev.reviewed + 1,
-      correct: prev.correct + (isCorrect ? 1 : 0),
-      streak: isCorrect ? prev.streak + 1 : 0,
-      startTime: prev.startTime
-    }));
+    // 2. Update Session
+    submitReview(currentCard.id, quality);
 
-    if (currentIndex < queue.length - 1) {
-      setCurrentIndex(prev => prev + 1);
-      setShowAnswer(false);
-      setIsEditingNote(false);
-    } else {
-      setSessionComplete(true);
-    }
-  }, [currentCard, currentIndex, queue.length, updateCard]);
+    setShowAnswer(false);
+    setIsEditingNote(false);
+  }, [currentCard, updateCard, submitReview]);
 
   const handleSaveNote = useCallback(async () => {
     if (!currentHighlight) return;
@@ -70,20 +83,18 @@ const Study = () => {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      // ESC saves when editing
       if (isEditingNote && e.key === 'Escape') {
         e.preventDefault();
         handleSaveNote();
         return;
       }
 
-      // Don't trigger other shortcuts when editing
       if (isEditingNote) return;
 
       switch (e.key) {
         case ' ':
           e.preventDefault();
-          if (!showAnswer) setShowAnswer(true);
+          if (!showAnswer && !sessionComplete && currentCard) setShowAnswer(true);
           break;
         case '1':
           if (showAnswer) handleResponse(2);
@@ -100,15 +111,14 @@ const Study = () => {
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [showAnswer, isEditingNote, handleResponse, handleEditNote, handleSaveNote]);
+  }, [showAnswer, isEditingNote, handleResponse, handleEditNote, handleSaveNote, sessionComplete, currentCard]);
 
-  const getAverageTime = () => {
-    if (stats.reviewed === 0) return 0;
-    const elapsed = (Date.now() - stats.startTime) / 1000;
-    return Math.round(elapsed / stats.reviewed);
-  };
+  // Conditional Returns - MUST be after all hooks
+  if (!isLoaded) {
+    return <div className="flex items-center justify-center h-full text-zinc-500">Loading study session...</div>;
+  }
 
-  if (queue.length === 0 && !sessionComplete) {
+  if (!currentSession && totalDue === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh] text-center space-y-6">
         <div className="w-20 h-20 bg-zinc-50 text-zinc-900 border border-zinc-200 rounded-full flex items-center justify-center">
@@ -131,50 +141,100 @@ const Study = () => {
         <div className="flex gap-12">
           <div className="text-center">
             <p className="text-zinc-400 text-xs font-bold uppercase tracking-widest mb-2">Reviewed</p>
-            <p className="text-5xl font-bold text-zinc-900">{stats.reviewed}</p>
+            <p className="text-5xl font-bold text-zinc-900">{sessionStats.reviewed}</p>
           </div>
           <div className="w-px bg-zinc-200 h-20"></div>
           <div className="text-center">
             <p className="text-zinc-400 text-xs font-bold uppercase tracking-widest mb-2">Accuracy</p>
             <p className="text-5xl font-bold text-zinc-900">
-              {stats.reviewed > 0 ? Math.round((stats.correct / stats.reviewed) * 100) : 0}%
+              {sessionStats.reviewed > 0 ? Math.round((sessionStats.correct / sessionStats.reviewed) * 100) : 0}%
             </p>
           </div>
         </div>
-        <button
-          onClick={() => window.location.reload()}
-          className="px-10 py-4 bg-black text-white rounded-md font-medium hover:bg-zinc-800 transition-colors shadow-xl shadow-zinc-200/50"
-        >
-          Finish Session
-        </button>
+        <div className="flex flex-col gap-4">
+          <p className="text-zinc-500">
+            You have {totalDue - sessionStats.reviewed} cards remaining in the queue.
+          </p>
+          <button
+            onClick={() => navigate('/')}
+            className="px-10 py-4 bg-black text-white rounded-md font-medium hover:bg-zinc-800 transition-colors shadow-xl shadow-zinc-200/50"
+          >
+            Finish Session
+          </button>
+        </div>
       </div>
     );
   }
 
-  if (!currentHighlight || !currentBook) return <div className="p-10 text-center text-zinc-500">Loading card...</div>;
+  if (!currentHighlight || !currentBook) {
+    if (currentSession && !sessionComplete && queueIds.length > 0) {
+      return (
+        <div className="flex flex-col items-center justify-center h-[60vh] text-center space-y-6">
+          <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto">
+            <Brain className="w-8 h-8" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-zinc-900 mb-2">Session Sync Error</h2>
+            <p className="text-zinc-500 max-w-md mx-auto mb-6">
+              The current card seems to be missing. This can happen if you deleted a highlight while a session was active.
+            </p>
+            <button
+              onClick={resetSession}
+              className="px-6 py-2 bg-black text-white rounded-md hover:bg-zinc-800 transition-colors"
+            >
+              Reset Session
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return <div className="p-10 text-center text-zinc-500">Loading card...</div>;
+  }
 
   return (
     <div className="h-full flex flex-col">
       {/* Compact Header */}
       <div className="px-4 py-3 border-b border-zinc-200">
         <div className="flex items-center justify-between text-xs">
-          <div className="text-zinc-400 font-medium">
-            CARD {currentIndex + 1} / {queue.length}
+          <div className="text-zinc-400 font-medium flex items-center gap-2">
+            <span>CARD {currentIndex + 1} / {queueIds.length}</span>
+            <div className="relative group">
+              <button
+                className="p-1 hover:bg-zinc-100 rounded-full"
+                onMouseEnter={() => setShowQueueInfo(true)}
+                onMouseLeave={() => setShowQueueInfo(false)}
+              >
+                <List className="w-3 h-3" />
+              </button>
+              {showQueueInfo && (
+                <div className="absolute top-full left-0 mt-2 bg-black text-white p-3 rounded shadow-lg w-48 z-50">
+                  <p className="font-semibold mb-1">Queue Status</p>
+                  <div className="flex justify-between text-zinc-400">
+                    <span>Session:</span>
+                    <span className="text-white">{queueIds.length}</span>
+                  </div>
+                  <div className="flex justify-between text-zinc-400">
+                    <span>Total Due:</span>
+                    <span className="text-white">{totalDue}</span>
+                  </div>
+                  <div className="flex justify-between text-zinc-400">
+                    <span>Backlog:</span>
+                    <span className="text-white">{Math.max(0, totalDue - queueIds.length)}</span>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Compact Stats */}
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1.5">
               <Target className="w-3 h-3 text-zinc-400" />
-              <span className="text-zinc-600">{stats.reviewed}</span>
+              <span className="text-zinc-600">{sessionStats.reviewed}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <Zap className="w-3 h-3 text-zinc-400" />
-              <span className="text-zinc-600">{stats.streak}</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Clock className="w-3 h-3 text-zinc-400" />
-              <span className="text-zinc-600">{getAverageTime()}s</span>
+              <span className="text-zinc-600">{sessionStats.streak}</span>
             </div>
           </div>
         </div>
@@ -183,7 +243,7 @@ const Study = () => {
         <div className="h-px bg-zinc-200 mt-3">
           <div
             className="h-full bg-black transition-all duration-300 ease-out"
-            style={{ width: `${((currentIndex) / queue.length) * 100}%` }}
+            style={{ width: `${((currentIndex) / queueIds.length) * 100}%` }}
           />
         </div>
       </div>

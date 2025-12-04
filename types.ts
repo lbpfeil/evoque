@@ -17,6 +17,7 @@ export interface Highlight {
   page?: string;
   isFavorite?: boolean;
   importedAt?: string;
+  inStudy?: boolean;
 }
 
 export interface StudyCard {
@@ -35,3 +36,35 @@ export interface StudySessionStats {
   repeated: number;
   durationSeconds: number;
 }
+
+export type StudyStatus = 'not-started' | 'learning' | 'mastered';
+
+export interface UserSettings {
+  maxReviewsPerDay: number;
+  newCardsPerDay: number;
+}
+
+export interface ReviewResult {
+  cardId: string;
+  quality: number;
+  timestamp: number;
+}
+
+export interface StudySession {
+  id: string;
+  date: string;
+  cardIds: string[];
+  completedIds: string[];
+  results: ReviewResult[];
+}
+
+export interface ReviewLog {
+  id: string;
+  cardId: string;
+  quality: number;
+  reviewedAt: string;
+  interval: number;
+  easeFactor: number;
+}
+
+export type SortOption = 'imported' | 'date' | 'book' | 'length';

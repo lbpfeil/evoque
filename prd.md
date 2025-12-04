@@ -791,18 +791,6 @@ USING (auth.uid() = user_id);
 
 ### 5.4 Estrutura de Pastas (Next.js App Router)
 
-```
-/kindle-highlights-manager
-├── /app
-│   ├── /auth
-│   │   ├── /login
-│   │   └── /signup
-│   ├── /dashboard
-│   │   └── page.tsx
-│   ├── /biblioteca
-│   │   ├── page.tsx
-│   │   └── /[bookId]
-│   │       └── page.tsx
 │   ├── /estudo
 │   │   ├── page.tsx (seleção de deck)
 │   │   └── /sessao
@@ -1247,6 +1235,313 @@ USING (auth.uid() = user_id);
 3. **Internacionalização:** Lançar apenas em PT-BR ou incluir EN desde MVP?
 4. **Mobile App:** PWA ou native app nativo no futuro?
 5. **Marca e Nome:** "Kindle Highlights Manager" é provisório. Nome definitivo?
+
+---
+
+## 9. FUNCIONALIDADES IMPLEMENTADAS (Dezembro 2025)
+
+### 9.1 MELHORIAS NA ABA HIGHLIGHTS
+
+#### 9.1.1 Estatísticas Inline
+
+**Descrição:**  
+Cards de métricas exibidos no topo da página de Highlights, fornecendo visão rápida do estado da coleção.
+
+**Métricas Exibidas:**
+- **Total de Highlights**: Contagem total de highlights importados
+- **Com Notas**: Número e percentual de highlights que possuem notas anexadas
+- **Em Estudo**: Número e percentual de highlights adicionados ao sistema de estudo
+- **Livros Únicos**: Quantidade de livros diferentes representados nos highlights
+
+**Design:**
+- Grid responsivo (4 colunas em desktop, 2 em mobile)
+- Cards brancos com bordas sutis e sombras leves
+- Ícones representativos para cada métrica
+- Atualização em tempo real baseada nos filtros aplicados
+
+**Componente:** `components/HighlightStats.tsx`
+
+#### 9.1.2 Ordenação Avançada
+
+**Opções de Ordenação:**
+1. **Recém Importados** (padrão): Ordenação por data de importação, mais recentes primeiro
+2. **Data do Highlight**: Ordenação por quando o highlight foi criado no Kindle
+3. **Título do Livro**: Ordenação alfabética por nome do livro
+4. **Tamanho do Texto**: Ordenação por comprimento do texto do highlight
+
+**Implementação:**
+- Dropdown no toolbar com ícone de ordenação
+- Persiste durante aplicação de filtros
+- Algoritmo eficiente usando `useMemo` para performance
+
+#### 9.1.3 Modal de Contexto do Livro
+
+**Funcionalidade:**  
+Ao clicar no título de um livro na tabela, abre modal mostrando todos os highlights daquele livro.
+
+**Conteúdo do Modal:**
+- Capa do livro em tamanho grande
+- Título e autor
+- Data de importação e contagem de highlights
+- Lista scrollável com todos os highlights do livro
+- Botão para fechar (X e click fora)
+
+**Componente:** `components/BookContextModal.tsx`
+
+#### 9.1.4 Integração com Sistema de Estudo
+
+**Nova Coluna "Status":**  
+Exibe badges indicando o status de cada highlight no sistema de estudo.
+
+**Status Possíveis:**
+- **Not Started** (cinza): Highlight não adicionado ao estudo
+- **Learning** (azul): Highlight em estudo, menos de 5 repetições
+- **Mastered** (verde): Highlight dominado, 5 ou mais repetições
+
+**Ações Disponíveis:**
+- Botão `+`: Adicionar highlight ao sistema de estudo
+- Botão `-`: Remover highlight do sistema de estudo
+- Ação em lote: Adicionar múltiplos highlights selecionados ao estudo
+
+**Filtro por Status:**
+- Dropdown adicional no toolbar
+- Opções: "All Status" | "In Study" | "Not in Study"
+- Filtragem dinâmica da tabela
+
+**Métodos no Store:**
+```typescript
+addToStudy(highlightId: string): void
+removeFromStudy(highlightId: string): void
+bulkAddToStudy(highlightIds: string[]): void
+getHighlightStudyStatus(highlightId: string): StudyStatus
+```
+
+#### 9.1.5 Filtros Combinados
+
+**Filtros Disponíveis:**
+- **Busca por Texto**: Busca em tempo real no texto do highlight e nas notas
+- **Filtro por Livro**: Dropdown para selecionar livro específico
+- **Ordenação**: 4 opções de ordenação
+- **Status de Estudo**: Filtrar por status no sistema de estudo
+
+**Comportamento:**
+- Todos os filtros podem ser combinados
+- Atualização instantânea da tabela
+- Performance otimizada com `useMemo`
+
+---
+
+### 9.2 MELHORIAS NA ABA STUDY
+
+#### 9.2.1 Design Clean e Compacto
+
+**Mudanças Visuais:**
+- **Header Compacto**: Altura reduzida, informações condensadas
+- **Estatísticas Inline**: Ícones pequenos (3px) com texto xs
+- **Progress Bar**: Apenas 1px de altura, mais discreto
+- **Capa do Livro**: Reduzida para 32x48px, posicionada ao lado do título
+- **Botões Menores**: Padding reduzido de `py-5` para `py-3`
+- **Texto Otimizado**: Tamanhos reduzidos (xl-2xl ao invés de 2xl-3xl)
+- **Espaçamento**: Padding geral reduzido de `px-10` para `px-6`
+
+**Princípios:**
+- Estética similar à sidebar
+- Bordas mínimas
+- Foco no conteúdo
+- Design limpo e profissional
+
+#### 9.2.2 Edição Inline de Notas
+
+**Funcionalidade:**  
+Permite editar notas de highlights diretamente durante a sessão de estudo, sem sair do fluxo.
+
+**Fluxo de Uso:**
+1. Revelar resposta do card
+2. Clicar no botão "Edit Note" (ícone de lápis) ou pressionar `E`
+3. Textarea aparece inline com nota atual
+4. Editar o texto
+5. Pressionar `ESC` para salvar automaticamente
+6. Nota é atualizada no banco de dados
+
+**Design:**
+- Textarea com fundo branco e borda sutil
+- Indicador "Press ESC to save"
+- Ícone de loading durante salvamento
+- Transições suaves entre modos
+
+**Benefícios:**
+- Adicionar contexto durante revisão
+- Melhorar notas existentes sem sair do estudo
+- Workflow mais eficiente
+
+#### 9.2.3 Atalhos de Teclado
+
+**Atalhos Implementados:**
+
+| Tecla | Ação | Disponibilidade |
+|-------|------|----------------|
+| `Space` | Revelar resposta | Antes de revelar |
+| `1` | Marcar como "Again" (repetir) | Após revelar |
+| `2` | Marcar como "Good" (próximo) | Após revelar |
+| `E` | Editar nota | Após revelar, não editando |
+| `ESC` | **Salvar edição** | Durante edição de nota |
+
+**Implementação:**
+- Event listener global para teclado
+- Previne atalhos durante input de texto
+- Hints visuais nos botões (ex: "Space", "1", "2")
+- Feedback imediato nas ações
+
+**Benefícios:**
+- Estudo mais rápido
+- Mãos permanecem no teclado
+- Reduz uso do mouse
+- Experiência profissional
+
+#### 9.2.4 Estatísticas em Tempo Real
+
+**Métricas Exibidas:**
+
+1. **Reviewed (Revisados)**
+   - Ícone: Target (🎯)
+   - Mostra: Número de cards revisados na sessão
+   - Atualiza: Após cada resposta
+
+2. **Streak (Sequência)**
+   - Ícone: Lightning bolt (⚡)
+   - Mostra: Acertos consecutivos
+   - Reseta: Ao marcar como "Again"
+   - Motivacional
+
+3. **Avg Time (Tempo Médio)**
+   - Ícone: Clock (🕐)
+   - Mostra: Tempo médio por card em segundos
+   - Cálculo: Tempo total / cards revisados
+   - Ajuda: Monitorar ritmo de estudo
+
+**Design:**
+- Layout horizontal compacto no header
+- Ícones pequenos (3px)
+- Texto em zinc-400/600
+- Atualização instantânea
+
+---
+
+### 9.3 ATUALIZAÇÕES NO MODELO DE DADOS
+
+#### 9.3.1 Tipo Highlight Estendido
+
+```typescript
+export interface Highlight {
+  id: string;
+  bookId: string;
+  text: string;
+  note?: string;
+  location: string;
+  dateAdded: string;
+  page?: string;
+  isFavorite?: boolean;
+  importedAt?: string;
+  inStudy?: boolean;  // NOVO: indica se está no sistema de estudo
+}
+```
+
+#### 9.3.2 Novos Tipos
+
+```typescript
+// Opções de ordenação
+export type SortOption = 'date' | 'book' | 'imported' | 'length';
+
+// Status no sistema de estudo
+export type StudyStatus = 'not-started' | 'learning' | 'mastered';
+```
+
+#### 9.3.3 Store Context Estendido
+
+**Novos Métodos:**
+- `addToStudy(highlightId: string): void`
+- `removeFromStudy(highlightId: string): void`
+- `bulkAddToStudy(highlightIds: string[]): void`
+- `getHighlightStudyStatus(highlightId: string): StudyStatus`
+
+**Lógica de Status:**
+```typescript
+getHighlightStudyStatus(highlightId: string): StudyStatus {
+  const card = studyCards.find(c => c.highlightId === highlightId);
+  if (!card) return 'not-started';
+  if (card.repetitions >= 5) return 'mastered';
+  return 'learning';
+}
+```
+
+---
+
+### 9.4 COMPONENTES CRIADOS E MODIFICADOS
+
+#### Novos Componentes
+
+1. **HighlightStats.tsx**
+   - Exibe cards de estatísticas
+   - Calcula métricas em tempo real
+   - Responsivo (grid 2x2 em mobile, 4x1 em desktop)
+
+2. **BookContextModal.tsx**
+   - Modal de contexto do livro
+   - Lista todos os highlights do livro
+   - Scroll interno, altura máxima 85vh
+   - Click-outside-to-close
+
+#### Componentes Modificados
+
+1. **Highlights.tsx**
+   - Integração de todos os novos recursos
+   - Lógica de ordenação e filtragem
+   - Modal de contexto
+   - Ações de estudo
+
+2. **Study.tsx**
+   - Design compacto e limpo
+   - Edição inline de notas
+   - Atalhos de teclado
+   - Estatísticas em tempo real
+   - ESC salva edição
+
+---
+
+### 9.5 MELHORIAS DE UX
+
+#### Highlights
+- ✅ Visão geral instantânea com estatísticas
+- ✅ Ordenação flexível para diferentes necessidades
+- ✅ Contexto completo do livro em um clique
+- ✅ Integração perfeita com sistema de estudo
+- ✅ Filtros combinados para busca precisa
+
+#### Study
+- ✅ Interface limpa e focada no conteúdo
+- ✅ Edição de notas sem sair do fluxo
+- ✅ Navegação rápida por teclado
+- ✅ Feedback visual em tempo real
+- ✅ Design profissional e minimalista
+
+---
+
+### 9.6 MÉTRICAS DE IMPACTO ESPERADAS
+
+**Engajamento:**
+- ↑ Tempo médio na aba Highlights (melhor organização)
+- ↑ Taxa de edição de highlights (edição inline no estudo)
+- ↑ Uso de filtros e ordenação (mais opções disponíveis)
+
+**Retenção:**
+- ↑ Frequência de sessões de estudo (UX melhorada)
+- ↑ Taxa de conclusão de sessões (atalhos de teclado)
+- ↑ Highlights adicionados ao estudo (integração facilitada)
+
+**Qualidade:**
+- ↑ Highlights com notas (edição durante estudo)
+- ↑ Organização da coleção (filtros e ordenação)
+- ↑ Satisfação do usuário (NPS)
 
 ---
 

@@ -6,82 +6,147 @@ interface ParsedEntry {
   content: string;
   type: 'Highlight' | 'Note' | 'Bookmark';
   location: string;
+  locationStart: number;
+  locationEnd: number;
   dateAdded: string;
+  rawDate: string;
 }
+
+const parseLocation = (locString: string): { start: number, end: number } => {
+  if (!locString) return { start: 0, end: 0 };
+
+  // Handle "123-125" or "123"
+  const parts = locString.split('-');
+  const start = parseInt(parts[0], 10);
+  const end = parts.length > 1 ? parseInt(parts[1], 10) : start;
+
+  return {
+    start: isNaN(start) ? 0 : start,
+    end: isNaN(end) ? 0 : end
+  };
+};
 
 export const parseMyClippings = (text: string): { books: Book[], highlights: Highlight[] } => {
   const entries = text.split('==========').filter((e) => e.trim().length > 0);
   const booksMap = new Map<string, Book>();
-  const highlights: Highlight[] = [];
+  const parsedHighlights: ParsedEntry[] = [];
+  const parsedNotes: ParsedEntry[] = [];
 
   entries.forEach((entry) => {
-    const lines = entry.trim().split('\n');
-    if (lines.length < 3) return;
+    try {
+      const lines = entry.trim().split('\n');
+      if (lines.length < 3) return;
 
-    // Line 1: Title (Author)
-    // Sometimes title and author are messed up, simple regex attempt
-    const titleLine = lines[0].trim();
-    const authorMatch = titleLine.match(/\(([^)]+)\)$/);
-    const author = authorMatch ? authorMatch[1] : 'Unknown Author';
-    const title = authorMatch ? titleLine.replace(authorMatch[0], '').trim() : titleLine;
-    
-    // Line 2: Metadata
-    const metaLine = lines[1].trim();
-    // Example: - Your Highlight on page 12 | location 123-125 | Added on Friday, December 15, 2023 10:00 AM
-    
-    // Check type
-    let type: ParsedEntry['type'] = 'Highlight';
-    if (metaLine.includes('Note')) type = 'Note';
-    else if (metaLine.includes('Bookmark')) type = 'Bookmark';
+      // Line 1: Title (Author)
+      const titleLine = lines[0].trim();
+      const authorMatch = titleLine.match(/\(([^)]+)\)$/);
+      const author = authorMatch ? authorMatch[1] : 'Unknown Author';
+      const title = authorMatch ? titleLine.replace(authorMatch[0], '').trim() : titleLine;
 
-    if (type === 'Bookmark') return; // Skip bookmarks for now
+      // Line 2: Metadata
+      const metaLine = lines[1].trim();
 
-    const locationMatch = metaLine.match(/location\s([\d-]+)/);
-    const location = locationMatch ? locationMatch[1] : 'Unknown';
-    
-    // Date parsing can be tricky due to locales. Storing raw string for MVP or simplified Date.
-    const dateMatch = metaLine.match(/Added on\s(.+)$/);
-    let dateAdded = new Date().toISOString();
-    if (dateMatch) {
-       // Attempt to parse date, fallback to now
-       const parsed = Date.parse(dateMatch[1]);
-       if (!isNaN(parsed)) dateAdded = new Date(parsed).toISOString();
-    }
+      // Check type
+      let type: ParsedEntry['type'] = 'Highlight';
+      if (metaLine.includes('Note') || metaLine.includes('Nota')) type = 'Note';
+      else if (metaLine.includes('Bookmark')) type = 'Bookmark';
 
-    // Line 4+: Content
-    // Skip empty line 3
-    const content = lines.slice(3).join('\n').trim();
+      if (type === 'Bookmark') return;
 
-    if (!content) return;
+      // Parse Location
+      // Supports English "location" and Portuguese "posição"
+      const locationMatch = metaLine.match(/(?:location|posição)\s([\d-]+)/i);
+      const location = locationMatch ? locationMatch[1] : '0';
+      const { start, end } = parseLocation(location);
 
-    // Generate Book ID based on title+author to avoid dupes
-    const bookId = btoa(unescape(encodeURIComponent(`${title}-${author}`)));
+      // Parse Date
+      const dateMatch = metaLine.match(/(?:Added on|Adicionado:)\s(.+)$/i);
+      let dateAdded = new Date().toISOString();
+      let rawDate = '';
+      if (dateMatch) {
+        rawDate = dateMatch[1];
+        // Attempt to parse date, fallback to now if invalid
+        const parsed = Date.parse(rawDate);
+        if (!isNaN(parsed)) dateAdded = new Date(parsed).toISOString();
+      }
 
-    if (!booksMap.has(bookId)) {
-      booksMap.set(bookId, {
-        id: bookId,
+      // Content
+      const content = lines.slice(3).join('\n').trim();
+      if (!content) return;
+
+      // Generate Book ID
+      const bookId = btoa(unescape(encodeURIComponent(`${title}-${author}`)));
+
+      if (!booksMap.has(bookId)) {
+        booksMap.set(bookId, {
+          id: bookId,
+          title,
+          author,
+          lastImported: new Date().toISOString(),
+          highlightCount: 0,
+          coverUrl: `https://picsum.photos/300/450?random=${Math.floor(Math.random() * 1000)}`
+        });
+      }
+
+      const parsedEntry: ParsedEntry = {
         title,
         author,
-        lastImported: new Date().toISOString(),
-        highlightCount: 0,
-        coverUrl: `https://picsum.photos/300/450?random=${Math.floor(Math.random() * 1000)}`
-      });
+        content,
+        type,
+        location,
+        locationStart: start,
+        locationEnd: end,
+        dateAdded,
+        rawDate
+      };
+
+      if (type === 'Highlight') {
+        parsedHighlights.push(parsedEntry);
+      } else if (type === 'Note') {
+        parsedNotes.push(parsedEntry);
+      }
+
+    } catch (err) {
+      console.error('Error parsing entry:', err, entry);
+      // Continue to next entry
     }
+  });
 
-    const currentBook = booksMap.get(bookId)!;
-    currentBook.highlightCount++;
+  // Convert parsed highlights to domain objects and associate notes
+  const finalHighlights: Highlight[] = [];
 
-    highlights.push({
+  parsedHighlights.forEach(ph => {
+    const bookId = btoa(unescape(encodeURIComponent(`${ph.title}-${ph.author}`)));
+
+    // Find associated note
+    // A note is associated if it's for the same book and its location is within or close to the highlight's location
+    const associatedNote = parsedNotes.find(pn => {
+      const sameBook = pn.title === ph.title && pn.author === ph.author;
+      if (!sameBook) return false;
+
+      // Check if note location is within highlight range (inclusive)
+      // Or if it's very close (e.g. next position)
+      return pn.locationStart >= ph.locationStart && pn.locationStart <= ph.locationEnd + 1;
+    });
+
+    finalHighlights.push({
       id: crypto.randomUUID(),
       bookId,
-      text: content,
-      location,
-      dateAdded,
+      text: ph.content,
+      location: ph.location,
+      dateAdded: ph.dateAdded,
+      note: associatedNote ? associatedNote.content : undefined
     });
+
+    // Update book count
+    const book = booksMap.get(bookId);
+    if (book) {
+      book.highlightCount++;
+    }
   });
 
   return {
     books: Array.from(booksMap.values()),
-    highlights
+    highlights: finalHighlights
   };
 };
