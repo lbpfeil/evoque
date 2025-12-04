@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Book, Highlight, StudyCard } from '../types';
+import { Book, Highlight, StudyCard, StudyStatus } from '../types';
 import { MOCK_BOOKS, MOCK_HIGHLIGHTS, MOCK_CARDS } from '../services/mockData';
 import { parseMyClippings } from '../services/parser';
 
@@ -15,6 +15,10 @@ interface StoreContextType {
   deleteHighlight: (id: string) => void;
   updateHighlight: (id: string, updates: Partial<Highlight>) => void;
   bulkDeleteHighlights: (ids: string[]) => void;
+  addToStudy: (highlightId: string) => void;
+  removeFromStudy: (highlightId: string) => void;
+  bulkAddToStudy: (highlightIds: string[]) => void;
+  getHighlightStudyStatus: (highlightId: string) => StudyStatus;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -151,6 +155,60 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     setHighlights(prev => prev.map(h => h.id === id ? { ...h, ...updates } : h));
   };
 
+  const addToStudy = (highlightId: string) => {
+    // Check if already in study
+    const existingCard = studyCards.find(c => c.highlightId === highlightId);
+    if (existingCard) return;
+
+    // Create new study card
+    const newCard: StudyCard = {
+      id: crypto.randomUUID(),
+      highlightId,
+      easeFactor: 2.5,
+      interval: 0,
+      repetitions: 0,
+      nextReviewDate: new Date().toISOString()
+    };
+
+    setStudyCards(prev => [...prev, newCard]);
+    updateHighlight(highlightId, { inStudy: true });
+  };
+
+  const removeFromStudy = (highlightId: string) => {
+    setStudyCards(prev => prev.filter(c => c.highlightId !== highlightId));
+    updateHighlight(highlightId, { inStudy: false });
+  };
+
+  const bulkAddToStudy = (highlightIds: string[]) => {
+    const newCards: StudyCard[] = [];
+    const existingHighlightIds = new Set(studyCards.map(c => c.highlightId));
+
+    highlightIds.forEach(highlightId => {
+      if (!existingHighlightIds.has(highlightId)) {
+        newCards.push({
+          id: crypto.randomUUID(),
+          highlightId,
+          easeFactor: 2.5,
+          interval: 0,
+          repetitions: 0,
+          nextReviewDate: new Date().toISOString()
+        });
+      }
+    });
+
+    setStudyCards(prev => [...prev, ...newCards]);
+    setHighlights(prev => prev.map(h =>
+      highlightIds.includes(h.id) ? { ...h, inStudy: true } : h
+    ));
+  };
+
+  const getHighlightStudyStatus = (highlightId: string): StudyStatus => {
+    const card = studyCards.find(c => c.highlightId === highlightId);
+    if (!card) return 'not-started';
+    if (card.repetitions >= 5) return 'mastered';
+    return 'learning';
+  };
+
   return (
     <StoreContext.Provider value={{
       books,
@@ -163,7 +221,11 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       getBookHighlights,
       deleteHighlight,
       updateHighlight,
-      bulkDeleteHighlights
+      bulkDeleteHighlights,
+      addToStudy,
+      removeFromStudy,
+      bulkAddToStudy,
+      getHighlightStudyStatus
     }}>
       {children}
     </StoreContext.Provider>

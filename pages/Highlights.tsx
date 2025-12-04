@@ -1,28 +1,75 @@
 import React, { useState, useMemo } from 'react';
 import { useStore } from '../components/StoreContext';
-import { Search, Filter, Trash2, Edit2, Check, X, Book } from 'lucide-react';
+import { Search, Filter, Trash2, Edit2, Check, X, Book, ArrowUpDown, Plus, Minus, Brain } from 'lucide-react';
+import { SortOption } from '../types';
+import HighlightStats from '../components/HighlightStats';
+import BookContextModal from '../components/BookContextModal';
 
 const Highlights = () => {
-  const { highlights, books, deleteHighlight, updateHighlight, bulkDeleteHighlights } = useStore();
+  const {
+    highlights,
+    books,
+    studyCards,
+    deleteHighlight,
+    updateHighlight,
+    bulkDeleteHighlights,
+    addToStudy,
+    removeFromStudy,
+    bulkAddToStudy,
+    getHighlightStudyStatus
+  } = useStore();
 
   // Local state for filters
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBookId, setSelectedBookId] = useState('all');
+  const [sortBy, setSortBy] = useState<SortOption>('imported');
+  const [studyFilter, setStudyFilter] = useState<'all' | 'in-study' | 'not-in-study'>('all');
 
   // Local state for selection & editing
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ text: '', note: '' });
 
-  // Filter logic
-  const filteredHighlights = useMemo(() => {
-    return highlights.filter(h => {
+  // Book context modal
+  const [modalBookId, setModalBookId] = useState<string | null>(null);
+
+  // Filter and sort logic
+  const filteredAndSortedHighlights = useMemo(() => {
+    let filtered = highlights.filter(h => {
       const matchesSearch = h.text.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (h.note && h.note.toLowerCase().includes(searchTerm.toLowerCase()));
       const matchesBook = selectedBookId === 'all' || h.bookId === selectedBookId;
-      return matchesSearch && matchesBook;
+
+      let matchesStudy = true;
+      if (studyFilter === 'in-study') {
+        matchesStudy = studyCards.some(c => c.highlightId === h.id);
+      } else if (studyFilter === 'not-in-study') {
+        matchesStudy = !studyCards.some(c => c.highlightId === h.id);
+      }
+
+      return matchesSearch && matchesBook && matchesStudy;
     });
-  }, [highlights, searchTerm, selectedBookId]);
+
+    // Sort
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'date':
+          return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
+        case 'imported':
+          return new Date(b.importedAt || 0).getTime() - new Date(a.importedAt || 0).getTime();
+        case 'book':
+          const bookA = books.find(book => book.id === a.bookId);
+          const bookB = books.find(book => book.id === b.bookId);
+          return (bookA?.title || '').localeCompare(bookB?.title || '');
+        case 'length':
+          return b.text.length - a.text.length;
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
+  }, [highlights, searchTerm, selectedBookId, sortBy, studyFilter, books, studyCards]);
 
   // Bulk Selection Handlers
   const toggleSelection = (id: string) => {
@@ -36,10 +83,10 @@ const Highlights = () => {
   };
 
   const toggleAll = () => {
-    if (selectedIds.size === filteredHighlights.length && filteredHighlights.length > 0) {
+    if (selectedIds.size === filteredAndSortedHighlights.length && filteredAndSortedHighlights.length > 0) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(filteredHighlights.map(h => h.id)));
+      setSelectedIds(new Set(filteredAndSortedHighlights.map(h => h.id)));
     }
   };
 
@@ -48,6 +95,11 @@ const Highlights = () => {
       bulkDeleteHighlights(Array.from(selectedIds));
       setSelectedIds(new Set());
     }
+  };
+
+  const handleBulkAddToStudy = () => {
+    bulkAddToStudy(Array.from(selectedIds));
+    setSelectedIds(new Set());
   };
 
   // Edit Handlers
@@ -80,6 +132,19 @@ const Highlights = () => {
     }
   };
 
+  const getStudyBadge = (highlightId: string) => {
+    const status = getHighlightStudyStatus(highlightId);
+
+    switch (status) {
+      case 'mastered':
+        return <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-semibold rounded-sm">Mastered</span>;
+      case 'learning':
+        return <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-semibold rounded-sm">Learning</span>;
+      default:
+        return <span className="px-2 py-0.5 bg-zinc-100 text-zinc-500 text-[10px] font-semibold rounded-sm">Not Started</span>;
+    }
+  };
+
   return (
     <div className="space-y-6 relative h-full flex flex-col">
       {/* Header */}
@@ -90,10 +155,13 @@ const Highlights = () => {
         </p>
       </div>
 
+      {/* Statistics */}
+      <HighlightStats highlights={highlights} studyCards={studyCards} books={books} />
+
       {/* Toolbar */}
       <div className="flex flex-col md:flex-row gap-3 justify-between items-start md:items-center bg-white p-3 rounded-md border border-zinc-200 shadow-sm">
-        <div className="flex gap-3 w-full md:w-auto flex-1">
-          <div className="relative flex-1">
+        <div className="flex gap-3 w-full md:w-auto flex-1 flex-wrap">
+          <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400" />
             <input
               type="text"
@@ -103,11 +171,12 @@ const Highlights = () => {
               className="w-full pl-9 pr-3 py-1.5 bg-zinc-50 border border-zinc-200 rounded-sm focus:outline-none focus:ring-1 focus:ring-black focus:border-black text-xs"
             />
           </div>
-          <div className="relative w-40 hidden md:block">
+
+          <div className="relative">
             <select
               value={selectedBookId}
               onChange={(e) => setSelectedBookId(e.target.value)}
-              className="w-full pl-2.5 pr-7 py-1.5 bg-zinc-50 border border-zinc-200 rounded-sm focus:outline-none focus:ring-1 focus:ring-black focus:border-black text-xs appearance-none truncate"
+              className="pl-2.5 pr-7 py-1.5 bg-zinc-50 border border-zinc-200 rounded-sm focus:outline-none focus:ring-1 focus:ring-black focus:border-black text-xs appearance-none min-w-[120px]"
             >
               <option value="all">All Books</option>
               {books.map(b => (
@@ -116,19 +185,56 @@ const Highlights = () => {
             </select>
             <Filter className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 pointer-events-none" />
           </div>
+
+          <div className="relative">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as SortOption)}
+              className="pl-2.5 pr-7 py-1.5 bg-zinc-50 border border-zinc-200 rounded-sm focus:outline-none focus:ring-1 focus:ring-black focus:border-black text-xs appearance-none min-w-[120px]"
+            >
+              <option value="imported">Recently Imported</option>
+              <option value="date">Highlight Date</option>
+              <option value="book">Book Title</option>
+              <option value="length">Text Length</option>
+            </select>
+            <ArrowUpDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 pointer-events-none" />
+          </div>
+
+          <div className="relative">
+            <select
+              value={studyFilter}
+              onChange={(e) => setStudyFilter(e.target.value as any)}
+              className="pl-2.5 pr-7 py-1.5 bg-zinc-50 border border-zinc-200 rounded-sm focus:outline-none focus:ring-1 focus:ring-black focus:border-black text-xs appearance-none min-w-[120px]"
+            >
+              <option value="all">All Status</option>
+              <option value="in-study">In Study</option>
+              <option value="not-in-study">Not in Study</option>
+            </select>
+            <Brain className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 pointer-events-none" />
+          </div>
         </div>
 
         {/* Bulk Actions Indicator */}
         {selectedIds.size > 0 && (
           <div className="flex items-center gap-3 animate-fade-in bg-zinc-900 text-white px-3 py-1 rounded-sm shadow-md w-full md:w-auto justify-between">
             <span className="text-xs font-medium">{selectedIds.size} selected</span>
-            <button
-              onClick={handleBulkDelete}
-              className="flex items-center gap-1.5 text-[10px] hover:text-zinc-300 transition-colors uppercase tracking-wide font-semibold"
-            >
-              <Trash2 className="w-3 h-3" />
-              Delete
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={handleBulkAddToStudy}
+                className="flex items-center gap-1.5 text-[10px] hover:text-zinc-300 transition-colors uppercase tracking-wide font-semibold"
+                title="Add to Study"
+              >
+                <Plus className="w-3 h-3" />
+                Study
+              </button>
+              <button
+                onClick={handleBulkDelete}
+                className="flex items-center gap-1.5 text-[10px] hover:text-zinc-300 transition-colors uppercase tracking-wide font-semibold"
+              >
+                <Trash2 className="w-3 h-3" />
+                Delete
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -142,30 +248,32 @@ const Highlights = () => {
                 <input
                   type="checkbox"
                   className="accent-black w-3.5 h-3.5 cursor-pointer align-middle"
-                  checked={selectedIds.size > 0 && selectedIds.size === filteredHighlights.length}
+                  checked={selectedIds.size > 0 && selectedIds.size === filteredAndSortedHighlights.length}
                   onChange={toggleAll}
                 />
               </th>
               <th className="px-3 py-2 w-[15%]">Autor - Livro</th>
-              <th className="px-3 py-2 w-[35%]">Highlight</th>
-              <th className="px-3 py-2 w-[25%]">Note</th>
-              <th className="px-3 py-2 w-24 whitespace-nowrap">Data</th>
-              <th className="px-3 py-2 w-24 whitespace-nowrap">Importado</th>
-              <th className="px-3 py-2 w-16 text-right">Ações</th>
+              <th className="px-3 py-2 w-[30%]">Highlight</th>
+              <th className="px-3 py-2 w-[20%]">Note</th>
+              <th className="px-3 py-2 w-20 whitespace-nowrap">Data</th>
+              <th className="px-3 py-2 w-20 whitespace-nowrap">Importado</th>
+              <th className="px-3 py-2 w-24">Status</th>
+              <th className="px-3 py-2 w-20 text-right">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100">
-            {filteredHighlights.length === 0 ? (
+            {filteredAndSortedHighlights.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-3 py-12 text-center text-zinc-400">
+                <td colSpan={8} className="px-3 py-12 text-center text-zinc-400">
                   No highlights match your filters.
                 </td>
               </tr>
             ) : (
-              filteredHighlights.map(highlight => {
+              filteredAndSortedHighlights.map(highlight => {
                 const book = books.find(b => b.id === highlight.bookId);
                 const isEditing = editingId === highlight.id;
                 const isSelected = selectedIds.has(highlight.id);
+                const isInStudy = studyCards.some(c => c.highlightId === highlight.id);
 
                 return (
                   <tr
@@ -185,9 +293,13 @@ const Highlights = () => {
                     </td>
                     <td className="px-3 py-2 align-top">
                       <div className="flex flex-col gap-0.5">
-                        <span className="font-medium text-zinc-900 line-clamp-2 leading-tight" title={book?.title}>
+                        <button
+                          onClick={() => setModalBookId(book?.id || null)}
+                          className="font-medium text-zinc-900 line-clamp-2 leading-tight text-left hover:underline"
+                          title={book?.title}
+                        >
                           {book?.title || 'Unknown Book'}
-                        </span>
+                        </button>
                         <span className="text-[10px] text-zinc-400 line-clamp-1" title={book?.author}>
                           {book?.author || 'Unknown Author'}
                         </span>
@@ -232,6 +344,9 @@ const Highlights = () => {
                     <td className="px-3 py-2 align-top whitespace-nowrap text-[10px] text-zinc-400">
                       {formatDate(highlight.importedAt)}
                     </td>
+                    <td className="px-3 py-2 align-top">
+                      {getStudyBadge(highlight.id)}
+                    </td>
                     <td className="px-3 py-2 align-top text-right">
                       {isEditing ? (
                         <div className="flex flex-col gap-1 items-end">
@@ -252,6 +367,23 @@ const Highlights = () => {
                         </div>
                       ) : (
                         <div className="flex flex-col gap-1 items-end opacity-0 group-hover:opacity-100 transition-opacity">
+                          {isInStudy ? (
+                            <button
+                              onClick={() => removeFromStudy(highlight.id)}
+                              className="p-1 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-sm transition-colors"
+                              title="Remove from Study"
+                            >
+                              <Minus className="w-3 h-3" />
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => addToStudy(highlight.id)}
+                              className="p-1 text-zinc-400 hover:text-blue-600 hover:bg-blue-50 rounded-sm transition-colors"
+                              title="Add to Study"
+                            >
+                              <Plus className="w-3 h-3" />
+                            </button>
+                          )}
                           <button
                             onClick={() => startEditing(highlight)}
                             className="p-1 text-zinc-400 hover:text-black hover:bg-zinc-100 rounded-sm transition-colors"
@@ -278,6 +410,9 @@ const Highlights = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Book Context Modal */}
+      <BookContextModal bookId={modalBookId} onClose={() => setModalBookId(null)} />
     </div>
   );
 };
