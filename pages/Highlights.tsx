@@ -1,16 +1,19 @@
 import React, { useState, useMemo } from 'react';
 import { useStore } from '../components/StoreContext';
-import { Search, Filter, Trash2, Edit2, Check, X, Book, ArrowUpDown, Plus, Minus, Brain, TrendingUp } from 'lucide-react';
+import { Search, Filter, Trash2, Edit2, Check, X, Book, ArrowUpDown, Plus, Minus, Brain, TrendingUp, Tag as TagIcon } from 'lucide-react';
 import { SortOption } from '../types';
 import HighlightStats from '../components/HighlightStats';
 import BookContextModal from '../components/BookContextModal';
 import HighlightHistoryModal from '../components/HighlightHistoryModal';
+import { TagSelector } from '../components/TagSelector';
+import { TagManagerSidebar } from '../components/TagManagerSidebar';
 
 const Highlights = () => {
   const {
     highlights,
     books,
     studyCards,
+    tags,
     deleteHighlight,
     updateHighlight,
     bulkDeleteHighlights,
@@ -23,6 +26,7 @@ const Highlights = () => {
   // Local state for filters
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBookId, setSelectedBookId] = useState('all');
+  const [selectedTagId, setSelectedTagId] = useState('all');
   const [sortBy, setSortBy] = useState<SortOption>('imported');
   const [studyFilter, setStudyFilter] = useState<'all' | 'in-study' | 'not-in-study'>('all');
 
@@ -37,12 +41,31 @@ const Highlights = () => {
   // Stats modal
   const [statsHighlightId, setStatsHighlightId] = useState<string | null>(null);
 
+  // Tag Manager Sidebar
+  const [isTagManagerOpen, setIsTagManagerOpen] = useState(false);
+
+  // Helper to get all child tag IDs recursively
+  const getChildTagIds = (parentId: string): string[] => {
+    const children = tags.filter(t => t.parentId === parentId);
+    let ids = children.map(c => c.id);
+    children.forEach(c => {
+      ids = [...ids, ...getChildTagIds(c.id)];
+    });
+    return ids;
+  };
+
   // Filter and sort logic
   const filteredAndSortedHighlights = useMemo(() => {
     let filtered = highlights.filter(h => {
       const matchesSearch = h.text.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (h.note && h.note.toLowerCase().includes(searchTerm.toLowerCase()));
       const matchesBook = selectedBookId === 'all' || h.bookId === selectedBookId;
+
+      let matchesTag = true;
+      if (selectedTagId !== 'all') {
+        const targetTagIds = [selectedTagId, ...getChildTagIds(selectedTagId)];
+        matchesTag = h.tags?.some(tId => targetTagIds.includes(tId)) || false;
+      }
 
       let matchesStudy = true;
       if (studyFilter === 'in-study') {
@@ -51,7 +74,7 @@ const Highlights = () => {
         matchesStudy = !studyCards.some(c => c.highlightId === h.id);
       }
 
-      return matchesSearch && matchesBook && matchesStudy;
+      return matchesSearch && matchesBook && matchesStudy && matchesTag;
     });
 
     // Sort
@@ -73,7 +96,7 @@ const Highlights = () => {
     });
 
     return filtered;
-  }, [highlights, searchTerm, selectedBookId, sortBy, studyFilter, books, studyCards]);
+  }, [highlights, searchTerm, selectedBookId, selectedTagId, sortBy, studyFilter, books, studyCards, tags]);
 
   // Bulk Selection Handlers
   const toggleSelection = (id: string) => {
@@ -140,10 +163,12 @@ const Highlights = () => {
     const status = getHighlightStudyStatus(highlightId);
 
     switch (status) {
-      case 'mastered':
-        return <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-semibold rounded-sm">Mastered</span>;
+      case 'review':
+        return <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-semibold rounded-sm">Review</span>;
       case 'learning':
         return <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-semibold rounded-sm">Learning</span>;
+      case 'new':
+        return <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 text-[10px] font-semibold rounded-sm">New</span>;
       default:
         return <span className="px-2 py-0.5 bg-zinc-100 text-zinc-500 text-[10px] font-semibold rounded-sm">Not Started</span>;
     }
@@ -152,11 +177,20 @@ const Highlights = () => {
   return (
     <div className="space-y-6 relative h-full flex flex-col">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">Highlights</h1>
-        <p className="text-zinc-500 mt-1 font-light text-sm">
-          Manage and organize your collection of {highlights.length} highlights.
-        </p>
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">Highlights</h1>
+          <p className="text-zinc-500 mt-1 font-light text-sm">
+            Manage and organize your collection of {highlights.length} highlights.
+          </p>
+        </div>
+        <button
+          onClick={() => setIsTagManagerOpen(true)}
+          className="flex items-center gap-2 px-3 py-1.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-md text-xs font-medium transition-colors"
+        >
+          <TagIcon className="w-3.5 h-3.5" />
+          Manage Tags
+        </button>
       </div>
 
       {/* Statistics */}
@@ -188,6 +222,20 @@ const Highlights = () => {
               ))}
             </select>
             <Filter className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 pointer-events-none" />
+          </div>
+
+          <div className="relative">
+            <select
+              value={selectedTagId}
+              onChange={(e) => setSelectedTagId(e.target.value)}
+              className="pl-2.5 pr-7 py-1.5 bg-zinc-50 border border-zinc-200 rounded-sm focus:outline-none focus:ring-1 focus:ring-black focus:border-black text-xs appearance-none min-w-[120px]"
+            >
+              <option value="all">All Tags</option>
+              {tags.map(t => (
+                <option key={t.id} value={t.id}>{t.name}</option>
+              ))}
+            </select>
+            <TagIcon className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 pointer-events-none" />
           </div>
 
           <div className="relative">
@@ -257,8 +305,9 @@ const Highlights = () => {
                 />
               </th>
               <th className="px-3 py-2 w-[15%]">Autor - Livro</th>
-              <th className="px-3 py-2 w-[30%]">Highlight</th>
-              <th className="px-3 py-2 w-[20%]">Note</th>
+              <th className="px-3 py-2 w-[25%]">Highlight</th>
+              <th className="px-3 py-2 w-[15%]">Note</th>
+              <th className="px-3 py-2 w-[15%]">Tags</th>
               <th className="px-3 py-2 w-20 whitespace-nowrap">Data</th>
               <th className="px-3 py-2 w-20 whitespace-nowrap">Importado</th>
               <th className="px-3 py-2 w-24">Status</th>
@@ -268,7 +317,7 @@ const Highlights = () => {
           <tbody className="divide-y divide-zinc-100">
             {filteredAndSortedHighlights.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-3 py-12 text-center text-zinc-400">
+                <td colSpan={9} className="px-3 py-12 text-center text-zinc-400">
                   No highlights match your filters.
                 </td>
               </tr>
@@ -341,6 +390,9 @@ const Highlights = () => {
                           <span className="text-zinc-300 text-[10px] italic">No note</span>
                         )
                       )}
+                    </td>
+                    <td className="px-3 py-2 align-top">
+                      <TagSelector highlightId={highlight.id} />
                     </td>
                     <td className="px-3 py-2 align-top whitespace-nowrap text-[10px] text-zinc-400">
                       {formatDate(highlight.dateAdded)}
@@ -425,6 +477,9 @@ const Highlights = () => {
       {/* Book Context Modal */}
       <BookContextModal bookId={modalBookId} onClose={() => setModalBookId(null)} />
       <HighlightHistoryModal highlightId={statsHighlightId} onClose={() => setStatsHighlightId(null)} />
+
+      {/* Tag Manager Sidebar */}
+      <TagManagerSidebar open={isTagManagerOpen} onOpenChange={setIsTagManagerOpen} />
     </div>
   );
 };

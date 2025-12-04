@@ -175,9 +175,9 @@ export const parseMyClippings = (text: string): { books: Book[], highlights: Hig
       const sameBook = pn.title === ph.title && pn.author === ph.author;
       if (!sameBook) return false;
 
-      // Check if note location is within highlight range (inclusive)
-      // Or if it's very close (e.g. next position)
-      return pn.locationStart >= ph.locationStart && pn.locationStart <= ph.locationEnd + 1;
+      // Check if note location matches the end of the highlight location
+      // This is a common pattern in Kindle clippings where the note is appended at the end position
+      return pn.locationStart === ph.locationEnd;
     });
 
     finalHighlights.push({

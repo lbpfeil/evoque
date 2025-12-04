@@ -1,12 +1,13 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Book, Highlight, StudyCard, StudyStatus, UserSettings, StudySession, ReviewLog } from '../types';
-import { MOCK_BOOKS, MOCK_HIGHLIGHTS, MOCK_CARDS } from '../services/mockData';
+import { Book, Highlight, StudyCard, StudyStatus, UserSettings, StudySession, ReviewLog, Tag } from '../types';
+import { MOCK_BOOKS, MOCK_HIGHLIGHTS, MOCK_CARDS, MOCK_TAGS } from '../services/mockData';
 import { parseMyClippings } from '../services/parser';
 
 interface StoreContextType {
   books: Book[];
   highlights: Highlight[];
   studyCards: StudyCard[];
+  tags: Tag[];
   importData: (text: string) => { newBooks: number; newHighlights: number };
   getCardsDue: () => StudyCard[];
   updateCard: (card: StudyCard) => void;
@@ -18,7 +19,7 @@ interface StoreContextType {
   addToStudy: (highlightId: string) => void;
   removeFromStudy: (highlightId: string) => void;
   bulkAddToStudy: (highlightIds: string[]) => void;
-  getHighlightStudyStatus: (highlightId: string) => StudyStatus;
+  getHighlightStudyStatus: (highlightId: string) => StudyStatus | 'not-started';
   settings: UserSettings;
   updateSettings: (settings: Partial<UserSettings>) => void;
   currentSession: StudySession | null;
@@ -28,6 +29,11 @@ interface StoreContextType {
   sessionStats: { reviewed: number; correct: number; streak: number };
   reviewLogs: ReviewLog[];
   isLoaded: boolean;
+  addTag: (name: string, parentId?: string) => string;
+  updateTag: (id: string, updates: Partial<Tag>) => void;
+  deleteTag: (id: string) => void;
+  assignTagToHighlight: (highlightId: string, tagId: string) => void;
+  removeTagFromHighlight: (highlightId: string, tagId: string) => void;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -36,6 +42,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
   const [books, setBooks] = useState<Book[]>(MOCK_BOOKS);
   const [highlights, setHighlights] = useState<Highlight[]>(MOCK_HIGHLIGHTS);
   const [studyCards, setStudyCards] = useState<StudyCard[]>(MOCK_CARDS);
+  const [tags, setTags] = useState<Tag[]>(MOCK_TAGS);
   const [settings, setSettings] = useState<UserSettings>({
     maxReviewsPerDay: 15,
     newCardsPerDay: 10
@@ -50,6 +57,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       const savedBooks = localStorage.getItem('khm_books');
       const savedHighlights = localStorage.getItem('khm_highlights');
       const savedCards = localStorage.getItem('khm_cards');
+      const savedTags = localStorage.getItem('khm_tags');
       const savedSettings = localStorage.getItem('khm_settings');
       const savedSession = localStorage.getItem('khm_session');
       const savedLogs = localStorage.getItem('khm_logs');
@@ -65,6 +73,10 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       if (savedCards) {
         const parsed = JSON.parse(savedCards);
         if (Array.isArray(parsed)) setStudyCards(parsed);
+      }
+      if (savedTags) {
+        const parsed = JSON.parse(savedTags);
+        if (Array.isArray(parsed)) setTags(parsed);
       }
       if (savedSettings) setSettings(JSON.parse(savedSettings));
       if (savedSession) setCurrentSession(JSON.parse(savedSession));
@@ -86,11 +98,12 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     localStorage.setItem('khm_books', JSON.stringify(books));
     localStorage.setItem('khm_highlights', JSON.stringify(highlights));
     localStorage.setItem('khm_cards', JSON.stringify(studyCards));
+    localStorage.setItem('khm_tags', JSON.stringify(tags));
     localStorage.setItem('khm_settings', JSON.stringify(settings));
     if (currentSession) localStorage.setItem('khm_session', JSON.stringify(currentSession));
     else localStorage.removeItem('khm_session');
     localStorage.setItem('khm_logs', JSON.stringify(reviewLogs));
-  }, [books, highlights, studyCards, settings, currentSession, reviewLogs, isLoaded]);
+  }, [books, highlights, studyCards, tags, settings, currentSession, reviewLogs, isLoaded]);
 
   const importData = (text: string) => {
     try {
@@ -283,10 +296,11 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     ));
   };
 
-  const getHighlightStudyStatus = (highlightId: string): StudyStatus => {
+  const getHighlightStudyStatus = (highlightId: string): StudyStatus | 'not-started' => {
     const card = studyCards.find(c => c.highlightId === highlightId);
     if (!card) return 'not-started';
-    if (card.repetitions >= 5) return 'mastered';
+    if (card.repetitions === 0) return 'new';
+    if (card.repetitions >= 5) return 'review';
     return 'learning';
   };
 
@@ -295,6 +309,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
   };
 
   const startSession = () => {
+    console.log('startSession called', { currentSession, isLoaded });
     const today = new Date().toDateString();
 
     if (currentSession && new Date(currentSession.date).toDateString() === today) {
@@ -355,11 +370,62 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     streak: 0
   };
 
+  // Tagging Methods
+  const addTag = (name: string, parentId?: string) => {
+    const newTag: Tag = {
+      id: crypto.randomUUID(),
+      name,
+      parentId
+    };
+    setTags(prev => [...prev, newTag]);
+    return newTag.id;
+  };
+
+  const updateTag = (id: string, updates: Partial<Tag>) => {
+    setTags(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
+  };
+
+  const deleteTag = (id: string) => {
+    // Recursive deletion strategy? Or re-parenting?
+    // For now, let's just delete the tag and let children be orphans (or we can delete them too)
+    // Better: Prevent deletion if has children?
+    // User requested: "Cristianismo > Espiritismo > Allan Kardec".
+    // Let's implement cascade delete for simplicity in MVP, or just delete the tag.
+    setTags(prev => prev.filter(t => t.id !== id));
+
+    // Also remove this tag from all highlights
+    setHighlights(prev => prev.map(h => ({
+      ...h,
+      tags: h.tags?.filter(tId => tId !== id)
+    })));
+  };
+
+  const assignTagToHighlight = (highlightId: string, tagId: string) => {
+    setHighlights(prev => prev.map(h => {
+      if (h.id === highlightId) {
+        const currentTags = h.tags || [];
+        if (currentTags.includes(tagId)) return h;
+        return { ...h, tags: [...currentTags, tagId] };
+      }
+      return h;
+    }));
+  };
+
+  const removeTagFromHighlight = (highlightId: string, tagId: string) => {
+    setHighlights(prev => prev.map(h => {
+      if (h.id === highlightId) {
+        return { ...h, tags: h.tags?.filter(t => t !== tagId) };
+      }
+      return h;
+    }));
+  };
+
   return (
     <StoreContext.Provider value={{
       books,
       highlights,
       studyCards,
+      tags,
       importData,
       getCardsDue,
       updateCard,
@@ -380,7 +446,12 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       resetSession,
       sessionStats,
       reviewLogs,
-      isLoaded
+      isLoaded,
+      addTag,
+      updateTag,
+      deleteTag,
+      assignTagToHighlight,
+      removeTagFromHighlight
     }}>
       {children}
     </StoreContext.Provider>

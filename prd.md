@@ -1545,6 +1545,29 @@ getHighlightStudyStatus(highlightId: string): StudyStatus {
 
 ---
 
+### 9.7 CORREÇÕES CRÍTICAS E MELHORIAS DE IMPORTAÇÃO (Sessão Atual)
+
+#### 9.7.1 Parser Robusto e Internacionalização
+**Melhorias:**
+- **Suporte a Datas em Português:** Implementada lógica de parsing para datas no formato "terça-feira, 22 de julho de 2025", mapeando meses em português para numéricos.
+- **Detecção de Notas Case-Insensitive:** O parser agora identifica notas independentemente de estarem escritas como "Note", "Nota", "nota", etc., utilizando Regex `/Note|Nota/i`.
+- **UUID Fallback:** Adicionada função `generateUUID` com fallback para ambientes onde `crypto.randomUUID` pode não estar disponível.
+- **Associação Inteligente de Notas:** Refinamento na lógica que associa notas aos highlights baseando-se na proximidade de localização e correspondência de livro.
+
+#### 9.7.2 Correção de Mutação de Estado (StoreContext)
+**Problema Resolvido:**
+- Erro "Cannot assign to read only property" que impedia a importação de novos arquivos.
+- Causa: Tentativa de mutação direta de objetos de estado (`books`) dentro da função `importData`.
+
+**Solução:**
+- Refatoração completa da função `importData` para utilizar padrões de atualização imutável (criação de cópias superficiais de arrays e objetos antes da modificação).
+- Restauração de funções críticas (`getCardsDue`, `updateCard`, etc.) que haviam sido afetadas durante tentativas anteriores de correção.
+- Correção de erros de sintaxe e estrutura no `StoreContext.tsx`.
+
+#### 9.7.3 Validação e Qualidade
+- **Script de Teste:** Criação de `test_parser.cjs` para validação isolada da lógica de parsing com dados reais.
+- **Tratamento de Erros:** Melhoria no feedback de erro para o usuário na interface de importação, exibindo mensagens específicas do parser.
+
 ## 13. CONCLUSÃO
 
 Este PRD define um produto robusto, esteticamente moderno e funcionalmente completo para gerenciamento e estudo de highlights do Kindle. A proposta combina simplicidade de uso com poder de funcionalidades, oferecendo uma alternativa integrada e superior ao workflow fragmentado atual (Kindle → MyClippings.txt → Anki).

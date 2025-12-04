@@ -118,6 +118,29 @@ const Study = () => {
     return <div className="flex items-center justify-center h-full text-zinc-500">Loading study session...</div>;
   }
 
+  // Handle empty session (shouldn't happen normally, but prevents hang)
+  if (currentSession && queueIds.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[60vh] text-center space-y-6">
+        <div className="w-20 h-20 bg-zinc-50 text-zinc-900 border border-zinc-200 rounded-full flex items-center justify-center">
+          <Check className="w-8 h-8" />
+        </div>
+        <div>
+          <h2 className="text-2xl font-bold text-zinc-900 mb-2">Session Empty</h2>
+          <p className="text-zinc-500 max-w-md mx-auto leading-relaxed">
+            This session has no cards.
+          </p>
+          <button
+            onClick={resetSession}
+            className="px-6 py-2 bg-black text-white rounded-md hover:bg-zinc-800 transition-colors"
+          >
+            Reset Session
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (!currentSession && totalDue === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh] text-center space-y-6">

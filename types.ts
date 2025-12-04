@@ -18,6 +18,7 @@ export interface Highlight {
   isFavorite?: boolean;
   importedAt?: string;
   inStudy?: boolean;
+  tags?: string[];
 }
 
 export interface StudyCard {
@@ -37,7 +38,14 @@ export interface StudySessionStats {
   durationSeconds: number;
 }
 
-export type StudyStatus = 'not-started' | 'learning' | 'mastered';
+export type StudyStatus = 'new' | 'learning' | 'review';
+
+export interface Tag {
+  id: string;
+  name: string;
+  parentId?: string;
+  color?: string;
+}
 
 export interface UserSettings {
   maxReviewsPerDay: number;
