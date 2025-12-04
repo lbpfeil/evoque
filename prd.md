@@ -1568,6 +1568,57 @@ getHighlightStudyStatus(highlightId: string): StudyStatus {
 - **Script de Teste:** Criação de `test_parser.cjs` para validação isolada da lógica de parsing com dados reais.
 - **Tratamento de Erros:** Melhoria no feedback de erro para o usuário na interface de importação, exibindo mensagens específicas do parser.
 
+### 9.8 SISTEMA DE TAGS E ATUALIZAÇÃO DE STATUS (Sessão Atual)
+
+#### 9.8.1 Sistema de Tags Hierárquico
+
+**Descrição:**
+Implementação de um sistema de tags robusto que suporta aninhamento infinito (Pai > Filho > Neto), permitindo uma organização granular do conhecimento.
+
+**Componentes Principais:**
+1.  **TagSelector (Inline):**
+    -   Dropdown pesquisável (usando `Popover` + `Command`) dentro da tabela de highlights.
+    -   Permite atribuir tags existentes ou criar novas tags "on-the-fly".
+    -   Visualização clara das tags selecionadas.
+
+2.  **TagManagerSidebar:**
+    -   Painel lateral (Sheet) para gerenciamento da estrutura de tags.
+    -   Visualização em árvore (tree view) da hierarquia.
+    -   Funcionalidades: Criar tags raiz, criar tags filhas, renomear e excluir tags.
+
+**Funcionalidades:**
+-   **Hierarquia:** Tags podem ter tags pai, criando uma estrutura de diretórios.
+-   **Filtragem:** Novo filtro "Tags" na toolbar permite filtrar highlights por tags específicas (incluindo highlights de tags filhas).
+-   **Persistência:** Tags são salvas no `localStorage` e carregadas no `StoreContext`.
+
+#### 9.8.2 Novos Status de Estudo
+
+**Mudança de Paradigma:**
+Atualização dos status de estudo para refletir melhor o ciclo de vida do aprendizado espaçado.
+
+**Novos Status:**
+-   **New (Novo):** Badge Amarelo. Card nunca revisado (0 repetições).
+-   **Learning (Aprendendo):** Badge Azul. Card em fase de aquisição (< 5 repetições).
+-   **Review (Revisão):** Badge Verde. Card consolidado (>= 5 repetições), entrando em fase de manutenção.
+
+**Implementação:**
+-   Atualização da tipagem `StudyStatus`.
+-   Lógica atualizada em `getHighlightStudyStatus` no `StoreContext`.
+-   Badges visuais atualizados na tabela de highlights.
+
+#### 9.8.3 Infraestrutura de UI (Shadcn/UI)
+
+**Componentes Base:**
+Para suportar a nova interface rica do sistema de tags, foram implementados manualmente componentes base inspirados no Shadcn/UI (devido a limitações de ambiente com CLI):
+-   `Button`, `Input`
+-   `Sheet` (para Sidebar)
+-   `Popover` (para TagSelector)
+-   `Command` (para busca e seleção de tags)
+-   `Dialog` (base para modais)
+-   `lib/utils.ts` (função `cn` para merge de classes Tailwind)
+
+---
+
 ## 13. CONCLUSÃO
 
 Este PRD define um produto robusto, esteticamente moderno e funcionalmente completo para gerenciamento e estudo de highlights do Kindle. A proposta combina simplicidade de uso com poder de funcionalidades, oferecendo uma alternativa integrada e superior ao workflow fragmentado atual (Kindle → MyClippings.txt → Anki).
