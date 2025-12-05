@@ -231,9 +231,31 @@ const Highlights = () => {
               className="pl-2.5 pr-7 py-1.5 bg-zinc-50 border border-zinc-200 rounded-sm focus:outline-none focus:ring-1 focus:ring-black focus:border-black text-xs appearance-none min-w-[120px]"
             >
               <option value="all">All Tags</option>
-              {tags.map(t => (
-                <option key={t.id} value={t.id}>{t.name}</option>
-              ))}
+              <option value="all">All Tags</option>
+              {(() => {
+                // Flatten tags with depth for display
+                const flattenTags = (parentId?: string, depth = 0): React.ReactNode[] => {
+                  const children = tags.filter(t => t.parentId === parentId);
+                  // Sort: Global first, then books? Or A-Z?
+                  children.sort((a, b) => a.name.localeCompare(b.name));
+
+                  return children.flatMap(tag => {
+                    const book = tag.bookId ? books.find(b => b.id === tag.bookId) : undefined;
+                    const prefix = '\u00A0'.repeat(depth * 3) + (depth > 0 ? '└ ' : '');
+                    const label = `${prefix}${tag.name}${book ? ` (${book.title})` : ''}`;
+
+                    return [
+                      <option key={tag.id} value={tag.id}>
+                        {label}
+                      </option>,
+                      ...flattenTags(tag.id, depth + 1)
+                    ];
+                  });
+                };
+
+                // Show root tags (including book chapters that are roots)
+                return flattenTags(undefined);
+              })()}
             </select>
             <TagIcon className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 pointer-events-none" />
           </div>
@@ -392,7 +414,7 @@ const Highlights = () => {
                       )}
                     </td>
                     <td className="px-3 py-2 align-top">
-                      <TagSelector highlightId={highlight.id} />
+                      <TagSelector highlightId={highlight.id} bookId={highlight.bookId} />
                     </td>
                     <td className="px-3 py-2 align-top whitespace-nowrap text-[10px] text-zinc-400">
                       {formatDate(highlight.dateAdded)}

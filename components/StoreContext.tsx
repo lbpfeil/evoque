@@ -29,7 +29,7 @@ interface StoreContextType {
   sessionStats: { reviewed: number; correct: number; streak: number };
   reviewLogs: ReviewLog[];
   isLoaded: boolean;
-  addTag: (name: string, parentId?: string) => string;
+  addTag: (name: string, parentId?: string, bookId?: string) => string;
   updateTag: (id: string, updates: Partial<Tag>) => void;
   deleteTag: (id: string) => void;
   assignTagToHighlight: (highlightId: string, tagId: string) => void;
@@ -371,11 +371,12 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
   };
 
   // Tagging Methods
-  const addTag = (name: string, parentId?: string) => {
+  const addTag = (name: string, parentId?: string, bookId?: string) => {
     const newTag: Tag = {
       id: crypto.randomUUID(),
       name,
-      parentId
+      parentId,
+      bookId
     };
     setTags(prev => [...prev, newTag]);
     return newTag.id;
@@ -386,17 +387,28 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
   };
 
   const deleteTag = (id: string) => {
-    // Recursive deletion strategy? Or re-parenting?
-    // For now, let's just delete the tag and let children be orphans (or we can delete them too)
-    // Better: Prevent deletion if has children?
-    // User requested: "Cristianismo > Espiritismo > Allan Kardec".
-    // Let's implement cascade delete for simplicity in MVP, or just delete the tag.
-    setTags(prev => prev.filter(t => t.id !== id));
+    // Collect all tag IDs to delete (the tag itself + all descendants)
+    const tagsToDelete = new Set<string>();
+    tagsToDelete.add(id);
 
-    // Also remove this tag from all highlights
+    // Iteratively find children to ensure deep hierarchy deletion
+    let addedCount = 1;
+    while (addedCount > 0) {
+      addedCount = 0;
+      tags.forEach(t => {
+        if (!tagsToDelete.has(t.id) && t.parentId && tagsToDelete.has(t.parentId)) {
+          tagsToDelete.add(t.id);
+          addedCount++;
+        }
+      });
+    }
+
+    setTags(prev => prev.filter(t => !tagsToDelete.has(t.id)));
+
+    // Also remove these tags from all highlights
     setHighlights(prev => prev.map(h => ({
       ...h,
-      tags: h.tags?.filter(tId => tId !== id)
+      tags: h.tags?.filter(tId => !tagsToDelete.has(tId))
     })));
   };
 

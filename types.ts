@@ -45,6 +45,7 @@ export interface Tag {
   name: string;
   parentId?: string;
   color?: string;
+  bookId?: string; // If present, this is a book-specific tag (Create Chapter)
 }
 
 export interface UserSettings {

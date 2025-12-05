@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check, ChevronsUpDown, Plus, X } from 'lucide-react';
+import { Check, ChevronsUpDown, Plus, X, Book } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { Button } from './ui/button';
 import {
@@ -21,16 +21,26 @@ import { Tag } from '../types';
 
 interface TagSelectorProps {
     highlightId: string;
+    bookId?: string; // New prop for scope
     className?: string;
 }
 
-export function TagSelector({ highlightId, className }: TagSelectorProps) {
-    const { tags, highlights, assignTagToHighlight, removeTagFromHighlight, addTag } = useStore();
+export function TagSelector({ highlightId, bookId, className }: TagSelectorProps) {
+    const { tags, highlights, assignTagToHighlight, removeTagFromHighlight, addTag, getBook } = useStore();
     const [open, setOpen] = useState(false);
     const [searchValue, setSearchValue] = useState('');
 
     const highlight = highlights.find(h => h.id === highlightId);
     const selectedTagIds = highlight?.tags || [];
+
+    const book = bookId ? getBook(bookId) : undefined;
+
+    // Filter tags: Global tags + Tags for this book
+    const availableTags = tags.filter(t => !t.bookId || (bookId && t.bookId === bookId));
+
+    // Sort: Global first, then Book specific? Or alphabetical?
+    // Let's sort alphabetical but maybe group them in display if needed.
+    const sortedTags = [...availableTags].sort((a, b) => a.name.localeCompare(b.name));
 
     const selectedTags = tags.filter(t => selectedTagIds.includes(t.id));
 
@@ -42,22 +52,34 @@ export function TagSelector({ highlightId, className }: TagSelectorProps) {
         }
     };
 
-    const handleCreateTag = () => {
+    const handleCreateGlobalTag = () => {
         if (!searchValue.trim()) return;
         const newTagId = addTag(searchValue.trim());
         assignTagToHighlight(highlightId, newTagId);
         setSearchValue('');
     };
 
-    // Helper to get full path name (e.g., "Philosophy > Stoicism")
+    const handleCreateChapter = () => {
+        if (!searchValue.trim() || !bookId) return;
+        const newTagId = addTag(searchValue.trim(), undefined, bookId);
+        assignTagToHighlight(highlightId, newTagId);
+        setSearchValue('');
+    };
+
+    // Helper to get full path name
     const getTagPath = (tag: Tag): string => {
-        if (!tag.parentId) return tag.name;
-        const parent = tags.find(t => t.id === tag.parentId);
-        return parent ? `${getTagPath(parent)} > ${tag.name}` : tag.name;
+        let path = tag.name;
+        if (tag.parentId) {
+            const parent = tags.find(t => t.id === tag.parentId);
+            if (parent) {
+                path = `${getTagPath(parent)} > ${path}`;
+            }
+        }
+        return path;
     };
 
     return (
-        <Popover open={open} onOpenChange={setOpen}>
+        <Popover open={open} onOpenChange={setOpen} modal={true}>
             <PopoverTrigger asChild>
                 <Button
                     variant="ghost"
@@ -70,8 +92,14 @@ export function TagSelector({ highlightId, className }: TagSelectorProps) {
                             {selectedTags.map((tag) => (
                                 <span
                                     key={tag.id}
-                                    className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-zinc-100 text-zinc-700 border border-zinc-200"
+                                    className={cn(
+                                        "inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border",
+                                        tag.bookId
+                                            ? "bg-amber-50 text-amber-700 border-amber-200" // Distinct style for chapters
+                                            : "bg-zinc-100 text-zinc-700 border-zinc-200"
+                                    )}
                                 >
+                                    {tag.bookId && <Book className="w-3 h-3 mr-1 opacity-50" />}
                                     {tag.name}
                                 </span>
                             ))}
@@ -81,7 +109,7 @@ export function TagSelector({ highlightId, className }: TagSelectorProps) {
                     )}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[200px] p-0" align="start">
+            <PopoverContent className="w-[220px] p-0" align="start">
                 <Command>
                     <CommandInput
                         placeholder="Search tags..."
@@ -90,24 +118,37 @@ export function TagSelector({ highlightId, className }: TagSelectorProps) {
                     />
                     <CommandList>
                         <CommandEmpty>
-                            <div className="p-2 text-xs text-zinc-500">
-                                No tags found.
+                            <div className="p-2 text-xs text-zinc-500 flex flex-col gap-1">
+                                <span>No tags found.</span>
+
                                 {searchValue && (
-                                    <button
-                                        onClick={handleCreateTag}
-                                        className="mt-2 w-full flex items-center gap-1 px-2 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50 rounded"
-                                    >
-                                        <Plus className="w-3 h-3" />
-                                        Create "{searchValue}"
-                                    </button>
+                                    <>
+                                        <button
+                                            onClick={handleCreateGlobalTag}
+                                            className="w-full flex items-center gap-1 px-2 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50 rounded text-left"
+                                        >
+                                            <Plus className="w-3 h-3" />
+                                            Create Global "{searchValue}"
+                                        </button>
+
+                                        {bookId && (
+                                            <button
+                                                onClick={handleCreateChapter}
+                                                className="w-full flex items-center gap-1 px-2 py-1.5 text-xs font-medium text-amber-600 hover:bg-amber-50 rounded text-left"
+                                            >
+                                                <Book className="w-3 h-3" />
+                                                Create Chapter "{searchValue}"
+                                            </button>
+                                        )}
+                                    </>
                                 )}
                             </div>
                         </CommandEmpty>
                         <CommandGroup heading="Tags">
-                            {tags.map((tag) => (
+                            {sortedTags.map((tag) => (
                                 <CommandItem
                                     key={tag.id}
-                                    value={tag.name} // Use name for search
+                                    value={tag.name}
                                     onSelect={() => handleSelectTag(tag.id)}
                                     className="text-xs"
                                 >
@@ -121,7 +162,10 @@ export function TagSelector({ highlightId, className }: TagSelectorProps) {
                                     >
                                         <Check className={cn("h-3 w-3")} />
                                     </div>
-                                    <span>{getTagPath(tag)}</span>
+                                    <div className="flex items-center gap-1.5">
+                                        {tag.bookId && <Book className="w-3 h-3 text-amber-500" />}
+                                        <span>{getTagPath(tag)}</span>
+                                    </div>
                                 </CommandItem>
                             ))}
                         </CommandGroup>
