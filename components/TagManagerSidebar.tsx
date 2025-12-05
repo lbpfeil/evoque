@@ -32,20 +32,20 @@ export function TagManagerSidebar({ open, onOpenChange }: TagManagerSidebarProps
         if (childTags.length === 0 && parentId) return null;
 
         return (
-            <div className={cn("flex flex-col gap-1", depth > 0 && "ml-4 border-l border-zinc-100 pl-2")}>
+            <div className={cn("flex flex-col gap-0.5", depth > 0 && "ml-3 border-l border-zinc-200 pl-1.5")}>
                 {childTags.map(tag => {
                     const book = tag.bookId ? getBook(tag.bookId) : undefined;
                     return (
                         <div key={tag.id} className="group">
-                            <div className="flex items-center justify-between py-1.5 px-2 rounded-md hover:bg-zinc-50 group-hover:bg-zinc-100 transition-colors">
-                                <div className="flex items-center gap-2 flex-1 overflow-hidden">
+                            <div className="flex items-center justify-between py-0.5 px-1.5 rounded hover:bg-zinc-50 group-hover:bg-zinc-100 transition-colors">
+                                <div className="flex items-center gap-1 flex-1 overflow-hidden">
                                     {tags.some(t => t.parentId === tag.id) ? (
-                                        <Folder className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                                        <Folder className="w-3 h-3 text-zinc-400 shrink-0" />
                                     ) : (
                                         tag.bookId ? (
-                                            <Book className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                                            <Book className="w-3 h-3 text-amber-500 shrink-0" />
                                         ) : (
-                                            <TagIcon className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                                            <TagIcon className="w-3 h-3 text-zinc-400 shrink-0" />
                                         )
                                     )}
 
@@ -54,24 +54,24 @@ export function TagManagerSidebar({ open, onOpenChange }: TagManagerSidebarProps
                                             <Input
                                                 value={editName}
                                                 onChange={(e) => setEditName(e.target.value)}
-                                                className="h-6 text-xs py-0 px-1"
+                                                className="h-5 text-xs py-0 px-1"
                                                 autoFocus
                                                 onKeyDown={(e) => {
                                                     if (e.key === 'Enter') handleUpdateTag(tag.id);
                                                     if (e.key === 'Escape') setEditingTagId(null);
                                                 }}
                                             />
-                                            <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => handleUpdateTag(tag.id)}>
+                                            <Button size="icon" variant="ghost" className="h-5 w-5" onClick={() => handleUpdateTag(tag.id)}>
                                                 <Plus className="w-3 h-3" />
                                             </Button>
                                         </div>
                                     ) : (
                                         <div className="flex flex-col truncate">
-                                            <span className={cn("text-sm truncate", tag.bookId ? "text-amber-700" : "text-zinc-700")}>
+                                            <span className={cn("text-xs truncate", tag.bookId ? "text-amber-700" : "text-zinc-700")}>
                                                 {tag.name}
                                             </span>
                                             {book && (
-                                                <span className="text-[10px] text-zinc-400 truncate">
+                                                <span className="text-[9px] text-zinc-400 truncate">
                                                     in {book.title}
                                                 </span>
                                             )}
@@ -79,37 +79,37 @@ export function TagManagerSidebar({ open, onOpenChange }: TagManagerSidebarProps
                                     )}
                                 </div>
 
-                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <Button
                                         size="icon"
                                         variant="ghost"
-                                        className="h-6 w-6 text-zinc-400 hover:text-zinc-900"
+                                        className="h-5 w-5 text-zinc-400 hover:text-zinc-900"
                                         onClick={() => {
                                             setEditingTagId(tag.id);
                                             setEditName(tag.name);
                                         }}
                                     >
-                                        <Edit2 className="w-3 h-3" />
+                                        <Edit2 className="w-2.5 h-2.5" />
                                     </Button>
                                     <Button
                                         size="icon"
                                         variant="ghost"
-                                        className="h-6 w-6 text-zinc-400 hover:text-red-600"
+                                        className="h-5 w-5 text-zinc-400 hover:text-red-600"
                                         onClick={() => handleDelete(tag.id)}
                                     >
-                                        <Trash2 className="w-3 h-3" />
+                                        <Trash2 className="w-2.5 h-2.5" />
                                     </Button>
                                     <Button
                                         size="icon"
                                         variant="ghost"
-                                        className="h-6 w-6 text-zinc-400 hover:text-blue-600"
+                                        className="h-5 w-5 text-zinc-400 hover:text-blue-600"
                                         onClick={() => {
                                             setSelectedParentId(tag.id);
                                             setNewTagName('');
                                         }}
                                         title="Add child tag"
                                     >
-                                        <Plus className="w-3 h-3" />
+                                        <Plus className="w-2.5 h-2.5" />
                                     </Button>
                                 </div>
                             </div>
@@ -148,7 +148,7 @@ export function TagManagerSidebar({ open, onOpenChange }: TagManagerSidebarProps
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
             <SheetContent className="w-[400px] sm:w-[540px] flex flex-col h-full">
-                <SheetHeader className="mb-6">
+                <SheetHeader className="mb-3">
                     <SheetTitle>Manage Tags</SheetTitle>
                     <SheetDescription>
                         Organize your tags hierarchically.
@@ -160,17 +160,17 @@ export function TagManagerSidebar({ open, onOpenChange }: TagManagerSidebarProps
                     {renderTagTree(undefined)}
                 </div>
 
-                <div className="pt-4 mt-4 border-t border-zinc-200">
-                    <div className="flex flex-col gap-2">
+                <div className="pt-2 mt-2 border-t border-zinc-200">
+                    <div className="flex flex-col gap-1.5">
                         {selectedParentId && (
-                            <div className="flex items-center justify-between text-xs text-zinc-500 bg-zinc-50 px-2 py-1 rounded">
+                            <div className="flex items-center justify-between text-xs text-zinc-500 bg-zinc-50 px-1.5 py-0.5 rounded">
                                 <span>Adding child to: <strong>{tags.find(t => t.id === selectedParentId)?.name}</strong></span>
                                 <button onClick={() => setSelectedParentId(undefined)} className="hover:text-zinc-900">
                                     <X className="w-3 h-3" />
                                 </button>
                             </div>
                         )}
-                        <div className="flex gap-2">
+                        <div className="flex gap-1.5">
                             <Input
                                 placeholder={selectedParentId ? "New child tag name..." : "New root tag name..."}
                                 value={newTagName}
