@@ -1641,3 +1641,68 @@ Com uma tech stack acessível (Next.js + Supabase) e um roadmap pragmático, o M
 [ ] Design Lead  
 
 Data: ___/___/______
+
+---
+
+## APÊNDICE A: LIÇÕES TÉCNICAS E IMPLEMENTAÇÃO
+
+### A.1 Histórico de Desenvolvimento
+
+#### Sessão 2025-12-05: TagSelector Mouse Click Fix
+
+**Problema identificado:** O popup do TagSelector não respondia a cliques do mouse, funcionando apenas com navegação por teclado.
+
+**Causa raiz:** A biblioteca `cmdk` (Command Menu) foi projetada para command palettes orientadas a teclado e não processa eventos de mouse adequadamente para casos de uso de dropdown/multi-select.
+
+**Solução implementada:** Substituição completa do `cmdk` por implementação customizada usando elementos HTML padrão com handlers `onClick` diretos.
+
+**Documentação completa:** Ver `context/tagselector-fix-2025-12-05.md`
+
+---
+
+### A.2 Princípios de Escolha de Bibliotecas UI
+
+#### Escolha ferramentas apropriadas para o caso de uso
+
+| Caso de Uso | Biblioteca Apropriada | Biblioteca Inapropriada |
+|-------------|----------------------|-------------------------|
+| Command Palette (Cmd+K) | `cmdk` ✅ | Custom dropdown |
+| Dropdown/Select | Custom ou Radix Select ✅ | `cmdk` ❌ |
+| Modal/Dialog | Radix Dialog ✅ | Custom (sem acessibilidade) |
+| Multi-select tags | Custom ✅ | `cmdk` ❌ |
+
+#### Radix UI: Uso correto de modal={true}
+
+**Use `modal={true}` apenas em:** Dialogs/Modals verdadeiros que precisam de focus trap e bloqueio de página
+
+**Evite `modal={true}` em:** Popovers, Dropdowns, Tooltips
+
+---
+
+### A.3 Checklist para Novos Componentes UI
+
+**Funcionalidade:**
+- [ ] Mouse clicks funcionam?
+- [ ] Keyboard navigation funciona?
+- [ ] Touch/mobile funciona?
+
+**Biblioteca:**
+- [ ] A biblioteca é apropriada para o caso de uso?
+- [ ] Implementação customizada seria mais simples?
+
+**Acessibilidade:**
+- [ ] ARIA labels estão corretos?
+- [ ] Focus management está correto?
+
+---
+
+### A.4 Recursos e Referências
+
+**Contexto do Projeto:**
+- `context/tagging_system_implementation.md` - Implementação do sistema de tags
+- `context/tagselector-fix-2025-12-05.md` - Fix do mouse click issue
+- `supabase_migration_guide.md` - Guia de migração para Supabase
+
+---
+
+*Última atualização: 2025-12-05*
