@@ -2,8 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useStore } from '../components/StoreContext';
 import { Search, Filter, Trash2, Edit2, Check, X, Book, ArrowUpDown, Plus, Minus, Brain, TrendingUp, Tag as TagIcon } from 'lucide-react';
 import { SortOption } from '../types';
-
-import BookContextModal from '../components/BookContextModal';
+import HighlightEditModal from '../components/HighlightEditModal';
 import HighlightHistoryModal from '../components/HighlightHistoryModal';
 import { TagSelector } from '../components/TagSelector';
 import { TagManagerSidebar } from '../components/TagManagerSidebar';
@@ -32,11 +31,11 @@ const Highlights = () => {
 
   // Local state for selection & editing
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingField, setEditingField] = useState<string | null>(null); // Format: "highlightId-text" or "highlightId-note"
   const [editForm, setEditForm] = useState({ text: '', note: '' });
 
-  // Book context modal
-  const [modalBookId, setModalBookId] = useState<string | null>(null);
+  // Highlight edit modal
+  const [editingHighlightId, setEditingHighlightId] = useState<string | null>(null);
 
   // Stats modal
   const [statsHighlightId, setStatsHighlightId] = useState<string | null>(null);
@@ -161,21 +160,20 @@ const Highlights = () => {
     setSelectedIds(new Set());
   };
 
-  // Edit Handlers
-  const startEditing = (h: any) => {
-    setEditingId(h.id);
-    setEditForm({ text: h.text, note: h.note || '' });
+  // Edit Handlers - now per-field instead of per-row
+  const startEditingField = (highlightId: string, field: 'text' | 'note', currentValue: string) => {
+    setEditingField(`${highlightId}-${field}`);
+    setEditForm(prev => ({ ...prev, [field]: currentValue }));
   };
 
-  const saveEdit = () => {
-    if (editingId) {
-      updateHighlight(editingId, { text: editForm.text, note: editForm.note });
-      setEditingId(null);
-    }
+  const saveFieldEdit = (highlightId: string, field: 'text' | 'note') => {
+    const value = editForm[field];
+    updateHighlight(highlightId, { [field]: value });
+    setEditingField(null);
   };
 
-  const cancelEdit = () => {
-    setEditingId(null);
+  const cancelFieldEdit = () => {
+    setEditingField(null);
   };
 
   const formatDateShort = (dateString?: string) => {
@@ -376,26 +374,23 @@ const Highlights = () => {
                 />
               </th>
               <th className="px-2 py-1 w-[15%]">Autor - Livro</th>
-              <th className="px-2 py-1 w-[25%]">Highlight</th>
+              <th className="px-2 py-1 w-[30%]">Highlight</th>
               <th className="px-2 py-1 w-[15%]">Note</th>
-              <th className="px-2 py-1 w-[15%]">Tags</th>
-              <th className="px-2 py-1 w-20 whitespace-nowrap">Data</th>
-              <th className="px-2 py-1 w-20 whitespace-nowrap">Importado</th>
-              <th className="px-2 py-1 w-24">Status</th>
-              <th className="px-2 py-1 w-20 text-right">Ações</th>
+              <th className="px-2 py-1 w-[20%]">Tags</th>
+              <th className="px-2 py-1 w-16 whitespace-nowrap">Data</th>
+              <th className="px-2 py-1 w-16">Status</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100">
             {filteredAndSortedHighlights.length === 0 ? (
               <tr>
-                <td colSpan={9} className="px-3 py-12 text-center text-zinc-400">
+                <td colSpan={8} className="px-3 py-12 text-center text-zinc-400">
                   No highlights match your filters.
                 </td>
               </tr>
             ) : (
               filteredAndSortedHighlights.map(highlight => {
                 const book = books.find(b => b.id === highlight.bookId);
-                const isEditing = editingId === highlight.id;
                 const isSelected = selectedIds.has(highlight.id);
                 const isInStudy = studyCards.some(c => c.highlightId === highlight.id);
 
@@ -418,7 +413,7 @@ const Highlights = () => {
                     <td className="px-2 py-1 align-top max-w-[150px]">
                       <div className="flex flex-col gap-0.5">
                         <button
-                          onClick={() => setModalBookId(book?.id || null)}
+                          onClick={() => setEditingHighlightId(highlight.id)}
                           className="font-medium text-zinc-900 line-clamp-1 leading-tight text-xs text-left hover:underline"
                           title={book?.title}
                         >
@@ -430,36 +425,17 @@ const Highlights = () => {
                       </div>
                     </td>
                     <td className="px-2 py-1 align-top max-w-[300px]">
-                      {isEditing ? (
-                        <textarea
-                          value={editForm.text}
-                          onChange={(e) => setEditForm(prev => ({ ...prev, text: e.target.value }))}
-                          className="w-full p-1.5 border border-zinc-300 rounded-sm focus:ring-1 focus:ring-black focus:border-black outline-none text-xs font-serif"
-                          rows={3}
-                        />
-                      ) : (
-                        <div className="font-serif text-zinc-800 line-clamp-2 leading-tight text-xs" title={highlight.text}>
-                          "{highlight.text}"
-                        </div>
-                      )}
+                      <div className="font-serif text-zinc-800 line-clamp-2 leading-tight text-xs cursor-pointer hover:text-zinc-600" title={highlight.text} onClick={() => setEditingHighlightId(highlight.id)}>
+                        "{highlight.text}"
+                      </div>
                     </td>
                     <td className="px-2 py-1 align-top max-w-[200px]">
-                      {isEditing ? (
-                        <textarea
-                          placeholder="Add a note..."
-                          value={editForm.note}
-                          onChange={(e) => setEditForm(prev => ({ ...prev, note: e.target.value }))}
-                          className="w-full p-1 border border-zinc-300 rounded-sm focus:ring-1 focus:ring-black focus:border-black outline-none text-xs bg-zinc-50 italic"
-                          rows={2}
-                        />
+                      {highlight.note ? (
+                        <div className="font-serif text-zinc-800 text-[10px] bg-zinc-50 px-1 py-0.5 rounded border border-zinc-100 leading-tight line-clamp-2 cursor-pointer hover:bg-zinc-100" title={highlight.note} onClick={() => setEditingHighlightId(highlight.id)}>
+                          {highlight.note}
+                        </div>
                       ) : (
-                        highlight.note ? (
-                          <div className="text-zinc-600 italic text-[10px] bg-zinc-50 px-1 py-0.5 rounded border border-zinc-100 leading-tight line-clamp-2" title={highlight.note}>
-                            {highlight.note}
-                          </div>
-                        ) : (
-                          <span className="text-zinc-300 text-[9px] italic">No note</span>
-                        )
+                        <span className="text-zinc-300 text-[9px] italic cursor-pointer hover:text-zinc-400" onClick={() => setEditingHighlightId(highlight.id)}>Click to add note</span>
                       )}
                     </td>
                     <td className="px-2 py-1 align-top">
@@ -468,74 +444,8 @@ const Highlights = () => {
                     <td className="px-2 py-1 align-top whitespace-nowrap text-[9px] text-zinc-400">
                       {formatDateShort(highlight.dateAdded)}
                     </td>
-                    <td className="px-2 py-1 align-top whitespace-nowrap text-[9px] text-zinc-400">
-                      {formatDateShort(highlight.importedAt)}
-                    </td>
                     <td className="px-2 py-1 align-top">
                       {getStudyBadge(highlight.id)}
-                    </td>
-                    <td className="px-2 py-1 align-top text-right">
-                      {isEditing ? (
-                        <div className="flex flex-row gap-1 items-center justify-end">
-                          <button
-                            onClick={saveEdit}
-                            className="p-1 bg-black text-white rounded-sm hover:bg-zinc-800"
-                            title="Save"
-                          >
-                            <Check className="w-3 h-3" />
-                          </button>
-                          <button
-                            onClick={cancelEdit}
-                            className="p-1 border border-zinc-300 text-zinc-600 rounded-sm hover:bg-zinc-100"
-                            title="Cancel"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex flex-row gap-1 items-center justify-end opacity-0 group-hover:opacity-100 transition-opacity">
-                          {isInStudy ? (
-                            <button
-                              onClick={() => removeFromStudy(highlight.id)}
-                              className="p-1 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-sm transition-colors"
-                              title="Remove from Study"
-                            >
-                              <Minus className="w-3 h-3" />
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => addToStudy(highlight.id)}
-                              className="p-1 text-zinc-400 hover:text-blue-600 hover:bg-blue-50 rounded-sm transition-colors"
-                              title="Add to Study"
-                            >
-                              <Plus className="w-3 h-3" />
-                            </button>
-                          )}
-                          <button
-                            onClick={() => setStatsHighlightId(highlight.id)}
-                            className="p-1 text-zinc-400 hover:text-blue-600 hover:bg-blue-50 rounded-sm transition-colors"
-                            title="View Stats"
-                          >
-                            <TrendingUp className="w-3 h-3" />
-                          </button>
-                          <button
-                            onClick={() => startEditing(highlight)}
-                            className="p-1 text-zinc-400 hover:text-black hover:bg-zinc-100 rounded-sm transition-colors"
-                            title="Edit"
-                          >
-                            <Edit2 className="w-3 h-3" />
-                          </button>
-                          <button
-                            onClick={() => {
-                              if (window.confirm('Delete this highlight?')) deleteHighlight(highlight.id);
-                            }}
-                            className="p-1 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-sm transition-colors"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </button>
-                        </div>
-                      )}
                     </td>
                   </tr>
                 );
@@ -545,8 +455,8 @@ const Highlights = () => {
         </table>
       </div>
 
-      {/* Book Context Modal */}
-      <BookContextModal bookId={modalBookId} onClose={() => setModalBookId(null)} />
+      {/* Highlight Edit Modal */}
+      <HighlightEditModal highlightId={editingHighlightId} onClose={() => setEditingHighlightId(null)} />
       <HighlightHistoryModal highlightId={statsHighlightId} onClose={() => setStatsHighlightId(null)} />
 
       {/* Tag Manager Sidebar */}
