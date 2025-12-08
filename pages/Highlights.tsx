@@ -1,8 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useStore } from '../components/StoreContext';
 import { Search, Filter, Trash2, Edit2, Check, X, Book, ArrowUpDown, Plus, Minus, Brain, TrendingUp, Tag as TagIcon } from 'lucide-react';
 import { SortOption } from '../types';
-import HighlightStats from '../components/HighlightStats';
+
 import BookContextModal from '../components/BookContextModal';
 import HighlightHistoryModal from '../components/HighlightHistoryModal';
 import { TagSelector } from '../components/TagSelector';
@@ -43,6 +43,38 @@ const Highlights = () => {
 
   // Tag Manager Sidebar
   const [isTagManagerOpen, setIsTagManagerOpen] = useState(false);
+
+  // Reset tag filter when book filter changes if the selected tag is not valid anymore
+  useEffect(() => {
+    if (selectedTagId !== 'all') {
+      const selectedTag = tags.find(t => t.id === selectedTagId);
+      if (selectedTag?.bookId) {
+        // If the selected tag is a chapter tag (has bookId)
+        // and the book filter changed to "all" or a different book, reset tag filter
+        if (selectedBookId === 'all' || selectedTag.bookId !== selectedBookId) {
+          setSelectedTagId('all');
+        }
+      }
+    }
+  }, [selectedBookId, selectedTagId, tags]);
+
+  // Calculate stats for header
+  const stats = useMemo(() => {
+    const uniqueBooks = new Set(highlights.map(h => h.bookId)).size;
+    const lastHighlight = highlights.length > 0
+      ? new Date(Math.max(...highlights.map(h => new Date(h.dateAdded).getTime())))
+      : null;
+    return { uniqueBooks, lastHighlight };
+  }, [highlights]);
+
+  const formatDate = (date: Date | null) => {
+    if (!date) return 'nunca';
+    return date.toLocaleDateString('pt-BR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+  };
 
   // Helper to get all child tag IDs recursively
   const getChildTagIds = (parentId: string): string[] => {
@@ -146,7 +178,7 @@ const Highlights = () => {
     setEditingId(null);
   };
 
-  const formatDate = (dateString?: string) => {
+  const formatDateShort = (dateString?: string) => {
     if (!dateString) return '-';
     try {
       return new Date(dateString).toLocaleDateString('pt-BR', {
@@ -175,13 +207,13 @@ const Highlights = () => {
   };
 
   return (
-    <div className="space-y-6 relative h-full flex flex-col">
+    <div className="space-y-3 relative h-full flex flex-col">
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">Highlights</h1>
           <p className="text-zinc-500 mt-1 font-light text-sm">
-            Manage and organize your collection of {highlights.length} highlights.
+            {highlights.length} {highlights.length === 1 ? 'destaque' : 'destaques'} de {stats.uniqueBooks} {stats.uniqueBooks === 1 ? 'livro' : 'livros'}, último destaque em {formatDate(stats.lastHighlight)}.
           </p>
         </div>
         <button
@@ -193,119 +225,136 @@ const Highlights = () => {
         </button>
       </div>
 
-      {/* Statistics */}
-      <HighlightStats highlights={highlights} studyCards={studyCards} books={books} />
-
       {/* Toolbar */}
-      <div className="flex flex-col md:flex-row gap-3 justify-between items-start md:items-center bg-white p-3 rounded-md border border-zinc-200 shadow-sm">
-        <div className="flex gap-3 w-full md:w-auto flex-1 flex-wrap">
-          <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400" />
-            <input
-              type="text"
-              placeholder="Search text or notes..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 bg-zinc-50 border border-zinc-200 rounded-sm focus:outline-none focus:ring-1 focus:ring-black focus:border-black text-xs"
-            />
-          </div>
+      <div className="flex items-center gap-1.5 bg-white p-1.5 rounded-md border border-zinc-200 shadow-sm">
+        {/* Search - flex to fill available space */}
+        <div className="relative flex-1 min-w-[180px]">
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400" />
+          <input
+            type="text"
+            placeholder="Search..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-7 pr-2 py-1 bg-zinc-50 border border-zinc-200 rounded text-xs focus:outline-none focus:ring-1 focus:ring-black focus:border-black"
+          />
+        </div>
 
-          <div className="relative">
-            <select
-              value={selectedBookId}
-              onChange={(e) => setSelectedBookId(e.target.value)}
-              className="pl-2.5 pr-7 py-1.5 bg-zinc-50 border border-zinc-200 rounded-sm focus:outline-none focus:ring-1 focus:ring-black focus:border-black text-xs appearance-none min-w-[120px]"
-            >
-              <option value="all">All Books</option>
-              {books.map(b => (
-                <option key={b.id} value={b.id}>{b.title}</option>
-              ))}
-            </select>
-            <Filter className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 pointer-events-none" />
-          </div>
+        {/* Book Filter */}
+        <div className="relative">
+          <select
+            value={selectedBookId}
+            onChange={(e) => setSelectedBookId(e.target.value)}
+            className="w-32 pl-2 pr-6 py-1 bg-zinc-50 border border-zinc-200 rounded text-xs appearance-none focus:outline-none focus:ring-1 focus:ring-black focus:border-black truncate"
+            style={{ maxWidth: '128px' }}
+          >
+            <option value="all">All Books</option>
+            {books.map(b => (
+              <option key={b.id} value={b.id} className="truncate">{b.title}</option>
+            ))}
+          </select>
+          <Filter className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 pointer-events-none" />
+        </div>
 
-          <div className="relative">
-            <select
-              value={selectedTagId}
-              onChange={(e) => setSelectedTagId(e.target.value)}
-              className="pl-2.5 pr-7 py-1.5 bg-zinc-50 border border-zinc-200 rounded-sm focus:outline-none focus:ring-1 focus:ring-black focus:border-black text-xs appearance-none min-w-[120px]"
-            >
-              <option value="all">All Tags</option>
-              <option value="all">All Tags</option>
-              {(() => {
-                // Flatten tags with depth for display
-                const flattenTags = (parentId?: string, depth = 0): React.ReactNode[] => {
-                  const children = tags.filter(t => t.parentId === parentId);
-                  // Sort: Global first, then books? Or A-Z?
-                  children.sort((a, b) => a.name.localeCompare(b.name));
+        {/* Tag Filter */}
+        <div className="relative">
+          <select
+            value={selectedTagId}
+            onChange={(e) => setSelectedTagId(e.target.value)}
+            className="w-28 pl-2 pr-6 py-1 bg-zinc-50 border border-zinc-200 rounded text-xs appearance-none focus:outline-none focus:ring-1 focus:ring-black focus:border-black truncate"
+            style={{ maxWidth: '112px' }}
+          >
+            <option value="all">All Tags</option>
+            {(() => {
+              // Flatten tags with depth for display
+              const flattenTags = (parentId?: string, depth = 0): React.ReactNode[] => {
+                const children = tags.filter(t => {
+                  // Only include tags that match the current filter context
+                  if (t.parentId !== parentId) return false;
 
-                  return children.flatMap(tag => {
-                    const book = tag.bookId ? books.find(b => b.id === tag.bookId) : undefined;
-                    const prefix = '\u00A0'.repeat(depth * 3) + (depth > 0 ? '└ ' : '');
-                    const label = `${prefix}${tag.name}${book ? ` (${book.title})` : ''}`;
+                  // If "All Books" is selected, only show global tags (no bookId)
+                  if (selectedBookId === 'all') {
+                    return !t.bookId;
+                  }
 
-                    return [
-                      <option key={tag.id} value={tag.id}>
-                        {label}
-                      </option>,
-                      ...flattenTags(tag.id, depth + 1)
-                    ];
-                  });
-                };
+                  // If a specific book is selected, show:
+                  // 1. Global tags (no bookId)
+                  // 2. Tags specific to the selected book
+                  return !t.bookId || t.bookId === selectedBookId;
+                });
 
-                // Show root tags (including book chapters that are roots)
-                return flattenTags(undefined);
-              })()}
-            </select>
-            <TagIcon className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 pointer-events-none" />
-          </div>
+                // Sort: Global first, then books? Or A-Z?
+                children.sort((a, b) => a.name.localeCompare(b.name));
 
-          <div className="relative">
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortOption)}
-              className="pl-2.5 pr-7 py-1.5 bg-zinc-50 border border-zinc-200 rounded-sm focus:outline-none focus:ring-1 focus:ring-black focus:border-black text-xs appearance-none min-w-[120px]"
-            >
-              <option value="imported">Recently Imported</option>
-              <option value="date">Highlight Date</option>
-              <option value="book">Book Title</option>
-              <option value="length">Text Length</option>
-            </select>
-            <ArrowUpDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 pointer-events-none" />
-          </div>
+                return children.flatMap(tag => {
+                  const book = tag.bookId ? books.find(b => b.id === tag.bookId) : undefined;
+                  const prefix = '\u00A0'.repeat(depth * 3) + (depth > 0 ? '└ ' : '');
+                  const label = `${prefix}${tag.name}${book ? ` (${book.title})` : ''}`;
 
-          <div className="relative">
-            <select
-              value={studyFilter}
-              onChange={(e) => setStudyFilter(e.target.value as any)}
-              className="pl-2.5 pr-7 py-1.5 bg-zinc-50 border border-zinc-200 rounded-sm focus:outline-none focus:ring-1 focus:ring-black focus:border-black text-xs appearance-none min-w-[120px]"
-            >
-              <option value="all">All Status</option>
-              <option value="in-study">In Study</option>
-              <option value="not-in-study">Not in Study</option>
-            </select>
-            <Brain className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 pointer-events-none" />
-          </div>
+                  return [
+                    <option key={tag.id} value={tag.id} className="truncate">
+                      {label}
+                    </option>,
+                    ...flattenTags(tag.id, depth + 1)
+                  ];
+                });
+              };
+
+              // Show root tags (including book chapters that are roots)
+              return flattenTags(undefined);
+            })()}
+          </select>
+          <TagIcon className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 pointer-events-none" />
+        </div>
+
+        {/* Sort Filter */}
+        <div className="relative">
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as SortOption)}
+            className="w-32 pl-2 pr-6 py-1 bg-zinc-50 border border-zinc-200 rounded text-xs appearance-none focus:outline-none focus:ring-1 focus:ring-black focus:border-black"
+            style={{ maxWidth: '128px' }}
+          >
+            <option value="imported">Recently Imported</option>
+            <option value="date">Highlight Date</option>
+            <option value="book">Book Title</option>
+            <option value="length">Text Length</option>
+          </select>
+          <ArrowUpDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 pointer-events-none" />
+        </div>
+
+        {/* Status Filter */}
+        <div className="relative">
+          <select
+            value={studyFilter}
+            onChange={(e) => setStudyFilter(e.target.value as any)}
+            className="w-24 pl-2 pr-6 py-1 bg-zinc-50 border border-zinc-200 rounded text-xs appearance-none focus:outline-none focus:ring-1 focus:ring-black focus:border-black"
+            style={{ maxWidth: '96px' }}
+          >
+            <option value="all">All Status</option>
+            <option value="in-study">In Study</option>
+            <option value="not-in-study">Not in Study</option>
+          </select>
+          <Brain className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 pointer-events-none" />
         </div>
 
         {/* Bulk Actions Indicator */}
         {selectedIds.size > 0 && (
-          <div className="flex items-center gap-3 animate-fade-in bg-zinc-900 text-white px-3 py-1 rounded-sm shadow-md w-full md:w-auto justify-between">
-            <span className="text-xs font-medium">{selectedIds.size} selected</span>
-            <div className="flex gap-2">
+          <div className="flex items-center gap-2 animate-fade-in bg-zinc-900 text-white px-2 py-1 rounded shadow-md ml-auto">
+            <span className="text-[10px] font-medium">{selectedIds.size} selected</span>
+            <div className="flex gap-1.5">
               <button
                 onClick={handleBulkAddToStudy}
-                className="flex items-center gap-1.5 text-[10px] hover:text-zinc-300 transition-colors uppercase tracking-wide font-semibold"
+                className="flex items-center gap-1 text-[9px] hover:text-zinc-300 transition-colors uppercase tracking-wide font-semibold"
                 title="Add to Study"
               >
-                <Plus className="w-3 h-3" />
+                <Plus className="w-2.5 h-2.5" />
                 Study
               </button>
               <button
                 onClick={handleBulkDelete}
-                className="flex items-center gap-1.5 text-[10px] hover:text-zinc-300 transition-colors uppercase tracking-wide font-semibold"
+                className="flex items-center gap-1 text-[9px] hover:text-zinc-300 transition-colors uppercase tracking-wide font-semibold"
               >
-                <Trash2 className="w-3 h-3" />
+                <Trash2 className="w-2.5 h-2.5" />
                 Delete
               </button>
             </div>
@@ -417,10 +466,10 @@ const Highlights = () => {
                       <TagSelector highlightId={highlight.id} bookId={highlight.bookId} />
                     </td>
                     <td className="px-3 py-2 align-top whitespace-nowrap text-[10px] text-zinc-400">
-                      {formatDate(highlight.dateAdded)}
+                      {formatDateShort(highlight.dateAdded)}
                     </td>
                     <td className="px-3 py-2 align-top whitespace-nowrap text-[10px] text-zinc-400">
-                      {formatDate(highlight.importedAt)}
+                      {formatDateShort(highlight.importedAt)}
                     </td>
                     <td className="px-3 py-2 align-top">
                       {getStudyBadge(highlight.id)}
