@@ -365,9 +365,9 @@ const Highlights = () => {
       {/* Table Container */}
       <div className="flex-1 overflow-auto border border-zinc-200 rounded-md bg-white shadow-sm">
         <table className="w-full text-left text-xs text-zinc-600">
-          <thead className="bg-zinc-50 text-[10px] uppercase font-semibold text-zinc-500 sticky top-0 z-10 border-b border-zinc-200">
+          <thead className="bg-zinc-50 text-[9px] uppercase font-semibold text-zinc-500 sticky top-0 z-10 border-b border-zinc-200">
             <tr>
-              <th className="px-3 py-2 w-8">
+              <th className="px-2 py-1 w-8">
                 <input
                   type="checkbox"
                   className="accent-black w-3.5 h-3.5 cursor-pointer align-middle"
@@ -375,14 +375,14 @@ const Highlights = () => {
                   onChange={toggleAll}
                 />
               </th>
-              <th className="px-3 py-2 w-[15%]">Autor - Livro</th>
-              <th className="px-3 py-2 w-[25%]">Highlight</th>
-              <th className="px-3 py-2 w-[15%]">Note</th>
-              <th className="px-3 py-2 w-[15%]">Tags</th>
-              <th className="px-3 py-2 w-20 whitespace-nowrap">Data</th>
-              <th className="px-3 py-2 w-20 whitespace-nowrap">Importado</th>
-              <th className="px-3 py-2 w-24">Status</th>
-              <th className="px-3 py-2 w-20 text-right">Ações</th>
+              <th className="px-2 py-1 w-[15%]">Autor - Livro</th>
+              <th className="px-2 py-1 w-[25%]">Highlight</th>
+              <th className="px-2 py-1 w-[15%]">Note</th>
+              <th className="px-2 py-1 w-[15%]">Tags</th>
+              <th className="px-2 py-1 w-20 whitespace-nowrap">Data</th>
+              <th className="px-2 py-1 w-20 whitespace-nowrap">Importado</th>
+              <th className="px-2 py-1 w-24">Status</th>
+              <th className="px-2 py-1 w-20 text-right">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100">
@@ -407,74 +407,74 @@ const Highlights = () => {
                       ${isSelected ? 'bg-zinc-50' : ''}
                     `}
                   >
-                    <td className="px-3 py-2 align-top">
+                    <td className="px-2 py-1 align-top">
                       <input
                         type="checkbox"
-                        className="accent-black w-3.5 h-3.5 cursor-pointer mt-0.5"
+                        className="accent-black w-3.5 h-3.5 cursor-pointer"
                         checked={isSelected}
                         onChange={() => toggleSelection(highlight.id)}
                       />
                     </td>
-                    <td className="px-3 py-2 align-top">
+                    <td className="px-2 py-1 align-top max-w-[150px]">
                       <div className="flex flex-col gap-0.5">
                         <button
                           onClick={() => setModalBookId(book?.id || null)}
-                          className="font-medium text-zinc-900 line-clamp-2 leading-tight text-left hover:underline"
+                          className="font-medium text-zinc-900 line-clamp-1 leading-tight text-xs text-left hover:underline"
                           title={book?.title}
                         >
                           {book?.title || 'Unknown Book'}
                         </button>
-                        <span className="text-[10px] text-zinc-400 line-clamp-1" title={book?.author}>
+                        <span className="text-[9px] text-zinc-400 line-clamp-1" title={book?.author}>
                           {book?.author || 'Unknown Author'}
                         </span>
                       </div>
                     </td>
-                    <td className="px-3 py-2 align-top">
+                    <td className="px-2 py-1 align-top max-w-[300px]">
                       {isEditing ? (
                         <textarea
                           value={editForm.text}
                           onChange={(e) => setEditForm(prev => ({ ...prev, text: e.target.value }))}
-                          className="w-full p-2 border border-zinc-300 rounded-sm focus:ring-1 focus:ring-black focus:border-black outline-none text-xs font-serif"
-                          rows={4}
+                          className="w-full p-1.5 border border-zinc-300 rounded-sm focus:ring-1 focus:ring-black focus:border-black outline-none text-xs font-serif"
+                          rows={3}
                         />
                       ) : (
-                        <div className="font-serif text-zinc-800 line-clamp-6 leading-snug text-[13px]" title={highlight.text}>
+                        <div className="font-serif text-zinc-800 line-clamp-2 leading-tight text-xs" title={highlight.text}>
                           "{highlight.text}"
                         </div>
                       )}
                     </td>
-                    <td className="px-3 py-2 align-top">
+                    <td className="px-2 py-1 align-top max-w-[200px]">
                       {isEditing ? (
                         <textarea
                           placeholder="Add a note..."
                           value={editForm.note}
                           onChange={(e) => setEditForm(prev => ({ ...prev, note: e.target.value }))}
-                          className="w-full p-2 border border-zinc-300 rounded-sm focus:ring-1 focus:ring-black focus:border-black outline-none text-xs bg-zinc-50 italic"
-                          rows={3}
+                          className="w-full p-1 border border-zinc-300 rounded-sm focus:ring-1 focus:ring-black focus:border-black outline-none text-xs bg-zinc-50 italic"
+                          rows={2}
                         />
                       ) : (
                         highlight.note ? (
-                          <div className="text-zinc-600 italic text-xs bg-zinc-50 p-1.5 rounded border border-zinc-100 leading-tight">
+                          <div className="text-zinc-600 italic text-[10px] bg-zinc-50 px-1 py-0.5 rounded border border-zinc-100 leading-tight line-clamp-2" title={highlight.note}>
                             {highlight.note}
                           </div>
                         ) : (
-                          <span className="text-zinc-300 text-[10px] italic">No note</span>
+                          <span className="text-zinc-300 text-[9px] italic">No note</span>
                         )
                       )}
                     </td>
-                    <td className="px-3 py-2 align-top">
+                    <td className="px-2 py-1 align-top">
                       <TagSelector highlightId={highlight.id} bookId={highlight.bookId} />
                     </td>
-                    <td className="px-3 py-2 align-top whitespace-nowrap text-[10px] text-zinc-400">
+                    <td className="px-2 py-1 align-top whitespace-nowrap text-[9px] text-zinc-400">
                       {formatDateShort(highlight.dateAdded)}
                     </td>
-                    <td className="px-3 py-2 align-top whitespace-nowrap text-[10px] text-zinc-400">
+                    <td className="px-2 py-1 align-top whitespace-nowrap text-[9px] text-zinc-400">
                       {formatDateShort(highlight.importedAt)}
                     </td>
-                    <td className="px-3 py-2 align-top">
+                    <td className="px-2 py-1 align-top">
                       {getStudyBadge(highlight.id)}
                     </td>
-                    <td className="px-3 py-2 align-top text-right">
+                    <td className="px-2 py-1 align-top text-right">
                       {isEditing ? (
                         <div className="flex flex-row gap-1 items-center justify-end">
                           <button
