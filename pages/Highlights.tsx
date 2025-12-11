@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useStore } from '../components/StoreContext';
-import { Search, Filter, Trash2, Edit2, Check, X, Book, ArrowUpDown, Plus, Minus, Brain, TrendingUp, Tag as TagIcon } from 'lucide-react';
+import { Search, Filter, Trash2, Edit2, Check, X, Book, ArrowUpDown, Minus, Brain, TrendingUp, Tag as TagIcon } from 'lucide-react';
 import { SortOption } from '../types';
 import HighlightEditModal from '../components/HighlightEditModal';
 import HighlightHistoryModal from '../components/HighlightHistoryModal';
@@ -18,7 +18,6 @@ const Highlights = () => {
     bulkDeleteHighlights,
     addToStudy,
     removeFromStudy,
-    bulkAddToStudy,
     getHighlightStudyStatus
   } = useStore();
 
@@ -155,10 +154,7 @@ const Highlights = () => {
     }
   };
 
-  const handleBulkAddToStudy = () => {
-    bulkAddToStudy(Array.from(selectedIds));
-    setSelectedIds(new Set());
-  };
+
 
   // Edit Handlers - now per-field instead of per-row
   const startEditingField = (highlightId: string, field: 'text' | 'note', currentValue: string) => {
@@ -339,23 +335,13 @@ const Highlights = () => {
         {selectedIds.size > 0 && (
           <div className="flex items-center gap-2 animate-fade-in bg-zinc-900 text-white px-2 py-1 rounded shadow-md ml-auto">
             <span className="text-[10px] font-medium">{selectedIds.size} selected</span>
-            <div className="flex gap-1.5">
-              <button
-                onClick={handleBulkAddToStudy}
-                className="flex items-center gap-1 text-[9px] hover:text-zinc-300 transition-colors uppercase tracking-wide font-semibold"
-                title="Add to Study"
-              >
-                <Plus className="w-2.5 h-2.5" />
-                Study
-              </button>
-              <button
-                onClick={handleBulkDelete}
-                className="flex items-center gap-1 text-[9px] hover:text-zinc-300 transition-colors uppercase tracking-wide font-semibold"
-              >
-                <Trash2 className="w-2.5 h-2.5" />
-                Delete
-              </button>
-            </div>
+            <button
+              onClick={handleBulkDelete}
+              className="flex items-center gap-1 text-[9px] hover:text-zinc-300 transition-colors uppercase tracking-wide font-semibold"
+            >
+              <Trash2 className="w-2.5 h-2.5" />
+              Delete
+            </button>
           </div>
         )}
       </div>
