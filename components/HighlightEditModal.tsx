@@ -24,6 +24,20 @@ const HighlightEditModal: React.FC<HighlightEditModalProps> = ({ highlightId, on
         }
     }, [highlightId, highlight]);
 
+    // Handle ESC key to close and save
+    useEffect(() => {
+        const handleEscape = (e: KeyboardEvent) => {
+            if (e.key === 'Escape' && highlightId) {
+                handleClose();
+            }
+        };
+
+        if (highlightId) {
+            document.addEventListener('keydown', handleEscape);
+            return () => document.removeEventListener('keydown', handleEscape);
+        }
+    }, [highlightId, editForm, highlight]);
+
     if (!highlightId || !highlight || !book) return null;
 
     const formatDate = (dateString: string) => {
@@ -38,8 +52,11 @@ const HighlightEditModal: React.FC<HighlightEditModalProps> = ({ highlightId, on
         }
     };
 
-    const handleSave = () => {
-        updateHighlight(highlightId, { text: editForm.text, note: editForm.note });
+    const handleClose = () => {
+        // Auto-save if there are changes
+        if (editForm.text !== highlight.text || editForm.note !== (highlight.note || '')) {
+            updateHighlight(highlightId, { text: editForm.text, note: editForm.note });
+        }
         onClose();
     };
 
@@ -63,10 +80,10 @@ const HighlightEditModal: React.FC<HighlightEditModalProps> = ({ highlightId, on
     }
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
-            <div className="bg-white rounded-md shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed top-0 left-0 right-0 bottom-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={handleClose}>
+            <div className="bg-white rounded-md shadow-2xl max-w-2xl w-full max-h-[95vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
                 <div className="p-3 border-b border-zinc-200 flex items-start gap-3">
-                    <img src={book.coverUrl} alt={book.title} className="w-16 h-24 object-cover rounded shadow-sm flex-shrink-0" />
+                    <img src={book.coverUrl} alt={book.title} className="w-14 h-[86px] object-cover rounded shadow-sm flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                         <h2 className="text-base font-bold text-zinc-900 mb-0.5 line-clamp-1">{book.title}</h2>
                         <p className="text-xs text-zinc-600 mb-2">{book.author}</p>
@@ -83,7 +100,7 @@ const HighlightEditModal: React.FC<HighlightEditModalProps> = ({ highlightId, on
                             )}
                         </div>
                     </div>
-                    <button onClick={onClose} className="p-1 hover:bg-zinc-100 rounded transition-colors flex-shrink-0" title="Close">
+                    <button onClick={handleClose} className="p-1 hover:bg-zinc-100 rounded transition-colors flex-shrink-0" title="Close">
                         <X className="w-4 h-4 text-zinc-600" />
                     </button>
                 </div>
@@ -95,7 +112,7 @@ const HighlightEditModal: React.FC<HighlightEditModalProps> = ({ highlightId, on
                             value={editForm.text}
                             onChange={(e) => handleChange('text', e.target.value)}
                             className="w-full bg-transparent border-0 px-0 py-0 text-xs font-serif text-zinc-800 resize-none focus:outline-none placeholder:text-zinc-300"
-                            rows={4}
+                            rows={6}
                         />
                     </div>
 
@@ -105,7 +122,7 @@ const HighlightEditModal: React.FC<HighlightEditModalProps> = ({ highlightId, on
                             value={editForm.note}
                             onChange={(e) => handleChange('note', e.target.value)}
                             className="w-full bg-transparent border-0 px-0 py-0 text-xs font-serif text-zinc-800 resize-none focus:outline-none placeholder:text-zinc-300"
-                            rows={3}
+                            rows={5}
                             placeholder="Add your personal note..."
                         />
                     </div>
@@ -156,14 +173,7 @@ const HighlightEditModal: React.FC<HighlightEditModalProps> = ({ highlightId, on
                     </div>
                 </div>
 
-                <div className="p-2 border-t border-zinc-200 bg-zinc-50 flex justify-end gap-2">
-                    <button onClick={onClose} className="px-3 py-1 text-xs border border-zinc-300 text-zinc-700 rounded hover:bg-zinc-100 transition-colors font-medium">
-                        Cancel
-                    </button>
-                    <button onClick={handleSave} className="px-3 py-1 text-xs bg-black text-white rounded hover:bg-zinc-800 transition-colors font-medium">
-                        Save Changes
-                    </button>
-                </div>
+
             </div>
         </div>
     );
