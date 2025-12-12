@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Book, Highlight, StudyCard, StudyStatus, UserSettings, StudySession, ReviewLog, Tag } from '../types';
+import { Book, Highlight, StudyCard, StudyStatus, UserSettings, StudySession, ReviewLog, Tag, DeckStats } from '../types';
 import { MOCK_BOOKS, MOCK_HIGHLIGHTS, MOCK_CARDS, MOCK_TAGS } from '../services/mockData';
 import { parseMyClippings } from '../services/parser';
 
@@ -23,10 +23,13 @@ interface StoreContextType {
   settings: UserSettings;
   updateSettings: (settings: Partial<UserSettings>) => void;
   currentSession: StudySession | null;
-  startSession: () => void;
+  startSession: (bookId?: string) => void;
   submitReview: (cardId: string, quality: number) => void;
   resetSession: () => void;
+  undoLastReview: () => void;
   sessionStats: { reviewed: number; correct: number; streak: number };
+  getDeckStats: (bookId?: string) => DeckStats;
+  getBookCardsDue: (bookId: string) => StudyCard[];
   reviewLogs: ReviewLog[];
   isLoaded: boolean;
   addTag: (name: string, parentId?: string, bookId?: string) => string;
@@ -79,7 +82,21 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
         if (Array.isArray(parsed)) setTags(parsed);
       }
       if (savedSettings) setSettings(JSON.parse(savedSettings));
-      if (savedSession) setCurrentSession(JSON.parse(savedSession));
+      if (savedSession) {
+        const session = JSON.parse(savedSession);
+        // Ensure history array exists (for backward compatibility)
+        if (!session.history) {
+          session.history = [];
+        }
+        // Reset session if it's from a previous day
+        const sessionDate = new Date(session.date).toDateString();
+        const today = new Date().toDateString();
+        if (sessionDate !== today) {
+          localStorage.removeItem('khm_session');
+        } else {
+          setCurrentSession(session);
+        }
+      }
       if (savedLogs) {
         const parsed = JSON.parse(savedLogs);
         if (Array.isArray(parsed)) setReviewLogs(parsed);
@@ -308,27 +325,35 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     setSettings(prev => ({ ...prev, ...newSettings }));
   };
 
-  const startSession = () => {
-    console.log('startSession called', { currentSession, isLoaded });
-    const today = new Date().toDateString();
+  const startSession = (bookId?: string) => {
+    console.log('startSession called', { currentSession, isLoaded, bookId });
 
-    if (currentSession && new Date(currentSession.date).toDateString() === today) {
+    // Reset session if bookId changes or if it's a new day
+    const today = new Date().toDateString();
+    const shouldReset = !currentSession ||
+      new Date(currentSession.date).toDateString() !== today ||
+      (bookId && currentSession.id); // Reset if switching decks
+
+    if (!shouldReset) {
       return;
     }
 
-    const due = getCardsDue();
+    const due = bookId ? getBookCardsDue(bookId) : getCardsDue();
     if (due.length === 0) return;
 
     const sortedDue = [...due].sort((a, b) => new Date(a.nextReviewDate).getTime() - new Date(b.nextReviewDate).getTime());
 
-    const sessionCards = sortedDue.slice(0, settings.maxReviewsPerDay);
+    // Limit to 10 cards per book when bookId is provided, otherwise use settings
+    const maxCards = bookId ? 10 : settings.maxReviewsPerDay;
+    const sessionCards = sortedDue.slice(0, maxCards);
 
     setCurrentSession({
       id: crypto.randomUUID(),
       date: new Date().toISOString(),
       cardIds: sessionCards.map(c => c.id),
       completedIds: [],
-      results: []
+      results: [],
+      history: []
     });
   };
 
@@ -345,7 +370,13 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       return {
         ...prev,
         completedIds: [...prev.completedIds, cardId],
-        results: [...prev.results, { cardId, quality, timestamp: Date.now() }]
+        results: [...prev.results, { cardId, quality, timestamp: Date.now() }],
+        history: [...prev.history, {
+          cardId,
+          previousCard: { ...card },  // Clone current state before update
+          quality,
+          timestamp: Date.now()
+        }]
       };
     });
 
@@ -368,6 +399,60 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     reviewed: currentSession?.completedIds.length || 0,
     correct: currentSession?.results.filter(r => r.quality >= 3).length || 0,
     streak: 0
+  };
+
+  // New deck statistics method
+  const getDeckStats = (bookId?: string): DeckStats => {
+    const cards = bookId ? getBookCardsDue(bookId) : getCardsDue();
+
+    // Limit to 10 cards per book for today's reviews
+    const limitedCards = bookId ? cards.slice(0, 10) : cards;
+
+    return {
+      new: limitedCards.filter(c => c.repetitions === 0).length,
+      learning: limitedCards.filter(c => c.repetitions >= 1 && c.repetitions < 5).length,
+      review: limitedCards.filter(c => c.repetitions >= 5).length,
+      total: limitedCards.length
+    };
+  };
+
+  // Get cards due for a specific book
+  const getBookCardsDue = (bookId: string): StudyCard[] => {
+    const bookHighlightIds = highlights
+      .filter(h => h.bookId === bookId)
+      .map(h => h.id);
+
+    const now = new Date();
+    return studyCards.filter(card => {
+      const highlight = highlights.find(h => h.id === card.highlightId);
+      return highlight &&
+        bookHighlightIds.includes(highlight.id) &&
+        new Date(card.nextReviewDate) <= now;
+    });
+  };
+
+  // Undo last review
+  const undoLastReview = () => {
+    if (!currentSession || currentSession.history.length === 0) return;
+
+    const lastReview = currentSession.history[currentSession.history.length - 1];
+
+    // Restore card to previous state
+    updateCard(lastReview.previousCard);
+
+    // Remove from completed
+    setCurrentSession(prev => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        completedIds: prev.completedIds.slice(0, -1),
+        results: prev.results.slice(0, -1),
+        history: prev.history.slice(0, -1)
+      };
+    });
+
+    // Remove from review logs
+    setReviewLogs(prev => prev.slice(0, -1));
   };
 
   // Tagging Methods
@@ -456,7 +541,10 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       startSession,
       submitReview,
       resetSession,
+      undoLastReview,
       sessionStats,
+      getDeckStats,
+      getBookCardsDue,
       reviewLogs,
       isLoaded,
       addTag,

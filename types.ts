@@ -65,6 +65,7 @@ export interface StudySession {
   cardIds: string[];
   completedIds: string[];
   results: ReviewResult[];
+  history: ReviewHistory[];  // Track review history for undo
 }
 
 export interface ReviewLog {
@@ -74,6 +75,20 @@ export interface ReviewLog {
   reviewedAt: string;
   interval: number;
   easeFactor: number;
+}
+
+export interface DeckStats {
+  new: number;      // Cards never studied (repetitions = 0)
+  learning: number; // Cards in learning phase (repetitions 1-4)
+  review: number;   // Mature cards (repetitions >= 5)
+  total: number;    // Total due today
+}
+
+export interface ReviewHistory {
+  cardId: string;
+  previousCard: StudyCard;  // Card state before review
+  quality: number;
+  timestamp: number;
 }
 
 export type SortOption = 'imported' | 'date' | 'book' | 'length';
