@@ -1,3 +1,114 @@
+# EVOQUE - Product Requirements Document (PRD)
+
+## 📝 CHANGELOG
+
+### 2025-12-15: Study Page Refinements & Bug Fixes
+
+**Sessão de Código:** Refinamento completo da funcionalidade de estudo com foco em UX, correções críticas de bugs e implementação de features solicitadas.
+
+#### ✨ Novas Funcionalidades Implementadas
+
+1. **Botão "Study All Books" Proeminente**
+   - Movido de linha da tabela para botão CTA destacado acima da tabela
+   - Design: `bg-black` com hover `bg-zinc-800`, ícone de livros abertos, stats coloridos
+   - Seguindo diretrizes de UI compacta estabelecidas
+
+2. **Delete Card Durante Sessão**
+   - Ícone 'X' na barra inferior esquerda da sessão de estudo
+   - Popover de confirmação (substituindo `window.confirm`)
+   - Atualiza daily progress stats automaticamente
+
+3. **Data de Criação do Highlight**
+   - Exibida durante sessão de estudo ao lado do título do livro
+   - Formato: "Dec 15, 2023" (mês abreviado)
+
+4. **Atalhos de Teclado Aprimorados**
+   - `Space` OU `Enter`: Revelar resposta
+   - `Enter` (após revelar): Botão "Good"
+   - `1`: Again | `2`: Hard | `3`: Good | `4`: Easy
+   - `E`: Editar nota | `Ctrl+Z`: Desfazer
+
+5. **Popovers Compactos**
+   - `EmptyDeckPopover`: Mensagem quando deck está vazio
+   - `DeleteCardPopover`: Confirmação de exclusão de card
+   - Design consistente com diretrizes compact UI
+
+#### 🐛 Bugs Críticos Corrigidos
+
+1. **SM-2 Algorithm - Hard Button**
+   - **Problema:** Hard resetava card (comportamento de Again)
+   - **Solução:** Hard agora passa card com intervalo reduzido (3 dias vs 6 do Good)
+   - Arquivo: `services/sm2.ts`
+
+2. **Daily Progress Tracking**
+   - **Problema:** Limite de 10 cards era por sessão, não por dia
+   - **Solução:** Implementado `DailyProgress` com rastreamento por data e livro
+   - Reset automático à meia-noite
+   - Arquivo: `types.ts`, `components/StoreContext.tsx`
+
+3. **All Books Session Stats**
+   - **Problema:** Não atualizava stats de livros individuais ao estudar em "All Books"
+   - **Solução:** `submitReview` agora identifica livro via highlight e atualiza `dailyProgress`
+   - Arquivo: `components/StoreContext.tsx`
+
+4. **All Books Card Selection**
+   - **Problema:** Incluía TODOS os cards, não apenas os disponíveis hoje
+   - **Solução:** Filtra por disponibilidade diária respeitando limite de 10/livro
+   - Alternância entre livros para variedade
+   - Arquivo: `components/StoreContext.tsx`
+
+5. **Session Reset Logic**
+   - **Problema:** Sessão não resetava corretamente ao trocar entre decks
+   - **Solução:** Adicionado `bookId` tracking e lógica `isDifferentDeck`
+   - Arquivo: `types.ts`, `components/StoreContext.tsx`
+
+6. **Delete Card Stats Update**
+   - **Problema:** Deletar card não atualizava daily progress
+   - **Solução:** `deleteCard` decrementa contador se card foi revisado hoje
+   - Arquivo: `components/StoreContext.tsx`
+
+#### 📊 Melhorias de Dados
+
+**getDeckStats Refatorado:**
+- **Individual Books:** Mostra cards restantes para hoje (10 - já revisados)
+- **All Books:** Soma de todos os stats individuais (sem limite artificial)
+- Filtragem precisa de cards já revisados hoje
+
+**Tipos Adicionados:**
+- `DailyProgress`: Rastreamento de revisões por livro por dia
+- `bookId?: string` em `StudySession`: Contexto de deck
+
+#### 🎨 Design Guidelines Atualizados
+
+Adicionado seção "Botão Proeminente (Call-to-Action)" em `compact-ui-design-guidelines.md`:
+- Especificações de cores, tamanhos, padding
+- Exemplos de código
+- Diretrizes de uso
+
+#### 📁 Arquivos Modificados
+
+- `components/StoreContext.tsx` - Lógica de estado e daily progress
+- `components/DeleteCardPopover.tsx` (novo) - Popover de confirmação
+- `components/EmptyDeckPopover.tsx` (novo) - Popover de deck vazio
+- `pages/Study.tsx` - Botão proeminente e validação
+- `pages/StudySession.tsx` - Delete button, data, keyboard shortcuts
+- `services/sm2.ts` - Correção do algoritmo Hard
+- `types.ts` - DailyProgress, bookId em StudySession
+- `lbp_diretrizes/compact-ui-design-guidelines.md` - Diretrizes de botão proeminente
+- `playwright.config.ts` (novo) - Configuração de testes
+
+#### 🎯 Impacto
+
+- **UX:** Fluxo de estudo mais intuitivo e polido
+- **Dados:** 100% de integridade e precisão
+- **Performance:** Sem impacto negativo
+- **Manutenibilidade:** Código mais organizado e tipado
+
+---
+
+## 1. VISÃO GERAL
+
+### 1.1 Contexto
 
 Atualmente, os highlights do Kindle ficam dispersos no arquivo MyClippings.txt, sem uma estrutura eficiente para revisão e aprendizado. Este produto oferece uma solução completa que vai além da simples organização, integrando um sistema de repetição espaçada que transforma highlights passivos em conhecimento ativo e duradouro.
 

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Book, Highlight, StudyCard, StudyStatus, UserSettings, StudySession, ReviewLog, Tag, DeckStats } from '../types';
+import { Book, Highlight, StudyCard, StudyStatus, UserSettings, StudySession, ReviewLog, Tag, DeckStats, DailyProgress } from '../types';
 import { MOCK_BOOKS, MOCK_HIGHLIGHTS, MOCK_CARDS, MOCK_TAGS } from '../services/mockData';
 import { parseMyClippings } from '../services/parser';
 
@@ -19,6 +19,7 @@ interface StoreContextType {
   addToStudy: (highlightId: string) => void;
   removeFromStudy: (highlightId: string) => void;
   bulkAddToStudy: (highlightIds: string[]) => void;
+  deleteCard: (cardId: string) => void;
   getHighlightStudyStatus: (highlightId: string) => StudyStatus | 'not-started';
   settings: UserSettings;
   updateSettings: (settings: Partial<UserSettings>) => void;
@@ -30,6 +31,8 @@ interface StoreContextType {
   sessionStats: { reviewed: number; correct: number; streak: number };
   getDeckStats: (bookId?: string) => DeckStats;
   getBookCardsDue: (bookId: string) => StudyCard[];
+  dailyProgress: DailyProgress;
+  getReviewsToday: (bookId?: string) => number;
   reviewLogs: ReviewLog[];
   isLoaded: boolean;
   addTag: (name: string, parentId?: string, bookId?: string) => string;
@@ -53,6 +56,10 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
   const [currentSession, setCurrentSession] = useState<StudySession | null>(null);
   const [reviewLogs, setReviewLogs] = useState<ReviewLog[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [dailyProgress, setDailyProgress] = useState<DailyProgress>({
+    date: new Date().toISOString().split('T')[0],
+    bookReviews: {}
+  });
 
   // Load from local storage on mount
   useEffect(() => {
@@ -64,6 +71,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       const savedSettings = localStorage.getItem('khm_settings');
       const savedSession = localStorage.getItem('khm_session');
       const savedLogs = localStorage.getItem('khm_logs');
+      const savedProgress = localStorage.getItem('khm_daily_progress');
 
       if (savedBooks) {
         const parsed = JSON.parse(savedBooks);
@@ -101,6 +109,16 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
         const parsed = JSON.parse(savedLogs);
         if (Array.isArray(parsed)) setReviewLogs(parsed);
       }
+      if (savedProgress) {
+        const progress = JSON.parse(savedProgress);
+        const today = new Date().toISOString().split('T')[0];
+        // Reset progress if it's a new day
+        if (progress.date === today) {
+          setDailyProgress(progress);
+        } else {
+          setDailyProgress({ date: today, bookReviews: {} });
+        }
+      }
     } catch (error) {
       console.error('Failed to load data from local storage:', error);
     } finally {
@@ -120,7 +138,8 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     if (currentSession) localStorage.setItem('khm_session', JSON.stringify(currentSession));
     else localStorage.removeItem('khm_session');
     localStorage.setItem('khm_logs', JSON.stringify(reviewLogs));
-  }, [books, highlights, studyCards, tags, settings, currentSession, reviewLogs, isLoaded]);
+    localStorage.setItem('khm_daily_progress', JSON.stringify(dailyProgress));
+  }, [books, highlights, studyCards, tags, settings, currentSession, reviewLogs, dailyProgress, isLoaded]);
 
   const importData = (text: string) => {
     try {
@@ -325,14 +344,63 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     setSettings(prev => ({ ...prev, ...newSettings }));
   };
 
+  const deleteCard = (cardId: string) => {
+    const card = studyCards.find(c => c.id === cardId);
+    if (!card) return;
+
+    // Find the book this card belongs to
+    const highlight = highlights.find(h => h.id === card.highlightId);
+
+    // Update daily progress if card was reviewed today
+    if (highlight && card.lastReviewedAt) {
+      const today = new Date().toISOString().split('T')[0];
+      const lastReviewDate = new Date(card.lastReviewedAt).toISOString().split('T')[0];
+
+      if (lastReviewDate === today && dailyProgress.date === today) {
+        const bookId = highlight.bookId;
+        setDailyProgress(prev => ({
+          ...prev,
+          bookReviews: {
+            ...prev.bookReviews,
+            [bookId]: Math.max(0, (prev.bookReviews[bookId] || 0) - 1)
+          }
+        }));
+      }
+    }
+
+    // Remove card from study
+    setStudyCards(prev => prev.filter(c => c.id !== cardId));
+
+    // Update highlight status
+    updateHighlight(card.highlightId, { inStudy: false });
+
+    // Remove from current session if present
+    if (currentSession) {
+      setCurrentSession(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          cardIds: prev.cardIds.filter(id => id !== cardId),
+          completedIds: prev.completedIds.filter(id => id !== cardId)
+        };
+      });
+    }
+  };
+
   const startSession = (bookId?: string) => {
     console.log('startSession called', { currentSession, isLoaded, bookId });
 
-    // Reset session if bookId changes or if it's a new day
-    const today = new Date().toDateString();
-    const shouldReset = !currentSession ||
-      new Date(currentSession.date).toDateString() !== today ||
-      (bookId && currentSession.id); // Reset if switching decks
+    const today = new Date().toISOString().split('T')[0];
+
+    // Reset daily progress if it's a new day
+    if (dailyProgress.date !== today) {
+      setDailyProgress({ date: today, bookReviews: {} });
+    }
+
+    // Check if we should reset the session
+    const isNewDay = !currentSession || new Date(currentSession.date).toDateString() !== new Date().toDateString();
+    const isDifferentDeck = currentSession && currentSession.bookId !== bookId;
+    const shouldReset = isNewDay || isDifferentDeck;
 
     if (!shouldReset) {
       return;
@@ -341,20 +409,98 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     const due = bookId ? getBookCardsDue(bookId) : getCardsDue();
     if (due.length === 0) return;
 
-    const sortedDue = [...due].sort((a, b) => new Date(a.nextReviewDate).getTime() - new Date(b.nextReviewDate).getTime());
+    // Check daily limit for specific book
+    if (bookId) {
+      const reviewsToday = dailyProgress.bookReviews[bookId] || 0;
+      if (reviewsToday >= 10) {
+        // No more cards available for this book today
+        return;
+      }
+      // Filter out cards already reviewed today by checking their lastReviewedAt
+      const cardsNotReviewedToday = due.filter(card => {
+        if (!card.lastReviewedAt) return true;
+        const lastReviewDate = new Date(card.lastReviewedAt).toISOString().split('T')[0];
+        return lastReviewDate !== today;
+      });
 
-    // Limit to 10 cards per book when bookId is provided, otherwise use settings
-    const maxCards = bookId ? 10 : settings.maxReviewsPerDay;
-    const sessionCards = sortedDue.slice(0, maxCards);
+      if (cardsNotReviewedToday.length === 0) return;
 
-    setCurrentSession({
-      id: crypto.randomUUID(),
-      date: new Date().toISOString(),
-      cardIds: sessionCards.map(c => c.id),
-      completedIds: [],
-      results: [],
-      history: []
-    });
+      const sortedDue = [...cardsNotReviewedToday].sort((a, b) =>
+        new Date(a.nextReviewDate).getTime() - new Date(b.nextReviewDate).getTime()
+      );
+      const remaining = 10 - reviewsToday;
+      const sessionCards = sortedDue.slice(0, remaining);
+
+      setCurrentSession({
+        id: crypto.randomUUID(),
+        date: new Date().toISOString(),
+        cardIds: sessionCards.map(c => c.id),
+        completedIds: [],
+        results: [],
+        history: [],
+        bookId: bookId
+      });
+    } else {
+      // All books session - get cards from each book respecting daily limits
+      const cardsByBook = new Map<string, StudyCard[]>();
+
+      // For each book, get cards available today (respecting 10-card limit)
+      books.forEach(book => {
+        const bookCards = getBookCardsDue(book.id);
+        const reviewsToday = dailyProgress.bookReviews[book.id] || 0;
+
+        if (reviewsToday < 10 && bookCards.length > 0) {
+          // Filter cards not reviewed today
+          const cardsNotReviewedToday = bookCards.filter(card => {
+            if (!card.lastReviewedAt) return true;
+            const lastReviewDate = new Date(card.lastReviewedAt).toISOString().split('T')[0];
+            return lastReviewDate !== today;
+          });
+
+          if (cardsNotReviewedToday.length > 0) {
+            // Sort by due date and limit to remaining for today
+            const sorted = [...cardsNotReviewedToday].sort((a, b) =>
+              new Date(a.nextReviewDate).getTime() - new Date(b.nextReviewDate).getTime()
+            );
+            const remaining = 10 - reviewsToday;
+            cardsByBook.set(book.id, sorted.slice(0, remaining));
+          }
+        }
+      });
+
+      // Alternate picking cards from different books
+      const sessionCards: StudyCard[] = [];
+      const bookIds = Array.from(cardsByBook.keys());
+      let bookIndex = 0;
+
+      while (cardsByBook.size > 0) {
+        const currentBookId = bookIds[bookIndex % bookIds.length];
+        const bookCards = cardsByBook.get(currentBookId);
+
+        if (bookCards && bookCards.length > 0) {
+          sessionCards.push(bookCards.shift()!);
+        }
+
+        // Remove book if no more cards
+        if (bookCards && bookCards.length === 0) {
+          cardsByBook.delete(currentBookId);
+          bookIds.splice(bookIds.indexOf(currentBookId), 1);
+          if (bookIds.length === 0) break;
+        } else {
+          bookIndex++;
+        }
+      }
+
+      setCurrentSession({
+        id: crypto.randomUUID(),
+        date: new Date().toISOString(),
+        cardIds: sessionCards.map(c => c.id),
+        completedIds: [],
+        results: [],
+        history: [],
+        bookId: undefined
+      });
+    }
   };
 
   const submitReview = (cardId: string, quality: number) => {
@@ -364,6 +510,22 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     if (!card) return;
 
     const isCorrect = quality >= 3;
+
+    // Update daily progress - find book from card's highlight
+    const highlight = highlights.find(h => h.id === card.highlightId);
+    if (highlight) {
+      const bookId = highlight.bookId;
+      const today = new Date().toISOString().split('T')[0];
+      if (dailyProgress.date === today) {
+        setDailyProgress(prev => ({
+          ...prev,
+          bookReviews: {
+            ...prev.bookReviews,
+            [bookId]: (prev.bookReviews[bookId] || 0) + 1
+          }
+        }));
+      }
+    }
 
     setCurrentSession(prev => {
       if (!prev) return null;
@@ -403,17 +565,39 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
 
   // New deck statistics method
   const getDeckStats = (bookId?: string): DeckStats => {
-    const cards = bookId ? getBookCardsDue(bookId) : getCardsDue();
+    if (bookId) {
+      // Individual book: show remaining cards for today (max 10 minus already reviewed)
+      const cards = getBookCardsDue(bookId);
+      const today = new Date().toISOString().split('T')[0];
+      const reviewsToday = dailyProgress.bookReviews[bookId] || 0;
+      const remaining = Math.max(0, 10 - reviewsToday);
 
-    // Limit to 10 cards per book for today's reviews
-    const limitedCards = bookId ? cards.slice(0, 10) : cards;
+      // Filter cards not reviewed today
+      const cardsNotReviewedToday = cards.filter(card => {
+        if (!card.lastReviewedAt) return true;
+        const lastReviewDate = new Date(card.lastReviewedAt).toISOString().split('T')[0];
+        return lastReviewDate !== today;
+      });
 
-    return {
-      new: limitedCards.filter(c => c.repetitions === 0).length,
-      learning: limitedCards.filter(c => c.repetitions >= 1 && c.repetitions < 5).length,
-      review: limitedCards.filter(c => c.repetitions >= 5).length,
-      total: limitedCards.length
-    };
+      const limitedCards = cardsNotReviewedToday.slice(0, remaining);
+
+      return {
+        new: limitedCards.filter(c => c.repetitions === 0).length,
+        learning: limitedCards.filter(c => c.repetitions >= 1 && c.repetitions < 5).length,
+        review: limitedCards.filter(c => c.repetitions >= 5).length,
+        total: limitedCards.length
+      };
+    } else {
+      // All Books: sum of all individual book stats (daily totals)
+      const allBookStats = books.map(book => getDeckStats(book.id));
+
+      return {
+        new: allBookStats.reduce((sum, stats) => sum + stats.new, 0),
+        learning: allBookStats.reduce((sum, stats) => sum + stats.learning, 0),
+        review: allBookStats.reduce((sum, stats) => sum + stats.review, 0),
+        total: allBookStats.reduce((sum, stats) => sum + stats.total, 0)
+      };
+    }
   };
 
   // Get cards due for a specific book
@@ -429,6 +613,19 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
         bookHighlightIds.includes(highlight.id) &&
         new Date(card.nextReviewDate) <= now;
     });
+  };
+
+  // Get reviews completed today for a specific book or all books
+  const getReviewsToday = (bookId?: string): number => {
+    const today = new Date().toISOString().split('T')[0];
+    if (dailyProgress.date !== today) return 0;
+
+    if (bookId) {
+      return dailyProgress.bookReviews[bookId] || 0;
+    }
+
+    // Return total reviews across all books
+    return Object.values(dailyProgress.bookReviews).reduce((sum: number, count: number) => sum + count, 0);
   };
 
   // Undo last review
@@ -534,6 +731,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       addToStudy,
       removeFromStudy,
       bulkAddToStudy,
+      deleteCard,
       getHighlightStudyStatus,
       settings,
       updateSettings,
@@ -545,6 +743,8 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       sessionStats,
       getDeckStats,
       getBookCardsDue,
+      dailyProgress,
+      getReviewsToday,
       reviewLogs,
       isLoaded,
       addTag,

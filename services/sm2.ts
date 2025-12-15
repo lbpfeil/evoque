@@ -5,9 +5,9 @@ import { StudyCard } from '../types';
  * @param card Current state of the card
  * @param quality Response quality (1-4):
  *   - 1: Again (Fail) - Reset card
- *   - 2: Hard - Pass but difficult
+ *   - 2: Hard - Pass but difficult (reduced interval)
  *   - 3: Good - Pass normally
- *   - 4: Easy - Pass easily
+ *   - 4: Easy - Pass easily (increased interval)
  */
 export const calculateNextReview = (
   card: StudyCard,
@@ -15,14 +15,19 @@ export const calculateNextReview = (
 ): StudyCard => {
   let { interval, repetitions, easeFactor } = card;
 
-  if (quality >= 3) {
-    // Correct response (Good or Easy)
+  if (quality >= 2) {
+    // Correct response (Hard, Good, or Easy)
     if (repetitions === 0) {
       interval = 1;
     } else if (repetitions === 1) {
-      interval = 6;
+      // Hard gets shorter interval than Good
+      interval = quality === 2 ? 3 : 6;
     } else {
       interval = Math.round(interval * easeFactor);
+      // Hard gets 1.2x multiplier instead of easeFactor
+      if (quality === 2) {
+        interval = Math.max(1, Math.round(interval * 1.2 / easeFactor));
+      }
     }
     repetitions += 1;
 
@@ -31,19 +36,15 @@ export const calculateNextReview = (
       // Easy - increase ease factor
       easeFactor += 0.15;
     } else if (quality === 2) {
-      // Hard - decrease ease factor (handled below for quality < 3)
+      // Hard - decrease ease factor
       easeFactor -= 0.15;
     }
     // Quality 3 (Good) - no change to ease factor
   } else {
-    // Incorrect response (Again or Hard with quality < 3)
+    // Incorrect response (Again)
     repetitions = 0;
     interval = 1;
-
-    if (quality === 2) {
-      // Hard - decrease ease factor but don't reset repetitions completely
-      easeFactor -= 0.15;
-    }
+    // easeFactor stays the same for Again
   }
 
   // Ensure ease factor stays within bounds

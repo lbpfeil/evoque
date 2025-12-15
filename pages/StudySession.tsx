@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useStore } from '../components/StoreContext';
+import { DeleteCardPopover } from '../components/DeleteCardPopover';
+import { ArrowLeft, CheckCircle, Zap, Edit2, Target, Clock } from 'lucide-react';
 import { calculateNextReview } from '../services/sm2';
-import { ArrowLeft, Target, Zap, Edit2, Clock } from 'lucide-react';
 
 const StudySession = () => {
     const navigate = useNavigate();
@@ -20,7 +21,9 @@ const StudySession = () => {
         submitReview,
         sessionStats,
         undoLastReview,
-        isLoaded
+        isLoaded,
+        getReviewsToday,
+        deleteCard
     } = useStore();
 
     const [showAnswer, setShowAnswer] = useState(false);
@@ -29,6 +32,7 @@ const StudySession = () => {
     const [editedHighlight, setEditedHighlight] = useState('');
     const [editedNote, setEditedNote] = useState('');
     const [isSaving, setIsSaving] = useState(false);
+    const [showDeletePopover, setShowDeletePopover] = useState(false);
 
     // Derived state from session
     const queueIds = currentSession ? currentSession.cardIds : [];
@@ -107,12 +111,8 @@ const StudySession = () => {
     }, [undoLastReview]);
 
     const handleBack = useCallback(() => {
-        if (completedCount > 0) {
-            const confirmed = window.confirm('You have progress in this session. Are you sure you want to go back?');
-            if (!confirmed) return;
-        }
         navigate('/study');
-    }, [completedCount, navigate]);
+    }, [navigate]);
 
     // Keyboard shortcuts
     useEffect(() => {
@@ -144,6 +144,14 @@ const StudySession = () => {
                 case ' ':
                     e.preventDefault();
                     if (!showAnswer && !sessionComplete && currentCard) setShowAnswer(true);
+                    break;
+                case 'Enter':
+                    e.preventDefault();
+                    if (!showAnswer && !sessionComplete && currentCard) {
+                        setShowAnswer(true);
+                    } else if (showAnswer && !isEditing) {
+                        handleResponse(3); // Good
+                    }
                     break;
                 case '1':
                     if (showAnswer) handleResponse(1);
@@ -182,21 +190,31 @@ const StudySession = () => {
 
     // No cards available
     if (!currentSession || queueIds.length === 0) {
+        // Check if daily limit was reached
+        const reviewsToday = deckId ? getReviewsToday(deckId) : 0;
+        const isDailyLimitReached = deckId && reviewsToday >= 10;
+
         return (
             <div className="h-screen flex flex-col items-center justify-center text-center space-y-6">
                 <div className="text-zinc-500">
-                    <p className="text-base font-medium mb-2">No cards available</p>
-                    <p className="text-sm text-zinc-400">
-                        {deckId ? 'This deck has no cards due for review.' : 'You have no cards due for review.'}
+                    <p className="text-base font-medium mb-2">
+                        {isDailyLimitReached ? 'Daily limit reached!' : 'No cards available'}
                     </p>
-                </div>
+                    <p className="text-sm text-zinc-400">
+                        {isDailyLimitReached
+                            ? `You've completed all 10 reviews for this book today. Come back tomorrow for more!`
+                            : deckId
+                                ? 'This deck has no cards due for review.'
+                                : 'You have no cards due for review.'}
+                    </p >
+                </div >
                 <button
                     onClick={() => navigate('/study')}
                     className="px-6 py-2 bg-black text-white rounded-md hover:bg-zinc-800 transition-colors text-sm"
                 >
                     Back to Decks
                 </button>
-            </div>
+            </div >
         );
     }
 
@@ -293,18 +311,31 @@ const StudySession = () => {
             <div className="flex-1 overflow-y-auto px-6 py-8">
                 <div className="max-w-2xl mx-auto space-y-6">
                     {/* Book Info */}
-                    <div className="flex items-center gap-2.5">
-                        {currentBook.coverUrl && (
-                            <img
-                                src={currentBook.coverUrl}
-                                alt={currentBook.title}
-                                className="w-10 h-14 object-cover rounded-sm shadow-sm"
-                            />
-                        )}
-                        <div>
-                            <h3 className="text-xs font-semibold text-zinc-900">{currentBook.title}</h3>
-                            <p className="text-[10px] text-zinc-400">{currentBook.author}</p>
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2.5">
+                            {currentBook.coverUrl && (
+                                <img
+                                    src={currentBook.coverUrl}
+                                    alt={currentBook.title}
+                                    className="w-10 h-14 object-cover rounded-sm shadow-sm"
+                                />
+                            )}
+                            <div>
+                                <h3 className="text-xs font-semibold text-zinc-900">{currentBook.title}</h3>
+                                <p className="text-[10px] text-zinc-400">{currentBook.author}</p>
+                            </div>
                         </div>
+                        {currentHighlight.createdAt && (
+                            <div className="text-right">
+                                <p className="text-[10px] text-zinc-400">
+                                    {new Date(currentHighlight.createdAt).toLocaleDateString('en-US', {
+                                        month: 'short',
+                                        day: 'numeric',
+                                        year: 'numeric'
+                                    })}
+                                </p>
+                            </div>
+                        )}
                     </div>
 
                     {/* Highlight Text - Editable */}
@@ -393,52 +424,77 @@ const StudySession = () => {
 
             {/* Fixed Footer - Controls */}
             <div className="border-t border-zinc-200 bg-white p-4">
-                <div className="max-w-2xl mx-auto">
-                    {!showAnswer ? (
-                        <button
-                            onClick={() => setShowAnswer(true)}
-                            className="w-full py-3 bg-black hover:bg-zinc-800 text-white rounded-md font-medium text-sm transition-all active:scale-[0.99]"
-                        >
-                            Reveal Answer <span className="text-xs text-zinc-400 ml-2">(Space)</span>
-                        </button>
-                    ) : (
-                        <div className="grid grid-cols-4 gap-2">
+                <div className="max-w-2xl mx-auto relative">
+                    {/* Delete button - fixed to left */}
+                    <button
+                        onClick={() => setShowDeletePopover(true)}
+                        className="absolute left-0 top-1/2 -translate-y-1/2 p-2 bg-zinc-100 hover:bg-red-50 text-zinc-600 hover:text-red-600 rounded-md transition-colors"
+                        title="Delete Card"
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+
+                    {/* Main controls - centered with margin for delete button */}
+                    <div className="ml-12">
+                        {!showAnswer ? (
                             <button
-                                onClick={() => handleResponse(1)}
-                                disabled={isEditing}
-                                className="py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                onClick={() => setShowAnswer(true)}
+                                className="w-full py-3 bg-black hover:bg-zinc-800 text-white rounded-md font-medium text-sm transition-all active:scale-[0.99]"
                             >
-                                <span>Again</span>
-                                <span className="text-[10px] opacity-75">(1)</span>
+                                Reveal Answer <span className="text-xs text-zinc-400 ml-2">(Space / Enter)</span>
                             </button>
-                            <button
-                                onClick={() => handleResponse(2)}
-                                disabled={isEditing}
-                                className="py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                <span>Hard</span>
-                                <span className="text-[10px] opacity-75">(2)</span>
-                            </button>
-                            <button
-                                onClick={() => handleResponse(3)}
-                                disabled={isEditing}
-                                className="py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                <span>Good</span>
-                                <span className="text-[10px] opacity-75">(3)</span>
-                            </button>
-                            <button
-                                onClick={() => handleResponse(4)}
-                                disabled={isEditing}
-                                className="py-1.5 bg-green-500 hover:bg-green-600 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                <span>Easy</span>
-                                <span className="text-[10px] opacity-75">(4)</span>
-                            </button>
-                        </div>
-                    )}
+                        ) : (
+                            <div className="grid grid-cols-4 gap-2">
+                                <button
+                                    onClick={() => handleResponse(1)}
+                                    disabled={isEditing}
+                                    className="py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <span>Again</span>
+                                    <span className="text-[10px] opacity-75">(1)</span>
+                                </button>
+                                <button
+                                    onClick={() => handleResponse(2)}
+                                    disabled={isEditing}
+                                    className="py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <span>Hard</span>
+                                    <span className="text-[10px] opacity-75">(2)</span>
+                                </button>
+                                <button
+                                    onClick={() => handleResponse(3)}
+                                    disabled={isEditing}
+                                    className="py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <span>Good</span>
+                                    <span className="text-[10px] opacity-75">(3 / Enter)</span>
+                                </button>
+                                <button
+                                    onClick={() => handleResponse(4)}
+                                    disabled={isEditing}
+                                    className="py-1.5 bg-green-500 hover:bg-green-600 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <span>Easy</span>
+                                    <span className="text-[10px] opacity-75">(4)</span>
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
+
+            {/* Delete Confirmation Popover */}
+            {showDeletePopover && (
+                <DeleteCardPopover
+                    onConfirm={() => {
+                        deleteCard(currentCard!.id);
+                        setShowDeletePopover(false);
+                    }}
+                    onCancel={() => setShowDeletePopover(false)}
+                />
+            )}
         </div>
     );
 };

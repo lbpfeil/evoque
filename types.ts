@@ -66,6 +66,12 @@ export interface StudySession {
   completedIds: string[];
   results: ReviewResult[];
   history: ReviewHistory[];  // Track review history for undo
+  bookId?: string;  // Track which book this session is for
+}
+
+export interface DailyProgress {
+  date: string;  // ISO date string (YYYY-MM-DD)
+  bookReviews: Record<string, number>;  // bookId -> count of reviews today
 }
 
 export interface ReviewLog {

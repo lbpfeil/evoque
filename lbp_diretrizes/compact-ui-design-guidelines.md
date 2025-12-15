@@ -163,6 +163,41 @@
 - Padding horizontal: `px-3` (12px) para botões com texto
 - Ícones dentro de botões: `w-2.5 h-2.5` (10px) ou `w-3 h-3` (12px)
 
+#### Botão Proeminente (Call-to-Action)
+
+Para ações principais que merecem destaque visual:
+
+```tsx
+<button className="w-full px-4 py-3 bg-black hover:bg-zinc-800 text-white rounded-md transition-colors flex items-center justify-between">
+  <div className="flex items-center gap-3">
+    <div className="flex items-center justify-center w-8 h-8 bg-white/10 rounded">
+      <Icon className="w-4 h-4" />
+    </div>
+    <div className="text-left">
+      <div className="text-sm font-semibold">Primary Action</div>
+      <div className="text-xs text-white/70">Supporting description</div>
+    </div>
+  </div>
+  <div className="text-right">
+    <div className="text-lg font-bold">42</div>
+    <div className="text-white/50 text-[10px]">Label</div>
+  </div>
+</button>
+```
+
+**Diretrizes:**
+- Background: `bg-black` com hover `bg-zinc-800`
+- Altura: `py-3` (12px vertical padding)
+- Padding horizontal: `px-4` (16px)
+- Texto principal: `text-sm font-semibold`
+- Texto secundário: `text-xs text-white/70`
+- Ícone container: `w-8 h-8 bg-white/10 rounded`
+- Ícone: `w-4 h-4`
+- Stats/números: `text-lg font-bold`
+- Labels de stats: `text-[10px] text-white/50`
+- Transição: `transition-colors` para suavidade
+- Use para ações primárias únicas por tela
+
 ### Inputs
 
 ```tsx
