@@ -352,11 +352,28 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     const highlight = highlights.find(h => h.id === card.highlightId);
 
     // Update daily progress if card was reviewed today
-    if (highlight && card.lastReviewedAt) {
-      const today = new Date().toISOString().split('T')[0];
-      const lastReviewDate = new Date(card.lastReviewedAt).toISOString().split('T')[0];
+    // Check two conditions:
+    // 1. Card has lastReviewedAt and it's from today
+    // 2. Card is in current session's completedIds (reviewed but not yet persisted)
+    const today = new Date().toISOString().split('T')[0];
+    let shouldDecrementProgress = false;
 
-      if (lastReviewDate === today && dailyProgress.date === today) {
+    if (highlight) {
+      // Check if reviewed via lastReviewedAt
+      if (card.lastReviewedAt) {
+        const lastReviewDate = new Date(card.lastReviewedAt).toISOString().split('T')[0];
+        if (lastReviewDate === today && dailyProgress.date === today) {
+          shouldDecrementProgress = true;
+        }
+      }
+
+      // Check if reviewed in current session (even if not persisted yet)
+      if (!shouldDecrementProgress && currentSession && currentSession.completedIds.includes(cardId)) {
+        shouldDecrementProgress = true;
+      }
+
+      // Decrement if card was reviewed today
+      if (shouldDecrementProgress) {
         const bookId = highlight.bookId;
         setDailyProgress(prev => ({
           ...prev,
@@ -625,7 +642,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     }
 
     // Return total reviews across all books
-    return Object.values(dailyProgress.bookReviews).reduce((sum: number, count: number) => sum + count, 0);
+    return Object.values(dailyProgress.bookReviews).reduce<number>((sum, count) => sum + (count as number), 0);
   };
 
   // Undo last review
@@ -636,6 +653,23 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
 
     // Restore card to previous state
     updateCard(lastReview.previousCard);
+
+    // Decrement daily progress - mirror logic from submitReview
+    const card = lastReview.previousCard;
+    const highlight = highlights.find(h => h.id === card.highlightId);
+    if (highlight) {
+      const bookId = highlight.bookId;
+      const today = new Date().toISOString().split('T')[0];
+      if (dailyProgress.date === today) {
+        setDailyProgress(prev => ({
+          ...prev,
+          bookReviews: {
+            ...prev.bookReviews,
+            [bookId]: Math.max(0, (prev.bookReviews[bookId] || 0) - 1)
+          }
+        }));
+      }
+    }
 
     // Remove from completed
     setCurrentSession(prev => {

@@ -2,6 +2,88 @@
 
 ## 📝 CHANGELOG
 
+### 2025-12-16: Study Session UX Enhancements & Bug Fixes
+
+**Sessão de Código:** Refinamentos visuais e correções críticas na Study Session, incluindo progress bar animada, sistema de tags completo, e melhorias tipográficas.
+
+#### ✨ Novas Funcionalidades Implementadas
+
+1. **Progress Bar Animada**
+   - Aumentada de 1px para 3px de altura
+   - Gradiente animado com efeito shimmer/flow
+   - Bordas arredondadas (`rounded-full`)
+   - Animação contínua de 2s com `ease-in-out`
+   - Arquivo: `index.css`, `pages/StudySession.tsx`
+
+2. **Sistema de Tags na Study Session**
+   - Exibição de tags abaixo das informações do livro
+   - Diferenciação visual: tags globais (azul) vs tags de livro (âmbar)
+   - Limite de 6 tags visíveis com badge "+N" para overflow
+   - Badge clicável para expandir/colapsar todas as tags
+   - Ordenação: tags globais primeiro, depois tags específicas do livro
+   - Design compacto: `text-[9px]`, `px-1.5 py-0.5`, `gap-1`
+   - Arquivo: `pages/StudySession.tsx`
+
+3. **Melhorias Tipográficas**
+   - Título do livro: `text-xs` → `text-sm` (+16.7%)
+   - Autor do livro: `text-[10px]` → `text-xs` (+20%)
+   - Texto do highlight: `text-xl/2xl` → `text-lg/xl` (-10%)
+   - Texto do highlight agora justificado (`text-justify`)
+   - Ícone de editar reposicionado (`-top-1 -right-1`) para não sobrepor texto
+   - Arquivo: `pages/StudySession.tsx`
+
+4. **Área de Edição de Notas Ampliada**
+   - Textarea de edição: 3 linhas → 6 linhas
+   - Agora igual ao tamanho da área de edição do highlight
+   - Notas longas sempre visíveis com `whitespace-pre-wrap`
+   - Arquivo: `pages/StudySession.tsx`
+
+#### 🐛 Bugs Críticos Corrigidos
+
+1. **Undo (Ctrl+Z) - Daily Progress**
+   - **Problema:** Desfazer revisão não decrementava `dailyProgress`
+   - **Solução:** `undoLastReview` agora decrementa contador corretamente
+   - Espelha lógica de `submitReview` para consistência
+   - Arquivo: `components/StoreContext.tsx`
+
+2. **Delete Card - Daily Progress**
+   - **Problema:** Deletar card durante sessão não atualizava tabela de decks
+   - **Solução:** `deleteCard` agora verifica duas condições:
+     - Card tem `lastReviewedAt` de hoje (lógica existente)
+     - Card está em `currentSession.completedIds` (nova verificação)
+   - Captura cards deletados antes de persistência
+   - Arquivo: `components/StoreContext.tsx`
+
+3. **TypeScript Type Inference**
+   - Corrigido erro de tipo em `getReviewsToday`
+   - Adicionado type annotation explícita: `reduce<number>`
+   - Arquivo: `components/StoreContext.tsx`
+
+#### 🎨 Design Guidelines Atualizados
+
+Documentação completa do sistema de tags em `tag_display_design.md`:
+- Especificações de cores (azul-500 para global, amber-500 para livro)
+- Layout e ordenação de tags
+- Comportamento de expansão/colapso
+- Exemplos de código
+
+#### 📁 Arquivos Modificados
+
+- `index.css` - Animação de progress bar (keyframes + classe CSS)
+- `pages/StudySession.tsx` - Tags, tipografia, área de edição de notas
+- `components/StoreContext.tsx` - Correções em `undoLastReview` e `deleteCard`
+- `types.ts` - (sem alterações, apenas referenciado)
+
+#### 🎯 Impacto
+
+- **UX:** Progress bar mais visível e dinâmica
+- **Contexto:** Tags fornecem contexto imediato durante revisão
+- **Legibilidade:** Tipografia otimizada para melhor hierarquia visual
+- **Dados:** 100% de integridade com correções de undo e delete
+- **Edição:** Área de notas 2x maior para melhor usabilidade
+
+---
+
 ### 2025-12-15: Study Page Refinements & Bug Fixes
 
 **Sessão de Código:** Refinamento completo da funcionalidade de estudo com foco em UX, correções críticas de bugs e implementação de features solicitadas.

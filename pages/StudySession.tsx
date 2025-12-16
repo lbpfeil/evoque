@@ -14,6 +14,7 @@ const StudySession = () => {
         studyCards,
         highlights,
         books,
+        tags,
         updateCard,
         updateHighlight,
         currentSession,
@@ -33,6 +34,7 @@ const StudySession = () => {
     const [editedNote, setEditedNote] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     const [showDeletePopover, setShowDeletePopover] = useState(false);
+    const [showAllTags, setShowAllTags] = useState(false);
 
     // Derived state from session
     const queueIds = currentSession ? currentSession.cardIds : [];
@@ -299,9 +301,9 @@ const StudySession = () => {
                 </div>
 
                 {/* Progress bar */}
-                <div className="h-px bg-zinc-200 mt-2">
+                <div className="h-[3px] bg-zinc-200 mt-2 rounded-full overflow-hidden">
                     <div
-                        className="h-full bg-black transition-all duration-300 ease-out"
+                        className="h-full progress-bar-animated transition-all duration-300 ease-out"
                         style={{ width: `${progress}%` }}
                     />
                 </div>
@@ -321,8 +323,8 @@ const StudySession = () => {
                                 />
                             )}
                             <div>
-                                <h3 className="text-xs font-semibold text-zinc-900">{currentBook.title}</h3>
-                                <p className="text-[10px] text-zinc-400">{currentBook.author}</p>
+                                <h3 className="text-sm font-semibold text-zinc-900">{currentBook.title}</h3>
+                                <p className="text-xs text-zinc-400">{currentBook.author}</p>
                             </div>
                         </div>
                         {currentHighlight.createdAt && (
@@ -337,6 +339,48 @@ const StudySession = () => {
                             </div>
                         )}
                     </div>
+
+                    {/* Tags Display */}
+                    {currentHighlight.tags && currentHighlight.tags.length > 0 && (() => {
+                        const highlightTags = currentHighlight.tags
+                            .map(tagId => tags.find(t => t.id === tagId))
+                            .filter((tag): tag is typeof tags[0] => tag !== undefined)
+                            .sort((a, b) => {
+                                // Global tags first (no bookId), then book-specific tags
+                                if (!a.bookId && b.bookId) return -1;
+                                if (a.bookId && !b.bookId) return 1;
+                                return 0;
+                            });
+
+                        const maxTags = 6;
+                        const displayTags = showAllTags ? highlightTags : highlightTags.slice(0, maxTags);
+                        const remainingCount = highlightTags.length - maxTags;
+
+                        return (
+                            <div className="flex flex-wrap gap-1 mb-3">
+                                {displayTags.map(tag => (
+                                    <span
+                                        key={tag.id}
+                                        className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium ${tag.bookId
+                                            ? 'bg-amber-500 text-white'  // Book-specific
+                                            : 'bg-blue-500 text-white'   // Global
+                                            }`}
+                                    >
+                                        {tag.name}
+                                    </span>
+                                ))}
+                                {remainingCount > 0 && (
+                                    <button
+                                        onClick={() => setShowAllTags(!showAllTags)}
+                                        className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-zinc-300 text-zinc-700 hover:bg-zinc-400 transition-colors cursor-pointer"
+                                        title={showAllTags ? 'Show less' : `Show ${remainingCount} more tags`}
+                                    >
+                                        {showAllTags ? '−' : `+${remainingCount}`}
+                                    </button>
+                                )}
+                            </div>
+                        );
+                    })()}
 
                     {/* Highlight Text - Editable */}
                     {isEditingHighlight ? (
@@ -360,13 +404,13 @@ const StudySession = () => {
                     ) : (
                         <div className="relative group">
                             <blockquote
-                                className="text-xl md:text-2xl font-serif text-zinc-800 leading-relaxed"
+                                className="text-lg md:text-xl font-serif text-zinc-800 leading-relaxed text-justify"
                             >
                                 "{currentHighlight.text}"
                             </blockquote>
                             <button
                                 onClick={handleEditHighlight}
-                                className="absolute top-0 right-0 p-1 text-zinc-400 hover:text-black transition-colors opacity-0 group-hover:opacity-100"
+                                className="absolute -top-1 -right-1 p-1 text-zinc-400 hover:text-black transition-colors opacity-0 group-hover:opacity-100"
                                 title="Edit Highlight"
                             >
                                 <Edit2 className="w-3.5 h-3.5" />
@@ -390,7 +434,7 @@ const StudySession = () => {
                                         onChange={(e) => setEditedNote(e.target.value)}
                                         onBlur={handleSaveNote}
                                         className="w-full bg-white border border-zinc-200 rounded-sm p-3 text-sm text-zinc-800 focus:outline-none focus:ring-1 focus:ring-black focus:border-black resize-none"
-                                        rows={3}
+                                        rows={6}
                                         placeholder="Add your note here..."
                                         autoFocus
                                     />
@@ -411,7 +455,7 @@ const StudySession = () => {
                                         </button>
                                     </div>
                                     {currentHighlight.note ? (
-                                        <p className="text-sm text-zinc-700 leading-relaxed">{currentHighlight.note}</p>
+                                        <p className="text-sm text-zinc-700 leading-relaxed whitespace-pre-wrap">{currentHighlight.note}</p>
                                     ) : (
                                         <p className="text-sm text-zinc-400 italic">No note attached. Press E to add one.</p>
                                     )}

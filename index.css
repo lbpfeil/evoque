@@ -74,3 +74,29 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Progress Bar Flow Animation */
+@keyframes progress-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.progress-bar-animated {
+  background: linear-gradient(
+    90deg,
+    #000000 0%,
+    #3b3b3b 25%,
+    #000000 50%,
+    #3b3b3b 75%,
+    #000000 100%
+  );
+  background-size: 200% 100%;
+  animation: progress-flow 2s ease-in-out infinite;
+}
