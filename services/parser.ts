@@ -22,6 +22,19 @@ const generateUUID = (): string => {
   });
 };
 
+// Generate deterministic UUIDs for books (same book = same ID)
+const generateDeterministicUUID = (input: string): string => {
+  let hash = 0;
+  for (let i = 0; i < input.length; i++) {
+    const char = input.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+
+  const hex = Math.abs(hash).toString(16).padStart(8, '0');
+  return `${hex.substring(0, 8)}-${hex.substring(0, 4)}-4${hex.substring(1, 4)}-${hex.substring(0, 4)}-${hex}${hex}`.substring(0, 36);
+};
+
 const parseLocation = (locString: string): { start: number, end: number } => {
   if (!locString) return { start: 0, end: 0 };
 
@@ -125,8 +138,8 @@ export const parseMyClippings = (text: string): { books: Book[], highlights: Hig
 
       if (!content) return;
 
-      // Generate Book ID
-      const bookId = btoa(unescape(encodeURIComponent(`${title}-${author}`)));
+      // Generate Book ID (deterministic UUID)
+      const bookId = generateDeterministicUUID(`${title}-${author}`);
 
       if (!booksMap.has(bookId)) {
         booksMap.set(bookId, {
@@ -167,7 +180,7 @@ export const parseMyClippings = (text: string): { books: Book[], highlights: Hig
   const finalHighlights: Highlight[] = [];
 
   parsedHighlights.forEach(ph => {
-    const bookId = btoa(unescape(encodeURIComponent(`${ph.title}-${ph.author}`)));
+    const bookId = generateDeterministicUUID(`${ph.title}-${ph.author}`);
 
     // Find associated note
     // A note is associated if it's for the same book and its location is within or close to the highlight's location

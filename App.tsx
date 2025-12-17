@@ -8,8 +8,11 @@ import Highlights from './pages/Highlights';
 import Import from './pages/Import';
 import Study from './pages/Study';
 import StudySession from './pages/StudySession';
+import Login from './pages/Login';
 import { StoreProvider } from './components/StoreContext';
+import { AuthProvider, useAuth } from './components/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
+import { Loader2 } from 'lucide-react';
 
 const AppLayout = ({ children }: React.PropsWithChildren) => {
   const location = useLocation();
@@ -31,25 +34,50 @@ const AppLayout = ({ children }: React.PropsWithChildren) => {
   );
 };
 
+const ProtectedApp = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-zinc-50">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
+          <p className="text-sm text-zinc-600">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Login />;
+  }
+
+  return (
+    <StoreProvider>
+      <HashRouter>
+        <AppLayout>
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/library" element={<Library />} />
+            <Route path="/library/:bookId" element={<BookDetails />} />
+            <Route path="/highlights" element={<Highlights />} />
+            <Route path="/import" element={<Import />} />
+            <Route path="/study" element={<Study />} />
+            <Route path="/study/session" element={<StudySession />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </AppLayout>
+      </HashRouter>
+    </StoreProvider>
+  );
+};
+
 const App = () => {
   return (
     <ErrorBoundary>
-      <StoreProvider>
-        <HashRouter>
-          <AppLayout>
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/library" element={<Library />} />
-              <Route path="/library/:bookId" element={<BookDetails />} />
-              <Route path="/highlights" element={<Highlights />} />
-              <Route path="/import" element={<Import />} />
-              <Route path="/study" element={<Study />} />
-              <Route path="/study/session" element={<StudySession />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </AppLayout>
-        </HashRouter>
-      </StoreProvider>
+      <AuthProvider>
+        <ProtectedApp />
+      </AuthProvider>
     </ErrorBoundary>
   );
 };

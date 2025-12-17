@@ -21,7 +21,7 @@ const Import = () => {
     }
   };
 
-  const processFile = (file: File) => {
+  const processFile = async (file: File) => {
     if (!file.name.endsWith('.txt')) {
       alert('Please upload a .txt file (My Clippings.txt)');
       return;
@@ -30,11 +30,11 @@ const Import = () => {
     setIsProcessing(true);
     setError(null);
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       const text = e.target?.result as string;
-      setTimeout(() => { // Simulate processing time for UX
+      setTimeout(async () => { // Simulate processing time for UX
         try {
-          const res = importData(text);
+          const res = await importData(text);
           setResult(res);
         } catch (err: any) {
           console.error(err);

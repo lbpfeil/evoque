@@ -1,8 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Library, Target, Upload, Settings, BookOpen, Highlighter } from 'lucide-react';
+import { LayoutDashboard, Library, Target, Upload, Settings, BookOpen, Highlighter, LogOut, ChevronUp } from 'lucide-react';
+import { useAuth } from './AuthContext';
 
 const Sidebar = () => {
+  const { user, signOut } = useAuth();
+  const [showLogout, setShowLogout] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
+  const getUserInitials = (email: string) => {
+    return email.substring(0, 2).toUpperCase();
+  };
+
   const navItems = [
     { name: 'Dashboard', icon: LayoutDashboard, path: '/' },
     { name: 'Library', icon: Library, path: '/library' },
@@ -39,16 +55,41 @@ const Sidebar = () => {
         ))}
       </nav>
 
-      <div className="p-4 border-t border-zinc-100">
-        <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded-md bg-zinc-200 flex items-center justify-center text-zinc-600 font-bold text-[10px]">
-            AD
+      {/* User Menu */}
+      <div className="border-t border-zinc-100">
+        {/* Logout Menu (appears above user button) */}
+        {showLogout && (
+          <div className="p-2 border-b border-zinc-100">
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center gap-2 px-3 py-2 text-xs text-zinc-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+            >
+              <LogOut className="w-3 h-3" />
+              Sair
+            </button>
           </div>
-          <div>
-            <p className="text-xs font-semibold text-zinc-900">Admin User</p>
-            <p className="text-[10px] text-zinc-400">Free Plan</p>
+        )}
+
+        {/* User Info Button */}
+        <button
+          onClick={() => setShowLogout(!showLogout)}
+          className="w-full p-4 hover:bg-zinc-50 transition-colors text-left"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-xs shrink-0">
+              {user?.email ? getUserInitials(user.email) : 'U'}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-zinc-900 truncate">
+                {user?.email || 'User'}
+              </p>
+              <p className="text-[10px] text-zinc-500">Free Plan</p>
+            </div>
+            <ChevronUp
+              className={`w-3.5 h-3.5 text-zinc-400 transition-transform ${showLogout ? '' : 'rotate-180'}`}
+            />
           </div>
-        </div>
+        </button>
       </div>
     </aside>
   );

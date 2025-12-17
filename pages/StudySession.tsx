@@ -54,15 +54,15 @@ const StudySession = () => {
         }
     }, [isLoaded, deckId]);
 
-    const handleResponse = useCallback((quality: number) => {
+    const handleResponse = useCallback(async (quality: number) => {
         if (!currentCard) return;
 
         // 1. Update Card (SM-2 Algorithm)
         const updatedCard = calculateNextReview(currentCard, quality);
-        updateCard(updatedCard);
+        await updateCard(updatedCard);
 
-        // 2. Update Session
-        submitReview(currentCard.id, quality);
+        // 2. Update Session and Save Review Log
+        await submitReview(currentCard.id, quality);
 
         setShowAnswer(false);
         setIsEditingHighlight(false);
@@ -73,7 +73,7 @@ const StudySession = () => {
         if (!currentHighlight) return;
 
         setIsSaving(true);
-        updateHighlight(currentHighlight.id, { text: editedHighlight });
+        await updateHighlight(currentHighlight.id, { text: editedHighlight });
 
         setTimeout(() => {
             setIsSaving(false);
@@ -85,7 +85,7 @@ const StudySession = () => {
         if (!currentHighlight) return;
 
         setIsSaving(true);
-        updateHighlight(currentHighlight.id, { note: editedNote });
+        await updateHighlight(currentHighlight.id, { note: editedNote });
 
         setTimeout(() => {
             setIsSaving(false);

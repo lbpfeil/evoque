@@ -2,6 +2,179 @@
 
 ## 📝 CHANGELOG
 
+### 2025-12-17: Supabase Migration - Complete Data Persistence Layer
+
+**Sessão de Código:** Migração completa do sistema de armazenamento de `localStorage` para **Supabase (PostgreSQL)** com autenticação, RLS (Row Level Security), e optimistic UI updates.
+
+#### 🎯 Objetivo da Migração
+
+Substituir o armazenamento local por um banco de dados cloud para garantir:
+- ✅ Persistência de dados entre dispositivos
+- ✅ Sincronização em tempo real
+- ✅ Autenticação e segurança (RLS)
+- ✅ Backup automático
+- ✅ Escalabilidade
+
+#### 🗄️ Estrutura do Banco de Dados
+
+**Tabelas Criadas:**
+1. `books` - Livros importados
+2. `highlights` - Destaques dos livros
+3. `study_cards` - Cards de estudo (SM-2 algorithm)
+4. `tags` - Tags globais e específicas de livros (hierárquicas)
+5. `user_settings` - Configurações do usuário
+6. `review_logs` - Histórico de revisões (analytics)
+
+**Dados Temporários (localStorage):**
+- `currentSession` - Estado da sessão de estudo atual
+- `dailyProgress` - Progresso diário de revisões
+
+#### ✨ Implementações Realizadas
+
+**Fase 0: Autenticação (CRÍTICO)**
+- ✅ `AuthContext.tsx` - Gerenciamento de autenticação
+- ✅ `Login.tsx` - UI de login/signup com email/senha
+- ✅ `Sidebar.tsx` - Menu de usuário e logout
+- ✅ `App.tsx` - Proteção de rotas (redirect para login)
+- ✅ Configuração Supabase Auth no dashboard
+
+**Fase 1: Setup e Helpers**
+- ✅ `lib/supabase.ts` - Cliente Supabase
+- ✅ `lib/supabaseHelpers.ts` - Conversão camelCase ↔ snake_case
+- ✅ `vite-env.d.ts` - Tipos para env vars
+- ✅ `services/parser.ts` - UUID determinístico (substituiu btoa)
+
+**Fase 2: Carregamento de Dados**
+- ✅ `StoreContext.tsx` - Carregamento assíncrono do Supabase
+- ✅ Estado inicial vazio (removido MOCK_DATA)
+- ✅ useEffect para carregar: books, highlights, study_cards, tags, user_settings
+
+**Fase 3: Importação de Dados**
+- ✅ `importData()` - Upsert de books, highlights, study_cards
+- ✅ Recarregamento completo após importação
+- ✅ `Import.tsx` - Chamada async com await
+
+**Fase 5: CRUD de Highlights**
+- ✅ `deleteHighlight()` - Delete com cascade de study_cards
+- ✅ `updateHighlight()` - Update com optimistic UI
+- ✅ `bulkDeleteHighlights()` - Delete múltiplo
+
+**Fase 6: CRUD de Study Cards**
+- ✅ `addToStudy()` - Adicionar highlight ao estudo
+- ✅ `removeFromStudy()` - Remover do estudo
+- ✅ `bulkAddToStudy()` - Adicionar múltiplos
+- ✅ `deleteCard()` - Delete com atualização de daily progress
+- ✅ `updateCard()` - Update após revisão (SM-2)
+
+**Fase 7: CRUD de Tags**
+- ✅ `addTag()` - Criar tag global ou de livro
+- ✅ `updateTag()` - Atualizar nome/cor
+- ✅ `deleteTag()` - Delete com cascade de tags filhas
+- ✅ `assignTagToHighlight()` - Atribuir tag
+- ✅ `removeTagFromHighlight()` - Remover tag
+
+**Fase 8: Settings & Review Logs**
+- ✅ `updateSettings()` - Upsert de configurações
+- ✅ `submitReview()` - Salvar review_logs no Supabase
+
+#### 🔧 Padrão de Implementação
+
+Todas as operações seguem o padrão **Optimistic UI Updates**:
+
+```typescript
+const updateData = async (id: string, updates: any) => {
+  if (!user) return;
+  
+  // 1. Optimistic update (UI imediata)
+  setData(prev => prev.map(item => 
+    item.id === id ? { ...item, ...updates } : item
+  ));
+
+  // 2. Sync com Supabase
+  try {
+    const { error } = await supabase
+      .from('table')
+      .update(toSupabaseFormat(updates, user.id))
+      .eq('id', id)
+      .eq('user_id', user.id);
+    
+    if (error) throw error;
+  } catch (error) {
+    console.error('Failed to sync:', error);
+    // 3. Rollback ou reload em caso de erro
+    const { data } = await supabase
+      .from('table')
+      .select('*')
+      .eq('user_id', user.id);
+    if (data) setData(data.map(fromSupabaseFormat));
+  }
+};
+```
+
+#### 🐛 Bugs Críticos Corrigidos
+
+1. **Interface `StoreContextType` Desatualizada**
+   - Funções async não retornavam `Promise<void>`
+   - ✅ Corrigido: Interface completa atualizada
+
+2. **Chamadas sem `await` (5 ocorrências)**
+   - `StudySession.tsx`: `updateHighlight` (2x), `submitReview` ← **CRÍTICO**
+   - `Highlights.tsx`: `updateHighlight`, `bulkDeleteHighlights`
+   - ✅ Corrigido: Todas agora usam `await`
+
+3. **Review Logs não salvavam**
+   - `submitReview` chamado sem `await` em `handleResponse`
+   - ✅ Corrigido: Adicionado `await submitReview()`
+
+#### 📁 Arquivos Modificados
+
+**Core:**
+- `components/AuthContext.tsx` - NEW
+- `components/StoreContext.tsx` - MAJOR REFACTOR
+- `lib/supabase.ts` - NEW
+- `lib/supabaseHelpers.ts` - NEW
+- `services/parser.ts` - UUID generation
+- `vite-env.d.ts` - Env types
+
+**Pages:**
+- `pages/Login.tsx` - NEW
+- `pages/Import.tsx` - Async import
+- `pages/StudySession.tsx` - Await fixes
+- `pages/Highlights.tsx` - Await fixes
+- `App.tsx` - Route protection
+
+#### 🎯 Impacto
+
+- **Persistência:** 100% dos dados agora no Supabase
+- **Segurança:** RLS garante isolamento por usuário
+- **Performance:** Optimistic updates = UI instantânea
+- **Confiabilidade:** Rollback automático em caso de erro
+- **Analytics:** Review logs permitem análise de desempenho
+
+#### 🔐 Segurança (RLS)
+
+Todas as tabelas têm políticas RLS:
+```sql
+-- Exemplo de política RLS
+CREATE POLICY "Users can only access their own data"
+ON highlights FOR ALL
+USING (user_id = auth.uid());
+```
+
+#### 📊 Status da Migração
+
+✅ **100% COMPLETA**
+- Autenticação: ✅
+- Data Loading: ✅
+- Data Import: ✅
+- CRUD Operations: ✅
+- Review Logs: ✅
+- Settings: ✅
+- Error Handling: ✅
+- Optimistic Updates: ✅
+
+---
+
 ### 2025-12-16: Study Session UX Enhancements & Bug Fixes
 
 **Sessão de Código:** Refinamentos visuais e correções críticas na Study Session, incluindo progress bar animada, sistema de tags completo, e melhorias tipográficas.

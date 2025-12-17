@@ -1,31 +1,46 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Book, Highlight, StudyCard, StudyStatus, UserSettings, StudySession, ReviewLog, Tag, DeckStats, DailyProgress } from '../types';
-import { MOCK_BOOKS, MOCK_HIGHLIGHTS, MOCK_CARDS, MOCK_TAGS } from '../services/mockData';
 import { parseMyClippings } from '../services/parser';
+import { supabase } from '../lib/supabase';
+import { useAuth } from './AuthContext';
+import {
+  fromSupabaseBook,
+  fromSupabaseHighlight,
+  fromSupabaseStudyCard,
+  fromSupabaseTag,
+  fromSupabaseSettings,
+  fromSupabaseReviewLog,
+  toSupabaseBook,
+  toSupabaseHighlight,
+  toSupabaseStudyCard,
+  toSupabaseTag,
+  toSupabaseSettings,
+  toSupabaseReviewLog
+} from '../lib/supabaseHelpers';
 
 interface StoreContextType {
   books: Book[];
   highlights: Highlight[];
   studyCards: StudyCard[];
   tags: Tag[];
-  importData: (text: string) => { newBooks: number; newHighlights: number };
+  importData: (text: string) => Promise<{ newBooks: number; newHighlights: number }>;
   getCardsDue: () => StudyCard[];
-  updateCard: (card: StudyCard) => void;
+  updateCard: (card: StudyCard) => Promise<void>;
   getBook: (id: string) => Book | undefined;
   getBookHighlights: (bookId: string) => Highlight[];
-  deleteHighlight: (id: string) => void;
-  updateHighlight: (id: string, updates: Partial<Highlight>) => void;
-  bulkDeleteHighlights: (ids: string[]) => void;
-  addToStudy: (highlightId: string) => void;
-  removeFromStudy: (highlightId: string) => void;
-  bulkAddToStudy: (highlightIds: string[]) => void;
-  deleteCard: (cardId: string) => void;
+  deleteHighlight: (id: string) => Promise<void>;
+  updateHighlight: (id: string, updates: Partial<Highlight>) => Promise<void>;
+  bulkDeleteHighlights: (ids: string[]) => Promise<void>;
+  addToStudy: (highlightId: string) => Promise<void>;
+  removeFromStudy: (highlightId: string) => Promise<void>;
+  bulkAddToStudy: (highlightIds: string[]) => Promise<void>;
+  deleteCard: (cardId: string) => Promise<void>;
   getHighlightStudyStatus: (highlightId: string) => StudyStatus | 'not-started';
   settings: UserSettings;
-  updateSettings: (settings: Partial<UserSettings>) => void;
+  updateSettings: (settings: Partial<UserSettings>) => Promise<void>;
   currentSession: StudySession | null;
   startSession: (bookId?: string) => void;
-  submitReview: (cardId: string, quality: number) => void;
+  submitReview: (cardId: string, quality: number) => Promise<void>;
   resetSession: () => void;
   undoLastReview: () => void;
   sessionStats: { reviewed: number; correct: number; streak: number };
@@ -35,20 +50,22 @@ interface StoreContextType {
   getReviewsToday: (bookId?: string) => number;
   reviewLogs: ReviewLog[];
   isLoaded: boolean;
-  addTag: (name: string, parentId?: string, bookId?: string) => string;
-  updateTag: (id: string, updates: Partial<Tag>) => void;
-  deleteTag: (id: string) => void;
-  assignTagToHighlight: (highlightId: string, tagId: string) => void;
-  removeTagFromHighlight: (highlightId: string, tagId: string) => void;
+  addTag: (name: string, parentId?: string, bookId?: string) => Promise<string>;
+  updateTag: (id: string, updates: Partial<Tag>) => Promise<void>;
+  deleteTag: (id: string) => Promise<void>;
+  assignTagToHighlight: (highlightId: string, tagId: string) => Promise<void>;
+  removeTagFromHighlight: (highlightId: string, tagId: string) => Promise<void>;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 export const StoreProvider = ({ children }: React.PropsWithChildren) => {
-  const [books, setBooks] = useState<Book[]>(MOCK_BOOKS);
-  const [highlights, setHighlights] = useState<Highlight[]>(MOCK_HIGHLIGHTS);
-  const [studyCards, setStudyCards] = useState<StudyCard[]>(MOCK_CARDS);
-  const [tags, setTags] = useState<Tag[]>(MOCK_TAGS);
+  const { user } = useAuth();
+
+  const [books, setBooks] = useState<Book[]>([]);
+  const [highlights, setHighlights] = useState<Highlight[]>([]);
+  const [studyCards, setStudyCards] = useState<StudyCard[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
   const [settings, setSettings] = useState<UserSettings>({
     maxReviewsPerDay: 15,
     newCardsPerDay: 10
@@ -61,87 +78,116 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     bookReviews: {}
   });
 
-  // Load from local storage on mount
+  // Load data from Supabase on mount
   useEffect(() => {
-    try {
-      const savedBooks = localStorage.getItem('khm_books');
-      const savedHighlights = localStorage.getItem('khm_highlights');
-      const savedCards = localStorage.getItem('khm_cards');
-      const savedTags = localStorage.getItem('khm_tags');
-      const savedSettings = localStorage.getItem('khm_settings');
-      const savedSession = localStorage.getItem('khm_session');
-      const savedLogs = localStorage.getItem('khm_logs');
-      const savedProgress = localStorage.getItem('khm_daily_progress');
-
-      if (savedBooks) {
-        const parsed = JSON.parse(savedBooks);
-        if (Array.isArray(parsed)) setBooks(parsed);
-      }
-      if (savedHighlights) {
-        const parsed = JSON.parse(savedHighlights);
-        if (Array.isArray(parsed)) setHighlights(parsed);
-      }
-      if (savedCards) {
-        const parsed = JSON.parse(savedCards);
-        if (Array.isArray(parsed)) setStudyCards(parsed);
-      }
-      if (savedTags) {
-        const parsed = JSON.parse(savedTags);
-        if (Array.isArray(parsed)) setTags(parsed);
-      }
-      if (savedSettings) setSettings(JSON.parse(savedSettings));
-      if (savedSession) {
-        const session = JSON.parse(savedSession);
-        // Ensure history array exists (for backward compatibility)
-        if (!session.history) {
-          session.history = [];
-        }
-        // Reset session if it's from a previous day
-        const sessionDate = new Date(session.date).toDateString();
-        const today = new Date().toDateString();
-        if (sessionDate !== today) {
-          localStorage.removeItem('khm_session');
-        } else {
-          setCurrentSession(session);
-        }
-      }
-      if (savedLogs) {
-        const parsed = JSON.parse(savedLogs);
-        if (Array.isArray(parsed)) setReviewLogs(parsed);
-      }
-      if (savedProgress) {
-        const progress = JSON.parse(savedProgress);
-        const today = new Date().toISOString().split('T')[0];
-        // Reset progress if it's a new day
-        if (progress.date === today) {
-          setDailyProgress(progress);
-        } else {
-          setDailyProgress({ date: today, bookReviews: {} });
-        }
-      }
-    } catch (error) {
-      console.error('Failed to load data from local storage:', error);
-    } finally {
+    if (!user) {
       setIsLoaded(true);
+      return;
     }
-  }, []);
 
-  // Save to local storage on change
+    const loadData = async () => {
+      try {
+        // Load books
+        const { data: booksData, error: booksError } = await supabase
+          .from('books')
+          .select('*')
+          .eq('user_id', user.id);
+
+        if (booksError) throw booksError;
+        if (booksData) setBooks(booksData.map(fromSupabaseBook));
+
+        // Load highlights
+        const { data: highlightsData, error: highlightsError } = await supabase
+          .from('highlights')
+          .select('*')
+          .eq('user_id', user.id);
+
+        if (highlightsError) throw highlightsError;
+        if (highlightsData) setHighlights(highlightsData.map(fromSupabaseHighlight));
+
+        // Load study cards
+        const { data: cardsData, error: cardsError } = await supabase
+          .from('study_cards')
+          .select('*')
+          .eq('user_id', user.id);
+
+        if (cardsError) throw cardsError;
+        if (cardsData) setStudyCards(cardsData.map(fromSupabaseStudyCard));
+
+        // Load tags
+        const { data: tagsData, error: tagsError } = await supabase
+          .from('tags')
+          .select('*')
+          .eq('user_id', user.id);
+
+        if (tagsError) throw tagsError;
+        if (tagsData) setTags(tagsData.map(fromSupabaseTag));
+
+        // Load settings
+        const { data: settingsData, error: settingsError } = await supabase
+          .from('user_settings')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+
+        if (settingsError && settingsError.code !== 'PGRST116') {
+          throw settingsError;
+        }
+        if (settingsData) {
+          setSettings({
+            maxReviewsPerDay: settingsData.max_reviews_per_day,
+            newCardsPerDay: settingsData.new_cards_per_day
+          });
+        }
+
+        // Session e progress ainda do localStorage (dados temporários)
+        const savedSession = localStorage.getItem('khm_session');
+        const savedProgress = localStorage.getItem('khm_daily_progress');
+
+        if (savedSession) {
+          const session = JSON.parse(savedSession);
+          if (!session.history) session.history = [];
+          const sessionDate = new Date(session.date).toDateString();
+          const today = new Date().toDateString();
+          if (sessionDate === today) {
+            setCurrentSession(session);
+          }
+        }
+
+        if (savedProgress) {
+          const progress = JSON.parse(savedProgress);
+          const today = new Date().toISOString().split('T')[0];
+          if (progress.date === today) {
+            setDailyProgress(progress);
+          }
+        }
+
+      } catch (error) {
+        console.error('Failed to load data from Supabase:', error);
+      } finally {
+        setIsLoaded(true);
+      }
+    };
+
+    loadData();
+  }, [user]);
+
+  // Save session and daily progress to localStorage (temporary data only)
   useEffect(() => {
     if (!isLoaded) return;
 
-    localStorage.setItem('khm_books', JSON.stringify(books));
-    localStorage.setItem('khm_highlights', JSON.stringify(highlights));
-    localStorage.setItem('khm_cards', JSON.stringify(studyCards));
-    localStorage.setItem('khm_tags', JSON.stringify(tags));
-    localStorage.setItem('khm_settings', JSON.stringify(settings));
-    if (currentSession) localStorage.setItem('khm_session', JSON.stringify(currentSession));
-    else localStorage.removeItem('khm_session');
-    localStorage.setItem('khm_logs', JSON.stringify(reviewLogs));
-    localStorage.setItem('khm_daily_progress', JSON.stringify(dailyProgress));
-  }, [books, highlights, studyCards, tags, settings, currentSession, reviewLogs, dailyProgress, isLoaded]);
+    if (currentSession) {
+      localStorage.setItem('khm_session', JSON.stringify(currentSession));
+    } else {
+      localStorage.removeItem('khm_session');
+    }
 
-  const importData = (text: string) => {
+    localStorage.setItem('khm_daily_progress', JSON.stringify(dailyProgress));
+  }, [currentSession, dailyProgress, isLoaded]);
+
+  const importData = async (text: string) => {
+    if (!user) throw new Error('User not authenticated');
+
     try {
       const { books: parsedBooks, highlights: parsedHighlights } = parseMyClippings(text);
 
@@ -169,8 +215,6 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
 
       // 2. Merge Books and update counts based on nextHighlights
       let newBooksCount = 0;
-
-      // Start with existing books, mapped to new objects to avoid mutation if we change them
       const booksMap = new Map<string, Book>(books.map(b => [b.id, { ...b }]));
 
       parsedBooks.forEach(pb => {
@@ -186,9 +230,58 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
         return { ...b, highlightCount: count };
       });
 
+      // Optimistic update
       setBooks(nextBooks);
       setHighlights(nextHighlights);
       setStudyCards(nextCards);
+
+      // Sync with Supabase
+      try {
+        // Upsert books
+        const booksToUpsert = parsedBooks.map(b => toSupabaseBook(b, user.id));
+        if (booksToUpsert.length > 0) {
+          const { error: booksError } = await supabase
+            .from('books')
+            .upsert(booksToUpsert, { onConflict: 'id' });
+          if (booksError) throw booksError;
+        }
+
+        // Upsert highlights
+        const highlightsToUpsert = parsedHighlights.map(h => toSupabaseHighlight(h, user.id));
+        if (highlightsToUpsert.length > 0) {
+          const { error: highlightsError } = await supabase
+            .from('highlights')
+            .upsert(highlightsToUpsert, { onConflict: 'id' });
+          if (highlightsError) throw highlightsError;
+        }
+
+        // Upsert study cards (only new ones)
+        const newCards = nextCards.filter(c =>
+          !studyCards.find(sc => sc.id === c.id)
+        );
+        if (newCards.length > 0) {
+          const cardsToUpsert = newCards.map(c => toSupabaseStudyCard(c, user.id));
+          const { error: cardsError } = await supabase
+            .from('study_cards')
+            .upsert(cardsToUpsert, { onConflict: 'id' });
+          if (cardsError) throw cardsError;
+        }
+
+        // Reload all data to ensure consistency
+        const [booksData, highlightsData, cardsData] = await Promise.all([
+          supabase.from('books').select('*').eq('user_id', user.id),
+          supabase.from('highlights').select('*').eq('user_id', user.id),
+          supabase.from('study_cards').select('*').eq('user_id', user.id)
+        ]);
+
+        if (booksData.data) setBooks(booksData.data.map(fromSupabaseBook));
+        if (highlightsData.data) setHighlights(highlightsData.data.map(fromSupabaseHighlight));
+        if (cardsData.data) setStudyCards(cardsData.data.map(fromSupabaseStudyCard));
+
+      } catch (supabaseError) {
+        console.error('Failed to sync import with Supabase:', supabaseError);
+        throw supabaseError;
+      }
 
       return { newBooks: newBooksCount, newHighlights: newHighlightsCount };
     } catch (error: any) {
@@ -202,21 +295,42 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     return studyCards.filter(card => new Date(card.nextReviewDate) <= now);
   };
 
-  const updateCard = (updatedCard: StudyCard) => {
+  const updateCard = async (updatedCard: StudyCard) => {
+    if (!user) return;
+
+    // Optimistic update
     setStudyCards(prev => prev.map(c => c.id === updatedCard.id ? updatedCard : c));
+
+    // Sync with Supabase
+    try {
+      const { error } = await supabase
+        .from('study_cards')
+        .update(toSupabaseStudyCard(updatedCard, user.id))
+        .eq('id', updatedCard.id)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Failed to update study card in Supabase:', error);
+      // Reload data on error
+      const { data } = await supabase
+        .from('study_cards')
+        .select('*')
+        .eq('user_id', user.id);
+      if (data) setStudyCards(data.map(fromSupabaseStudyCard));
+    }
   };
 
   const getBook = (id: string) => books.find(b => b.id === id);
 
   const getBookHighlights = (bookId: string) => highlights.filter(h => h.bookId === bookId);
 
-  const deleteHighlight = (id: string) => {
+  const deleteHighlight = async (id: string) => {
     const highlight = highlights.find(h => h.id === id);
-    if (!highlight) return;
+    if (!highlight || !user) return;
 
-    // Remove highlight
+    // Optimistic update
     setHighlights(prev => prev.filter(h => h.id !== id));
-    // Remove associated study card
     setStudyCards(prev => prev.filter(c => c.highlightId !== id));
 
     // Remove from current session if present
@@ -240,9 +354,30 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       }
       return b;
     }));
+
+    // Sync with Supabase
+    try {
+      const { error } = await supabase
+        .from('highlights')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Failed to delete highlight from Supabase:', error);
+      // Reload data on error
+      const { data } = await supabase
+        .from('highlights')
+        .select('*')
+        .eq('user_id', user.id);
+      if (data) setHighlights(data.map(fromSupabaseHighlight));
+    }
   };
 
-  const bulkDeleteHighlights = (ids: string[]) => {
+  const bulkDeleteHighlights = async (ids: string[]) => {
+    if (!user) return;
+
     const idsSet = new Set(ids);
     const affectedBookIds = new Set<string>();
 
@@ -250,6 +385,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       if (idsSet.has(h.id)) affectedBookIds.add(h.bookId);
     });
 
+    // Optimistic update
     setHighlights(prev => prev.filter(h => !idsSet.has(h.id)));
     setStudyCards(prev => prev.filter(c => !idsSet.has(c.highlightId)));
 
@@ -257,7 +393,6 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     if (currentSession) {
       setCurrentSession(prev => {
         if (!prev) return null;
-        // Find all card IDs associated with these highlights
         const cardsToRemove = studyCards.filter(c => idsSet.has(c.highlightId)).map(c => c.id);
         const cardsToRemoveSet = new Set(cardsToRemove);
 
@@ -272,20 +407,65 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     // Re-calculate counts for affected books
     setBooks(prev => prev.map(b => {
       if (affectedBookIds.has(b.id)) {
-        // We need to calculate the count based on the *new* highlights state, 
-        // but since setState is async/batched, we do it manually here based on previous state filtering
         const remainingCount = highlights.filter(h => h.bookId === b.id && !idsSet.has(h.id)).length;
         return { ...b, highlightCount: remainingCount };
       }
       return b;
     }));
+
+    // Sync with Supabase
+    try {
+      const { error } = await supabase
+        .from('highlights')
+        .delete()
+        .in('id', ids)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Failed to bulk delete highlights from Supabase:', error);
+      // Reload data on error
+      const { data } = await supabase
+        .from('highlights')
+        .select('*')
+        .eq('user_id', user.id);
+      if (data) setHighlights(data.map(fromSupabaseHighlight));
+    }
   };
 
-  const updateHighlight = (id: string, updates: Partial<Highlight>) => {
+  const updateHighlight = async (id: string, updates: Partial<Highlight>) => {
+    if (!user) return;
+
+    // Optimistic update
     setHighlights(prev => prev.map(h => h.id === id ? { ...h, ...updates } : h));
+
+    // Sync with Supabase
+    try {
+      const highlight = highlights.find(h => h.id === id);
+      if (!highlight) return;
+
+      const updatedHighlight = { ...highlight, ...updates };
+      const { error } = await supabase
+        .from('highlights')
+        .update(toSupabaseHighlight(updatedHighlight, user.id))
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Failed to update highlight in Supabase:', error);
+      // Reload data on error
+      const { data } = await supabase
+        .from('highlights')
+        .select('*')
+        .eq('user_id', user.id);
+      if (data) setHighlights(data.map(fromSupabaseHighlight));
+    }
   };
 
-  const addToStudy = (highlightId: string) => {
+  const addToStudy = async (highlightId: string) => {
+    if (!user) return;
+
     // Check if already in study
     const existingCard = studyCards.find(c => c.highlightId === highlightId);
     if (existingCard) return;
@@ -300,16 +480,58 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       nextReviewDate: new Date().toISOString()
     };
 
+    // Optimistic update
     setStudyCards(prev => [...prev, newCard]);
-    updateHighlight(highlightId, { inStudy: true });
+    await updateHighlight(highlightId, { inStudy: true });
+
+    // Sync with Supabase
+    try {
+      const { error } = await supabase
+        .from('study_cards')
+        .insert(toSupabaseStudyCard(newCard, user.id));
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Failed to add study card to Supabase:', error);
+      // Rollback on error
+      setStudyCards(prev => prev.filter(c => c.id !== newCard.id));
+      await updateHighlight(highlightId, { inStudy: false });
+    }
   };
 
-  const removeFromStudy = (highlightId: string) => {
+  const removeFromStudy = async (highlightId: string) => {
+    if (!user) return;
+
+    const card = studyCards.find(c => c.highlightId === highlightId);
+    if (!card) return;
+
+    // Optimistic update
     setStudyCards(prev => prev.filter(c => c.highlightId !== highlightId));
-    updateHighlight(highlightId, { inStudy: false });
+    await updateHighlight(highlightId, { inStudy: false });
+
+    // Sync with Supabase
+    try {
+      const { error } = await supabase
+        .from('study_cards')
+        .delete()
+        .eq('highlight_id', highlightId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Failed to remove study card from Supabase:', error);
+      // Reload data on error
+      const { data } = await supabase
+        .from('study_cards')
+        .select('*')
+        .eq('user_id', user.id);
+      if (data) setStudyCards(data.map(fromSupabaseStudyCard));
+    }
   };
 
-  const bulkAddToStudy = (highlightIds: string[]) => {
+  const bulkAddToStudy = async (highlightIds: string[]) => {
+    if (!user) return;
+
     const newCards: StudyCard[] = [];
     const existingHighlightIds = new Set(studyCards.map(c => c.highlightId));
 
@@ -326,10 +548,33 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       }
     });
 
+    if (newCards.length === 0) return;
+
+    // Optimistic update
     setStudyCards(prev => [...prev, ...newCards]);
     setHighlights(prev => prev.map(h =>
       highlightIds.includes(h.id) ? { ...h, inStudy: true } : h
     ));
+
+    // Sync with Supabase
+    try {
+      const cardsToInsert = newCards.map(c => toSupabaseStudyCard(c, user.id));
+      const { error } = await supabase
+        .from('study_cards')
+        .insert(cardsToInsert);
+
+      if (error) throw error;
+
+      // Update highlights in Supabase
+      for (const highlightId of highlightIds) {
+        await updateHighlight(highlightId, { inStudy: true });
+      }
+    } catch (error) {
+      console.error('Failed to bulk add study cards to Supabase:', error);
+      // Rollback on error
+      const newCardIds = new Set(newCards.map(c => c.id));
+      setStudyCards(prev => prev.filter(c => !newCardIds.has(c.id)));
+    }
   };
 
   const getHighlightStudyStatus = (highlightId: string): StudyStatus | 'not-started' => {
@@ -340,21 +585,45 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     return 'learning';
   };
 
-  const updateSettings = (newSettings: Partial<UserSettings>) => {
+  const updateSettings = async (newSettings: Partial<UserSettings>) => {
+    if (!user) return;
+
+    // Optimistic update
     setSettings(prev => ({ ...prev, ...newSettings }));
+
+    // Sync with Supabase
+    try {
+      const updatedSettings = { ...settings, ...newSettings };
+      const { error } = await supabase
+        .from('user_settings')
+        .upsert({
+          ...toSupabaseSettings(updatedSettings, user.id),
+          id: crypto.randomUUID() // Will be ignored if record exists
+        }, {
+          onConflict: 'user_id'
+        });
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Failed to update settings in Supabase:', error);
+      // Reload data on error
+      const { data } = await supabase
+        .from('user_settings')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+      if (data) setSettings(fromSupabaseSettings(data));
+    }
   };
 
-  const deleteCard = (cardId: string) => {
+  const deleteCard = async (cardId: string) => {
     const card = studyCards.find(c => c.id === cardId);
-    if (!card) return;
+    if (!card || !user) return;
 
     // Find the book this card belongs to
     const highlight = highlights.find(h => h.id === card.highlightId);
 
     // Update daily progress if card was reviewed today
-    // Check two conditions:
-    // 1. Card has lastReviewedAt and it's from today
-    // 2. Card is in current session's completedIds (reviewed but not yet persisted)
     const today = new Date().toISOString().split('T')[0];
     let shouldDecrementProgress = false;
 
@@ -385,11 +654,9 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       }
     }
 
-    // Remove card from study
+    // Optimistic update
     setStudyCards(prev => prev.filter(c => c.id !== cardId));
-
-    // Update highlight status
-    updateHighlight(card.highlightId, { inStudy: false });
+    await updateHighlight(card.highlightId, { inStudy: false });
 
     // Remove from current session if present
     if (currentSession) {
@@ -401,6 +668,25 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
           completedIds: prev.completedIds.filter(id => id !== cardId)
         };
       });
+    }
+
+    // Sync with Supabase
+    try {
+      const { error } = await supabase
+        .from('study_cards')
+        .delete()
+        .eq('id', cardId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Failed to delete study card from Supabase:', error);
+      // Reload data on error
+      const { data } = await supabase
+        .from('study_cards')
+        .select('*')
+        .eq('user_id', user.id);
+      if (data) setStudyCards(data.map(fromSupabaseStudyCard));
     }
   };
 
@@ -520,8 +806,8 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     }
   };
 
-  const submitReview = (cardId: string, quality: number) => {
-    if (!currentSession) return;
+  const submitReview = async (cardId: string, quality: number) => {
+    if (!currentSession || !user) return;
 
     const card = studyCards.find(c => c.id === cardId);
     if (!card) return;
@@ -559,14 +845,30 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       };
     });
 
-    setReviewLogs(prev => [...prev, {
+    // Create review log
+    const newLog = {
       id: crypto.randomUUID(),
       cardId,
       quality,
       reviewedAt: new Date().toISOString(),
       interval: card.interval,
       easeFactor: card.easeFactor
-    }]);
+    };
+
+    // Optimistic update
+    setReviewLogs(prev => [...prev, newLog]);
+
+    // Sync with Supabase
+    try {
+      const { error } = await supabase
+        .from('review_logs')
+        .insert(toSupabaseReviewLog(newLog, user.id));
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Failed to save review log to Supabase:', error);
+      // Don't rollback - logs are not critical for app functionality
+    }
   };
 
   const resetSession = () => {
@@ -687,22 +989,68 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
   };
 
   // Tagging Methods
-  const addTag = (name: string, parentId?: string, bookId?: string) => {
+  const addTag = async (name: string, parentId?: string, bookId?: string) => {
+    if (!user) return '';
+
     const newTag: Tag = {
       id: crypto.randomUUID(),
       name,
       parentId,
       bookId
     };
+
+    // Optimistic update
     setTags(prev => [...prev, newTag]);
+
+    // Sync with Supabase
+    try {
+      const { error } = await supabase
+        .from('tags')
+        .insert(toSupabaseTag(newTag, user.id));
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Failed to add tag to Supabase:', error);
+      // Rollback on error
+      setTags(prev => prev.filter(t => t.id !== newTag.id));
+    }
+
     return newTag.id;
   };
 
-  const updateTag = (id: string, updates: Partial<Tag>) => {
+  const updateTag = async (id: string, updates: Partial<Tag>) => {
+    if (!user) return;
+
+    // Optimistic update
     setTags(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
+
+    // Sync with Supabase
+    try {
+      const tag = tags.find(t => t.id === id);
+      if (!tag) return;
+
+      const updatedTag = { ...tag, ...updates };
+      const { error } = await supabase
+        .from('tags')
+        .update(toSupabaseTag(updatedTag, user.id))
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Failed to update tag in Supabase:', error);
+      // Reload data on error
+      const { data } = await supabase
+        .from('tags')
+        .select('*')
+        .eq('user_id', user.id);
+      if (data) setTags(data.map(fromSupabaseTag));
+    }
   };
 
-  const deleteTag = (id: string) => {
+  const deleteTag = async (id: string) => {
+    if (!user) return;
+
     // Collect all tag IDs to delete (the tag itself + all descendants)
     const tagsToDelete = new Set<string>();
     tagsToDelete.add(id);
@@ -719,6 +1067,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       });
     }
 
+    // Optimistic update
     setTags(prev => prev.filter(t => !tagsToDelete.has(t.id)));
 
     // Also remove these tags from all highlights
@@ -726,9 +1075,31 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       ...h,
       tags: h.tags?.filter(tId => !tagsToDelete.has(tId))
     })));
+
+    // Sync with Supabase
+    try {
+      const { error } = await supabase
+        .from('tags')
+        .delete()
+        .in('id', Array.from(tagsToDelete))
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Failed to delete tag from Supabase:', error);
+      // Reload data on error
+      const { data } = await supabase
+        .from('tags')
+        .select('*')
+        .eq('user_id', user.id);
+      if (data) setTags(data.map(fromSupabaseTag));
+    }
   };
 
-  const assignTagToHighlight = (highlightId: string, tagId: string) => {
+  const assignTagToHighlight = async (highlightId: string, tagId: string) => {
+    if (!user) return;
+
+    // Optimistic update
     setHighlights(prev => prev.map(h => {
       if (h.id === highlightId) {
         const currentTags = h.tags || [];
@@ -737,15 +1108,43 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       }
       return h;
     }));
+
+    // Sync with Supabase
+    try {
+      const highlight = highlights.find(h => h.id === highlightId);
+      if (!highlight) return;
+
+      const currentTags = highlight.tags || [];
+      if (currentTags.includes(tagId)) return;
+
+      const updatedHighlight = { ...highlight, tags: [...currentTags, tagId] };
+      await updateHighlight(highlightId, { tags: updatedHighlight.tags });
+    } catch (error) {
+      console.error('Failed to assign tag to highlight:', error);
+    }
   };
 
-  const removeTagFromHighlight = (highlightId: string, tagId: string) => {
+  const removeTagFromHighlight = async (highlightId: string, tagId: string) => {
+    if (!user) return;
+
+    // Optimistic update
     setHighlights(prev => prev.map(h => {
       if (h.id === highlightId) {
         return { ...h, tags: h.tags?.filter(t => t !== tagId) };
       }
       return h;
     }));
+
+    // Sync with Supabase
+    try {
+      const highlight = highlights.find(h => h.id === highlightId);
+      if (!highlight) return;
+
+      const updatedTags = highlight.tags?.filter(t => t !== tagId) || [];
+      await updateHighlight(highlightId, { tags: updatedTags });
+    } catch (error) {
+      console.error('Failed to remove tag from highlight:', error);
+    }
   };
 
   return (

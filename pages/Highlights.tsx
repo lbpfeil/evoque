@@ -147,9 +147,9 @@ const Highlights = () => {
     }
   };
 
-  const handleBulkDelete = () => {
+  const handleBulkDelete = async () => {
     if (window.confirm(`Are you sure you want to delete ${selectedIds.size} highlights?`)) {
-      bulkDeleteHighlights(Array.from(selectedIds));
+      await bulkDeleteHighlights(Array.from(selectedIds));
       setSelectedIds(new Set());
     }
   };
@@ -162,9 +162,9 @@ const Highlights = () => {
     setEditForm(prev => ({ ...prev, [field]: currentValue }));
   };
 
-  const saveFieldEdit = (highlightId: string, field: 'text' | 'note') => {
+  const saveFieldEdit = async (highlightId: string, field: 'text' | 'note') => {
     const value = editForm[field];
-    updateHighlight(highlightId, { [field]: value });
+    await updateHighlight(highlightId, { [field]: value });
     setEditingField(null);
   };
 
