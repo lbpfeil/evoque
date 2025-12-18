@@ -84,6 +84,7 @@ const HighlightEditModal: React.FC<HighlightEditModalProps> = ({ highlightId, on
     };
 
     const logs = reviewLogs.filter(l => l.cardId === card?.id).sort((a, b) => new Date(a.reviewedAt).getTime() - new Date(b.reviewedAt).getTime());
+    console.log('DEBUG: Modal Stats', { highlightId, cardId: card?.id, totalLogs: reviewLogs.length, filteredLogs: logs.length });
     const statsData = logs.map(log => ({
         date: new Date(log.reviewedAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }),
         interval: log.interval,

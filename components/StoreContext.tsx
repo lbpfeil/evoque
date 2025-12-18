@@ -130,19 +130,43 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
           .eq('user_id', user.id)
           .single();
 
+        // Load review logs
+        const { data: logsData, error: logsError } = await supabase
+          .from('review_logs')
+          .select('*')
+          .eq('user_id', user.id);
+
+        console.log('DEBUG: Review Logs Load', { count: logsData?.length, error: logsError, userId: user.id });
+
+        if (logsError) throw logsError;
+        if (logsData) setReviewLogs(logsData.map(fromSupabaseReviewLog));
+
         if (settingsError && settingsError.code !== 'PGRST116') {
           throw settingsError;
         }
         if (settingsData) {
           setSettings({
             maxReviewsPerDay: settingsData.max_reviews_per_day,
-            newCardsPerDay: settingsData.new_cards_per_day
+            newCardsPerDay: settingsData.new_cards_per_day,
+            dailyProgress: settingsData.daily_progress
           });
+
+          if (settingsData.daily_progress) {
+            // Check if the saved progress is for today
+            const today = new Date().toISOString().split('T')[0];
+            if (settingsData.daily_progress.date === today) {
+              setDailyProgress(settingsData.daily_progress);
+            } else {
+              // If stored progress is old, reset it (keeping today's date)
+              setDailyProgress({ date: today, bookReviews: {} });
+              // We should probably flush this reset to DB, but the useEffect will handle it
+            }
+          }
         }
 
         // Session e progress ainda do localStorage (dados temporários)
         const savedSession = localStorage.getItem('khm_session');
-        const savedProgress = localStorage.getItem('khm_daily_progress');
+
 
         if (savedSession) {
           const session = JSON.parse(savedSession);
@@ -154,13 +178,10 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
           }
         }
 
-        if (savedProgress) {
-          const progress = JSON.parse(savedProgress);
-          const today = new Date().toISOString().split('T')[0];
-          if (progress.date === today) {
-            setDailyProgress(progress);
-          }
-        }
+
+
+        // dailyProgress removed from here - now loads from Supabase settings
+
 
       } catch (error) {
         console.error('Failed to load data from Supabase:', error);
@@ -184,6 +205,18 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
 
     localStorage.setItem('khm_daily_progress', JSON.stringify(dailyProgress));
   }, [currentSession, dailyProgress, isLoaded]);
+
+  // Sync daily progress to Supabase settings when it changes
+  useEffect(() => {
+    if (!isLoaded || !user) return;
+
+    // Debounce slightly to avoid excessive writes during rapid updates
+    const timeoutId = setTimeout(() => {
+      updateSettings({ dailyProgress });
+    }, 1000);
+
+    return () => clearTimeout(timeoutId);
+  }, [dailyProgress, isLoaded, user]);
 
   const importData = async (text: string) => {
     if (!user) throw new Error('User not authenticated');
@@ -291,8 +324,11 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
   };
 
   const getCardsDue = () => {
-    const now = new Date();
-    return studyCards.filter(card => new Date(card.nextReviewDate) <= now);
+    const today = new Date().toISOString().split('T')[0]; // Get YYYY-MM-DD format
+    return studyCards.filter(card => {
+      const cardDueDate = card.nextReviewDate.split('T')[0]; // Get YYYY-MM-DD format
+      return cardDueDate <= today;
+    });
   };
 
   const updateCard = async (updatedCard: StudyCard) => {
@@ -580,7 +616,9 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
   const getHighlightStudyStatus = (highlightId: string): StudyStatus | 'not-started' => {
     const card = studyCards.find(c => c.highlightId === highlightId);
     if (!card) return 'not-started';
-    if (card.repetitions === 0) return 'new';
+    // If repetitions is 0 but interval is > 0 OR it has been reviewed (interval=1 from Again), it's learning.
+    // Truly new cards have repetitions=0 AND interval=0
+    if (card.repetitions === 0 && card.interval === 0) return 'new';
     if (card.repetitions >= 5) return 'review';
     return 'learning';
   };
@@ -596,12 +634,12 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       const updatedSettings = { ...settings, ...newSettings };
       const { error } = await supabase
         .from('user_settings')
-        .upsert({
-          ...toSupabaseSettings(updatedSettings, user.id),
-          id: crypto.randomUUID() // Will be ignored if record exists
-        }, {
-          onConflict: 'user_id'
-        });
+        .upsert(
+          toSupabaseSettings(updatedSettings, user.id),
+          {
+            onConflict: 'user_id'
+          }
+        );
 
       if (error) throw error;
     } catch (error) {
@@ -703,7 +741,8 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     // Check if we should reset the session
     const isNewDay = !currentSession || new Date(currentSession.date).toDateString() !== new Date().toDateString();
     const isDifferentDeck = currentSession && currentSession.bookId !== bookId;
-    const shouldReset = isNewDay || isDifferentDeck;
+    const isSessionEmpty = currentSession && currentSession.cardIds.length === 0;
+    const shouldReset = isNewDay || isDifferentDeck || isSessionEmpty;
 
     if (!shouldReset) {
       return;
@@ -864,6 +903,8 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
         .from('review_logs')
         .insert(toSupabaseReviewLog(newLog, user.id));
 
+      console.log('DEBUG: Review Log Save', { error, newLog });
+
       if (error) throw error;
     } catch (error) {
       console.error('Failed to save review log to Supabase:', error);
@@ -925,12 +966,13 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       .filter(h => h.bookId === bookId)
       .map(h => h.id);
 
-    const now = new Date();
+    const today = new Date().toISOString().split('T')[0]; // Get YYYY-MM-DD format
     return studyCards.filter(card => {
       const highlight = highlights.find(h => h.id === card.highlightId);
+      const cardDueDate = card.nextReviewDate.split('T')[0]; // Get YYYY-MM-DD format
       return highlight &&
         bookHighlightIds.includes(highlight.id) &&
-        new Date(card.nextReviewDate) <= now;
+        cardDueDate <= today;
     });
   };
 

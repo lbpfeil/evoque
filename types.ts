@@ -51,6 +51,7 @@ export interface Tag {
 export interface UserSettings {
   maxReviewsPerDay: number;
   newCardsPerDay: number;
+  dailyProgress?: DailyProgress;
 }
 
 export interface ReviewResult {

@@ -109,12 +109,14 @@ export const fromSupabaseTag = (row: any): Tag => ({
 export const toSupabaseSettings = (settings: any, userId: string) => ({
     user_id: userId,
     max_reviews_per_day: settings.maxReviewsPerDay,
-    new_cards_per_day: settings.newCardsPerDay
+    new_cards_per_day: settings.newCardsPerDay,
+    daily_progress: settings.dailyProgress
 });
 
 export const fromSupabaseSettings = (row: any) => ({
     maxReviewsPerDay: row.max_reviews_per_day,
-    newCardsPerDay: row.new_cards_per_day
+    newCardsPerDay: row.new_cards_per_day,
+    dailyProgress: row.daily_progress
 });
 
 // ============================================
@@ -127,7 +129,7 @@ export const toSupabaseReviewLog = (log: any, userId: string) => ({
     card_id: log.cardId,
     quality: log.quality,
     reviewed_at: log.reviewedAt,
-    interval: log.interval,
+    interval_days: log.interval,
     ease_factor: log.easeFactor
 });
 
@@ -136,7 +138,7 @@ export const fromSupabaseReviewLog = (row: any) => ({
     cardId: row.card_id,
     quality: row.quality,
     reviewedAt: row.reviewed_at,
-    interval: row.interval,
+    interval: row.interval_days,
     easeFactor: row.ease_factor
 });
 
