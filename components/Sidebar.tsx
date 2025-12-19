@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Library, Target, Upload, Settings, BookOpen, Highlighter, LogOut, ChevronUp } from 'lucide-react';
+import { LayoutDashboard, Target, Settings, BookOpen, Highlighter, LogOut, ChevronUp } from 'lucide-react';
 import { useAuth } from './AuthContext';
 
 const Sidebar = () => {
@@ -21,10 +21,8 @@ const Sidebar = () => {
 
   const navItems = [
     { name: 'Dashboard', icon: LayoutDashboard, path: '/' },
-    { name: 'Library', icon: Library, path: '/library' },
     { name: 'Highlights', icon: Highlighter, path: '/highlights' },
     { name: 'Study', icon: Target, path: '/study' },
-    { name: 'Import', icon: Upload, path: '/import' },
     { name: 'Settings', icon: Settings, path: '/settings' },
   ];
 

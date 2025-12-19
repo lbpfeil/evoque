@@ -107,32 +107,38 @@
 
 | Uso | Classe Tailwind | Tamanho | Line Height |
 |-----|----------------|---------|-------------|
-| Título principal (H1) | `text-base` ou `text-lg` | 16-18px | 1.2 |
-| Subtítulo/Descrição | `text-xs` ou `text-sm` | 12-14px | 1.4 |
+| Título principal (H1) | `text-base font-semibold` | 16px | 1.2 |
+| Subtítulo/Descrição | `text-xs text-zinc-500` | 12px | 1.4 |
+| Seção secundária | `text-xs font-semibold text-zinc-600` | 12px | 1.4 |
 | Texto de item | `text-xs` | 12px | 1.4 |
-| Texto secundário | `text-[9px]` ou `text-[10px]` | 9-10px | 1.2 |
+| Texto secundário | `text-[10px] text-zinc-400` | 10px | 1.2 |
 | Labels de input | `text-xs` | 12px | 1.4 |
 
 ### Hierarquia Visual
 
-**Prioridade 1 (Títulos):**
+**Prioridade 1 (Títulos de Página):**
 ```tsx
 <h1 className="text-base font-semibold text-zinc-900">Título Principal</h1>
 ```
 
-**Prioridade 2 (Subtítulos):**
+**Prioridade 2 (Subtítulos de Página):**
 ```tsx
-<p className="text-xs font-medium text-zinc-700">Subtítulo</p>
+<p className="text-xs text-zinc-500 mt-1">Descrição da página</p>
 ```
 
-**Prioridade 3 (Texto normal):**
+**Prioridade 3 (Seções Secundárias):**
+```tsx
+<h2 className="text-xs font-semibold text-zinc-600">Seção</h2>
+```
+
+**Prioridade 4 (Texto normal):**
 ```tsx
 <span className="text-xs text-zinc-700">Texto normal</span>
 ```
 
-**Prioridade 4 (Texto secundário):**
+**Prioridade 5 (Texto secundário/metadados):**
 ```tsx
-<span className="text-[9px] text-zinc-400">Informação adicional</span>
+<span className="text-[10px] text-zinc-400">Informação adicional</span>
 ```
 
 ---

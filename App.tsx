@@ -2,11 +2,10 @@ import React from 'react';
 import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
-import Library from './pages/Library';
 import BookDetails from './pages/BookDetails';
 import Highlights from './pages/Highlights';
-import Import from './pages/Import';
 import Study from './pages/Study';
+import Settings from './pages/Settings';
 import StudySession from './pages/StudySession';
 import Login from './pages/Login';
 import { StoreProvider } from './components/StoreContext';
@@ -58,12 +57,14 @@ const ProtectedApp = () => {
         <AppLayout>
           <Routes>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/library" element={<Library />} />
             <Route path="/library/:bookId" element={<BookDetails />} />
             <Route path="/highlights" element={<Highlights />} />
-            <Route path="/import" element={<Import />} />
             <Route path="/study" element={<Study />} />
             <Route path="/study/session" element={<StudySession />} />
+            <Route path="/settings" element={<Settings />} />
+            {/* Redirects for old routes */}
+            <Route path="/import" element={<Navigate to="/settings" replace />} />
+            <Route path="/library" element={<Navigate to="/settings" replace />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </AppLayout>
