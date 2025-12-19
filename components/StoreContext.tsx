@@ -38,6 +38,7 @@ interface StoreContextType {
   getHighlightStudyStatus: (highlightId: string) => StudyStatus | 'not-started';
   settings: UserSettings;
   updateSettings: (settings: Partial<UserSettings>) => Promise<void>;
+  reloadSettings: () => Promise<void>;
   currentSession: StudySession | null;
   startSession: (bookId?: string) => void;
   submitReview: (cardId: string, quality: number, previousCard: StudyCard) => Promise<void>;
@@ -145,11 +146,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
           throw settingsError;
         }
         if (settingsData) {
-          setSettings({
-            maxReviewsPerDay: settingsData.max_reviews_per_day,
-            newCardsPerDay: settingsData.new_cards_per_day,
-            dailyProgress: settingsData.daily_progress
-          });
+          setSettings(fromSupabaseSettings(settingsData));
 
           if (settingsData.daily_progress) {
             // Check if the saved progress is for today
@@ -636,6 +633,23 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     return 'learning';
   };
 
+  const reloadSettings = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('user_settings')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      if (data) setSettings(fromSupabaseSettings(data));
+    } catch (error) {
+      console.error('Failed to reload settings from Supabase:', error);
+    }
+  };
+
   const updateSettings = async (newSettings: Partial<UserSettings>) => {
     if (!user) return;
 
@@ -655,15 +669,13 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
         );
 
       if (error) throw error;
+      
+      // Reload settings after successful save to ensure sync
+      await reloadSettings();
     } catch (error) {
       console.error('Failed to update settings in Supabase:', error);
       // Reload data on error
-      const { data } = await supabase
-        .from('user_settings')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-      if (data) setSettings(fromSupabaseSettings(data));
+      await reloadSettings();
     }
   };
 
@@ -1240,6 +1252,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       getHighlightStudyStatus,
       settings,
       updateSettings,
+      reloadSettings,
       currentSession,
       startSession,
       submitReview,

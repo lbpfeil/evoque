@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, Target, Settings, BookOpen, Highlighter, LogOut, ChevronUp } from 'lucide-react';
 import { useAuth } from './AuthContext';
+import { useStore } from './StoreContext';
 
 const Sidebar = () => {
   const { user, signOut } = useAuth();
+  const { settings } = useStore();
   const [showLogout, setShowLogout] = useState(false);
 
   const handleLogout = async () => {
@@ -74,12 +76,16 @@ const Sidebar = () => {
           className="w-full p-4 hover:bg-zinc-50 transition-colors text-left"
         >
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-xs shrink-0">
-              {user?.email ? getUserInitials(user.email) : 'U'}
+            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-xs shrink-0 overflow-hidden">
+              {settings.avatarUrl ? (
+                <img src={settings.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                user?.email ? getUserInitials(user.email) : 'U'
+              )}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-zinc-900 truncate">
-                {user?.email || 'User'}
+                {settings.fullName || user?.email || 'User'}
               </p>
               <p className="text-[10px] text-zinc-500">Free Plan</p>
             </div>

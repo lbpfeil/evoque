@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useStore } from '../components/StoreContext';
 import { useAuth } from '../components/AuthContext';
-import { Upload, Library, User, Sliders, FileText, CheckCircle, AlertCircle, ChevronRight } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import { Upload, Library, User, Sliders, FileText, CheckCircle, AlertCircle, ChevronRight, Download, Trash2, Loader2, Camera } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 type TabId = 'import' | 'library' | 'account' | 'preferences';
@@ -11,7 +12,7 @@ const Settings = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
-  const { books, highlights, studyCards, importData } = useStore();
+  const { books, highlights, studyCards, importData, settings, updateSettings } = useStore();
   const [activeTab, setActiveTab] = useState<TabId>((searchParams.get('tab') as TabId) || 'import');
 
   // Import tab state
@@ -19,6 +20,17 @@ const Settings = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [importResult, setImportResult] = useState<{ newBooks: number; newHighlights: number } | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
+
+  // Account tab state
+  const [fullName, setFullName] = useState(settings.fullName || '');
+  const [avatarUrl, setAvatarUrl] = useState(settings.avatarUrl || '');
+  const [isUploading, setIsUploading] = useState(false);
+
+  // Sync with settings when they change
+  useEffect(() => {
+    setFullName(settings.fullName || '');
+    setAvatarUrl(settings.avatarUrl || '');
+  }, [settings]);
 
   // Update URL when tab changes
   useEffect(() => {
@@ -88,6 +100,71 @@ const Settings = () => {
 
   // No filtering needed anymore
   const filteredBooks = books;
+
+  // Avatar upload handler
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    // Validation
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload an image file');
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      alert('File size must be less than 2MB');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      // Generate file path: userId/avatar.ext
+      const fileExt = file.name.split('.').pop();
+      const fileName = `avatar.${fileExt}`;
+      const filePath = `${user.id}/${fileName}`;
+
+      // Upload to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { 
+          upsert: true,
+          contentType: file.type
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL with cache-busting timestamp
+      const { data } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      // Add timestamp to force browser to reload image
+      const avatarUrlWithTimestamp = `${data.publicUrl}?t=${Date.now()}`;
+
+      // Save URL to user settings (without timestamp for storage)
+      console.log('Saving avatar URL to settings:', data.publicUrl);
+      await updateSettings({ avatarUrl: data.publicUrl });
+      
+      // Set local state with timestamp to force immediate reload
+      setAvatarUrl(avatarUrlWithTimestamp);
+      console.log('Avatar URL saved successfully');
+    } catch (error: any) {
+      console.error('Upload failed:', error);
+      alert(`Failed to upload avatar: ${error.message}`);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const getUserInitials = (email: string) => {
+    return email.substring(0, 2).toUpperCase();
+  };
+
+  const handleSaveFullName = async () => {
+    if (fullName !== settings.fullName) {
+      await updateSettings({ fullName });
+    }
+  };
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -293,10 +370,64 @@ const Settings = () => {
               <p className="text-[10px] text-zinc-400 mt-0.5">Manage your account and profile</p>
             </div>
 
+            {/* Profile Photo */}
+            <div>
+              <h3 className="text-xs font-semibold text-zinc-900 mb-1.5">Profile Photo</h3>
+              <div className="bg-zinc-50 border border-zinc-200 rounded p-3 flex items-center gap-3">
+                {/* Avatar Preview */}
+                <div className="relative">
+                  <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-lg overflow-hidden">
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      getUserInitials(user?.email || '')
+                    )}
+                  </div>
+                  {isUploading && (
+                    <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
+                      <Loader2 className="w-5 h-5 text-white animate-spin" />
+                    </div>
+                  )}
+                </div>
+                
+                {/* Upload Button */}
+                <div className="flex-1">
+                  <input
+                    type="file"
+                    id="avatar-upload"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleAvatarUpload}
+                  />
+                  <label
+                    htmlFor="avatar-upload"
+                    className="inline-flex items-center gap-1.5 h-7 px-3 text-xs bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded transition-colors cursor-pointer"
+                  >
+                    <Camera className="w-3 h-3" />
+                    Change Photo
+                  </label>
+                  <p className="text-[10px] text-zinc-400 mt-1">
+                    JPG, PNG or GIF. Max 2MB.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {/* Profile Information */}
             <div>
               <h3 className="text-xs font-semibold text-zinc-900 mb-1.5">Profile Information</h3>
               <div className="bg-zinc-50 border border-zinc-200 rounded p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-zinc-600">Name:</span>
+                  <input 
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    onBlur={handleSaveFullName}
+                    placeholder="Your full name"
+                    className="h-6 px-2 text-xs border border-zinc-200 rounded w-48 focus:outline-none focus:ring-1 focus:ring-black"
+                  />
+                </div>
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-zinc-600">Email:</span>
                   <span className="text-xs font-medium text-zinc-900">{user?.email}</span>
@@ -323,25 +454,15 @@ const Settings = () => {
             {/* Danger Zone */}
             <div>
               <h3 className="text-xs font-semibold text-red-600 mb-1.5">Danger Zone</h3>
-              <div className="bg-red-50 border border-red-200 rounded p-3 space-y-2">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-zinc-900">Export All Data</p>
-                    <p className="text-[10px] text-zinc-500">Download JSON backup</p>
-                  </div>
-                  <button className="h-6 px-2 text-[10px] bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded transition-colors">
-                    Export
-                  </button>
-                </div>
-                <div className="flex items-center justify-between pt-2 border-t border-red-200">
-                  <div>
-                    <p className="text-xs font-medium text-red-900">Delete Account</p>
-                    <p className="text-[10px] text-red-600">Permanently delete everything</p>
-                  </div>
-                  <button className="h-6 px-2 text-[10px] text-red-600 hover:bg-red-100 rounded transition-colors">
-                    Delete
-                  </button>
-                </div>
+              <div className="flex gap-2">
+                <button className="flex-1 h-7 px-3 text-xs bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded transition-colors border border-zinc-200 flex items-center justify-center gap-1.5">
+                  <Download className="w-3 h-3" />
+                  Export Data
+                </button>
+                <button className="flex-1 h-7 px-3 text-xs bg-zinc-100 hover:bg-red-50 text-red-600 rounded transition-colors border border-red-200 flex items-center justify-center gap-1.5">
+                  <Trash2 className="w-3 h-3" />
+                  Delete Account
+                </button>
               </div>
             </div>
           </div>

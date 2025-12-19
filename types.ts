@@ -52,6 +52,8 @@ export interface UserSettings {
   maxReviewsPerDay: number;
   newCardsPerDay: number;
   dailyProgress?: DailyProgress;
+  fullName?: string;
+  avatarUrl?: string;
 }
 
 export interface ReviewResult {

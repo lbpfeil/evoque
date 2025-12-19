@@ -110,13 +110,17 @@ export const toSupabaseSettings = (settings: any, userId: string) => ({
     user_id: userId,
     max_reviews_per_day: settings.maxReviewsPerDay,
     new_cards_per_day: settings.newCardsPerDay,
-    daily_progress: settings.dailyProgress
+    daily_progress: settings.dailyProgress,
+    full_name: settings.fullName,
+    avatar_url: settings.avatarUrl
 });
 
 export const fromSupabaseSettings = (row: any) => ({
     maxReviewsPerDay: row.max_reviews_per_day,
     newCardsPerDay: row.new_cards_per_day,
-    dailyProgress: row.daily_progress
+    dailyProgress: row.daily_progress,
+    fullName: row.full_name,
+    avatarUrl: row.avatar_url
 });
 
 // ============================================

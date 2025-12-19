@@ -49,17 +49,17 @@
 evoque/
 ├── components/           # Reusable UI components + Contexts
 │   ├── AuthContext.tsx   # Authentication state
-│   ├── StoreContext.tsx  # Main app state (1260 lines - CRITICAL)
+│   ├── StoreContext.tsx  # Main app state (1280 lines - CRITICAL)
+│   ├── Sidebar.tsx       # Navigation + user profile (shows avatar & name)
 │   ├── *Modal.tsx        # Feature-specific modals
 │   └── ui/               # Base UI components (Button, Input, etc.)
 ├── pages/                # Route-level components
 │   ├── Dashboard.tsx     # Home page (analytics)
-│   ├── Library.tsx       # Book grid view
 │   ├── BookDetails.tsx   # Single book view
 │   ├── Highlights.tsx    # All highlights table
-│   ├── Import.tsx        # Upload MyClippings.txt
 │   ├── Study.tsx         # Deck selection
 │   ├── StudySession.tsx  # Active study interface (550 lines)
+│   ├── Settings.tsx      # Settings with 4 tabs (Import, Library, Account, Preferences)
 │   └── Login.tsx         # Auth page
 ├── services/             # Business logic
 │   ├── parser.ts         # Parse MyClippings.txt
@@ -78,7 +78,7 @@ evoque/
 ## 🔑 CORE DATA MODELS (types.ts)
 
 ```typescript
-// CRITICAL: All interfaces are in types.ts (102 lines)
+// CRITICAL: All interfaces are in types.ts (110 lines - UPDATED 2025-12-19)
 
 Book {
   id: string (UUID)
@@ -137,6 +137,14 @@ StudyStatus = 'new' | 'learning' | 'review'
 // new: repetitions=0, interval=0
 // learning: repetitions 1-4
 // review: repetitions >= 5
+
+UserSettings {
+  maxReviewsPerDay: number
+  newCardsPerDay: number
+  dailyProgress?: DailyProgress
+  fullName?: string          // NEW 2025-12-19: User's full name
+  avatarUrl?: string         // NEW 2025-12-19: Avatar URL from Supabase Storage
+}
 ```
 
 ---
@@ -155,6 +163,7 @@ StudyStatus = 'new' | 'learning' | 'review'
 - Derived data (getDeckStats, getCardsDue)
 - Session management (startSession, submitReview)
 - Tag operations (addTag, assignTagToHighlight)
+- Settings management (updateSettings, reloadSettings) // UPDATED 2025-12-19
 ```
 
 ### **2. Optimistic UI Updates**
@@ -196,9 +205,20 @@ const updateData = async (id: string, updates: any) => {
 toSupabase*():   camelCase → snake_case + add user_id
 fromSupabase*(): snake_case → camelCase + remove user_id
 
+// UPDATED 2025-12-19: toSupabaseSettings & fromSupabaseSettings
+// Now include: full_name ↔ fullName, avatar_url ↔ avatarUrl
+
 // RLS (Row Level Security):
 ALL tables filtered by auth.uid() = user_id
 → Users can ONLY access their own data
+
+// Supabase Storage (NEW 2025-12-19):
+Bucket: 'avatars' (public, 2MB limit, image/* only)
+RLS Policies:
+- INSERT: authenticated users, path = {user_id}/avatar.*
+- UPDATE: authenticated users, own files only
+- DELETE: authenticated users, own files only
+- SELECT: public (read-only)
 ```
 
 ### **4. Temporary vs Persistent Data**
@@ -252,7 +272,57 @@ ALL tables filtered by auth.uid() = user_id
 5. Session ends when queue empty
 ```
 
-### **3. SM-2 Algorithm (services/sm2.ts)**
+### **3. Settings Page Flow (Settings.tsx - NEW 2025-12-19)**
+
+```typescript
+// Consolidated page with 4 tabs: Import, Library, Account, Preferences
+
+1. IMPORT TAB
+   - Drag & drop MyClippings.txt upload
+   - Inline success notification (not full-page)
+   - Shows last import stats
+   - Compact drop zone (p-8 instead of p-20)
+
+2. LIBRARY TAB
+   - Compact list view (not grid)
+   - Book cards: thumbnail (w-10 h-14) + metadata
+   - Title truncated at 100 characters
+   - Click → Navigate to /library/:bookId
+   - No search field (removed for simplicity)
+
+3. ACCOUNT TAB (UPDATED 2025-12-19)
+   - Profile Photo Section:
+     * Avatar upload with preview (circular, 64x64px)
+     * "Change Photo" button with file input
+     * Validation: image/* types only, max 2MB
+     * Upload to Supabase Storage bucket 'avatars'
+     * Path: {userId}/avatar.{ext}
+     * RLS policies: users can CRUD their own avatars, public read
+     * Cache-busting: adds ?t={timestamp} to force browser reload
+   - Profile Information:
+     * Full name input field (saves on blur)
+     * Email (read-only)
+     * Plan (read-only)
+   - Statistics (books, highlights, cards count)
+   - Danger Zone:
+     * Two side-by-side buttons (flex gap-2)
+     * Export Data: gray button with Download icon
+     * Delete Account: red text button with Trash2 icon
+     * Both: h-7, text-xs, border, compact design
+
+4. PREFERENCES TAB
+   - SM-2 settings (daily limit, intervals)
+   - UI preferences (keyboard hints, auto-reveal)
+   - Save button (backend persistence pending)
+
+// Tab State Persistence
+- Uses useSearchParams from react-router-dom
+- URL format: /settings?tab=library
+- State persists when navigating away and back
+- Initial tab read from URL query param
+```
+
+### **4. SM-2 Algorithm (services/sm2.ts)**
 
 ```typescript
 calculateNextReview(card: StudyCard, quality: 1-4) → StudyCard
@@ -448,11 +518,12 @@ lbp_context/
 ├── TECHNICAL_CONTEXT.md             # ⚠️ THIS FILE (always include with AI)
 ├── README.md                        # Documentation index
 ├── prd.md                           # Product context (business/market/vision)
+├── SETTINGS_PAGE_DESIGN.md          # ⚠️ Settings page design spec (623 lines)
 ├── spaced-repetition-system.md      # ⚠️ Deep dive: SM-2 algorithm (753 lines)
 └── HighlightTab-context.md          # ⚠️ Deep dive: Highlights page features (483 lines)
 
 lbp_diretrizes/
-├── compact-ui-design-guidelines.md  # ⚠️ UI/UX standards (550 lines)
+├── compact-ui-design-guidelines.md  # ⚠️ UI/UX standards (550 lines) - Updated 2025-12-19
 └── modal-pattern.md                 # Modal implementation guide
 ```
 
@@ -471,7 +542,7 @@ lbp_diretrizes/
 
 - [x] Authentication (Supabase Auth)
 - [x] MyClippings.txt import (with Portuguese dates)
-- [x] Book library (grid + list views)
+- [x] Book library (compact list view in Settings)
 - [x] Highlight management (CRUD, bulk operations)
 - [x] Study system (SM-2 algorithm)
 - [x] Daily progress tracking (10 cards/book/day)
@@ -482,6 +553,8 @@ lbp_diretrizes/
 - [x] Keyboard shortcuts (Space, Enter, 1-4, E)
 - [x] Optimistic UI updates
 - [x] Review logs (analytics)
+- [x] Settings page (4 tabs: Import, Library, Account, Preferences)
+- [x] Tab state persistence via URL query params
 
 ### ⏳ **Not Implemented (PRD mentions, but NOT in code)**
 
@@ -492,7 +565,7 @@ lbp_diretrizes/
 - [ ] Advanced filters (date ranges, custom sorts)
 - [ ] Heatmap visualization
 - [ ] Gamification (badges, streaks display)
-- [ ] Settings page
+- [ ] User settings persistence to Supabase (UI exists, backend pending)
 
 ---
 
