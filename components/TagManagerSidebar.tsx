@@ -65,7 +65,12 @@ export function TagManagerSidebar({ open, onOpenChange }: TagManagerSidebarProps
 
     // Recursive function to render tag tree (for global tags)
     const renderTagTree = (parentId?: string, depth = 0) => {
-        const childTags = globalTags.filter(t => t.parentId === parentId);
+        const childTags = globalTags.filter(t => {
+            // Match both null and undefined as "no parent"
+            const tParent = t.parentId ?? undefined;
+            const compareParent = parentId ?? undefined;
+            return tParent === compareParent;
+        });
 
         if (childTags.length === 0 && parentId) return null;
 

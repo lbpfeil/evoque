@@ -263,7 +263,10 @@ const Highlights = () => {
               const flattenTags = (parentId?: string, depth = 0): React.ReactNode[] => {
                 const children = tags.filter(t => {
                   // Only include tags that match the current filter context
-                  if (t.parentId !== parentId) return false;
+                  // Match both null and undefined as "no parent"
+                  const tParent = t.parentId ?? undefined;
+                  const compareParent = parentId ?? undefined;
+                  if (tParent !== compareParent) return false;
 
                   // If "All Books" is selected, only show global tags (no bookId)
                   if (selectedBookId === 'all') {
