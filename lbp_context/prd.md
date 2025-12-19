@@ -1,363 +1,34 @@
-# EVOQUE - Product Requirements Document (PRD)
+# EVOQUE - Product Context
+
+> **Last Updated:** 2025-12-19  
+> **Purpose:** Product vision, market context, and business goals (NOT technical specifications)
+
+---
 
 ## 📝 CHANGELOG
 
-### 2025-12-17: Supabase Migration - Complete Data Persistence Layer
-
-**Sessão de Código:** Migração completa do sistema de armazenamento de `localStorage` para **Supabase (PostgreSQL)** com autenticação, RLS (Row Level Security), e optimistic UI updates.
-
-#### 🎯 Objetivo da Migração
-
-Substituir o armazenamento local por um banco de dados cloud para garantir:
-- ✅ Persistência de dados entre dispositivos
-- ✅ Sincronização em tempo real
-- ✅ Autenticação e segurança (RLS)
-- ✅ Backup automático
-- ✅ Escalabilidade
-
-#### 🗄️ Estrutura do Banco de Dados
-
-**Tabelas Criadas:**
-1. `books` - Livros importados
-2. `highlights` - Destaques dos livros
-3. `study_cards` - Cards de estudo (SM-2 algorithm)
-4. `tags` - Tags globais e específicas de livros (hierárquicas)
-5. `user_settings` - Configurações do usuário
-6. `review_logs` - Histórico de revisões (analytics)
-
-**Dados Temporários (localStorage):**
-- `currentSession` - Estado da sessão de estudo atual
-- `dailyProgress` - Progresso diário de revisões
-
-#### ✨ Implementações Realizadas
-
-**Fase 0: Autenticação (CRÍTICO)**
-- ✅ `AuthContext.tsx` - Gerenciamento de autenticação
-- ✅ `Login.tsx` - UI de login/signup com email/senha
-- ✅ `Sidebar.tsx` - Menu de usuário e logout
-- ✅ `App.tsx` - Proteção de rotas (redirect para login)
-- ✅ Configuração Supabase Auth no dashboard
-
-**Fase 1: Setup e Helpers**
-- ✅ `lib/supabase.ts` - Cliente Supabase
-- ✅ `lib/supabaseHelpers.ts` - Conversão camelCase ↔ snake_case
-- ✅ `vite-env.d.ts` - Tipos para env vars
-- ✅ `services/parser.ts` - UUID determinístico (substituiu btoa)
-
-**Fase 2: Carregamento de Dados**
-- ✅ `StoreContext.tsx` - Carregamento assíncrono do Supabase
-- ✅ Estado inicial vazio (removido MOCK_DATA)
-- ✅ useEffect para carregar: books, highlights, study_cards, tags, user_settings
-
-**Fase 3: Importação de Dados**
-- ✅ `importData()` - Upsert de books, highlights, study_cards
-- ✅ Recarregamento completo após importação
-- ✅ `Import.tsx` - Chamada async com await
-
-**Fase 5: CRUD de Highlights**
-- ✅ `deleteHighlight()` - Delete com cascade de study_cards
-- ✅ `updateHighlight()` - Update com optimistic UI
-- ✅ `bulkDeleteHighlights()` - Delete múltiplo
-
-**Fase 6: CRUD de Study Cards**
-- ✅ `addToStudy()` - Adicionar highlight ao estudo
-- ✅ `removeFromStudy()` - Remover do estudo
-- ✅ `bulkAddToStudy()` - Adicionar múltiplos
-- ✅ `deleteCard()` - Delete com atualização de daily progress
-- ✅ `updateCard()` - Update após revisão (SM-2)
-
-**Fase 7: CRUD de Tags**
-- ✅ `addTag()` - Criar tag global ou de livro
-- ✅ `updateTag()` - Atualizar nome/cor
-- ✅ `deleteTag()` - Delete com cascade de tags filhas
-- ✅ `assignTagToHighlight()` - Atribuir tag
-- ✅ `removeTagFromHighlight()` - Remover tag
-
-**Fase 8: Settings & Review Logs**
-- ✅ `updateSettings()` - Upsert de configurações
-- ✅ `submitReview()` - Salvar review_logs no Supabase
-
-#### 🔧 Padrão de Implementação
-
-Todas as operações seguem o padrão **Optimistic UI Updates**:
-
-```typescript
-const updateData = async (id: string, updates: any) => {
-  if (!user) return;
-  
-  // 1. Optimistic update (UI imediata)
-  setData(prev => prev.map(item => 
-    item.id === id ? { ...item, ...updates } : item
-  ));
-
-  // 2. Sync com Supabase
-  try {
-    const { error } = await supabase
-      .from('table')
-      .update(toSupabaseFormat(updates, user.id))
-      .eq('id', id)
-      .eq('user_id', user.id);
-    
-    if (error) throw error;
-  } catch (error) {
-    console.error('Failed to sync:', error);
-    // 3. Rollback ou reload em caso de erro
-    const { data } = await supabase
-      .from('table')
-      .select('*')
-      .eq('user_id', user.id);
-    if (data) setData(data.map(fromSupabaseFormat));
-  }
-};
-```
-
-#### 🐛 Bugs Críticos Corrigidos
-
-1. **Interface `StoreContextType` Desatualizada**
-   - Funções async não retornavam `Promise<void>`
-   - ✅ Corrigido: Interface completa atualizada
-
-2. **Chamadas sem `await` (5 ocorrências)**
-   - `StudySession.tsx`: `updateHighlight` (2x), `submitReview` ← **CRÍTICO**
-   - `Highlights.tsx`: `updateHighlight`, `bulkDeleteHighlights`
-   - ✅ Corrigido: Todas agora usam `await`
-
-3. **Review Logs não salvavam**
-   - `submitReview` chamado sem `await` em `handleResponse`
-   - ✅ Corrigido: Adicionado `await submitReview()`
-
-#### 📁 Arquivos Modificados
-
-**Core:**
-- `components/AuthContext.tsx` - NEW
-- `components/StoreContext.tsx` - MAJOR REFACTOR
-- `lib/supabase.ts` - NEW
-- `lib/supabaseHelpers.ts` - NEW
-- `services/parser.ts` - UUID generation
-- `vite-env.d.ts` - Env types
-
-**Pages:**
-- `pages/Login.tsx` - NEW
-- `pages/Import.tsx` - Async import
-- `pages/StudySession.tsx` - Await fixes
-- `pages/Highlights.tsx` - Await fixes
-- `App.tsx` - Route protection
-
-#### 🎯 Impacto
-
-- **Persistência:** 100% dos dados agora no Supabase
-- **Segurança:** RLS garante isolamento por usuário
-- **Performance:** Optimistic updates = UI instantânea
-- **Confiabilidade:** Rollback automático em caso de erro
-- **Analytics:** Review logs permitem análise de desempenho
-
-#### 🔐 Segurança (RLS)
-
-Todas as tabelas têm políticas RLS:
-```sql
--- Exemplo de política RLS
-CREATE POLICY "Users can only access their own data"
-ON highlights FOR ALL
-USING (user_id = auth.uid());
-```
-
-#### 📊 Status da Migração
-
-✅ **100% COMPLETA**
-- Autenticação: ✅
-- Data Loading: ✅
-- Data Import: ✅
-- CRUD Operations: ✅
-- Review Logs: ✅
-- Settings: ✅
-- Error Handling: ✅
-- Optimistic Updates: ✅
-
----
-
-### 2025-12-16: Study Session UX Enhancements & Bug Fixes
-
-**Sessão de Código:** Refinamentos visuais e correções críticas na Study Session, incluindo progress bar animada, sistema de tags completo, e melhorias tipográficas.
-
-#### ✨ Novas Funcionalidades Implementadas
-
-1. **Progress Bar Animada**
-   - Aumentada de 1px para 3px de altura
-   - Gradiente animado com efeito shimmer/flow
-   - Bordas arredondadas (`rounded-full`)
-   - Animação contínua de 2s com `ease-in-out`
-   - Arquivo: `index.css`, `pages/StudySession.tsx`
-
-2. **Sistema de Tags na Study Session**
-   - Exibição de tags abaixo das informações do livro
-   - Diferenciação visual: tags globais (azul) vs tags de livro (âmbar)
-   - Limite de 6 tags visíveis com badge "+N" para overflow
-   - Badge clicável para expandir/colapsar todas as tags
-   - Ordenação: tags globais primeiro, depois tags específicas do livro
-   - Design compacto: `text-[9px]`, `px-1.5 py-0.5`, `gap-1`
-   - Arquivo: `pages/StudySession.tsx`
-
-3. **Melhorias Tipográficas**
-   - Título do livro: `text-xs` → `text-sm` (+16.7%)
-   - Autor do livro: `text-[10px]` → `text-xs` (+20%)
-   - Texto do highlight: `text-xl/2xl` → `text-lg/xl` (-10%)
-   - Texto do highlight agora justificado (`text-justify`)
-   - Ícone de editar reposicionado (`-top-1 -right-1`) para não sobrepor texto
-   - Arquivo: `pages/StudySession.tsx`
-
-4. **Área de Edição de Notas Ampliada**
-   - Textarea de edição: 3 linhas → 6 linhas
-   - Agora igual ao tamanho da área de edição do highlight
-   - Notas longas sempre visíveis com `whitespace-pre-wrap`
-   - Arquivo: `pages/StudySession.tsx`
-
-#### 🐛 Bugs Críticos Corrigidos
-
-1. **Undo (Ctrl+Z) - Daily Progress**
-   - **Problema:** Desfazer revisão não decrementava `dailyProgress`
-   - **Solução:** `undoLastReview` agora decrementa contador corretamente
-   - Espelha lógica de `submitReview` para consistência
-   - Arquivo: `components/StoreContext.tsx`
-
-2. **Delete Card - Daily Progress**
-   - **Problema:** Deletar card durante sessão não atualizava tabela de decks
-   - **Solução:** `deleteCard` agora verifica duas condições:
-     - Card tem `lastReviewedAt` de hoje (lógica existente)
-     - Card está em `currentSession.completedIds` (nova verificação)
-   - Captura cards deletados antes de persistência
-   - Arquivo: `components/StoreContext.tsx`
-
-3. **TypeScript Type Inference**
-   - Corrigido erro de tipo em `getReviewsToday`
-   - Adicionado type annotation explícita: `reduce<number>`
-   - Arquivo: `components/StoreContext.tsx`
-
-#### 🎨 Design Guidelines Atualizados
-
-Documentação completa do sistema de tags em `tag_display_design.md`:
-- Especificações de cores (azul-500 para global, amber-500 para livro)
-- Layout e ordenação de tags
-- Comportamento de expansão/colapso
-- Exemplos de código
-
-#### 📁 Arquivos Modificados
-
-- `index.css` - Animação de progress bar (keyframes + classe CSS)
-- `pages/StudySession.tsx` - Tags, tipografia, área de edição de notas
-- `components/StoreContext.tsx` - Correções em `undoLastReview` e `deleteCard`
-- `types.ts` - (sem alterações, apenas referenciado)
-
-#### 🎯 Impacto
-
-- **UX:** Progress bar mais visível e dinâmica
-- **Contexto:** Tags fornecem contexto imediato durante revisão
-- **Legibilidade:** Tipografia otimizada para melhor hierarquia visual
-- **Dados:** 100% de integridade com correções de undo e delete
-- **Edição:** Área de notas 2x maior para melhor usabilidade
-
----
-
-### 2025-12-15: Study Page Refinements & Bug Fixes
-
-**Sessão de Código:** Refinamento completo da funcionalidade de estudo com foco em UX, correções críticas de bugs e implementação de features solicitadas.
-
-#### ✨ Novas Funcionalidades Implementadas
-
-1. **Botão "Study All Books" Proeminente**
-   - Movido de linha da tabela para botão CTA destacado acima da tabela
-   - Design: `bg-black` com hover `bg-zinc-800`, ícone de livros abertos, stats coloridos
-   - Seguindo diretrizes de UI compacta estabelecidas
-
-2. **Delete Card Durante Sessão**
-   - Ícone 'X' na barra inferior esquerda da sessão de estudo
-   - Popover de confirmação (substituindo `window.confirm`)
-   - Atualiza daily progress stats automaticamente
-
-3. **Data de Criação do Highlight**
-   - Exibida durante sessão de estudo ao lado do título do livro
-   - Formato: "Dec 15, 2023" (mês abreviado)
-
-4. **Atalhos de Teclado Aprimorados**
-   - `Space` OU `Enter`: Revelar resposta
-   - `Enter` (após revelar): Botão "Good"
-   - `1`: Again | `2`: Hard | `3`: Good | `4`: Easy
-   - `E`: Editar nota | `Ctrl+Z`: Desfazer
-
-5. **Popovers Compactos**
-   - `EmptyDeckPopover`: Mensagem quando deck está vazio
-   - `DeleteCardPopover`: Confirmação de exclusão de card
-   - Design consistente com diretrizes compact UI
-
-#### 🐛 Bugs Críticos Corrigidos
-
-1. **SM-2 Algorithm - Hard Button**
-   - **Problema:** Hard resetava card (comportamento de Again)
-   - **Solução:** Hard agora passa card com intervalo reduzido (3 dias vs 6 do Good)
-   - Arquivo: `services/sm2.ts`
-
-2. **Daily Progress Tracking**
-   - **Problema:** Limite de 10 cards era por sessão, não por dia
-   - **Solução:** Implementado `DailyProgress` com rastreamento por data e livro
-   - Reset automático à meia-noite
-   - Arquivo: `types.ts`, `components/StoreContext.tsx`
-
-3. **All Books Session Stats**
-   - **Problema:** Não atualizava stats de livros individuais ao estudar em "All Books"
-   - **Solução:** `submitReview` agora identifica livro via highlight e atualiza `dailyProgress`
-   - Arquivo: `components/StoreContext.tsx`
-
-4. **All Books Card Selection**
-   - **Problema:** Incluía TODOS os cards, não apenas os disponíveis hoje
-   - **Solução:** Filtra por disponibilidade diária respeitando limite de 10/livro
-   - Alternância entre livros para variedade
-   - Arquivo: `components/StoreContext.tsx`
-
-5. **Session Reset Logic**
-   - **Problema:** Sessão não resetava corretamente ao trocar entre decks
-   - **Solução:** Adicionado `bookId` tracking e lógica `isDifferentDeck`
-   - Arquivo: `types.ts`, `components/StoreContext.tsx`
-
-6. **Delete Card Stats Update**
-   - **Problema:** Deletar card não atualizava daily progress
-   - **Solução:** `deleteCard` decrementa contador se card foi revisado hoje
-   - Arquivo: `components/StoreContext.tsx`
-
-#### 📊 Melhorias de Dados
-
-**getDeckStats Refatorado:**
-- **Individual Books:** Mostra cards restantes para hoje (10 - já revisados)
-- **All Books:** Soma de todos os stats individuais (sem limite artificial)
-- Filtragem precisa de cards já revisados hoje
-
-**Tipos Adicionados:**
-- `DailyProgress`: Rastreamento de revisões por livro por dia
-- `bookId?: string` em `StudySession`: Contexto de deck
-
-#### 🎨 Design Guidelines Atualizados
-
-Adicionado seção "Botão Proeminente (Call-to-Action)" em `compact-ui-design-guidelines.md`:
-- Especificações de cores, tamanhos, padding
-- Exemplos de código
-- Diretrizes de uso
-
-#### 📁 Arquivos Modificados
-
-- `components/StoreContext.tsx` - Lógica de estado e daily progress
-- `components/DeleteCardPopover.tsx` (novo) - Popover de confirmação
-- `components/EmptyDeckPopover.tsx` (novo) - Popover de deck vazio
-- `pages/Study.tsx` - Botão proeminente e validação
-- `pages/StudySession.tsx` - Delete button, data, keyboard shortcuts
-- `services/sm2.ts` - Correção do algoritmo Hard
-- `types.ts` - DailyProgress, bookId em StudySession
-- `lbp_diretrizes/compact-ui-design-guidelines.md` - Diretrizes de botão proeminente
-- `playwright.config.ts` (novo) - Configuração de testes
-
-#### 🎯 Impacto
-
-- **UX:** Fluxo de estudo mais intuitivo e polido
-- **Dados:** 100% de integridade e precisão
-- **Performance:** Sem impacto negativo
-- **Manutenibilidade:** Código mais organizado e tipado
+### 2025-12-17: Supabase Migration
+- Migrated from localStorage to Supabase (PostgreSQL)
+- Added authentication and user accounts
+- Enabled multi-device sync
+- Implemented cloud backup
+
+### 2025-12-16: Study Session UX Enhancements
+- Added animated progress bar
+- Implemented tag system in study interface
+- Improved typography and note editing area
+- Fixed critical bugs (undo, daily progress tracking)
+
+### 2025-12-15: Study Page Refinements
+- Prominent "Study All Books" button
+- Delete card during session
+- Highlight creation date display
+- Keyboard shortcuts (Space, Enter, 1-4, E, Ctrl+Z)
+
+### 2025-12-05: Tag System & Compact UI
+- Hierarchical tags (global + book-specific)
+- TagSelector component
+- Compact UI design guidelines established
 
 ---
 
@@ -433,7 +104,7 @@ Criar uma ferramenta indispensável para leitores Kindle que valorizam aprendiza
 - Net Promoter Score (NPS)
 - Taxa de highlights editados/personalizados
 - Número de tags criadas por usuário
-- Utilização de features (heatmap, analytics, etc.)
+- Utilização de features (analytics, study sessions, etc.)
 
 ---
 
@@ -480,1595 +151,241 @@ Criar uma ferramenta indispensável para leitores Kindle que valorizam aprendiza
 
 ---
 
-## 4. FUNCIONALIDADES DETALHADAS
+## 4. FUNCIONALIDADES PRINCIPAIS
 
-### 4.1 AUTENTICAÇÃO E ONBOARDING
+### 4.1 Core Features (Implementadas)
 
-#### 4.1.1 Tela de Login/Cadastro
+**Importação e Organização:**
+- Upload de MyClippings.txt com parse automático
+- Detecção inteligente de novos highlights
+- Biblioteca visual de livros com capas
+- Sistema hierárquico de tags (global + book-specific)
 
-**Requisitos Funcionais:**
-- Login via email/senha com validação
-- Opção de "Login com Google" (via Supabase Auth)
-- Recuperação de senha via email
-- Formulário de cadastro minimalista (nome, email, senha)
-- Validações em tempo real com feedback visual
+**Sistema de Estudo:**
+- Repetição espaçada com algoritmo SM-2
+- Sessões de estudo por livro ou "All Books"
+- Keyboard shortcuts para revisão rápida
+- Inline note editing durante estudo
+- Daily progress tracking (10 cards/book/day)
+- Undo last review (Ctrl+Z)
 
-**Design:**
-- Layout split-screen: lado esquerdo com formulário, lado direito com ilustração/value proposition
-- Campos de input com estados hover, focus e error bem definidos
-- Botão CTA destacado com micro-animação no hover
-- Link "Esqueci minha senha" discreto mas acessível
+**Gestão de Conhecimento:**
+- CRUD completo de highlights
+- Bulk operations (delete, add to study)
+- Tag assignment e filtering
+- Search e ordenação avançada
+- Highlight history e statistics
 
-**Fluxo de Onboarding:**
-1. Após primeiro login, modal de boas-vindas explicando o conceito
-2. Tour guiado (opcional, pulável) destacando:
-   - Como importar MyClippings.txt
-   - Como funciona o sistema de estudo
-   - Como personalizar livros (capa, nome)
-3. CTA para fazer primeira importação
+### 4.2 Experiência do Usuário
 
-#### 4.1.2 Estados de Sessão
+**Design Principles:**
+- Compact UI (maximize content, minimize chrome)
+- Clean, professional aesthetic
+- Keyboard-first navigation
+- Optimistic UI updates (instant feedback)
+- Mobile-responsive
 
-- Sessão mantida por 30 dias (remember me)
-- Auto-logout após 7 dias de inatividade
-- Sincronização automática entre abas abertas
-
----
-
-### 4.2 IMPORTAÇÃO DE HIGHLIGHTS
-
-#### 4.2.1 Interface de Upload
-
-**Requisitos Funcionais:**
-- Drag & drop zone para arquivo MyClippings.txt
-- Botão alternativo "Escolher arquivo" para upload tradicional
-- Validação do formato do arquivo (deve ser .txt)
-- Preview dos primeiros highlights detectados antes de confirmar importação
-- Sistema de detecção de novos highlights baseado em timestamp
-
-**Lógica de Detecção de Novos Highlights:**
-```
-SE (data_highlight > última_data_importação_usuário):
-    ENTÃO: highlight é NOVO
-SENÃO:
-    highlight é DUPLICADO (não importar)
-```
-
-**Feedback Visual:**
-- Durante upload: barra de progresso animada
-- Após parsing: card resumo mostrando:
-  - X novos highlights detectados
-  - Y livros novos
-  - Z livros atualizados
-- Lista expansível dos novos highlights por livro
-
-**Tratamento de Erros:**
-- Arquivo vazio: "O arquivo está vazio. Verifique se é o MyClippings.txt correto."
-- Formato inválido: "Não foi possível processar o arquivo. Certifique-se de que é o MyClippings.txt do seu Kindle."
-- Nenhum highlight novo: "Nenhum highlight novo detectado. Todos os highlights já foram importados anteriormente."
-
-#### 4.2.2 Parser do MyClippings.txt
-
-**Estrutura do Arquivo Kindle:**
-```
-Título do Livro (Autor)
-- Your Highlight on page X | location Y-Z | Added on Data
-Texto do highlight
-
-Nota (se existir)
-```
-
-**Dados Extraídos:**
-- `book_title`: String (título do livro)
-- `book_author`: String (autor)
-- `highlight_text`: String (pergunta no sistema de estudo)
-- `note_text`: String | null (resposta no sistema de estudo)
-- `location`: String (página/localização)
-- `kindle_date`: DateTime (quando foi destacado no Kindle)
-- `imported_at`: DateTime (quando foi importado no app)
-
-**Tratamento de Edge Cases:**
-- Livros sem autor identificado: autor = "Desconhecido"
-- Highlights sem nota: note_text = null
-- Caracteres especiais e encoding UTF-8
+**Key UX Patterns:**
+- Drag & drop file upload
+- Inline editing (ESC to save)
+- Modal contexts for deep focus
+- Fixed headers/footers for ergonomics
+- Animated progress indicators
 
 ---
 
-### 4.3 DASHBOARD PRINCIPAL
+## 5. ROADMAP
 
-#### 4.3.1 Layout Geral
+### ✅ MVP (Implemented)
 
-**Estrutura Visual:**
-```
-┌─────────────────────────────────────────────────────────┐
-│  SIDEBAR (250px)     │     MAIN CONTENT AREA           │
-│                      │                                   │
-│  Logo                │  Header: [Título da Página]      │
-│  [Avatar]            │          [Actions]                │
-│                      │                                   │
-│  📊 Dashboard        │  ┌─────────────────────────────┐ │
-│  📚 Biblioteca       │  │                             │ │
-│  🎯 Estudo           │  │     Conteúdo Dinâmico      │ │
-│  📈 Estatísticas     │  │                             │ │
-│  🏷️  Tags            │  │                             │ │
-│  ⚙️  Configurações   │  │                             │ │
-│                      │  └─────────────────────────────┘ │
-└─────────────────────────────────────────────────────────┘
-```
+**Core:**
+- [x] Authentication (Supabase Auth)
+- [x] Import MyClippings.txt
+- [x] Book library
+- [x] Highlight management
+- [x] Study system (SM-2)
+- [x] Tag system
+- [x] Daily progress tracking
+- [x] Keyboard shortcuts
 
-**Inspiração de Design (baseado na imagem fornecida):**
-- Sidebar escura com ícones e labels clean
-- Área principal com background claro (#FAFBFC)
-- Cards com sombras sutis e bordas suaves
-- Uso estratégico de azul primário (#4169E1) para CTAs
-- Gráficos com cores suaves e gradientes
+### 🔄 Phase 2 (Planned)
 
-#### 4.3.2 Página Dashboard (Home)
+**Analytics:**
+- [ ] Dashboard com gráficos de leitura
+- [ ] Heatmap de consistência
+- [ ] Trending concepts (word cloud)
+- [ ] Reading velocity metrics
 
-**Widgets Principais:**
+**Enhancements:**
+- [ ] Cover upload/automatic fetch
+- [ ] Export features (CSV, JSON, Markdown)
+- [ ] Advanced filters (date ranges, custom fields)
+- [ ] Settings page (customize SM-2, preferences)
 
-**1. Card "Resumo Geral"** (topo)
-- Total de livros importados
-- Total de highlights
-- Highlights em estudo (% do total)
-- Streak de dias estudando consecutivamente
+### 🚀 Phase 3 (Future)
 
-**2. Gráfico "Timeline de Highlights"** (estilo área chart)
-- Eixo X: últimos 6 meses
-- Eixo Y: número de highlights importados
-- Visualização suave e colorida (gradiente azul)
-- Tooltip ao hover mostrando número exato e data
+**Collaboration:**
+- [ ] Share highlights com friends
+- [ ] Public highlight collections
+- [ ] Community tags
 
-**3. Gráfico "Heatmap de Leitura"**
-- Inspirado no GitHub contributions
-- Grid de dias do ano (últimos 365 dias)
-- Intensidade de cor baseada em highlights do dia
-- Tooltip: "X highlights em DD/MM/YYYY"
+**Integrations:**
+- [ ] Notion export
+- [ ] Obsidian sync
+- [ ] Readwise compatibility
+- [ ] Google Books API (covers, metadata)
 
-**4. Card "Atividade de Estudo"** (gráfico de linha)
-- Cards revisados por semana (últimas 8 semanas)
-- Duas linhas: "Cards Novos" vs "Revisões"
-- Cores distintas para cada métrica
-
-**5. Widget "Livros Recentes"**
-- Grid horizontal com últimos 5 livros importados
-- Cada card mostra: capa (thumb), título, autor, nº highlights
-- Click leva para página do livro específico
-
-**Ações Rápidas (Header):**
-- Botão "Importar Highlights" (CTA primário)
-- Botão "Iniciar Estudo" (CTA secundário)
-- Data/hora atual
-- Avatar do usuário (dropdown com logout)
+**AI Features:**
+- [ ] Highlight summarization
+- [ ] Concept connections (graph view)
+- [ ] Smart tag suggestions
+- [ ] Reading recommendations
 
 ---
 
-### 4.4 BIBLIOTECA DE LIVROS
+## 6. POSICIONAMENTO NO MERCADO
 
-#### 4.4.1 Visualização e Navegação
+### 6.1 Competidores
 
-**Modos de Visualização:**
-- **Grid View** (padrão): Cards 3-4 colunas com capas grandes
-- **List View**: Lista compacta com capa pequena, título, autor, stats inline
+**Diretos:**
+- **Readwise:** $8/mês, foco em sync multi-plataforma, interface dated
+- **Notion/Obsidian:** Genéricos, requerem setup manual complexo
+- **Anki:** Poderoso mas intimidante, não especializado em highlights
 
-**Card de Livro (Grid):**
-```
-┌─────────────────────┐
-│                     │
-│   [Capa do Livro]   │
-│      300x400        │
-│                     │
-├─────────────────────┤
-│ Título do Livro     │
-│ por Autor           │
-│                     │
-│ 🔖 45 highlights    │
-│ 📚 12 em estudo     │
-│ ✅ 8 dominados      │
-└─────────────────────┘
-```
+**Indiretos:**
+- Amazon Kindle App (highlights básicos, sem spaced repetition)
+- Goodreads (social, não foca em aprendizado)
+- Evernote/OneNote (note-taking genérico)
 
-**Funcionalidades:**
-- Hover: elevação do card + opacidade reduzida
-- Click no card: abre página detalhada do livro
-- Menu "..." (3 dots) no canto superior direito:
-  - Editar informações
-  - Ver todos os highlights
-  - Iniciar sessão de estudo
-  - Excluir livro (com confirmação)
+### 6.2 Diferenciais
 
-#### 4.4.2 Filtros e Busca
+1. **Especialização:** 100% focado em highlights do Kindle + spaced repetition
+2. **Simplicidade:** Zero configuração, import e study imediato
+3. **Modernidade:** UI clean, keyboard shortcuts, optimistic updates
+4. **Gratuito (por ora):** Sem paywall para features core
+5. **Open Source (potencial):** Transparência e community-driven
 
-**Barra de Busca:**
-- Input com ícone de lupa
-- Busca em tempo real (debounced 300ms)
-- Busca por: título, autor, highlight text, tags
+### 6.3 Positioning Statement
 
-**Filtros Laterais:**
-- **Por Status de Estudo:**
-  - Todos
-  - Não iniciados
-  - Em andamento
-  - Dominados (100% revisado)
-  
-- **Por Período de Importação:**
-  - Última semana
-  - Último mês
-  - Último ano
-  - Personalizado (date picker)
-
-- **Por Tags:**
-  - Lista de checkboxes das tags criadas
-  - Contador de livros por tag
-
-- **Ordenação:**
-  - Mais recentes
-  - Mais antigos
-  - Título (A-Z)
-  - Maior nº de highlights
-
-#### 4.4.3 Página Detalhada do Livro
-
-**Header do Livro:**
-```
-┌──────────────────────────────────────────────────────┐
-│  [Capa]  │  Título do Livro                          │
-│  200x300 │  Autor                                     │
-│          │  📅 Importado em: DD/MM/YYYY              │
-│          │  🔖 X highlights | 📝 Y com notas         │
-│          │                                            │
-│          │  [Iniciar Estudo] [Editar Livro]         │
-└──────────────────────────────────────────────────────┘
-```
-
-**Lista de Highlights:**
-- Visualização tipo "caderno virtual"
-- Cada highlight em um card expansível:
-  - Highlight text (destaque visual)
-  - Nota pessoal (se existir) em estilo italic/diferenciado
-  - Data do highlight
-  - Localização no livro
-  - Tags associadas
-  - Botões: Editar | Adicionar/Remover do estudo
-
-**Modo de Edição Rápida:**
-- Click duplo em qualquer highlight para editar inline
-- ESC para cancelar, Enter para salvar
-- Feedback visual de salvamento automático
+> "Para leitores Kindle que valorizam aprendizado ativo,  
+> EVOQUE é a ferramenta de gestão de highlights  
+> que transforma leitura passiva em conhecimento retido,  
+> ao contrário de Readwise ou Anki,  
+> oferecemos uma experiência especializada, moderna e sem fricção."
 
 ---
 
-### 4.5 SISTEMA DE TAGS
+## 7. MODELO DE NEGÓCIO
 
-#### 4.5.1 Criação e Gestão de Tags
+### 7.1 Monetização (Future)
 
-**Interface de Tags:**
-- Página dedicada listando todas as tags criadas
-- Cada tag mostra:
-  - Nome da tag
-  - Cor (selecionável de paleta pré-definida)
-  - Número de highlights associados
-  - Número de livros que contém a tag
+**Opções consideradas:**
 
-**Criação de Nova Tag:**
-- Modal ou inline form
-- Input para nome (máx 30 caracteres)
-- Color picker com paleta de 12 cores pré-definidas
-- Validação: não permitir tags duplicadas (case insensitive)
+**Freemium:**
+- Free: Até 1000 highlights, funcionalidades core
+- Pro ($5/mês): Highlights ilimitados, analytics avançados, export
+- Team ($15/mês): Shared collections, admin dashboard
 
-**Aplicação de Tags:**
-- Na página do livro: selecionar múltiplos highlights e aplicar tag em lote
-- Na edição individual: campo com autocomplete das tags existentes
-- Criar nova tag on-the-fly durante edição
+**One-time Purchase:**
+- $29 lifetime access
+- Simplicidade de pricing
+- No recurring overhead para usuário
 
-#### 4.5.2 Filtros por Tags
+**Open Source + Donations:**
+- 100% gratuito
+- Patreon/GitHub Sponsors para sustentação
+- Self-hosted option para power users
 
-- Biblioteca: filtrar livros que contém X tag
-- Busca global: encontrar todos os highlights com tag Y
-- Estudo: opção de estudar apenas highlights de uma tag específica
+**Decisão atual:** Free durante MVP/validação de mercado
 
----
+### 7.2 Custos Operacionais
 
-### 4.6 SISTEMA DE ESTUDO INTEGRADO
+**Infraestrutura (Supabase Free Tier):**
+- Database: 500MB (suficiente para ~5000 usuários)
+- Auth: Unlimited
+- Storage: 1GB (book covers)
+- Bandwidth: 2GB/mês
 
-#### 4.6.1 Algoritmo de Repetição Espaçada (SM-2)
-
-**Implementação do SM-2:**
-
-O algoritmo SM-2 (SuperMemo 2) calcula o próximo intervalo de revisão baseado na facilidade (ease factor) e no número de repetições.
-
-**Parâmetros Iniciais:**
-- `ease_factor`: 2.5 (inicial)
-- `interval`: 0 (dias até próxima revisão)
-- `repetitions`: 0 (número de vezes que o card foi respondido corretamente)
-
-**Lógica de Atualização:**
-
-Quando usuário clica **"Próximo"** (resposta correta):
-```
-SE repetitions == 0:
-    interval = 1 dia
-SE repetitions == 1:
-    interval = 6 dias
-SE repetitions >= 2:
-    interval = interval_anterior * ease_factor
-
-repetitions += 1
-ease_factor = ease_factor (sem alteração neste caso simplificado)
-```
-
-Quando usuário clica **"Repetir"** (resposta incorreta):
-```
-repetitions = 0
-interval = 0
-ease_factor = ease_factor (mantido)
-next_review_date = hoje (card volta para fila de hoje)
-```
-
-**Armazenamento no Banco (tabela `study_cards`):**
-```sql
-- id
-- highlight_id (FK)
-- ease_factor (float)
-- interval (int - dias)
-- repetitions (int)
-- next_review_date (date)
-- last_reviewed_at (timestamp)
-- created_at
-```
-
-#### 4.6.2 Interface de Estudo
-
-**Seleção de Deck/Livro:**
-- Modal ou página de seleção antes de iniciar estudo
-- Opções:
-  - Estudar todos os cards pendentes (de todos os livros)
-  - Estudar apenas livro X
-  - Estudar apenas tag Y
-  - Estudo rápido (10 cards aleatórios)
-
-**Layout da Sessão de Estudo:**
-```
-┌──────────────────────────────────────────────────┐
-│  [Capa do Livro] Título do Livro                 │
-│                                                   │
-│  Progresso da sessão: [████████░░] 8/10          │
-└──────────────────────────────────────────────────┘
-
-┌──────────────────────────────────────────────────┐
-│                                                   │
-│                                                   │
-│              [Texto do Highlight]                │
-│                  (PERGUNTA)                       │
-│                                                   │
-│                                                   │
-└──────────────────────────────────────────────────┘
-
-                  [Mostrar Resposta]
-
-
-            (após revelar resposta)
-
-┌──────────────────────────────────────────────────┐
-│                                                   │
-│              [Texto da Nota/Resposta]            │
-│                                                   │
-└──────────────────────────────────────────────────┘
-
-          [Repetir]            [Próximo]
-```
-
-**Comportamento:**
-1. Card aparece mostrando apenas o Highlight (pergunta)
-2. Usuário tenta lembrar a resposta mentalmente
-3. Click em "Mostrar Resposta" revela a nota
-4. Usuário escolhe:
-   - **"Repetir"**: não lembrou ou lembrou incorretamente → card reseta
-   - **"Próximo"**: lembrou corretamente → card avança no algoritmo
-
-**Detalhes Visuais:**
-- Capa do livro sempre visível no topo (thumb 80x120)
-- Transição suave entre cards (fade in/out)
-- Barra de progresso animada
-- Feedback visual ao clicar botões (ripple effect)
-- Possibilidade de pular card (botão discreto no topo)
-- Botão "Sair" com confirmação se sessão não finalizada
-
-#### 4.6.3 Lógica de Fila de Estudo
-
-**Critérios para Card Aparecer na Fila:**
-- `next_review_date <= hoje`
-
-**Ordem de Apresentação:**
-1. Cards com `repetitions = 0` (nunca revisados) - ordem aleatória
-2. Cards atrasados (next_review_date < hoje) - ordem de atraso (mais antigo primeiro)
-3. Cards do dia (next_review_date = hoje) - ordem aleatória
-
-**Tipos de Cards:**
-- **Novos**: nunca foram estudados (badge "Novo")
-- **Revisão**: já foram estudados e estão no intervalo (badge "Revisão")
-- **Atrasados**: deveriam ter sido revisados dias atrás (badge vermelho "Atrasado")
-
-#### 4.6.4 Pós-Sessão
-
-**Tela de Conclusão:**
-```
-┌──────────────────────────────────────────────┐
-│          🎉 Sessão Concluída! 🎉             │
-│                                               │
-│  Você revisou 10 cards em 8 minutos         │
-│                                               │
-│  ✅ Corretos: 7                              │
-│  🔁 Repetidos: 3                             │
-│                                               │
-│  Próxima revisão: X cards amanhã            │
-│                                               │
-│  [Ver Estatísticas] [Estudar Mais]  [Voltar]│
-└──────────────────────────────────────────────┘
-```
-
-**Gamificação Sutil:**
-- Mensagens motivacionais variadas
-- Confetti animation ao completar sessão longa (20+ cards)
-- Celebração de streaks (3, 7, 30, 100 dias)
+**Break-even:** ~10.000 usuários → migrar para Supabase Pro ($25/mês)
 
 ---
 
-### 4.7 ESTATÍSTICAS E ANALYTICS
-
-#### 4.7.1 Página de Estatísticas
-
-**Layout de Dashboard** (inspirado na imagem Basepoint):
-- Grid de 2x2 ou 3x2 com gráficos interativos
-- Design limpo com cards brancos e sombras sutis
-- Uso de cores consistente com brand (azul primário)
-
-**Gráfico 1: Timeline de Highlights** (área chart)
-- Eixo X: últimos 12 meses
-- Eixo Y: número de highlights importados
-- Gradiente azul suave
-- Tooltip ao hover: "X highlights em Mês/Ano"
-
-**Gráfico 2: Progresso de Estudo** (linha chart dupla)
-- Linhas: "Cards Revisados" e "Taxa de Acerto"
-- Eixo X: últimas 12 semanas
-- Eixo Y esquerdo: número de cards
-- Eixo Y direito: percentual
-- Cores: azul para cards, verde para taxa de acerto
-
-**Gráfico 3: Distribuição por Livro** (bar chart horizontal)
-- Top 10 livros com mais highlights
-- Barras coloridas em gradiente
-- Ordenado por quantidade (descendente)
-
-**Gráfico 4: Heatmap de Consistência**
-- Grid de calendário (365 dias)
-- Intensidade de cor baseada em cards revisados
-- Tooltip: "X cards revisados em DD/MM"
-
-**Cards de Métricas Rápidas** (topo da página):
-```
-┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐
-│  Total de    │ │  Highlights  │ │  Em Estudo   │ │  Streak      │
-│  Livros      │ │              │ │              │ │              │
-│     42       │ │    1,284     │ │     847      │ │   12 dias    │
-└──────────────┘ └──────────────┘ └──────────────┘ └──────────────┘
-```
-
-#### 4.7.2 Insights Avançados
-
-**Nuvem de Palavras:**
-- Gerada a partir de todos os highlights
-- Palavras mais frequentes em tamanho maior
-- Filtro: gerar nuvem de livro específico ou tag
-- Opção de excluir stopwords (artigos, preposições)
-
-**Temas Recorrentes:**
-- Análise simples de frequência de termos
-- Lista dos 20 termos/conceitos mais mencionados nos highlights
-- Formato: tabela ordenável ou lista visual
-
-**Autores Favoritos:**
-- Ranking de autores por número de highlights
-- Visual: lista com avatars/iniciais + barra de progresso
-
-**Metas e Conquistas:**
-- Definir meta anual de livros/highlights
-- Visualização de progresso (circular progress bar)
-- Badges desbloqueados (100 highlights, 30 dias de streak, etc.)
-
----
-
-### 4.8 CONFIGURAÇÕES
-
-#### 4.8.1 Perfil do Usuário
-
-- Nome completo (editável)
-- Email (não editável, requer verificação para mudar)
-- Avatar (upload de imagem ou escolha de avatar padrão)
-- Fuso horário
-- Idioma (futuro: suporte a PT-BR e EN)
-
-#### 4.8.2 Configurações do Sistema de Estudo
-
-**Personalização do Algoritmo:**
-- Número de cards novos por dia (padrão: 20)
-- Número máximo de revisões por dia (padrão: ilimitado)
-- Ease factor inicial (padrão: 2.5, range: 1.3 - 3.0)
-- Intervalo inicial para cards novos (padrão: 1, 6 dias)
-
-**Preferências de Estudo:**
-- Embaralhar ordem dos cards (sim/não)
-- Mostrar progresso durante sessão (sim/não)
-- Sons de feedback (sim/não)
-- Modo escuro durante estudo (sim/não)
-
-#### 4.8.3 Gerenciamento de Livros
-
-**Lista de Todos os Livros:**
-- Tabela editável com colunas:
-  - Capa (thumb)
-  - Título (editável inline)
-  - Autor (editável inline)
-  - Nº Highlights
-  - Ação: [Editar] [Excluir]
-
-**Modal de Edição de Livro:**
-- Campo Título (text input)
-- Campo Autor (text input)
-- Upload de Capa:
-  - Drag & drop
-  - Crop/resize automático para 300x400
-  - Preview em tempo real
-  - Formatos aceitos: JPG, PNG, WEBP
-  - Tamanho máx: 2MB
-- Botão "Buscar Capa Online" (futuro: integração com APIs de livros)
-
-#### 4.8.4 Gerenciamento de Dados
-
-- **Exportar Dados:**
-  - Exportar todos os highlights em JSON
-  - Exportar biblioteca completa em CSV
-  - Exportar estatísticas em PDF (futuro)
-
-- **Importar Dados:**
-  - Importar de backup JSON (futuro)
-
-- **Excluir Conta:**
-  - Botão vermelho "Excluir Conta Permanentemente"
-  - Confirmação com digitação de "EXCLUIR"
-  - Aviso de que dados não podem ser recuperados
-- avatar_url (text, nullable)
-- timezone (text)
-- created_at (timestamp)
-- updated_at (timestamp)
-```
-
-**Tabela: `books`**
-```sql
-- id (uuid, PK)
-- user_id (uuid, FK → users.id)
-- title (text)
-- author (text)
-- cover_url (text, nullable)
-- created_at (timestamp)
-- updated_at (timestamp)
-
-UNIQUE (user_id, title, author) -- evita duplicação
-```
-
-**Tabela: `highlights`**
-```sql
-- id (uuid, PK)
-- book_id (uuid, FK → books.id ON DELETE CASCADE)
-- user_id (uuid, FK → users.id)
-- highlight_text (text) -- a "pergunta"
-- note_text (text, nullable) -- a "resposta"
-- location (text, nullable) -- página/localização
-- kindle_date (timestamp) -- quando destacou no Kindle
-- imported_at (timestamp) -- quando importou no app
-- created_at (timestamp)
-- updated_at (timestamp)
-
-INDEX (user_id, imported_at)
-INDEX (book_id)
-```
-
-**Tabela: `tags`**
-```sql
-- id (uuid, PK)
-- user_id (uuid, FK → users.id)
-- name (text)
-- color (text) -- hex color
-- created_at (timestamp)
-
-UNIQUE (user_id, name)
-```
-
-**Tabela: `highlight_tags`** (many-to-many)
-```sql
-- highlight_id (uuid, FK → highlights.id ON DELETE CASCADE)
-- tag_id (uuid, FK → tags.id ON DELETE CASCADE)
-
-PRIMARY KEY (highlight_id, tag_id)
-```
-
-**Tabela: `study_cards`**
-```sql
-- id (uuid, PK)
-- highlight_id (uuid, FK → highlights.id ON DELETE CASCADE, UNIQUE)
-- user_id (uuid, FK → users.id)
-- ease_factor (float, default 2.5)
-- interval (int, default 0) -- dias
-- repetitions (int, default 0)
-- next_review_date (date)
-- last_reviewed_at (timestamp, nullable)
-- created_at (timestamp)
-
-INDEX (user_id, next_review_date)
-```
-
-**Tabela: `study_sessions`** (para analytics)
-```sql
-- id (uuid, PK)
-- user_id (uuid, FK → users.id)
-- started_at (timestamp)
-- ended_at (timestamp, nullable)
-- cards_reviewed (int)
-- cards_correct (int)
-- cards_repeated (int)
-```
-
-**Tabela: `user_settings`**
-```sql
-- user_id (uuid, PK, FK → users.id)
-- new_cards_per_day (int, default 20)
-- max_reviews_per_day (int, nullable)
-- initial_ease_factor (float, default 2.5)
-- shuffle_cards (boolean, default true)
-- show_progress (boolean, default true)
-- sound_effects (boolean, default false)
-- dark_mode_study (boolean, default false)
-- updated_at (timestamp)
-```
-
-### 5.3 Row Level Security (RLS) Policies
-
-Todas as tabelas devem ter RLS habilitado para garantir que usuários só acessem seus próprios dados:
-
-```sql
--- Exemplo para tabela highlights
-CREATE POLICY "Users can view own highlights"
-ON highlights FOR SELECT
-USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can insert own highlights"
-ON highlights FOR INSERT
-WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users can update own highlights"
-ON highlights FOR UPDATE
-USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can delete own highlights"
-ON highlights FOR DELETE
-USING (auth.uid() = user_id);
-```
-
-### 5.4 Estrutura de Pastas (Next.js App Router)
-
-│   ├── /estudo
-│   │   ├── page.tsx (seleção de deck)
-│   │   └── /sessao
-│   │       └── page.tsx (interface de estudo)
-│   ├── /estatisticas
-│   │   └── page.tsx
-│   ├── /tags
-│   │   └── page.tsx
-│   ├── /configuracoes
-│   │   └── page.tsx
-│   └── layout.tsx (layout principal com sidebar)
-├── /components
-│   ├── /ui (shadcn components)
-│   ├── /charts
-│   │   ├── TimelineChart.tsx
-│   │   ├── HeatmapChart.tsx
-│   │   └── BarChart.tsx
-│   ├── /study
-│   │   ├── StudyCard.tsx
-│   │   └── ProgressBar.tsx
-│   ├── /library
-│   │   ├── BookCard.tsx
-│   │   ├── BookGrid.tsx
-│   │   └── HighlightList.tsx
-│   ├── Sidebar.tsx
-│   ├── UploadZone.tsx
-│   └── TagBadge.tsx
-├── /lib
-│   ├── /supabase
-│   │   ├── client.ts
-│   │   └── server.ts
-│   ├── /parsers
-│   │   └── myClippingsParser.ts
-│   ├── /study
-│   │   └── sm2Algorithm.ts
-│   └── /utils
-│       ├── dateHelpers.ts
-│       └── textHelpers.ts
-├── /public
-│   ├── /images
-│   └── /icons
-└── /styles
-    └── globals.css
-```
-
-### 5.5 Fluxos de Dados Críticos
-
-**Fluxo de Importação:**
-```
-1. User faz upload do MyClippings.txt
-2. Frontend lê o arquivo com FileReader API
-3. Parser processa o texto e gera JSON estruturado
-4. Frontend consulta Supabase: última data de importação do usuário
-5. Frontend filtra apenas highlights com kindle_date > última importação
-6. Frontend envia novos highlights para Supabase (batch insert)
-7. Backend cria registros em `books` (se não existir) e `highlights`
-8. Frontend mostra resumo de importação
-9. Frontend redireciona para página da Biblioteca
-```
-
-**Fluxo de Estudo:**
-```
-1. User seleciona deck/livro para estudar
-2. Frontend query Supabase:
-   SELECT * FROM study_cards 
-   WHERE user_id = X AND next_review_date <= TODAY()
-   ORDER BY [lógica de ordenação]
-3. Frontend carrega primeiro card e exibe
-4. User revela resposta e clica "Próximo" ou "Repetir"
-5. Frontend calcula novo ease_factor, interval, next_review_date (SM-2)
-6. Frontend atualiza registro em `study_cards`
-7. Frontend registra estatística em `study_sessions`
-8. Frontend carrega próximo card (repete 3-7)
-9. Ao finalizar: exibe tela de conclusão com estatísticas
-```
-
----
-
-## 6. DESIGN SYSTEM
-
-### 6.1 Paleta de Cores
-
-**Cores Primárias:**
-- **Azul Primário:** `#4169E1` (Royal Blue) - CTAs, links, elementos interativos
-- **Azul Escuro:** `#2C3E50` - Sidebar, textos importantes
-- **Azul Claro:** `#E8F4FF` - Backgrounds de destaque
-
-**Cores Secundárias:**
-- **Verde Sucesso:** `#10B981` - Feedbacks positivos, badges de "dominado"
-- **Laranja Alerta:** `#F59E0B` - Avisos, cards atrasados
-- **Vermelho Erro:** `#EF4444` - Erros, ações destrutivas
-- **Cinza Neutro:** `#6B7280` - Textos secundários, bordas
-
-**Backgrounds:**
-- **Fundo Principal:** `#FAFBFC`
-- **Card Background:** `#FFFFFF`
-- **Sidebar:** `#1F2937` (dark mode)
-
-### 6.2 Tipografia
-
-**Font Stack:**
-- **Primary:** `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`
-- **Monospace:** `'Fira Code', 'Courier New', monospace` (para highlights de código)
-
-**Escala Tipográfica:**
-- **Display:** 48px / 3rem (títulos de página principais)
-- **H1:** 36px / 2.25rem
-- **H2:** 30px / 1.875rem
-- **H3:** 24px / 1.5rem
-- **Body Large:** 18px / 1.125rem
-- **Body:** 16px / 1rem (padrão)
-- **Body Small:** 14px / 0.875rem
-- **Caption:** 12px / 0.75rem
-
-**Line Height:**
-- Títulos: 1.2
-- Body text: 1.6
-- Highlights: 1.8 (melhor legibilidade)
-
-### 6.3 Espaçamento
-
-**Sistema de 8px:**
-- Base unit: 8px
-- Escala: 4px, 8px, 16px, 24px, 32px, 48px, 64px, 96px
-
-**Aplicação:**
-- Padding interno de cards: 24px
-- Gap entre elementos: 16px
-- Margin entre sections: 48px
-- Sidebar padding: 16px
-
-### 6.4 Componentes Base
-
-**Botões:**
-- **Primary Button:**
-  - Background: #4169E1
-  - Hover: #3457C0
-  - Height: 40px
-  - Border-radius: 8px
-  - Font-weight: 600
-  - Padding: 12px 24px
-
-- **Secondary Button:**
-  - Background: transparent
-  - Border: 2px solid #E5E7EB
-  - Hover: background #F9FAFB
-
-- **Ghost Button:**
-  - Background: transparent
-  - Hover: background #F3F4F6
-
-**Cards:**
-- Background: #FFFFFF
-- Border-radius: 12px
-- Box-shadow: `0 1px 3px rgba(0,0,0,0.1)`
-- Hover: `0 4px 12px rgba(0,0,0,0.15)` (elevação)
-- Padding: 24px
-
-**Inputs:**
-- Height: 40px
-- Border: 1px solid #D1D5DB
-- Border-radius: 8px
-- Focus: border #4169E1, box-shadow 0 0 0 3px rgba(65,105,225,0.1)
-- Padding: 0 12px
-
-**Tags/Badges:**
-- Border-radius: 16px (pill shape)
-- Padding: 4px 12px
-- Font-size: 12px
-- Font-weight: 600
-
-### 6.5 Animações e Transições
-
-**Princípios:**
-- Sutileza: animações devem ser perceptíveis mas não distrativas
-- Duração: 150-300ms para a maioria das interações
-- Easing: `cubic-bezier(0.4, 0.0, 0.2, 1)` (ease-out)
-
-**Aplicações:**
-- Hover states: `transition: all 150ms ease-out`
-- Modal open/close: fade + scale
-- Card flip (estudo): rotate3d
-- Page transitions: fade
-- Skeleton loading: shimmer effect
-
-### 6.6 Iconografia
-
-**Biblioteca de Ícones:** Lucide Icons (consistência e leveza)
-
-**Ícones Principais:**
-- Dashboard: 📊 BarChart3
-- Biblioteca: 📚 Library
-- Estudo: 🎯 Target
-- Estatísticas: 📈 TrendingUp
-- Tags: 🏷️ Tag
-- Configurações: ⚙️ Settings
-- Upload: ⬆️ Upload
-- Editar: ✏️ Edit
-- Excluir: 🗑️ Trash2
-- Busca: 🔍 Search
-
----
-
-## 7. EXPERIÊNCIA DO USUÁRIO
-
-### 7.1 Estados de Carregamento
-
-**Skeleton Screens:**
-- Utilizar em vez de spinners para melhor percepção de performance
-- Aplicar em: lista de livros, lista de highlights, gráficos
-- Animação shimmer sutil
-
-**Progress Indicators:**
-- Upload de arquivo: barra de progresso linear
-- Processamento: spinner + texto informativo ("Analisando highlights...")
-- Operações longas (>3s): indicador de porcentagem
-
-### 7.2 Feedbacks Visuais
-
-**Toasts (Notificações):**
-- Posição: top-right
-- Duração: 3-5 segundos
-- Tipos:
-  - Sucesso: ícone ✓, fundo verde claro
-  - Erro: ícone ✕, fundo vermelho claro
-  - Aviso: ícone ⚠, fundo laranja claro
-  - Info: ícone ℹ, fundo azul claro
-
-**Confirmações:**
-- Ações destrutivas (excluir livro, conta): modal de confirmação
-- Texto claro: "Tem certeza que deseja excluir [Item]? Esta ação não pode ser desfeita."
-- Botões: "Cancelar" (secundário) + "Excluir" (vermelho, destaque)
-
-### 7.3 Estados Vazios (Empty States)
-
-**Biblioteca Vazia:**
-```
-┌────────────────────────────────────┐
-│        📚                          │
-│                                     │
-│   Nenhum livro importado ainda    │
-│                                     │
-│   Importe seu primeiro arquivo     │
-│   MyClippings.txt para começar     │
-│                                     │
-│      [Importar Highlights]         │
-└────────────────────────────────────┘
-```
-
-**Nenhum Card para Estudar:**
-```
-┌────────────────────────────────────┐
-│        🎉                          │
-│                                     │
-│   Você está em dia!                │
-│                                     │
-│   Não há cards para revisar hoje.  │
-│   Próxima revisão: amanhã          │
-│                                     │
-│      [Voltar ao Dashboard]         │
-└────────────────────────────────────┘
-```
-
-### 7.4 Responsividade
-
-**Breakpoints:**
-- Mobile: < 640px
-- Tablet: 640px - 1024px
-- Desktop: > 1024px
-
-**Adaptações Mobile:**
-- Sidebar se transforma em bottom navigation bar
-- Grid de livros: 1 coluna
-- Gráficos: stack vertical
-- Interface de estudo: full-screen
-- Touch-friendly: botões maiores (min 44x44px)
-
-### 7.5 Acessibilidade
-
-**Requisitos Mínimos:**
-- Contraste de cores: WCAG AA (4.5:1 para texto normal)
-- Navegação por teclado: Tab, Enter, Esc funcionais
-- ARIA labels em botões/ícones
-- Focus states visíveis
-- Alt text em todas as imagens
-- Semântica HTML correta (h1, h2, nav, main, etc.)
-
----
-
-## 8. ROADMAP E PRIORIZAÇÃO
-
-### 8.1 MVP (Versão 1.0) - 8 semanas
-
-**Semanas 1-2: Fundação**
-- Setup do projeto (Next.js + Supabase)
-- Autenticação (login/signup)
-- Design system base (Tailwind config, componentes UI)
-
-**Semanas 3-4: Core Features**
-- Upload e parser de MyClippings.txt
-- Modelo de dados completo
-- Biblioteca de livros (grid view, busca básica)
-- Página detalhada do livro
-
-**Semanas 5-6: Sistema de Estudo**
-- Implementação do algoritmo SM-2
-- Interface de estudo (pergunta/resposta)
-- Criação automática de study_cards
-- Estatísticas básicas
-
-**Semanas 7-8: Polish & Launch**
-- Dashboard com gráficos principais
-- Configurações (editar livro, upload de capa)
-- Testes de usabilidade
-- Deploy para produção
-
-### 8.2 Pós-MVP (Versão 1.1-1.3)
-
-**v1.1 - Organização Avançada (2 semanas)**
-- Sistema de tags completo
-- Filtros avançados
-- Edição em massa de highlights
-
-**v1.2 - Analytics Completo (2 semanas)**
-- Heatmap de leitura
-- Nuvem de palavras
-- Insights de temas recorrentes
-- Metas e gamificação
-
-**v1.3 - Refinamentos UX (2 semanas)**
-- Modo escuro global
-- Atalhos de teclado
-- Tour interativo para novos usuários
-- Melhorias de performance
-
-### 8.3 Futuro (Versão 2.0+)
-
-- Aplicativo mobile (React Native ou PWA)
-- Sincronização automática via Dropbox/Drive
-- Colaboração: compartilhar highlights com amigos
-- Integração com APIs de livros (capas automáticas, metadados)
-- Exportação para Notion, Obsidian, Readwise
-- IA: sugestões de conexões entre highlights
-- Estudo com voz (text-to-speech para highlights)
-
----
-
-## 9. MÉTRICAS DE SUCESSO E KPIs
-
-### 9.1 Métricas de Produto (Primeiros 6 Meses)
-
-**Aquisição:**
-- 1.000 usuários registrados
-- 200 DAU (Daily Active Users)
-- Taxa de conversão visita → registro: 15%
-
-**Engajamento:**
-- 3+ sessões de estudo por usuário/semana
-- 60% dos usuários fazem 2+ importações
-- Tempo médio de sessão de estudo: 8-12 minutos
-
-**Retenção:**
-- D1 (Day 1): 60%
-- D7 (Day 7): 40%
-- D30 (Day 30): 25%
-
-**Qualidade:**
-- NPS (Net Promoter Score): >40
-- <5% de churn mensal (após 3º mês)
-- <1% de erro rate nas importações
-
-### 9.2 Métricas Técnicas
-
-**Performance:**
-- Lighthouse Score: >90 (Performance, Accessibility, Best Practices, SEO)
-- Time to Interactive (TTI): <3s
-- First Contentful Paint (FCP): <1.5s
-- Core Web Vitals: todos "Good"
-
-**Confiabilidade:**
-- Uptime: >99.5%
-- Error rate: <0.1%
-- P95 response time: <500ms
-
----
-
-## 10. CONSIDERAÇÕES DE SEGURANÇA E PRIVACIDADE
-
-### 10.1 Segurança
-
-**Autenticação:**
-- Senhas hasheadas (bcrypt via Supabase)
-- JWT tokens para sessões
-- Rate limiting em endpoints de login (10 tentativas/hora)
-
-**Autorização:**
-- Row Level Security (RLS) em todas as tabelas
-- Nenhum dado compartilhado entre usuários sem consentimento explícito
-
-**Upload de Arquivos:**
-- Validação de tipo MIME (apenas .txt para MyClippings)
-- Validação de tamanho (max 10MB)
-- Sanitização de input para prevenir XSS
-
-**Capas de Livros:**
-- Storage isolado por usuário (user_id no path)
-- Validação de formato (PNG, JPG, WEBP apenas)
-- Resize automático para prevenir uploads gigantes
-- URLs assinadas para acesso
-
-### 10.2 Privacidade
-
-**LGPD/GDPR Compliance:**
-- Termos de uso e política de privacidade claros
-- Opt-in explícito para coleta de analytics
-- Direito de exportação de dados (formato JSON)
-- Direito de exclusão completa (hard delete)
-
-**Dados Coletados:**
-- Essenciais: email, nome, highlights importados
-- Analytics: eventos de uso (anonimizados)
-- Não coletado: localização, histórico de navegação fora do app
-
----
-
-## 11. RISCOS E MITIGAÇÕES
+## 8. RISCOS E MITIGAÇÕES
 
 | Risco | Probabilidade | Impacto | Mitigação |
 |-------|---------------|---------|-----------|
-| Parser falha em formatos inesperados de MyClippings.txt | Alta | Médio | Testar com dezenas de arquivos reais; permitir report de erros; fallback manual |
-| Usuários não entendem sistema de repetição espaçada | Média | Alto | Tutorial interativo; tooltips explicativos; FAQ dedicada |
-| Performance ruim com >10k highlights | Baixa | Alto | Paginação; lazy loading; índices de banco otimizados |
-| Custo de storage de capas escala rápido | Baixa | Médio | Comprimir imagens no upload; limitar tamanho por usuário |
-| Usuários esperam integração com Anki | Média | Baixo | Comunicar claramente no marketing que é sistema independente |
+| Amazon muda formato do MyClippings.txt | Baixa | Alto | Monitorar community, ter parser flexível |
+| Competidores copiam features | Média | Médio | Velocidade de execução, community building |
+| Baixa adoção inicial | Alta | Alto | Marketing em communities (Reddit, Twitter, ProductHunt) |
+| Custo de infra escala rápido | Média | Médio | Otimizar queries, comprimir images, freemium |
+| Usuários esperam integração com Anki | Média | Baixo | Comunicar claramente que é sistema independente |
 
 ---
 
-## 12. OPEN QUESTIONS
+## 9. SUCESSO METRICS (6 meses)
 
-1. **Monetização:** Será gratuito eternamente ou haverá plano pago? Se sim, quais features premium?
+**Growth:**
+- ✅ 1.000 usuários registrados
+- ✅ 200 DAU (20% engagement)
+- ✅ 15% conversão signup
+
+**Engagement:**
+- ✅ 3+ study sessions/user/week
+- ✅ 60% retention D1
+- ✅ 40% retention D7
+- ✅ 25% retention D30
+
+**Quality:**
+- ✅ NPS > 40
+- ✅ < 5% churn mensal
+- ✅ Avg session: 8-12 min
+
+---
+
+## 10. OPEN QUESTIONS
+
+1. **Monetização:** Quando introduzir plano pago? Quais features como premium?
 2. **Limites Free Tier:** Quantos highlights/livros por usuário gratuito?
-3. **Internacionalização:** Lançar apenas em PT-BR ou incluir EN desde MVP?
-4. **Mobile App:** PWA ou native app nativo no futuro?
-5. **Marca e Nome:** "Kindle Highlights Manager" é provisório. Nome definitivo?
+3. **Internacionalização:** Lançar apenas PT-BR ou incluir EN desde início?
+4. **Mobile App:** PWA é suficiente ou precisamos native app?
+5. **Marca:** "EVOQUE" é definitivo ou provisório?
+6. **Open Source:** Liberar código? Quando? Qual licença?
 
 ---
 
-## 9. FUNCIONALIDADES IMPLEMENTADAS (Dezembro 2025)
+## 11. APÊNDICES
 
-### 9.1 MELHORIAS NA ABA HIGHLIGHTS
+### A. Referências
 
-#### 9.1.1 Estatísticas Inline
+**Inspirações de Design:**
+- Linear (clean, keyboard-first)
+- Stripe Dashboard (professional, data-dense)
+- Notion (flexible, powerful)
+- Readwise (highlight-focused)
 
-**Descrição:**  
-Cards de métricas exibidos no topo da página de Highlights, fornecendo visão rápida do estado da coleção.
+**Estudos sobre Spaced Repetition:**
+- SuperMemo research (Piotr Wozniak)
+- Anki effectiveness studies
+- "Make It Stick" (Brown, Roediger, McDaniel)
 
-**Métricas Exibidas:**
-- **Total de Highlights**: Contagem total de highlights importados
-- **Com Notas**: Número e percentual de highlights que possuem notas anexadas
-- **Em Estudo**: Número e percentual de highlights adicionados ao sistema de estudo
-- **Livros Únicos**: Quantidade de livros diferentes representados nos highlights
+**Market Research:**
+- r/Kindle community feedback
+- Kindle Highlights subreddit
+- ProductHunt reviews de competidores
 
-**Design:**
-- Grid responsivo (4 colunas em desktop, 2 em mobile)
-- Cards brancos com bordas sutis e sombras leves
-- Ícones representativos para cada métrica
-- Atualização em tempo real baseada nos filtros aplicados
+### B. Recursos Técnicos
 
-**Componente:** `components/HighlightStats.tsx`
-
-#### 9.1.2 Ordenação Avançada
-
-**Opções de Ordenação:**
-1. **Recém Importados** (padrão): Ordenação por data de importação, mais recentes primeiro
-2. **Data do Highlight**: Ordenação por quando o highlight foi criado no Kindle
-3. **Título do Livro**: Ordenação alfabética por nome do livro
-4. **Tamanho do Texto**: Ordenação por comprimento do texto do highlight
-
-**Implementação:**
-- Dropdown no toolbar com ícone de ordenação
-- Persiste durante aplicação de filtros
-- Algoritmo eficiente usando `useMemo` para performance
-
-#### 9.1.3 Modal de Contexto do Livro
-
-**Funcionalidade:**  
-Ao clicar no título de um livro na tabela, abre modal mostrando todos os highlights daquele livro.
-
-**Conteúdo do Modal:**
-- Capa do livro em tamanho grande
-- Título e autor
-- Data de importação e contagem de highlights
-- Lista scrollável com todos os highlights do livro
-- Botão para fechar (X e click fora)
-
-**Componente:** `components/BookContextModal.tsx`
-
-#### 9.1.4 Integração com Sistema de Estudo
-
-**Nova Coluna "Status":**  
-Exibe badges indicando o status de cada highlight no sistema de estudo.
-
-**Status Possíveis:**
-- **Not Started** (cinza): Highlight não adicionado ao estudo
-- **Learning** (azul): Highlight em estudo, menos de 5 repetições
-- **Mastered** (verde): Highlight dominado, 5 ou mais repetições
-
-**Ações Disponíveis:**
-- Botão `+`: Adicionar highlight ao sistema de estudo
-- Botão `-`: Remover highlight do sistema de estudo
-- Ação em lote: Adicionar múltiplos highlights selecionados ao estudo
-
-**Filtro por Status:**
-- Dropdown adicional no toolbar
-- Opções: "All Status" | "In Study" | "Not in Study"
-- Filtragem dinâmica da tabela
-
-**Métodos no Store:**
-```typescript
-addToStudy(highlightId: string): void
-removeFromStudy(highlightId: string): void
-bulkAddToStudy(highlightIds: string[]): void
-getHighlightStudyStatus(highlightId: string): StudyStatus
-```
-
-#### 9.1.5 Filtros Combinados
-
-**Filtros Disponíveis:**
-- **Busca por Texto**: Busca em tempo real no texto do highlight e nas notas
-- **Filtro por Livro**: Dropdown para selecionar livro específico
-- **Ordenação**: 4 opções de ordenação
-- **Status de Estudo**: Filtrar por status no sistema de estudo
-
-**Comportamento:**
-- Todos os filtros podem ser combinados
-- Atualização instantânea da tabela
-- Performance otimizada com `useMemo`
+**Para especificações técnicas, consulte:**
+- `TECHNICAL_CONTEXT.md` - Arquitetura, stack, padrões
+- `spaced-repetition-system.md` - Deep dive no SM-2
+- `HighlightTab-context.md` - Features da aba Highlights
+- `lbp_diretrizes/compact-ui-design-guidelines.md` - UI/UX standards
 
 ---
 
-### 9.2 MELHORIAS NA ABA STUDY
-
-#### 9.2.1 Design Clean e Compacto
-
-**Mudanças Visuais:**
-- **Header Compacto**: Altura reduzida, informações condensadas
-- **Estatísticas Inline**: Ícones pequenos (3px) com texto xs
-- **Progress Bar**: Apenas 1px de altura, mais discreto
-- **Capa do Livro**: Reduzida para 32x48px, posicionada ao lado do título
-- **Botões Menores**: Padding reduzido de `py-5` para `py-3`
-- **Texto Otimizado**: Tamanhos reduzidos (xl-2xl ao invés de 2xl-3xl)
-- **Espaçamento**: Padding geral reduzido de `px-10` para `px-6`
-
-**Princípios:**
-- Estética similar à sidebar
-- Bordas mínimas
-- Foco no conteúdo
-- Design limpo e profissional
-
-#### 9.2.2 Edição Inline de Notas
-
-**Funcionalidade:**  
-Permite editar notas de highlights diretamente durante a sessão de estudo, sem sair do fluxo.
-
-**Fluxo de Uso:**
-1. Revelar resposta do card
-2. Clicar no botão "Edit Note" (ícone de lápis) ou pressionar `E`
-3. Textarea aparece inline com nota atual
-4. Editar o texto
-5. Pressionar `ESC` para salvar automaticamente
-6. Nota é atualizada no banco de dados
-
-**Design:**
-- Textarea com fundo branco e borda sutil
-- Indicador "Press ESC to save"
-- Ícone de loading durante salvamento
-- Transições suaves entre modos
-
-**Benefícios:**
-- Adicionar contexto durante revisão
-- Melhorar notas existentes sem sair do estudo
-- Workflow mais eficiente
-
-#### 9.2.3 Atalhos de Teclado
-
-**Atalhos Implementados:**
-
-| Tecla | Ação | Disponibilidade |
-|-------|------|----------------|
-| `Space` | Revelar resposta | Antes de revelar |
-| `1` | Marcar como "Again" (repetir) | Após revelar |
-| `2` | Marcar como "Good" (próximo) | Após revelar |
-| `E` | Editar nota | Após revelar, não editando |
-| `ESC` | **Salvar edição** | Durante edição de nota |
-
-**Implementação:**
-- Event listener global para teclado
-- Previne atalhos durante input de texto
-- Hints visuais nos botões (ex: "Space", "1", "2")
-- Feedback imediato nas ações
-
-**Benefícios:**
-- Estudo mais rápido
-- Mãos permanecem no teclado
-- Reduz uso do mouse
-- Experiência profissional
-
-#### 9.2.4 Estatísticas em Tempo Real
-
-**Métricas Exibidas:**
-
-1. **Reviewed (Revisados)**
-   - Ícone: Target (🎯)
-   - Mostra: Número de cards revisados na sessão
-   - Atualiza: Após cada resposta
-
-2. **Streak (Sequência)**
-   - Ícone: Lightning bolt (⚡)
-   - Mostra: Acertos consecutivos
-   - Reseta: Ao marcar como "Again"
-   - Motivacional
-
-3. **Avg Time (Tempo Médio)**
-   - Ícone: Clock (🕐)
-   - Mostra: Tempo médio por card em segundos
-   - Cálculo: Tempo total / cards revisados
-   - Ajuda: Monitorar ritmo de estudo
-
-**Design:**
-- Layout horizontal compacto no header
-- Ícones pequenos (3px)
-- Texto em zinc-400/600
-- Atualização instantânea
+**END OF PRODUCT CONTEXT**
 
 ---
 
-### 9.3 ATUALIZAÇÕES NO MODELO DE DADOS
-
-#### 9.3.1 Tipo Highlight Estendido
-
-```typescript
-export interface Highlight {
-  id: string;
-  bookId: string;
-  text: string;
-  note?: string;
-  location: string;
-  dateAdded: string;
-  page?: string;
-  isFavorite?: boolean;
-  importedAt?: string;
-  inStudy?: boolean;  // NOVO: indica se está no sistema de estudo
-}
-```
-
-#### 9.3.2 Novos Tipos
-
-```typescript
-// Opções de ordenação
-export type SortOption = 'date' | 'book' | 'imported' | 'length';
-
-// Status no sistema de estudo
-export type StudyStatus = 'not-started' | 'learning' | 'mastered';
-```
-
-#### 9.3.3 Store Context Estendido
-
-**Novos Métodos:**
-- `addToStudy(highlightId: string): void`
-- `removeFromStudy(highlightId: string): void`
-- `bulkAddToStudy(highlightIds: string[]): void`
-- `getHighlightStudyStatus(highlightId: string): StudyStatus`
-
-**Lógica de Status:**
-```typescript
-getHighlightStudyStatus(highlightId: string): StudyStatus {
-  const card = studyCards.find(c => c.highlightId === highlightId);
-  if (!card) return 'not-started';
-  if (card.repetitions >= 5) return 'mastered';
-  return 'learning';
-}
-```
-
----
-
-### 9.4 COMPONENTES CRIADOS E MODIFICADOS
-
-#### Novos Componentes
-
-1. **HighlightStats.tsx**
-   - Exibe cards de estatísticas
-   - Calcula métricas em tempo real
-   - Responsivo (grid 2x2 em mobile, 4x1 em desktop)
-
-2. **BookContextModal.tsx**
-   - Modal de contexto do livro
-   - Lista todos os highlights do livro
-   - Scroll interno, altura máxima 85vh
-   - Click-outside-to-close
-
-#### Componentes Modificados
-
-1. **Highlights.tsx**
-   - Integração de todos os novos recursos
-   - Lógica de ordenação e filtragem
-   - Modal de contexto
-   - Ações de estudo
-
-2. **Study.tsx**
-   - Design compacto e limpo
-   - Edição inline de notas
-   - Atalhos de teclado
-   - Estatísticas em tempo real
-   - ESC salva edição
-
----
-
-### 9.5 MELHORIAS DE UX
-
-#### Highlights
-- ✅ Visão geral instantânea com estatísticas
-- ✅ Ordenação flexível para diferentes necessidades
-- ✅ Contexto completo do livro em um clique
-- ✅ Integração perfeita com sistema de estudo
-- ✅ Filtros combinados para busca precisa
-
-#### Study
-- ✅ Interface limpa e focada no conteúdo
-- ✅ Edição de notas sem sair do fluxo
-- ✅ Navegação rápida por teclado
-- ✅ Feedback visual em tempo real
-- ✅ Design profissional e minimalista
-
----
-
-### 9.6 MÉTRICAS DE IMPACTO ESPERADAS
-
-**Engajamento:**
-- ↑ Tempo médio na aba Highlights (melhor organização)
-- ↑ Taxa de edição de highlights (edição inline no estudo)
-- ↑ Uso de filtros e ordenação (mais opções disponíveis)
-
-**Retenção:**
-- ↑ Frequência de sessões de estudo (UX melhorada)
-- ↑ Taxa de conclusão de sessões (atalhos de teclado)
-- ↑ Highlights adicionados ao estudo (integração facilitada)
-
-**Qualidade:**
-- ↑ Highlights com notas (edição durante estudo)
-- ↑ Organização da coleção (filtros e ordenação)
-- ↑ Satisfação do usuário (NPS)
-
----
-
-### 9.7 CORREÇÕES CRÍTICAS E MELHORIAS DE IMPORTAÇÃO (Sessão Atual)
-
-#### 9.7.1 Parser Robusto e Internacionalização
-**Melhorias:**
-- **Suporte a Datas em Português:** Implementada lógica de parsing para datas no formato "terça-feira, 22 de julho de 2025", mapeando meses em português para numéricos.
-- **Detecção de Notas Case-Insensitive:** O parser agora identifica notas independentemente de estarem escritas como "Note", "Nota", "nota", etc., utilizando Regex `/Note|Nota/i`.
-- **UUID Fallback:** Adicionada função `generateUUID` com fallback para ambientes onde `crypto.randomUUID` pode não estar disponível.
-- **Associação Inteligente de Notas:** Refinamento na lógica que associa notas aos highlights baseando-se na proximidade de localização e correspondência de livro.
-
-#### 9.7.2 Correção de Mutação de Estado (StoreContext)
-**Problema Resolvido:**
-- Erro "Cannot assign to read only property" que impedia a importação de novos arquivos.
-- Causa: Tentativa de mutação direta de objetos de estado (`books`) dentro da função `importData`.
-
-**Solução:**
-- Refatoração completa da função `importData` para utilizar padrões de atualização imutável (criação de cópias superficiais de arrays e objetos antes da modificação).
-- Restauração de funções críticas (`getCardsDue`, `updateCard`, etc.) que haviam sido afetadas durante tentativas anteriores de correção.
-- Correção de erros de sintaxe e estrutura no `StoreContext.tsx`.
-
-#### 9.7.3 Validação e Qualidade
-- **Script de Teste:** Criação de `test_parser.cjs` para validação isolada da lógica de parsing com dados reais.
-- **Tratamento de Erros:** Melhoria no feedback de erro para o usuário na interface de importação, exibindo mensagens específicas do parser.
-
-### 9.8 SISTEMA DE TAGS E ATUALIZAÇÃO DE STATUS (Sessão Atual)
-
-#### 9.8.1 Sistema de Tags Hierárquico
-
-**Descrição:**
-Implementação de um sistema de tags robusto que suporta aninhamento infinito (Pai > Filho > Neto), permitindo uma organização granular do conhecimento.
-
-**Componentes Principais:**
-1.  **TagSelector (Inline):**
-    -   Dropdown pesquisável (usando `Popover` + `Command`) dentro da tabela de highlights.
-    -   Permite atribuir tags existentes ou criar novas tags "on-the-fly".
-    -   Visualização clara das tags selecionadas.
-
-2.  **TagManagerSidebar:**
-    -   Painel lateral (Sheet) para gerenciamento da estrutura de tags.
-    -   Visualização em árvore (tree view) da hierarquia.
-    -   Funcionalidades: Criar tags raiz, criar tags filhas, renomear e excluir tags.
-
-**Funcionalidades:**
--   **Hierarquia:** Tags podem ter tags pai, criando uma estrutura de diretórios.
--   **Filtragem:** Novo filtro "Tags" na toolbar permite filtrar highlights por tags específicas (incluindo highlights de tags filhas).
--   **Persistência:** Tags são salvas no `localStorage` e carregadas no `StoreContext`.
-
-#### 9.8.2 Novos Status de Estudo
-
-**Mudança de Paradigma:**
-Atualização dos status de estudo para refletir melhor o ciclo de vida do aprendizado espaçado.
-
-**Novos Status:**
--   **New (Novo):** Badge Amarelo. Card nunca revisado (0 repetições).
--   **Learning (Aprendendo):** Badge Azul. Card em fase de aquisição (< 5 repetições).
--   **Review (Revisão):** Badge Verde. Card consolidado (>= 5 repetições), entrando em fase de manutenção.
-
-**Implementação:**
--   Atualização da tipagem `StudyStatus`.
--   Lógica atualizada em `getHighlightStudyStatus` no `StoreContext`.
--   Badges visuais atualizados na tabela de highlights.
-
-#### 9.8.3 Infraestrutura de UI (Shadcn/UI)
-
-**Componentes Base:**
-Para suportar a nova interface rica do sistema de tags, foram implementados manualmente componentes base inspirados no Shadcn/UI (devido a limitações de ambiente com CLI):
--   `Button`, `Input`
--   `Sheet` (para Sidebar)
--   `Popover` (para TagSelector)
--   `Command` (para busca e seleção de tags)
--   `Dialog` (base para modais)
--   `lib/utils.ts` (função `cn` para merge de classes Tailwind)
-
----
-
-## 13. CONCLUSÃO
-
-Este PRD define um produto robusto, esteticamente moderno e funcionalmente completo para gerenciamento e estudo de highlights do Kindle. A proposta combina simplicidade de uso com poder de funcionalidades, oferecendo uma alternativa integrada e superior ao workflow fragmentado atual (Kindle → MyClippings.txt → Anki).
-
-Com uma tech stack acessível (Next.js + Supabase) e um roadmap pragmático, o MVP pode ser desenvolvido em 8 semanas, entregando valor imediato aos usuários e estabelecendo uma base sólida para evolução futura.
-
-**Próximos Passos:**
-1. Validar PRD com stakeholders
-2. Definir priorização final de features do MVP
-3. Iniciar design de alta fidelidade (Figma)
-4. Setup do ambiente de desenvolvimento
-5. Sprint 1: Autenticação + Setup do banco
-
----
-
-**Aprovação:**
-
-[ ] Product Owner  
-[ ] Tech Lead  
-[ ] Design Lead  
-
-Data: ___/___/______
-
----
-
-## APÊNDICE A: LIÇÕES TÉCNICAS E IMPLEMENTAÇÃO
-
-### A.1 Histórico de Desenvolvimento
-
-#### Sessão 2025-12-05: TagSelector Mouse Click Fix
-
-**Problema identificado:** O popup do TagSelector não respondia a cliques do mouse, funcionando apenas com navegação por teclado.
-
-**Causa raiz:** A biblioteca `cmdk` (Command Menu) foi projetada para command palettes orientadas a teclado e não processa eventos de mouse adequadamente para casos de uso de dropdown/multi-select.
-
-**Solução implementada:** Substituição completa do `cmdk` por implementação customizada usando elementos HTML padrão com handlers `onClick` diretos.
-
-**Documentação completa:** Ver `context/tagselector-fix-2025-12-05.md`
-
----
-
-### A.2 Princípios de Escolha de Bibliotecas UI
-
-#### Escolha ferramentas apropriadas para o caso de uso
-
-| Caso de Uso | Biblioteca Apropriada | Biblioteca Inapropriada |
-|-------------|----------------------|-------------------------|
-| Command Palette (Cmd+K) | `cmdk` ✅ | Custom dropdown |
-| Dropdown/Select | Custom ou Radix Select ✅ | `cmdk` ❌ |
-| Modal/Dialog | Radix Dialog ✅ | Custom (sem acessibilidade) |
-| Multi-select tags | Custom ✅ | `cmdk` ❌ |
-
-#### Radix UI: Uso correto de modal={true}
-
-**Use `modal={true}` apenas em:** Dialogs/Modals verdadeiros que precisam de focus trap e bloqueio de página
-
-**Evite `modal={true}` em:** Popovers, Dropdowns, Tooltips
-
----
-
-### A.3 Checklist para Novos Componentes UI
-
-**Funcionalidade:**
-- [ ] Mouse clicks funcionam?
-- [ ] Keyboard navigation funciona?
-- [ ] Touch/mobile funciona?
-
-**Biblioteca:**
-- [ ] A biblioteca é apropriada para o caso de uso?
-- [ ] Implementação customizada seria mais simples?
-
-**Acessibilidade:**
-- [ ] ARIA labels estão corretos?
-- [ ] Focus management está correto?
-
----
-
-### A.4 Recursos e Referências
-
-**Contexto do Projeto:**
-- `context/tagging_system_implementation.md` - Implementação do sistema de tags
-- `context/tagselector-fix-2025-12-05.md` - Fix do mouse click issue
-- `supabase_migration_guide.md` - Guia de migração para Supabase
-
----
-
-*Última atualização: 2025-12-05*
+_Last updated: 2025-12-19_  
+_Version: 2.0 (Cleaned - Product context only)_
