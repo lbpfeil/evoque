@@ -53,8 +53,8 @@ const ProtectedApp = () => {
   }
 
   return (
-    <StoreProvider>
-      <HashRouter>
+    <HashRouter>
+      <StoreProvider>
         <AppLayout>
           <Routes>
             <Route path="/" element={<Dashboard />} />
@@ -67,8 +67,8 @@ const ProtectedApp = () => {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </AppLayout>
-      </HashRouter>
-    </StoreProvider>
+      </StoreProvider>
+    </HashRouter>
   );
 };
 

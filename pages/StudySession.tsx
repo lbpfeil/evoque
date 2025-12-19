@@ -57,12 +57,15 @@ const StudySession = () => {
     const handleResponse = useCallback(async (quality: number) => {
         if (!currentCard) return;
 
+        // Save previous state BEFORE updating
+        const previousCard = { ...currentCard };
+
         // 1. Update Card (SM-2 Algorithm)
         const updatedCard = calculateNextReview(currentCard, quality);
         await updateCard(updatedCard);
 
-        // 2. Update Session and Save Review Log
-        await submitReview(currentCard.id, quality);
+        // 2. Update Session and Save Review Log (pass previous state)
+        await submitReview(currentCard.id, quality, previousCard);
 
         setShowAnswer(false);
         setIsEditingHighlight(false);
@@ -105,8 +108,8 @@ const StudySession = () => {
         setIsEditingNote(true);
     }, [currentHighlight]);
 
-    const handleUndo = useCallback(() => {
-        undoLastReview();
+    const handleUndo = useCallback(async () => {
+        await undoLastReview();
         setShowAnswer(false);
         setIsEditingHighlight(false);
         setIsEditingNote(false);

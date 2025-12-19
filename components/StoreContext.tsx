@@ -40,9 +40,9 @@ interface StoreContextType {
   updateSettings: (settings: Partial<UserSettings>) => Promise<void>;
   currentSession: StudySession | null;
   startSession: (bookId?: string) => void;
-  submitReview: (cardId: string, quality: number) => Promise<void>;
+  submitReview: (cardId: string, quality: number, previousCard: StudyCard) => Promise<void>;
   resetSession: () => void;
-  undoLastReview: () => void;
+  undoLastReview: () => Promise<void>;
   sessionStats: { reviewed: number; correct: number; streak: number };
   getDeckStats: (bookId?: string) => DeckStats;
   getBookCardsDue: (bookId: string) => StudyCard[];
@@ -334,16 +334,29 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
   const updateCard = async (updatedCard: StudyCard) => {
     if (!user) return;
 
+    console.log('DEBUG: updateCard called', { 
+      cardId: updatedCard.id, 
+      repetitions: updatedCard.repetitions, 
+      nextReviewDate: updatedCard.nextReviewDate,
+      interval: updatedCard.interval 
+    });
+
     // Optimistic update
     setStudyCards(prev => prev.map(c => c.id === updatedCard.id ? updatedCard : c));
 
     // Sync with Supabase
     try {
-      const { error } = await supabase
+      const supabaseCard = toSupabaseStudyCard(updatedCard, user.id);
+      console.log('DEBUG: Supabase card data', supabaseCard);
+
+      const { error, data } = await supabase
         .from('study_cards')
-        .update(toSupabaseStudyCard(updatedCard, user.id))
+        .update(supabaseCard)
         .eq('id', updatedCard.id)
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .select();
+
+      console.log('DEBUG: updateCard result', { error, data });
 
       if (error) throw error;
     } catch (error) {
@@ -845,16 +858,13 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     }
   };
 
-  const submitReview = async (cardId: string, quality: number) => {
+  const submitReview = async (cardId: string, quality: number, previousCard: StudyCard) => {
     if (!currentSession || !user) return;
-
-    const card = studyCards.find(c => c.id === cardId);
-    if (!card) return;
 
     const isCorrect = quality >= 3;
 
     // Update daily progress - find book from card's highlight
-    const highlight = highlights.find(h => h.id === card.highlightId);
+    const highlight = highlights.find(h => h.id === previousCard.highlightId);
     if (highlight) {
       const bookId = highlight.bookId;
       const today = new Date().toISOString().split('T')[0];
@@ -877,21 +887,21 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
         results: [...prev.results, { cardId, quality, timestamp: Date.now() }],
         history: [...prev.history, {
           cardId,
-          previousCard: { ...card },  // Clone current state before update
+          previousCard: { ...previousCard },  // Use the ACTUAL previous state
           quality,
           timestamp: Date.now()
         }]
       };
     });
 
-    // Create review log
+    // Create review log (use previous card state for accurate logging)
     const newLog = {
       id: crypto.randomUUID(),
       cardId,
       quality,
       reviewedAt: new Date().toISOString(),
-      interval: card.interval,
-      easeFactor: card.easeFactor
+      interval: previousCard.interval,
+      easeFactor: previousCard.easeFactor
     };
 
     // Optimistic update
@@ -990,13 +1000,13 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
   };
 
   // Undo last review
-  const undoLastReview = () => {
-    if (!currentSession || currentSession.history.length === 0) return;
+  const undoLastReview = async () => {
+    if (!currentSession || currentSession.history.length === 0 || !user) return;
 
     const lastReview = currentSession.history[currentSession.history.length - 1];
 
     // Restore card to previous state
-    updateCard(lastReview.previousCard);
+    await updateCard(lastReview.previousCard);
 
     // Decrement daily progress - mirror logic from submitReview
     const card = lastReview.previousCard;
@@ -1026,8 +1036,28 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       };
     });
 
-    // Remove from review logs
+    // Remove from review logs (local)
+    const lastLog = reviewLogs[reviewLogs.length - 1];
     setReviewLogs(prev => prev.slice(0, -1));
+
+    // Remove from Supabase
+    if (lastLog) {
+      try {
+        const { error } = await supabase
+          .from('review_logs')
+          .delete()
+          .eq('id', lastLog.id)
+          .eq('user_id', user.id);
+
+        if (error) {
+          console.error('Failed to delete review log from Supabase:', error);
+        } else {
+          console.log('DEBUG: Review log deleted from Supabase', { logId: lastLog.id });
+        }
+      } catch (error) {
+        console.error('Failed to delete review log:', error);
+      }
+    }
   };
 
   // Tagging Methods
