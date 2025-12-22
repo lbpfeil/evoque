@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useStore } from '../components/StoreContext';
-import { Search, Filter, Trash2, ArrowUpDown, Brain, Tag as TagIcon } from 'lucide-react';
+import { Search, Filter, Trash2, ArrowUpDown, Brain, Tag as TagIcon, ChevronUp, ChevronDown, ChevronsUpDown, Book } from 'lucide-react';
 import { SortOption } from '../types';
 import HighlightEditModal from '../components/HighlightEditModal';
 import HighlightHistoryModal from '../components/HighlightHistoryModal';
@@ -21,7 +21,10 @@ const Highlights = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBookId, setSelectedBookId] = useState('all');
   const [selectedTagId, setSelectedTagId] = useState('all');
-  const [sortBy, setSortBy] = useState<SortOption>('imported');
+  const [sortConfig, setSortConfig] = useState<{
+    column: 'book' | 'highlight' | 'note' | 'date';
+    direction: 'asc' | 'desc';
+  }>({ column: 'date', direction: 'desc' });
   const [studyFilter, setStudyFilter] = useState<'all' | 'in-study' | 'not-in-study'>('all');
 
   // Local state for selection & editing
@@ -103,24 +106,34 @@ const Highlights = () => {
 
     // Sort
     filtered.sort((a, b) => {
-      switch (sortBy) {
+      let comparison = 0;
+
+      switch (sortConfig.column) {
         case 'date':
-          return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
-        case 'imported':
-          return new Date(b.importedAt || 0).getTime() - new Date(a.importedAt || 0).getTime();
+          comparison = new Date(a.dateAdded).getTime() - new Date(b.dateAdded).getTime();
+          break;
         case 'book':
           const bookA = books.find(book => book.id === a.bookId);
           const bookB = books.find(book => book.id === b.bookId);
-          return (bookA?.title || '').localeCompare(bookB?.title || '');
-        case 'length':
-          return b.text.length - a.text.length;
+          comparison = (bookA?.title || '').localeCompare(bookB?.title || '');
+          break;
+        case 'highlight':
+          comparison = a.text.length - b.text.length;
+          break;
+        case 'note':
+          const noteA = a.note || '';
+          const noteB = b.note || '';
+          comparison = noteA.localeCompare(noteB);
+          break;
         default:
           return 0;
       }
+
+      return sortConfig.direction === 'asc' ? comparison : -comparison;
     });
 
     return filtered;
-  }, [highlights, searchTerm, selectedBookId, selectedTagId, sortBy, studyFilter, books, studyCards, tags]);
+  }, [highlights, searchTerm, selectedBookId, selectedTagId, sortConfig, studyFilter, books, studyCards, tags]);
 
   // Bulk Selection Handlers
   const toggleSelection = (id: string) => {
@@ -146,6 +159,29 @@ const Highlights = () => {
       await bulkDeleteHighlights(Array.from(selectedIds));
       setSelectedIds(new Set());
     }
+  };
+
+  // Sort handler
+  const handleSort = (column: 'book' | 'highlight' | 'note' | 'date') => {
+    setSortConfig(prev => {
+      if (prev.column === column) {
+        // Toggle direction
+        return { column, direction: prev.direction === 'asc' ? 'desc' : 'asc' };
+      } else {
+        // New column, default to desc
+        return { column, direction: 'desc' };
+      }
+    });
+  };
+
+  // Sort icon helper
+  const getSortIcon = (column: 'book' | 'highlight' | 'note' | 'date') => {
+    if (sortConfig.column !== column) {
+      return <ChevronsUpDown className="w-2.5 h-2.5 text-zinc-300" />;
+    }
+    return sortConfig.direction === 'asc'
+      ? <ChevronUp className="w-2.5 h-2.5 text-zinc-600" />
+      : <ChevronDown className="w-2.5 h-2.5 text-zinc-600" />;
   };
 
   const formatDateShort = (dateString?: string) => {
@@ -261,7 +297,8 @@ const Highlights = () => {
                 return children.flatMap(tag => {
                   const book = tag.bookId ? books.find(b => b.id === tag.bookId) : undefined;
                   const prefix = '\u00A0'.repeat(depth * 3) + (depth > 0 ? '└ ' : '');
-                  const label = `${prefix}${tag.name}${book ? ` (${book.title})` : ''}`;
+                  const bookIcon = tag.bookId ? '📖 ' : '';
+                  const label = `${prefix}${bookIcon}${tag.name}${book ? ` (${book.title})` : ''}`;
 
                   return [
                     <option key={tag.id} value={tag.id} className="truncate">
@@ -277,22 +314,6 @@ const Highlights = () => {
             })()}
           </select>
           <TagIcon className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 pointer-events-none" />
-        </div>
-
-        {/* Sort Filter */}
-        <div className="relative">
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as SortOption)}
-            className="w-32 pl-2 pr-6 py-1 bg-zinc-50 border border-zinc-200 rounded text-xs appearance-none focus:outline-none focus:ring-1 focus:ring-black focus:border-black"
-            style={{ maxWidth: '128px' }}
-          >
-            <option value="imported">Recently Imported</option>
-            <option value="date">Highlight Date</option>
-            <option value="book">Book Title</option>
-            <option value="length">Text Length</option>
-          </select>
-          <ArrowUpDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 pointer-events-none" />
         </div>
 
         {/* Status Filter */}
@@ -328,9 +349,9 @@ const Highlights = () => {
       {/* Table Container */}
       <div className="flex-1 overflow-auto border border-zinc-200 rounded-md bg-white shadow-sm">
         <table className="w-full text-left text-xs text-zinc-600">
-          <thead className="bg-zinc-50 text-[9px] uppercase font-semibold text-zinc-500 sticky top-0 z-10 border-b border-zinc-200">
+          <thead className="bg-zinc-50 text-[10px] font-semibold text-zinc-500 sticky top-0 z-10 border-b border-zinc-200">
             <tr>
-              <th className="px-2 py-1 w-8">
+              <th className="px-2 py-1.5 w-8">
                 <input
                   type="checkbox"
                   className="accent-black w-3.5 h-3.5 cursor-pointer align-middle"
@@ -338,12 +359,44 @@ const Highlights = () => {
                   onChange={toggleAll}
                 />
               </th>
-              <th className="px-2 py-1 w-[15%]">Autor - Livro</th>
-              <th className="px-2 py-1 w-[30%]">Highlight</th>
-              <th className="px-2 py-1 w-[15%]">Note</th>
-              <th className="px-2 py-1 w-[20%]">Tags</th>
-              <th className="px-2 py-1 w-16 whitespace-nowrap">Data</th>
-              <th className="px-2 py-1 w-16">Status</th>
+              <th className="px-2 py-1.5 w-[15%]">
+                <button
+                  onClick={() => handleSort('book')}
+                  className="flex items-center gap-1 hover:text-zinc-700 transition-colors"
+                >
+                  <span>Livro</span>
+                  {getSortIcon('book')}
+                </button>
+              </th>
+              <th className="px-2 py-1.5 w-[30%]">
+                <button
+                  onClick={() => handleSort('highlight')}
+                  className="flex items-center gap-1 hover:text-zinc-700 transition-colors"
+                >
+                  <span>Destaque</span>
+                  {getSortIcon('highlight')}
+                </button>
+              </th>
+              <th className="px-2 py-1.5 w-[15%]">
+                <button
+                  onClick={() => handleSort('note')}
+                  className="flex items-center gap-1 hover:text-zinc-700 transition-colors"
+                >
+                  <span>Nota</span>
+                  {getSortIcon('note')}
+                </button>
+              </th>
+              <th className="px-2 py-1.5 w-[20%]">Tags</th>
+              <th className="px-2 py-1.5 w-16 whitespace-nowrap">
+                <button
+                  onClick={() => handleSort('date')}
+                  className="flex items-center gap-1 hover:text-zinc-700 transition-colors"
+                >
+                  <span>Data</span>
+                  {getSortIcon('date')}
+                </button>
+              </th>
+              <th className="px-2 py-1.5 w-16">Status</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100">
