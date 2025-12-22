@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useStore } from '../components/StoreContext';
-import { Search, Filter, Trash2, Edit2, Check, X, Book, ArrowUpDown, Minus, Brain, TrendingUp, Tag as TagIcon } from 'lucide-react';
+import { Search, Filter, Trash2, ArrowUpDown, Brain, Tag as TagIcon } from 'lucide-react';
 import { SortOption } from '../types';
 import HighlightEditModal from '../components/HighlightEditModal';
 import HighlightHistoryModal from '../components/HighlightHistoryModal';
@@ -13,11 +13,7 @@ const Highlights = () => {
     books,
     studyCards,
     tags,
-    deleteHighlight,
-    updateHighlight,
     bulkDeleteHighlights,
-    addToStudy,
-    removeFromStudy,
     getHighlightStudyStatus
   } = useStore();
 
@@ -30,8 +26,6 @@ const Highlights = () => {
 
   // Local state for selection & editing
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [editingField, setEditingField] = useState<string | null>(null); // Format: "highlightId-text" or "highlightId-note"
-  const [editForm, setEditForm] = useState({ text: '', note: '' });
 
   // Highlight edit modal
   const [editingHighlightId, setEditingHighlightId] = useState<string | null>(null);
@@ -152,24 +146,6 @@ const Highlights = () => {
       await bulkDeleteHighlights(Array.from(selectedIds));
       setSelectedIds(new Set());
     }
-  };
-
-
-
-  // Edit Handlers - now per-field instead of per-row
-  const startEditingField = (highlightId: string, field: 'text' | 'note', currentValue: string) => {
-    setEditingField(`${highlightId}-${field}`);
-    setEditForm(prev => ({ ...prev, [field]: currentValue }));
-  };
-
-  const saveFieldEdit = async (highlightId: string, field: 'text' | 'note') => {
-    const value = editForm[field];
-    await updateHighlight(highlightId, { [field]: value });
-    setEditingField(null);
-  };
-
-  const cancelFieldEdit = () => {
-    setEditingField(null);
   };
 
   const formatDateShort = (dateString?: string) => {
@@ -373,7 +349,7 @@ const Highlights = () => {
           <tbody className="divide-y divide-zinc-100">
             {filteredAndSortedHighlights.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-3 py-12 text-center text-zinc-400">
+                <td colSpan={7} className="px-3 py-12 text-center text-zinc-400">
                   No highlights match your filters.
                 </td>
               </tr>

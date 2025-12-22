@@ -1,7 +1,7 @@
 # EVOQUE - Technical Context for AI Agents
 
-> **Last Updated:** 2025-12-19
-> **Version:** 1.0.0
+> **Last Updated:** 2025-12-22
+> **Version:** 1.0.1
 > **Status:** Production-Ready
 
 ---
@@ -38,8 +38,6 @@
   "state_management": "React Context API (StoreContext + AuthContext)"
 }
 ```
-
-**⚠️ IMPORTANT:** PRD mentions Next.js, but actual implementation is Vite + React SPA.
 
 ---
 
