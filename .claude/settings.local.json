@@ -8,9 +8,12 @@
       "mcp__supabase__list_migrations",
       "mcp__supabase__get_advisors",
       "mcp__supabase__apply_migration",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "mcp__supabase__execute_sql",
+      "Bash(npx tsc:*)"
     ]
   },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "supabase"
   ]

@@ -1,11 +1,14 @@
-import React from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../components/StoreContext';
-import { ArrowLeft, Calendar, Tag, BookOpen } from 'lucide-react';
+import { ArrowLeft, Calendar, Tag, BookOpen, Trash2 } from 'lucide-react';
+import DeleteBookModal from '../components/DeleteBookModal';
 
 const BookDetails = () => {
   const { bookId } = useParams<{ bookId: string }>();
-  const { getBook, getBookHighlights } = useStore();
+  const navigate = useNavigate();
+  const { getBook, getBookHighlights, deleteBook } = useStore();
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   
   const book = getBook(bookId || '');
   const highlights = getBookHighlights(bookId || '');
@@ -40,10 +43,18 @@ const BookDetails = () => {
              </div>
            </div>
 
-           <div className="pt-2">
+           <div className="pt-2 flex gap-3">
              <button className="bg-black hover:bg-zinc-800 text-white px-8 py-3 rounded-md font-medium transition-colors inline-flex items-center shadow-lg shadow-zinc-200/50">
                <BookOpen className="w-4 h-4 mr-2" />
                Start Study Session
+             </button>
+
+             <button
+               onClick={() => setShowDeleteModal(true)}
+               className="bg-white hover:bg-red-50 text-red-600 border border-red-300 px-6 py-3 rounded-md font-medium transition-colors inline-flex items-center"
+             >
+               <Trash2 className="w-4 h-4 mr-2" />
+               Delete Book
              </button>
            </div>
          </div>
@@ -78,6 +89,18 @@ const BookDetails = () => {
           ))}
         </div>
       </div>
+
+      {/* Delete Book Modal */}
+      {showDeleteModal && (
+        <DeleteBookModal
+          bookId={bookId || null}
+          onConfirm={async () => {
+            await deleteBook(bookId || '');
+            navigate('/settings?tab=library');
+          }}
+          onCancel={() => setShowDeleteModal(false)}
+        />
+      )}
     </div>
   );
 };

@@ -5,6 +5,7 @@ import { useAuth } from '../components/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Upload, Library, User, Sliders, FileText, CheckCircle, AlertCircle, ChevronRight, Download, Trash2, Loader2, Camera } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import DeleteBookModal from '../components/DeleteBookModal';
 
 type TabId = 'import' | 'library' | 'account' | 'preferences';
 
@@ -12,7 +13,7 @@ const Settings = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
-  const { books, highlights, studyCards, importData, settings, updateSettings } = useStore();
+  const { books, highlights, studyCards, importData, settings, updateSettings, deleteBook } = useStore();
   const [activeTab, setActiveTab] = useState<TabId>((searchParams.get('tab') as TabId) || 'import');
 
   // Import tab state
@@ -25,6 +26,9 @@ const Settings = () => {
   const [fullName, setFullName] = useState(settings.fullName || '');
   const [avatarUrl, setAvatarUrl] = useState(settings.avatarUrl || '');
   const [isUploading, setIsUploading] = useState(false);
+
+  // Library tab state
+  const [bookToDelete, setBookToDelete] = useState<string | null>(null);
 
   // Sync with settings when they change
   useEffect(() => {
@@ -326,36 +330,47 @@ const Settings = () => {
             ) : (
               <div className="flex flex-col gap-1">
                 {filteredBooks.map(book => (
-                  <Link
-                    key={book.id}
-                    to={`/library/${book.id}`}
-                    className="flex items-center gap-2 py-2 px-3 border border-zinc-200 rounded hover:bg-zinc-50 transition-colors"
-                  >
-                    {/* Cover thumbnail */}
-                    <div className="w-10 h-14 bg-zinc-100 rounded border border-zinc-200 shrink-0 overflow-hidden">
-                      {book.coverUrl ? (
-                        <img src={book.coverUrl} alt={book.title} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-zinc-400">
-                          <Library className="w-4 h-4" />
-                        </div>
-                      )}
-                    </div>
-                    
-                    {/* Book info */}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-sm font-semibold text-zinc-900 truncate">
-                        {book.title.length > 100 ? `${book.title.substring(0, 100)}...` : book.title}
-                      </h3>
-                      <p className="text-xs text-zinc-500 truncate">{book.author} • {book.highlightCount} highlights</p>
-                      <p className="text-[10px] text-zinc-400 mt-0.5">
-                        Last: {formatDate(book.lastImported)}
-                      </p>
-                    </div>
-                    
-                    {/* Arrow icon */}
-                    <ChevronRight className="w-4 h-4 text-zinc-400 shrink-0" />
-                  </Link>
+                  <div key={book.id} className="relative py-2 px-3 border border-zinc-200 rounded hover:bg-zinc-50 transition-colors">
+                    {/* Botão delete (canto superior direito) */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setBookToDelete(book.id);
+                      }}
+                      className="absolute top-2 right-2 p-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors z-10"
+                      title="Delete book"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+
+                    {/* Link para detalhes (mantém funcionalidade existente) */}
+                    <Link to={`/library/${book.id}`} className="flex items-center gap-2">
+                      {/* Cover thumbnail */}
+                      <div className="w-10 h-14 bg-zinc-100 rounded border border-zinc-200 shrink-0 overflow-hidden">
+                        {book.coverUrl ? (
+                          <img src={book.coverUrl} alt={book.title} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-zinc-400">
+                            <Library className="w-4 h-4" />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Book info */}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-sm font-semibold text-zinc-900 truncate">
+                          {book.title.length > 100 ? `${book.title.substring(0, 100)}...` : book.title}
+                        </h3>
+                        <p className="text-xs text-zinc-500 truncate">{book.author} • {book.highlightCount} highlights</p>
+                        <p className="text-[10px] text-zinc-400 mt-0.5">
+                          Last: {formatDate(book.lastImported)}
+                        </p>
+                      </div>
+
+                      {/* Arrow icon */}
+                      <ChevronRight className="w-4 h-4 text-zinc-400 shrink-0" />
+                    </Link>
+                  </div>
                 ))}
               </div>
             )}
@@ -516,6 +531,18 @@ const Settings = () => {
           </div>
         )}
       </div>
+
+      {/* Delete Book Modal */}
+      {bookToDelete && (
+        <DeleteBookModal
+          bookId={bookToDelete}
+          onConfirm={async () => {
+            await deleteBook(bookToDelete);
+            setBookToDelete(null);
+          }}
+          onCancel={() => setBookToDelete(null)}
+        />
+      )}
     </div>
   );
 };

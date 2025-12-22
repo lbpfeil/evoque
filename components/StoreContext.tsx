@@ -54,6 +54,7 @@ interface StoreContextType {
   addTag: (name: string, parentId?: string, bookId?: string) => Promise<string>;
   updateTag: (id: string, updates: Partial<Tag>) => Promise<void>;
   deleteTag: (id: string) => Promise<void>;
+  deleteBook: (id: string) => Promise<void>;
   assignTagToHighlight: (highlightId: string, tagId: string) => Promise<void>;
   removeTagFromHighlight: (highlightId: string, tagId: string) => Promise<void>;
 }
@@ -1180,6 +1181,77 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     }
   };
 
+  const deleteBook = async (id: string) => {
+    if (!user) return;
+
+    // 1. Coletar dados para possível rollback
+    const affectedHighlights = highlights.filter(h => h.bookId === id);
+    const affectedHighlightIds = affectedHighlights.map(h => h.id);
+    const affectedCards = studyCards.filter(c =>
+      affectedHighlightIds.includes(c.highlightId)
+    );
+    const affectedCardIds = affectedCards.map(c => c.id);
+
+    // 2. Optimistic update - remover do estado local
+    setBooks(prev => prev.filter(b => b.id !== id));
+    setHighlights(prev => prev.filter(h => h.bookId !== id));
+    setStudyCards(prev => prev.filter(c => !affectedHighlightIds.includes(c.highlightId)));
+    setReviewLogs(prev => prev.filter(l => !affectedCardIds.includes(l.cardId)));
+
+    // 3. Atualizar dailyProgress (remover bookReviews deste livro)
+    setDailyProgress(prev => {
+      const { [id]: _, ...remainingBookReviews } = prev.bookReviews;
+      return {
+        ...prev,
+        bookReviews: remainingBookReviews
+      };
+    });
+
+    // 4. Atualizar currentSession
+    if (currentSession) {
+      if (currentSession.bookId === id) {
+        // Se era sessão deste livro, resetar completamente
+        setCurrentSession(null);
+      } else if (!currentSession.bookId) {
+        // Se era sessão "All Books", remover cards deste livro
+        setCurrentSession(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            cardIds: prev.cardIds.filter(cid => !affectedCardIds.includes(cid)),
+            completedIds: prev.completedIds.filter(cid => !affectedCardIds.includes(cid))
+          };
+        });
+      }
+    }
+
+    // 5. Sync com Supabase (CASCADE vai deletar tudo relacionado)
+    try {
+      const { error } = await supabase
+        .from('books')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Failed to delete book from Supabase:', error);
+
+      // Rollback: recarregar todos os dados
+      const [booksData, highlightsData, cardsData, logsData] = await Promise.all([
+        supabase.from('books').select('*').eq('user_id', user.id),
+        supabase.from('highlights').select('*').eq('user_id', user.id),
+        supabase.from('study_cards').select('*').eq('user_id', user.id),
+        supabase.from('review_logs').select('*').eq('user_id', user.id)
+      ]);
+
+      if (booksData.data) setBooks(booksData.data.map(fromSupabaseBook));
+      if (highlightsData.data) setHighlights(highlightsData.data.map(fromSupabaseHighlight));
+      if (cardsData.data) setStudyCards(cardsData.data.map(fromSupabaseStudyCard));
+      if (logsData.data) setReviewLogs(logsData.data.map(fromSupabaseReviewLog));
+    }
+  };
+
   const assignTagToHighlight = async (highlightId: string, tagId: string) => {
     if (!user) return;
 
@@ -1268,6 +1340,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       addTag,
       updateTag,
       deleteTag,
+      deleteBook,
       assignTagToHighlight,
       removeTagFromHighlight
     }}>
