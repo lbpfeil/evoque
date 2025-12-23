@@ -8,9 +8,7 @@
       "mcp__supabase__list_migrations",
       "mcp__supabase__get_advisors",
       "mcp__supabase__apply_migration",
-      "Bash(npm run build:*)",
-      "Bash(where npx:*)",
-      "Bash(npm install pdfjs-dist)"
+      "Bash(npm run build:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
