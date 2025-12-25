@@ -6,6 +6,8 @@ import { supabase } from '../lib/supabase';
 import { Upload, Library, User, Sliders, FileText, CheckCircle, AlertCircle, ChevronRight, Download, Trash2, Loader2, Camera } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import DeleteBookModal from '../components/DeleteBookModal';
+import { parsePDFKindleHighlights } from '../services/pdfParser';
+import { parseMyClippings } from '../services/parser';
 
 type TabId = 'import' | 'library' | 'account' | 'preferences';
 
@@ -60,30 +62,49 @@ const Settings = () => {
   };
 
   const processFile = async (file: File) => {
-    if (!file.name.endsWith('.txt')) {
-      alert('Please upload a .txt file (My Clippings.txt)');
+    const isPDF = file.name.endsWith('.pdf');
+    const isTXT = file.name.endsWith('.txt');
+
+    if (!isPDF && !isTXT) {
+      alert('Please upload a .txt or .pdf file');
       return;
     }
 
     setIsProcessing(true);
     setImportError(null);
     setImportResult(null);
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      const text = e.target?.result as string;
-      setTimeout(async () => {
-        try {
-          const res = await importData(text);
-          setImportResult(res);
-        } catch (err: any) {
-          console.error(err);
-          setImportError(err.message || "Failed to import highlights. Please check the file format.");
-        } finally {
-          setIsProcessing(false);
-        }
-      }, 800);
-    };
-    reader.readAsText(file);
+
+    try {
+      if (isPDF) {
+        // Process PDF file
+        const { books, highlights } = await parsePDFKindleHighlights(file);
+
+        // Import using the same flow as TXT
+        const res = await importData({ books, highlights });
+        setImportResult(res);
+        setIsProcessing(false);
+      } else {
+        // Process TXT file (existing flow)
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          const text = e.target?.result as string;
+          try {
+            const res = await importData(text);
+            setImportResult(res);
+          } catch (err: any) {
+            console.error(err);
+            setImportError(err.message || "Failed to import highlights. Please check the file format.");
+          } finally {
+            setIsProcessing(false);
+          }
+        };
+        reader.readAsText(file);
+      }
+    } catch (err: any) {
+      console.error(err);
+      setImportError(err.message || "Failed to import highlights. Please check the file format.");
+      setIsProcessing(false);
+    }
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -212,7 +233,7 @@ const Settings = () => {
           <div className="space-y-3">
             <div>
               <h2 className="text-xs font-semibold text-zinc-600">Import Highlights</h2>
-              <p className="text-[10px] text-zinc-400 mt-0.5">Upload your 'My Clippings.txt' file from Kindle</p>
+              <p className="text-[10px] text-zinc-400 mt-0.5">Upload 'My Clippings.txt' or Kindle PDF highlights export</p>
             </div>
 
             {/* Success Notification */}
@@ -257,7 +278,7 @@ const Settings = () => {
                 type="file"
                 id="file-upload"
                 className="hidden"
-                accept=".txt"
+                accept=".txt,.pdf"
                 onChange={handleChange}
               />
 
@@ -282,7 +303,7 @@ const Settings = () => {
                 {!isProcessing && (
                   <div className="flex items-center text-[10px] text-zinc-400 bg-zinc-50 px-2 py-1 rounded border border-zinc-200">
                     <FileText className="w-3 h-3 mr-1.5" />
-                    My Clippings.txt
+                    .txt or .pdf
                   </div>
                 )}
               </div>
@@ -293,12 +314,26 @@ const Settings = () => {
               <AlertCircle className="w-3.5 h-3.5 text-zinc-600 shrink-0 mt-0.5" />
               <div className="text-xs text-zinc-600 space-y-1">
                 <p className="font-semibold text-zinc-900">Instructions</p>
-                <ol className="list-decimal list-inside space-y-0.5 text-[11px] leading-relaxed">
-                  <li>Connect your Kindle to your computer via USB</li>
-                  <li>Open the "Kindle" drive in your file explorer</li>
-                  <li>Find the "documents" folder</li>
-                  <li>Locate "My Clippings.txt" and upload it here</li>
-                </ol>
+                <div className="space-y-2 text-[11px] leading-relaxed">
+                  <div>
+                    <p className="font-medium text-zinc-800">Option 1: My Clippings.txt</p>
+                    <ol className="list-decimal list-inside space-y-0.5 ml-2">
+                      <li>Connect your Kindle to your computer via USB</li>
+                      <li>Open the "Kindle" drive in your file explorer</li>
+                      <li>Find the "documents" folder</li>
+                      <li>Locate "My Clippings.txt" and upload it here</li>
+                    </ol>
+                  </div>
+                  <div>
+                    <p className="font-medium text-zinc-800">Option 2: PDF Export</p>
+                    <ol className="list-decimal list-inside space-y-0.5 ml-2">
+                      <li>On your Kindle, select a book and view highlights</li>
+                      <li>Choose "Email highlights" to send them to your email</li>
+                      <li>Download the PDF attachment from the email</li>
+                      <li>Upload the PDF file here</li>
+                    </ol>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

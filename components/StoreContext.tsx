@@ -216,11 +216,24 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     return () => clearTimeout(timeoutId);
   }, [dailyProgress, isLoaded, user]);
 
-  const importData = async (text: string) => {
+  const importData = async (input: string | { books: Book[], highlights: Highlight[] }) => {
     if (!user) throw new Error('User not authenticated');
 
     try {
-      const { books: parsedBooks, highlights: parsedHighlights } = parseMyClippings(text);
+      // Handle both string (TXT) and object (PDF) inputs
+      let parsedBooks: Book[];
+      let parsedHighlights: Highlight[];
+
+      if (typeof input === 'string') {
+        // Parse TXT file
+        const parsed = parseMyClippings(input);
+        parsedBooks = parsed.books;
+        parsedHighlights = parsed.highlights;
+      } else {
+        // Already parsed (PDF)
+        parsedBooks = input.books;
+        parsedHighlights = input.highlights;
+      }
 
       // 1. Merge Highlights first to get the complete set
       let newHighlightsCount = 0;
