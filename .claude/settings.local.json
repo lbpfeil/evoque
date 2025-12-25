@@ -8,7 +8,20 @@
       "mcp__supabase__list_migrations",
       "mcp__supabase__get_advisors",
       "mcp__supabase__apply_migration",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_file_upload",
+      "mcp__playwright__browser_run_code",
+      "mcp__playwright__browser_console_messages",
+      "mcp__playwright__browser_close",
+      "Bash(npm run dev:extract-pdf:*)",
+      "Bash(node test-pdf-extract.js:*)",
+      "Bash(del:*)",
+      "Bash(node extract-pdf-debug.js:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: Add Kindle PDF highlights import support\n\nImplemented complete PDF parsing functionality for Amazon Kindle PDF exports:\n\n- Created pdfParser.ts with intelligent text extraction and parsing\n- Supports both highlight-only and highlight+note formats\n- Automatic cleanup of PDF page numbers and metadata\n- Correctly separates highlights from notes based on spacing\n- Extracts book title and author from PDF metadata\n\nUpdated Settings.tsx:\n- Added PDF file upload support \\(.pdf extension\\)\n- Integrated parsePDFKindleHighlights for PDF processing\n- Updated UI to show both .txt and .pdf options\n- Added instructions for PDF export method\n\nUpdated StoreContext.tsx:\n- Modified importData to accept both string \\(TXT\\) and object \\(PDF\\) inputs\n- Unified import flow for both file types\n\nTested with 84 highlights - all imported correctly with proper note separation.\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
     ]
   },
   "enableAllProjectMcpServers": true,

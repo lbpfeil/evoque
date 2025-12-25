@@ -1,7 +1,7 @@
 # EVOQUE - Technical Context for AI Agents
 
-> **Last Updated:** 2025-12-22
-> **Version:** 1.0.1
+> **Last Updated:** 2025-12-25
+> **Version:** 1.1.0
 > **Status:** Production-Ready
 
 ---
@@ -234,9 +234,10 @@ RLS Policies:
 
 ## 🔄 CRITICAL WORKFLOWS
 
-### **1. Import Flow (Import.tsx → parser.ts → StoreContext)**
+### **1. Import Flow (Settings.tsx → parser.ts / pdfParser.ts → StoreContext)**
 
 ```typescript
+// TXT IMPORT (MyClippings.txt):
 1. User uploads MyClippings.txt
 2. parseMyClippings(text) → { books[], highlights[] }
    - Parses Kindle format (multi-line, metadata extraction)
@@ -247,6 +248,18 @@ RLS Policies:
    - Creates StudyCards for new highlights
    - Upserts to Supabase (books, highlights, study_cards)
    - Reloads all data for consistency
+4. Returns { newBooks: number, newHighlights: number }
+
+// PDF IMPORT (Kindle PDF exports - NEW 2025-12-25):
+1. User uploads PDF (Kindle "Email highlights" export)
+2. parsePDFKindleHighlights(file) → { books[], highlights[] }
+   - Extracts text using pdfjs-dist
+   - Parses format: "Destaque (Color) [e nota] | Página X"
+   - Separates highlights from notes based on spacing
+   - Cleans PDF page numbers (1, 2, 3...) from content
+   - Extracts book metadata: "Title por Author Visualização"
+3. StoreContext.importData({ books, highlights })
+   - Same deduplication and upsert logic as TXT
 4. Returns { newBooks: number, newHighlights: number }
 ```
 
@@ -390,12 +403,38 @@ Icons: w-3 h-3 (standard), w-2.5 h-2.5 (buttons)
 ### **Parser Edge Cases**
 
 ```typescript
-// services/parser.ts handles:
+// services/parser.ts (TXT) handles:
 1. Portuguese month names: "julho" → 7, "dezembro" → 12
 2. Missing notes: note = undefined (not empty string)
 3. Case-insensitive note detection: /Note|Nota/i
 4. Multiple highlights with same text → different UUIDs (location-based)
 5. Books without authors → author = "Desconhecido"
+
+// services/pdfParser.ts (PDF - NEW 2025-12-25) handles:
+1. PDF page numbers (1, 2, 3...) removed from:
+   - Start of content: "2 Some text" → "Some text"
+   - End of content: "...text here. 16" → "...text here."
+   - Before page markers: "...text 4 Página 95" → "...text Página 95"
+   - Book title/author: "1  Title" → "Title"
+
+2. Section headers ("Página X") appear before first highlight of each page:
+   - First highlight: "Página 48 Destaque..." ✅ parsed
+   - Second highlight (same page): "Destaque..." ✅ also parsed
+   - Regex matches "Destaque (Color) | Página X" (not "Página X Destaque...")
+
+3. Highlight/Note separation (when "e nota" present):
+   - Split by 2+ consecutive spaces (\s{2,})
+   - First block = highlight, remaining blocks = note
+   - Fallback: split by newlines if spacing fails
+
+4. Text cleanup:
+   - Removes trailing "Página X" section headers
+   - Preserves verse numbers (3:11, 5:3) - only removes isolated numbers
+   - Handles multi-page highlights (content spans PDF pages)
+
+5. Book metadata extraction:
+   - Pattern: "Title por Author Visualização"
+   - Generates deterministic UUID from title+author (prevents duplicates)
 ```
 
 ### **Study Session Edge Cases**
@@ -498,11 +537,19 @@ npm run preview  # Preview production build
    → Math is precise, don't alter without testing
 
 4. services/parser.ts
-   → Kindle format parsing
+   → Kindle MyClippings.txt parsing
    → Handles edge cases (Portuguese dates, missing data)
    → UUID generation is deterministic (prevents dupes)
 
-5. lib/supabaseHelpers.ts (145 lines)
+5. services/pdfParser.ts (175 lines - NEW 2025-12-25)
+   → Kindle PDF highlights export parsing
+   → Uses pdfjs-dist for text extraction
+   → Parses "Destaque (Color) [e nota] | Página X" format
+   → Separates highlights from notes based on spacing
+   → Cleans PDF artifacts (page numbers, section headers)
+   → Edge cases: multi-page highlights, Portuguese format
+
+6. lib/supabaseHelpers.ts (145 lines)
    → Naming convention converters
    → ALL Supabase operations go through these
 ```
@@ -540,6 +587,7 @@ lbp_diretrizes/
 
 - [x] Authentication (Supabase Auth)
 - [x] MyClippings.txt import (with Portuguese dates)
+- [x] Kindle PDF import (Email highlights export - NEW 2025-12-25)
 - [x] Book library (compact list view in Settings)
 - [x] Highlight management (CRUD, bulk operations)
 - [x] Study system (SM-2 algorithm)
