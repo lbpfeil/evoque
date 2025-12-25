@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 import DeleteBookModal from '../components/DeleteBookModal';
 import { parsePDFKindleHighlights } from '../services/pdfParser';
 import { parseMyClippings } from '../services/parser';
+import { parseAnkiTSV } from '../services/ankiParser';
 
 type TabId = 'import' | 'library' | 'account' | 'preferences';
 
@@ -64,9 +65,10 @@ const Settings = () => {
   const processFile = async (file: File) => {
     const isPDF = file.name.endsWith('.pdf');
     const isTXT = file.name.endsWith('.txt');
+    const isTSV = file.name.endsWith('.tsv');
 
-    if (!isPDF && !isTXT) {
-      alert('Please upload a .txt or .pdf file');
+    if (!isPDF && !isTXT && !isTSV) {
+      alert('Please upload a .txt, .pdf, or .tsv file');
       return;
     }
 
@@ -83,6 +85,24 @@ const Settings = () => {
         const res = await importData({ books, highlights });
         setImportResult(res);
         setIsProcessing(false);
+      } else if (isTSV) {
+        // Process TSV file (Anki format)
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          const text = e.target?.result as string;
+          try {
+            const { books, highlights } = parseAnkiTSV(text);
+            const res = await importData({ books, highlights });
+            setImportResult(res);
+          } catch (err: any) {
+            console.error(err);
+            setImportError(err.message || "Failed to import Anki highlights. Please check the TSV format.");
+          } finally {
+            setIsProcessing(false);
+          }
+        };
+        // Read as latin1 for better encoding support
+        reader.readAsText(file, 'ISO-8859-1');
       } else {
         // Process TXT file (existing flow)
         const reader = new FileReader();
@@ -233,7 +253,7 @@ const Settings = () => {
           <div className="space-y-3">
             <div>
               <h2 className="text-xs font-semibold text-zinc-600">Import Highlights</h2>
-              <p className="text-[10px] text-zinc-400 mt-0.5">Upload 'My Clippings.txt' or Kindle PDF highlights export</p>
+              <p className="text-[10px] text-zinc-400 mt-0.5">Upload 'My Clippings.txt', Kindle PDF export, or Anki TSV file</p>
             </div>
 
             {/* Success Notification */}
@@ -278,7 +298,7 @@ const Settings = () => {
                 type="file"
                 id="file-upload"
                 className="hidden"
-                accept=".txt,.pdf"
+                accept=".txt,.pdf,.tsv"
                 onChange={handleChange}
               />
 
@@ -303,7 +323,7 @@ const Settings = () => {
                 {!isProcessing && (
                   <div className="flex items-center text-[10px] text-zinc-400 bg-zinc-50 px-2 py-1 rounded border border-zinc-200">
                     <FileText className="w-3 h-3 mr-1.5" />
-                    .txt or .pdf
+                    .txt, .pdf, or .tsv
                   </div>
                 )}
               </div>
@@ -331,6 +351,14 @@ const Settings = () => {
                       <li>Choose "Email highlights" to send them to your email</li>
                       <li>Download the PDF attachment from the email</li>
                       <li>Upload the PDF file here</li>
+                    </ol>
+                  </div>
+                  <div>
+                    <p className="font-medium text-zinc-800">Option 3: Anki TSV</p>
+                    <ol className="list-decimal list-inside space-y-0.5 ml-2">
+                      <li>Export your Anki deck as TSV (tab-separated values)</li>
+                      <li>Format: [highlight] TAB [note] TAB [book title] TAB [author]</li>
+                      <li>Upload the .tsv file here</li>
                     </ol>
                   </div>
                 </div>

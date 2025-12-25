@@ -234,7 +234,7 @@ RLS Policies:
 
 ## 🔄 CRITICAL WORKFLOWS
 
-### **1. Import Flow (Settings.tsx → parser.ts / pdfParser.ts → StoreContext)**
+### **1. Import Flow (Settings.tsx → parser.ts / pdfParser.ts / ankiParser.ts → StoreContext)**
 
 ```typescript
 // TXT IMPORT (MyClippings.txt):
@@ -260,6 +260,17 @@ RLS Policies:
    - Extracts book metadata: "Title por Author Visualização"
 3. StoreContext.importData({ books, highlights })
    - Same deduplication and upsert logic as TXT
+4. Returns { newBooks: number, newHighlights: number }
+
+// TSV IMPORT (Anki format - NEW 2025-12-25):
+1. User uploads .tsv file (Anki export)
+2. parseAnkiTSV(text) → { books[], highlights[] }
+   - Parses TSV format: [text]\t[note]\t[book title]\t[author]
+   - Reads with Latin1 encoding (better Portuguese support)
+   - Generates deterministic UUIDs for books (prevents duplicates)
+   - Location: "anki-{lineNumber}"
+3. StoreContext.importData({ books, highlights })
+   - Same deduplication and upsert logic as PDF
 4. Returns { newBooks: number, newHighlights: number }
 ```
 
@@ -549,7 +560,15 @@ npm run preview  # Preview production build
    → Cleans PDF artifacts (page numbers, section headers)
    → Edge cases: multi-page highlights, Portuguese format
 
-6. lib/supabaseHelpers.ts (145 lines)
+6. services/ankiParser.ts (150 lines - NEW 2025-12-25)
+   → Anki TSV format parsing
+   → Format: [highlight]\t[note]\t[book title]\t[author]
+   → Latin1 encoding support (better Portuguese characters)
+   → Generates deterministic UUIDs (prevents duplicate books)
+   → Location: "anki-{lineNumber}"
+   → Edge cases: encoding fixes, empty notes, tab handling
+
+7. lib/supabaseHelpers.ts (145 lines)
    → Naming convention converters
    → ALL Supabase operations go through these
 ```
@@ -588,6 +607,7 @@ lbp_diretrizes/
 - [x] Authentication (Supabase Auth)
 - [x] MyClippings.txt import (with Portuguese dates)
 - [x] Kindle PDF import (Email highlights export - NEW 2025-12-25)
+- [x] Anki TSV import (Tab-separated values format - NEW 2025-12-25)
 - [x] Book library (compact list view in Settings)
 - [x] Highlight management (CRUD, bulk operations)
 - [x] Study system (SM-2 algorithm)
