@@ -1,8 +1,9 @@
 # EVOQUE - Technical Context for AI Agents
 
 > **Last Updated:** 2025-12-29
-> **Version:** 1.2.0
+> **Version:** 1.3.0
 > **Status:** Production-Ready
+> **Recent Changes:** Graveyard system fixes (book_id, RLS policies)
 
 ---
 
@@ -454,21 +455,43 @@ Icons: w-3 h-3 (standard), w-2.5 h-2.5 (buttons)
    - Generates deterministic UUID from title+author (prevents duplicates)
 ```
 
-### **Duplicate Detection & Graveyard (NEW 2025-12-29)**
+### **Duplicate Detection & Graveyard (UPDATED 2025-12-29)**
 
 ```typescript
 // Deterministic IDs (services/idUtils.ts):
-- ID = hash(Title + Author + Content + Location)
+- ID = hash(Title + Author + Location + Content)
 - Ensures same highlight always gets same ID across imports/edits.
+- ⚠️ Known edge cases (documented in lbp_implementation/id-stability-improvement-options.md):
+  * Highlight/note separation inconsistency (spacing variations)
+  * Page number changes between PDF exports (rare)
 
 // "The Graveyard" (deleted_highlights table):
-- When user deletes a highlight:
-  - Adds { highlight_id, text_content } to `deleted_highlights` table.
-  - Uses UPSERT to ensure text is captured even if ID already existed.
-- When importing:
-  - Blocks import if ID is in graveyard.
-  - Blocks import if exact Text Content is in graveyard (protection against ID shifts).
-- Deleting a Book does NOT clear the graveyard (preserves user intent).
+// Schema: { id, user_id, highlight_id, book_id, text_content, deleted_at }
+
+- When user deletes a highlight (StoreContext.tsx:465-476):
+  - Adds { highlight_id, book_id, text_content } to `deleted_highlights` table
+  - book_id allows clearing graveyard when book is deleted
+  - text_content provides fallback protection against ID changes
+  - Uses UPSERT (conflict: user_id, highlight_id)
+
+- When importing (StoreContext.tsx:237-270):
+  - Blocks import if highlight_id is in graveyard (primary check)
+  - Blocks import if text_content matches graveyard (secondary check)
+  - Console logs: "Graveyard Size: X IDs, Y Texts" and blocked items
+
+- When deleting a book (StoreContext.tsx:1320-1335):
+  - ✅ FIXED 2025-12-29: Clears graveyard by book_id
+  - Allows re-importing highlights after book deletion
+  - Console log: "Graveyard cleared: X highlights from book {id}"
+
+// RLS Policies (applied via migrations):
+- SELECT: Users can view their own deleted highlights
+- INSERT: Users can add to their own graveyard
+- DELETE: Users can clear their own graveyard (ADDED 2025-12-29)
+
+// Migrations applied:
+- add_delete_policy_to_deleted_highlights (2025-12-29)
+- add_book_id_to_deleted_highlights (2025-12-29)
 ```
 
 ### **Study Session Edge Cases**
@@ -612,6 +635,10 @@ lbp_context/
 lbp_diretrizes/
 ├── compact-ui-design-guidelines.md  # ⚠️ UI/UX standards (550 lines) - Updated 2025-12-19
 └── modal-pattern.md                 # Modal implementation guide
+
+lbp_implementation/
+├── loading-states-implementation-plan.md  # Loading states architecture
+└── id-stability-improvement-options.md    # ⚠️ NEW 2025-12-29: ID stability analysis & solutions
 ```
 
 **When to include with AI:**
@@ -619,6 +646,7 @@ lbp_diretrizes/
 - `spaced-repetition-system.md`: ✅ When working on study system, SM-2, cards, intervals
 - `HighlightTab-context.md`: ✅ When working on Highlights page, filters, tags, stats
 - `compact-ui-design-guidelines.md`: ✅ When working on UI components, styling, layout
+- `id-stability-improvement-options.md`: ✅ When working on import system, deduplication, IDs
 - `prd.md`: ⚠️ **RARELY** - only for product/market context (avoid technical specs)
 
 ---
@@ -706,6 +734,44 @@ const due = getCardsDue()                  // All cards due today
 const stats = getDeckStats(bookId?)        // new/learning/review counts
 const status = getHighlightStudyStatus(id) // 'new'|'learning'|'review'
 ```
+
+---
+
+## 📝 CHANGELOG
+
+### **2025-12-29: Graveyard System Fixes (v1.3.0)**
+
+**Critical bugs fixed:**
+1. ✅ **Import bug:** Fixed `parsedHighlights` → `validHighlights` in upsert (StoreContext.tsx:329)
+   - Highlights deletados não "ressuscitam" mais após re-import
+2. ✅ **RLS policy missing:** Added DELETE policy to `deleted_highlights` table
+   - Graveyard agora pode ser limpo via código
+3. ✅ **Book deletion not clearing graveyard:** Implemented cleanup by `book_id`
+   - Deletar livro agora "perdoa" highlights deletados
+
+**Schema changes:**
+- `deleted_highlights` table: Added `book_id` column (text)
+- Index: `idx_deleted_highlights_book_id` on (user_id, book_id)
+
+**Migrations applied:**
+- `add_delete_policy_to_deleted_highlights`
+- `add_book_id_to_deleted_highlights`
+
+**New behavior:**
+```
+1. Import PDF → 84 highlights
+2. Delete 1 highlight → graveyard blocks it
+3. Re-import PDF → 83 highlights (1 blocked) ✅
+4. Delete book → graveyard cleared automatically ✅
+5. Re-import PDF → 84 highlights (all back!) ✅
+```
+
+**Related commits:**
+- `d8694c2` - fix(graveyard): corrige sistema de cemitério para deletar highlights ao excluir livro
+
+**Documentation:**
+- Created: `lbp_implementation/id-stability-improvement-options.md`
+- Updated: `lbp_context/TECHNICAL_CONTEXT.md` (this file)
 
 ---
 

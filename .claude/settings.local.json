@@ -24,7 +24,9 @@
       "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: Add Kindle PDF highlights import support\n\nImplemented complete PDF parsing functionality for Amazon Kindle PDF exports:\n\n- Created pdfParser.ts with intelligent text extraction and parsing\n- Supports both highlight-only and highlight+note formats\n- Automatic cleanup of PDF page numbers and metadata\n- Correctly separates highlights from notes based on spacing\n- Extracts book title and author from PDF metadata\n\nUpdated Settings.tsx:\n- Added PDF file upload support \\(.pdf extension\\)\n- Integrated parsePDFKindleHighlights for PDF processing\n- Updated UI to show both .txt and .pdf options\n- Added instructions for PDF export method\n\nUpdated StoreContext.tsx:\n- Modified importData to accept both string \\(TXT\\) and object \\(PDF\\) inputs\n- Unified import flow for both file types\n\nTested with 84 highlights - all imported correctly with proper note separation.\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
       "Bash(npm install:*)",
       "Bash(npx ts-node:*)",
-      "Bash(npx tsx:*)"
+      "Bash(npx tsx:*)",
+      "mcp__supabase__execute_sql",
+      "Bash(git commit:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
