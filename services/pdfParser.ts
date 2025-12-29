@@ -1,5 +1,6 @@
 import * as pdfjsLib from 'pdfjs-dist';
 import { Book, Highlight } from '../types';
+import { generateDeterministicUUID, generateHighlightID } from './idUtils';
 
 // Configure worker - use the worker from node_modules for Vite
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
@@ -7,27 +8,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   import.meta.url
 ).href;
 
-const generateUUID = (): string => {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    return crypto.randomUUID();
-  }
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
-};
 
-const generateDeterministicUUID = (input: string): string => {
-  let hash = 0;
-  for (let i = 0; i < input.length; i++) {
-    const char = input.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-  }
-
-  const hex = Math.abs(hash).toString(16).padStart(8, '0');
-  return `${hex.substring(0, 8)}-${hex.substring(0, 4)}-4${hex.substring(1, 4)}-${hex.substring(0, 4)}-${hex}${hex}`.substring(0, 36);
-};
 
 /**
  * Extract text content from PDF file
@@ -140,7 +121,7 @@ export const parsePDFKindleHighlights = async (file: File): Promise<{ books: Boo
       }
 
       highlights.push({
-        id: generateUUID(),
+        id: generateHighlightID(title, author, highlightText, `page-${page}`),
         bookId,
         text: highlightText,
         location: `page-${page}`,

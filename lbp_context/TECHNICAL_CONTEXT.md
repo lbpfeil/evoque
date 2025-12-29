@@ -1,7 +1,7 @@
 # EVOQUE - Technical Context for AI Agents
 
-> **Last Updated:** 2025-12-25
-> **Version:** 1.1.0
+> **Last Updated:** 2025-12-29
+> **Version:** 1.2.0
 > **Status:** Production-Ready
 
 ---
@@ -61,6 +61,9 @@ evoque/
 │   └── Login.tsx         # Auth page
 ├── services/             # Business logic
 │   ├── parser.ts         # Parse MyClippings.txt
+│   ├── pdfParser.ts      # Parse PDF Highlights
+│   ├── ankiParser.ts     # Parse Anki TSV exports
+│   ├── idUtils.ts        # ID Generation (Deterministic UUIDs) - NEW 2025-12-29
 │   ├── sm2.ts            # Spaced repetition algorithm
 │   └── mockData.ts       # Deprecated (Supabase migration)
 ├── lib/                  # Utilities
@@ -241,10 +244,13 @@ RLS Policies:
 1. User uploads MyClippings.txt
 2. parseMyClippings(text) → { books[], highlights[] }
    - Parses Kindle format (multi-line, metadata extraction)
-   - Generates deterministic UUIDs (prevents duplicates)
+   - Generates deterministic UUIDs via idUtils (Title|Author|Content|Location)
    - Supports Portuguese dates ("22 de julho de 2025")
 3. StoreContext.importData(text)
-   - Deduplicates based on (text + bookId)
+   - GRAVEYARD CHECK: Filters out highlights present in `deleted_highlights`
+     * Checks ID match (primary)
+     * Checks Text Content match (secondary, fallback)
+   - Deduplicates based on ID existance in active `highlights`
    - Creates StudyCards for new highlights
    - Upserts to Supabase (books, highlights, study_cards)
    - Reloads all data for consistency
@@ -446,6 +452,23 @@ Icons: w-3 h-3 (standard), w-2.5 h-2.5 (buttons)
 5. Book metadata extraction:
    - Pattern: "Title por Author Visualização"
    - Generates deterministic UUID from title+author (prevents duplicates)
+```
+
+### **Duplicate Detection & Graveyard (NEW 2025-12-29)**
+
+```typescript
+// Deterministic IDs (services/idUtils.ts):
+- ID = hash(Title + Author + Content + Location)
+- Ensures same highlight always gets same ID across imports/edits.
+
+// "The Graveyard" (deleted_highlights table):
+- When user deletes a highlight:
+  - Adds { highlight_id, text_content } to `deleted_highlights` table.
+  - Uses UPSERT to ensure text is captured even if ID already existed.
+- When importing:
+  - Blocks import if ID is in graveyard.
+  - Blocks import if exact Text Content is in graveyard (protection against ID shifts).
+- Deleting a Book does NOT clear the graveyard (preserves user intent).
 ```
 
 ### **Study Session Edge Cases**

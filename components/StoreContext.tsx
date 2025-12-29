@@ -235,13 +235,48 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
         parsedHighlights = input.highlights;
       }
 
+      // 0. Fetch deleted highlights first to filter them out (ID + Text content)
+      const { data: deletedData, error: deletedError } = await supabase
+        .from('deleted_highlights')
+        .select('highlight_id, text_content')
+        .eq('user_id', user.id);
+
+      if (deletedError) {
+        console.error('Failed to fetch deleted highlights:', deletedError);
+      }
+
+      const deletedIds = new Set(deletedData?.map(d => d.highlight_id) || []);
+      // Create a set of deleted texts (normalized)
+      const deletedTexts = new Set(deletedData?.map(d => d.text_content?.trim()).filter(Boolean) || []);
+
+      console.group('Import: Graveyard Check');
+      console.log(`Graveyard Size: ${deletedIds.size} IDs, ${deletedTexts.size} Texts`);
+
+      // Filter out deleted highlights from the import
+      const validHighlights = parsedHighlights.filter(ph => {
+        // Block if ID exists in graveyard
+        if (deletedIds.has(ph.id)) {
+          console.log(`[Blocked by ID] ${ph.id.substring(0, 8)}...`);
+          return false;
+        }
+        // Block if TEXT exists in graveyard (robust against ID changes due to page/metadata shifts)
+        if (deletedTexts.has(ph.text.trim())) {
+          console.log(`[Blocked by Text] "${ph.text.substring(0, 30)}..."`);
+          return false;
+        }
+
+        return true;
+      });
+      console.log(`Passed: ${validHighlights.length} / ${parsedHighlights.length}`);
+      console.groupEnd();
+
       // 1. Merge Highlights first to get the complete set
       let newHighlightsCount = 0;
       const nextHighlights = [...highlights];
       const nextCards = [...studyCards];
 
-      parsedHighlights.forEach(ph => {
-        const exists = nextHighlights.find(h => h.text === ph.text && h.bookId === ph.bookId);
+      validHighlights.forEach(ph => {
+        const exists = nextHighlights.find(h => h.id === ph.id);
         if (!exists) {
           nextHighlights.push({ ...ph, importedAt: new Date().toISOString() });
           // Create a new study card for this highlight
@@ -345,11 +380,11 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
   const updateCard = async (updatedCard: StudyCard) => {
     if (!user) return;
 
-    console.log('DEBUG: updateCard called', { 
-      cardId: updatedCard.id, 
-      repetitions: updatedCard.repetitions, 
+    console.log('DEBUG: updateCard called', {
+      cardId: updatedCard.id,
+      repetitions: updatedCard.repetitions,
       nextReviewDate: updatedCard.nextReviewDate,
-      interval: updatedCard.interval 
+      interval: updatedCard.interval
     });
 
     // Optimistic update
@@ -424,6 +459,20 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
         .eq('user_id', user.id);
 
       if (error) throw error;
+
+      // Add to graveyard to prevent re-import
+      // We do this after successful delete, separate try/catch to not block if it fails
+      try {
+        await supabase
+          .from('deleted_highlights')
+          .upsert({
+            user_id: user.id,
+            highlight_id: id,
+            text_content: highlight.text // Save text to block future re-imports even if ID changes
+          }, { onConflict: 'user_id, highlight_id' });
+      } catch (graveyardError) {
+        console.error('Failed to add to graveyard:', graveyardError);
+      }
     } catch (error) {
       console.error('Failed to delete highlight from Supabase:', error);
       // Reload data on error
@@ -482,6 +531,24 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
         .eq('user_id', user.id);
 
       if (error) throw error;
+
+      // Add to graveyard to prevent re-import
+      try {
+        const graveyardEntries = ids.map(hid => {
+          const h = highlights.find(item => item.id === hid);
+          return {
+            user_id: user.id,
+            highlight_id: hid,
+            text_content: h?.text // Save text to block future re-imports
+          };
+        });
+
+        await supabase
+          .from('deleted_highlights')
+          .upsert(graveyardEntries, { onConflict: 'user_id, highlight_id' });
+      } catch (graveyardError) {
+        console.error('Failed to add to graveyard (bulk):', graveyardError);
+      }
     } catch (error) {
       console.error('Failed to bulk delete highlights from Supabase:', error);
       // Reload data on error
@@ -683,7 +750,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
         );
 
       if (error) throw error;
-      
+
       // Reload settings after successful save to ensure sync
       await reloadSettings();
     } catch (error) {
