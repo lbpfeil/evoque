@@ -325,8 +325,8 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
           if (booksError) throw booksError;
         }
 
-        // Upsert highlights
-        const highlightsToUpsert = parsedHighlights.map(h => toSupabaseHighlight(h, user.id));
+        // Upsert highlights (only valid ones - graveyard filtered)
+        const highlightsToUpsert = validHighlights.map(h => toSupabaseHighlight(h, user.id));
         if (highlightsToUpsert.length > 0) {
           const { error: highlightsError } = await supabase
             .from('highlights')
@@ -468,6 +468,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
           .upsert({
             user_id: user.id,
             highlight_id: id,
+            book_id: highlight.bookId, // Save book_id to allow clearing graveyard when book is deleted
             text_content: highlight.text // Save text to block future re-imports even if ID changes
           }, { onConflict: 'user_id, highlight_id' });
       } catch (graveyardError) {
@@ -539,6 +540,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
           return {
             user_id: user.id,
             highlight_id: hid,
+            book_id: h?.bookId, // Save book_id to allow clearing graveyard when book is deleted
             text_content: h?.text // Save text to block future re-imports
           };
         });
@@ -1314,6 +1316,23 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
         .eq('user_id', user.id);
 
       if (error) throw error;
+
+      // 6. Clear graveyard for this book (allow re-import)
+      try {
+        const { data: deletedFromGraveyard, error: graveyardError } = await supabase
+          .from('deleted_highlights')
+          .delete()
+          .eq('book_id', id)
+          .eq('user_id', user.id)
+          .select();
+
+        if (graveyardError) throw graveyardError;
+
+        console.log(`Graveyard cleared: ${deletedFromGraveyard?.length || 0} highlights from book ${id}`);
+      } catch (graveyardError) {
+        console.error('Failed to clear graveyard (non-critical):', graveyardError);
+        // Non-critical error - continue even if graveyard cleanup fails
+      }
     } catch (error) {
       console.error('Failed to delete book from Supabase:', error);
 
