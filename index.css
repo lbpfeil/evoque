@@ -100,3 +100,12 @@
   background-size: 200% 100%;
   animation: progress-flow 2s ease-in-out infinite;
 }
+
+/* Safe area support for iPhone notch/home indicator */
+.safe-area-inset-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.safe-area-inset-top {
+  padding-top: env(safe-area-inset-top, 0);
+}

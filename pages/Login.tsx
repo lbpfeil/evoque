@@ -31,9 +31,9 @@ const Login = () => {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
-            <div className="w-full max-w-md p-8">
+            <div className="w-full max-w-md px-4 py-6 sm:p-8">
                 {/* Logo */}
-                <div className="flex items-center justify-center gap-3 mb-8">
+                <div className="flex items-center justify-center gap-3 mb-6 sm:mb-8">
                     <div className="p-2 bg-black text-white rounded-lg">
                         <BookOpen className="w-6 h-6" />
                     </div>
@@ -41,8 +41,8 @@ const Login = () => {
                 </div>
 
                 {/* Card */}
-                <div className="bg-white rounded-2xl shadow-xl border border-zinc-200 p-8">
-                    <h2 className="text-xl font-semibold text-zinc-900 mb-6">
+                <div className="bg-white rounded-2xl shadow-xl border border-zinc-200 p-6 sm:p-8">
+                    <h2 className="text-xl font-semibold text-zinc-900 mb-4 sm:mb-6">
                         {isSignUp ? 'Criar Conta' : 'Entrar'}
                     </h2>
 
@@ -53,7 +53,7 @@ const Login = () => {
                         </div>
                     )}
 
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                    <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-zinc-700 mb-1.5">
                                 Email
@@ -62,7 +62,7 @@ const Login = () => {
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full px-3 py-2 border border-zinc-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full px-3 py-2.5 sm:py-2 border border-zinc-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 placeholder="seu@email.com"
                                 required
                             />
@@ -76,7 +76,7 @@ const Login = () => {
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full px-3 py-2 border border-zinc-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full px-3 py-2.5 sm:py-2 border border-zinc-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 placeholder="••••••••"
                                 required
                                 minLength={6}
@@ -86,7 +86,7 @@ const Login = () => {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 sm:py-2.5 min-h-[44px] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         >
                             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
                             {isSignUp ? 'Criar Conta' : 'Entrar'}

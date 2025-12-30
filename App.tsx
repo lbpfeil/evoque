@@ -1,6 +1,7 @@
 import React from 'react';
 import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
+import BottomNav from './components/BottomNav';
 import Dashboard from './pages/Dashboard';
 import Highlights from './pages/Highlights';
 import Study from './pages/Study';
@@ -17,9 +18,9 @@ const AppLayout = ({ children }: React.PropsWithChildren) => {
   const isStudySession = location.pathname === '/study/session';
 
   return (
-    <div className="min-h-screen bg-zinc-50 flex text-zinc-900 font-sans antialiased">
+    <div className="min-h-screen bg-zinc-50 flex flex-col md:flex-row text-zinc-900 font-sans antialiased">
       {!isStudySession && <Sidebar />}
-      <main className={`flex-1 ${!isStudySession ? 'md:ml-56 p-4 md:p-8' : ''} overflow-y-auto h-screen`}>
+      <main className={`flex-1 ${!isStudySession ? 'md:ml-56 p-4 md:p-8 pb-20 md:pb-8' : ''} overflow-y-auto h-screen`}>
         {!isStudySession ? (
           <div className="max-w-6xl mx-auto">
             {children}
@@ -28,6 +29,7 @@ const AppLayout = ({ children }: React.PropsWithChildren) => {
           children
         )}
       </main>
+      {!isStudySession && <BottomNav />}
     </div>
   );
 };

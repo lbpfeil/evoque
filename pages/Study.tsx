@@ -3,12 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { useStore } from '../components/StoreContext';
 import { DeckTable } from '../components/DeckTable';
 import { EmptyDeckPopover } from '../components/EmptyDeckPopover';
-import { Settings } from 'lucide-react';
+import { Settings, RefreshCw } from 'lucide-react';
 
 const Study = () => {
   const navigate = useNavigate();
-  const { books, getDeckStats, isLoaded } = useStore();
+  const { books, getDeckStats, isLoaded, reloadAllData } = useStore();
   const [showEmptyPopover, setShowEmptyPopover] = useState(false);
+  const [isReloading, setIsReloading] = useState(false);
 
   if (!isLoaded) {
     return (
@@ -42,8 +43,14 @@ const Study = () => {
     console.log('Settings clicked');
   };
 
+  const handleReload = async () => {
+    setIsReloading(true);
+    await reloadAllData();
+    setTimeout(() => setIsReloading(false), 500);
+  };
+
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6">
       {/* Header */}
       <header className="mb-3">
         <h1 className="text-base font-semibold text-zinc-900">Study</h1>
@@ -52,8 +59,16 @@ const Study = () => {
         </p>
       </header>
 
-      {/* Settings Button */}
-      <div className="flex justify-end mb-3">
+      {/* Action Buttons */}
+      <div className="flex justify-end gap-2 mb-3">
+        <button
+          onClick={handleReload}
+          disabled={isReloading}
+          className="p-1 hover:bg-zinc-100 rounded transition-colors disabled:opacity-50"
+          title="Reload data"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 text-zinc-600 ${isReloading ? 'animate-spin' : ''}`} />
+        </button>
         <button
           onClick={handleSettings}
           className="p-1 hover:bg-zinc-100 rounded transition-colors"
@@ -66,9 +81,9 @@ const Study = () => {
       {/* Prominent All Books Button */}
       <button
         onClick={() => handleDeckClick('all')}
-        className="w-full mb-4 px-4 py-3 bg-black hover:bg-zinc-800 text-white rounded-md transition-colors flex items-center justify-between group"
+        className="w-full mb-4 px-3 sm:px-4 py-3 bg-black hover:bg-zinc-800 text-white rounded-md transition-colors flex items-center justify-between group"
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <div className="flex items-center justify-center w-8 h-8 bg-white/10 rounded">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
@@ -76,10 +91,18 @@ const Study = () => {
           </div>
           <div className="text-left">
             <div className="text-sm font-semibold">Study All Books</div>
-            <div className="text-xs text-white/70">Review cards from your entire library</div>
+            <div className="text-xs text-white/70 hidden sm:block">Review cards from your entire library</div>
           </div>
         </div>
-        <div className="flex items-center gap-4 text-xs">
+
+        {/* Stats - Mobile: only show total */}
+        <div className="sm:hidden text-right">
+          <div className="text-lg font-bold">{totalStats.total}</div>
+          <div className="text-white/50 text-[10px]">Due</div>
+        </div>
+
+        {/* Stats - Desktop: show all */}
+        <div className="hidden sm:flex items-center gap-4 text-xs">
           <div className="flex items-center gap-3">
             <div className="text-center">
               <div className="text-blue-300 font-semibold">{totalStats.new}</div>

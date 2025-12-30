@@ -277,14 +277,14 @@ const StudySession = () => {
     return (
         <div className="h-screen flex flex-col bg-white">
             {/* Compact Header */}
-            <header className="px-4 py-2 border-b border-zinc-200">
+            <header className="px-3 sm:px-4 py-2 border-b border-zinc-200">
                 <div className="flex items-center justify-between">
                     <button
                         onClick={handleBack}
-                        className="flex items-center gap-1 hover:bg-zinc-100 px-2 py-1 rounded transition-colors"
+                        className="flex items-center gap-1 hover:bg-zinc-100 px-2 py-1.5 sm:py-1 rounded transition-colors min-h-[40px] sm:min-h-0"
                     >
-                        <ArrowLeft className="w-3.5 h-3.5 text-zinc-600" />
-                        <span className="text-xs text-zinc-600">Back to Decks</span>
+                        <ArrowLeft className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-zinc-600" />
+                        <span className="text-xs text-zinc-600 hidden sm:inline">Back to Decks</span>
                     </button>
 
                     <div className="text-xs text-zinc-400">
@@ -313,7 +313,7 @@ const StudySession = () => {
             </header>
 
             {/* Main Content */}
-            <div className="flex-1 overflow-y-auto px-6 py-8">
+            <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 sm:py-8">
                 <div className="max-w-2xl mx-auto space-y-6">
                     {/* Book Info */}
                     <div className="flex items-center justify-between">
@@ -470,12 +470,12 @@ const StudySession = () => {
             </div>
 
             {/* Fixed Footer - Controls */}
-            <div className="border-t border-zinc-200 bg-white p-4">
+            <div className="border-t border-zinc-200 bg-white p-3 sm:p-4 safe-area-inset-bottom">
                 <div className="max-w-2xl mx-auto relative">
-                    {/* Delete button - fixed to left */}
+                    {/* Delete button - fixed to left (hidden on mobile) */}
                     <button
                         onClick={() => setShowDeletePopover(true)}
-                        className="absolute left-0 top-1/2 -translate-y-1/2 p-2 bg-zinc-100 hover:bg-red-50 text-zinc-600 hover:text-red-600 rounded-md transition-colors"
+                        className="hidden sm:block absolute left-0 top-1/2 -translate-y-1/2 p-2 bg-zinc-100 hover:bg-red-50 text-zinc-600 hover:text-red-600 rounded-md transition-colors"
                         title="Delete Card"
                     >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -483,48 +483,48 @@ const StudySession = () => {
                         </svg>
                     </button>
 
-                    {/* Main controls - centered with margin for delete button */}
-                    <div className="ml-12">
+                    {/* Main controls - centered with margin for delete button on desktop */}
+                    <div className="sm:ml-12">
                         {!showAnswer ? (
                             <button
                                 onClick={() => setShowAnswer(true)}
-                                className="w-full py-3 bg-black hover:bg-zinc-800 text-white rounded-md font-medium text-sm transition-all active:scale-[0.99]"
+                                className="w-full py-3.5 sm:py-3 min-h-[48px] bg-black hover:bg-zinc-800 text-white rounded-md font-medium text-sm transition-all active:scale-[0.99]"
                             >
-                                Reveal Answer <span className="text-xs text-zinc-400 ml-2">(Space / Enter)</span>
+                                Reveal Answer <span className="hidden sm:inline text-xs text-zinc-400 ml-2">(Space / Enter)</span>
                             </button>
                         ) : (
-                            <div className="grid grid-cols-4 gap-2">
+                            <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
                                 <button
                                     onClick={() => handleResponse(1)}
                                     disabled={isEditing}
-                                    className="py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="py-2.5 sm:py-1.5 min-h-[48px] sm:min-h-0 bg-red-500 hover:bg-red-600 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <span>Again</span>
-                                    <span className="text-[10px] opacity-75">(1)</span>
+                                    <span className="hidden sm:block text-[10px] opacity-75">(1)</span>
                                 </button>
                                 <button
                                     onClick={() => handleResponse(2)}
                                     disabled={isEditing}
-                                    className="py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="py-2.5 sm:py-1.5 min-h-[48px] sm:min-h-0 bg-amber-500 hover:bg-amber-600 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <span>Hard</span>
-                                    <span className="text-[10px] opacity-75">(2)</span>
+                                    <span className="hidden sm:block text-[10px] opacity-75">(2)</span>
                                 </button>
                                 <button
                                     onClick={() => handleResponse(3)}
                                     disabled={isEditing}
-                                    className="py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="py-2.5 sm:py-1.5 min-h-[48px] sm:min-h-0 bg-blue-500 hover:bg-blue-600 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <span>Good</span>
-                                    <span className="text-[10px] opacity-75">(3 / Enter)</span>
+                                    <span className="hidden sm:block text-[10px] opacity-75">(3 / Enter)</span>
                                 </button>
                                 <button
                                     onClick={() => handleResponse(4)}
                                     disabled={isEditing}
-                                    className="py-1.5 bg-green-500 hover:bg-green-600 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="py-2.5 sm:py-1.5 min-h-[48px] sm:min-h-0 bg-green-500 hover:bg-green-600 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <span>Easy</span>
-                                    <span className="text-[10px] opacity-75">(4)</span>
+                                    <span className="hidden sm:block text-[10px] opacity-75">(4)</span>
                                 </button>
                             </div>
                         )}

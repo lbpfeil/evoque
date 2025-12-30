@@ -1,4 +1,5 @@
 import { StudyCard } from '../types';
+import { generateUUID } from './idUtils';
 
 /**
  * Calculates the next review schedule based on the SM-2 algorithm.
@@ -67,7 +68,7 @@ export const calculateNextReview = (
 
 export const initializeCard = (highlightId: string): StudyCard => {
   return {
-    id: crypto.randomUUID(),
+    id: generateUUID(),
     highlightId,
     easeFactor: 2.5,
     interval: 0,

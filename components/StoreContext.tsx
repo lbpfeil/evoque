@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Book, Highlight, StudyCard, StudyStatus, UserSettings, StudySession, ReviewLog, Tag, DeckStats, DailyProgress } from '../types';
 import { parseMyClippings } from '../services/parser';
+import { generateUUID } from '../services/idUtils';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
 import {
@@ -39,6 +40,7 @@ interface StoreContextType {
   settings: UserSettings;
   updateSettings: (settings: Partial<UserSettings>) => Promise<void>;
   reloadSettings: () => Promise<void>;
+  reloadAllData: () => Promise<void>;
   currentSession: StudySession | null;
   startSession: (bookId?: string) => void;
   submitReview: (cardId: string, quality: number, previousCard: StudyCard) => Promise<void>;
@@ -82,14 +84,12 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     bookReviews: {}
   });
 
-  // Load data from Supabase on mount
-  useEffect(() => {
+  // Load all data from Supabase
+  const loadData = async () => {
     if (!user) {
       setIsLoaded(true);
       return;
     }
-
-    const loadData = async () => {
       try {
         // Load books
         const { data: booksData, error: booksError } = await supabase
@@ -188,8 +188,10 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       } finally {
         setIsLoaded(true);
       }
-    };
+  };
 
+  // Load data from Supabase on mount
+  useEffect(() => {
     loadData();
   }, [user]);
 
@@ -283,7 +285,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
           nextHighlights.push({ ...ph, importedAt: new Date().toISOString() });
           // Create a new study card for this highlight
           nextCards.push({
-            id: crypto.randomUUID(),
+            id: generateUUID(),
             highlightId: ph.id,
             easeFactor: 2.5,
             interval: 0,
@@ -613,7 +615,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
 
     // Create new study card
     const newCard: StudyCard = {
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       highlightId,
       easeFactor: initialEaseFactor,
       interval: 0,
@@ -679,7 +681,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     highlightIds.forEach(highlightId => {
       if (!existingHighlightIds.has(highlightId)) {
         newCards.push({
-          id: crypto.randomUUID(),
+          id: generateUUID(),
           highlightId,
           easeFactor: 2.5,
           interval: 0,
@@ -897,7 +899,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       const sessionCards = sortedDue.slice(0, remaining);
 
       setCurrentSession({
-        id: crypto.randomUUID(),
+        id: generateUUID(),
         date: new Date().toISOString(),
         cardIds: sessionCards.map(c => c.id),
         completedIds: [],
@@ -958,7 +960,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       }
 
       setCurrentSession({
-        id: crypto.randomUUID(),
+        id: generateUUID(),
         date: new Date().toISOString(),
         cardIds: sessionCards.map(c => c.id),
         completedIds: [],
@@ -1007,7 +1009,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
 
     // Create review log (use previous card state for accurate logging)
     const newLog = {
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       cardId,
       quality,
       reviewedAt: new Date().toISOString(),
@@ -1176,7 +1178,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     if (!user) return '';
 
     const newTag: Tag = {
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       name,
       parentId,
       bookId
@@ -1503,6 +1505,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       settings,
       updateSettings,
       reloadSettings,
+      reloadAllData: loadData,
       currentSession,
       startSession,
       submitReview,
