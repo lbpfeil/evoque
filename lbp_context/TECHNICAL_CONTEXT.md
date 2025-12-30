@@ -1,9 +1,9 @@
 # EVOQUE - Technical Context for AI Agents
 
-> **Last Updated:** 2025-12-29
-> **Version:** 1.3.0
+> **Last Updated:** 2025-12-30
+> **Version:** 1.4.0
 > **Status:** Production-Ready
-> **Recent Changes:** Graveyard system fixes (book_id, RLS policies)
+> **Recent Changes:** Per-book study settings, typography guidelines v1.1
 
 ---
 
@@ -88,6 +88,10 @@ Book {
   coverUrl?: string (Supabase Storage URL)
   lastImported: string (ISO date)
   highlightCount: number (derived)
+  settings?: {
+    dailyReviewLimit?: number      // Override global maxReviewsPerDay
+    initialEaseFactor?: number     // Override global defaultInitialEaseFactor (for new cards)
+  }
 }
 
 Highlight {
@@ -143,8 +147,9 @@ UserSettings {
   maxReviewsPerDay: number
   newCardsPerDay: number
   dailyProgress?: DailyProgress
-  fullName?: string          // NEW 2025-12-19: User's full name
-  avatarUrl?: string         // NEW 2025-12-19: Avatar URL from Supabase Storage
+  fullName?: string                   // NEW 2025-12-19: User's full name
+  avatarUrl?: string                  // NEW 2025-12-19: Avatar URL from Supabase Storage
+  defaultInitialEaseFactor?: number   // NEW 2025-12-30: Global default ease factor for new cards (default: 2.5)
 }
 ```
 
@@ -165,6 +170,7 @@ UserSettings {
 - Session management (startSession, submitReview)
 - Tag operations (addTag, assignTagToHighlight)
 - Settings management (updateSettings, reloadSettings) // UPDATED 2025-12-19
+- Book settings (updateBookSettings, resetAllBooksToDefaults) // NEW 2025-12-30
 ```
 
 ### **2. Optimistic UI Updates**
@@ -206,8 +212,9 @@ const updateData = async (id: string, updates: any) => {
 toSupabase*():   camelCase → snake_case + add user_id
 fromSupabase*(): snake_case → camelCase + remove user_id
 
-// UPDATED 2025-12-19: toSupabaseSettings & fromSupabaseSettings
-// Now include: full_name ↔ fullName, avatar_url ↔ avatarUrl
+// UPDATED 2025-12-30: All converters now include latest fields
+// - toSupabaseBook/fromSupabaseBook: settings (JSONB)
+// - toSupabaseSettings/fromSupabaseSettings: full_name, avatar_url, default_initial_ease_factor
 
 // RLS (Row Level Security):
 ALL tables filtered by auth.uid() = user_id
@@ -286,7 +293,7 @@ RLS Policies:
 1. User clicks "Study Book X" or "Study All Books"
 2. StoreContext.startSession(bookId?)
    - Filters cards: nextReviewDate <= today
-   - Respects daily limit: 10 cards/book/day
+   - Respects daily limit: book.settings?.dailyReviewLimit || settings.maxReviewsPerDay || 10
    - Creates StudySession with cardIds queue
 3. StudySession.tsx renders cards one by one
    - Shows highlight (question)
@@ -298,9 +305,13 @@ RLS Policies:
    - Saves ReviewLog to Supabase
    - Increments DailyProgress.bookReviews[bookId]
 5. Session ends when queue empty
+
+// NEW 2025-12-30: Initial ease factor for new cards uses cascading defaults
+addToStudy(highlightId):
+   - easeFactor = book.settings?.initialEaseFactor || settings.defaultInitialEaseFactor || 2.5
 ```
 
-### **3. Settings Page Flow (Settings.tsx - NEW 2025-12-19)**
+### **3. Settings Page Flow (Settings.tsx - UPDATED 2025-12-30)**
 
 ```typescript
 // Consolidated page with 4 tabs: Import, Library, Account, Preferences
@@ -311,12 +322,18 @@ RLS Policies:
    - Shows last import stats
    - Compact drop zone (p-8 instead of p-20)
 
-2. LIBRARY TAB
+2. LIBRARY TAB (UPDATED 2025-12-30)
    - Compact list view (not grid)
    - Book cards: thumbnail (w-10 h-14) + metadata
    - Title truncated at 100 characters
    - Delete button per book
    - No search field (removed for simplicity)
+   - Per-book settings (collapsible):
+     * Daily Review Limit (overrides global maxReviewsPerDay)
+     * Initial Ease Factor (overrides global defaultInitialEaseFactor)
+     * Empty input = use global default
+     * Settings auto-save on change (optimistic UI)
+     * Expand/collapse with chevron icon
 
 3. ACCOUNT TAB (UPDATED 2025-12-19)
    - Profile Photo Section:
@@ -338,10 +355,19 @@ RLS Policies:
      * Delete Account: red text button with Trash2 icon
      * Both: h-7, text-xs, border, compact design
 
-4. PREFERENCES TAB
-   - SM-2 settings (daily limit, intervals)
-   - UI preferences (keyboard hints, auto-reveal)
-   - Save button (backend persistence pending)
+4. PREFERENCES TAB (UPDATED 2025-12-30)
+   - Display & Interface:
+     * Show keyboard hints toggle
+     * Auto-reveal answers toggle
+     * Note: These settings are not yet functional
+   - Study Options (renamed from "Spaced Repetition (SM-2)"):
+     * Default Daily Review Limit (global default, per-book can override)
+     * Default Initial Ease Factor (global default, per-book can override)
+     * "Apply Global Settings to All Books" button:
+       - Clears all per-book settings
+       - Confirmation dialog before action
+       - Uses optimistic UI pattern
+   - All settings auto-save on change (no Save button)
 
 // Tab State Persistence
 - Uses useSearchParams from react-router-dom
@@ -390,10 +416,12 @@ Gaps: gap-0.5 (2px), gap-1 (4px), gap-2 (8px)
 Padding: py-0.5 px-1.5 (items), py-1 px-2 (buttons)
 Margins: mb-2 (headers), mt-1 (footers)
 
-/* Typography */
-Titles: text-base/text-lg (16-18px)
-Body: text-xs/text-sm (12-14px)
-Secondary: text-[9px]/text-[10px]
+/* Typography (v1.1 - Updated 2025-12-30) */
+H1/Titles: text-lg (18px)
+Normal text: text-sm (14px)
+Secondary/Metadata: text-xs (12px)
+// Previous scale (v1.0): H1=16px, Normal=12px, Secondary=10px
+// v1.1 increased all sizes by 12.5%-20% for better legibility
 
 /* Components */
 Buttons: h-7 px-3 text-xs (standard)
@@ -632,7 +660,7 @@ lbp_context/
 └── HighlightTab-context.md          # ⚠️ Deep dive: Highlights page features (483 lines)
 
 lbp_diretrizes/
-├── compact-ui-design-guidelines.md  # ⚠️ UI/UX standards (550 lines) - Updated 2025-12-19
+├── compact-ui-design-guidelines.md  # ⚠️ UI/UX standards (550 lines) - v1.1 (2025-12-30)
 └── modal-pattern.md                 # Modal implementation guide
 
 lbp_implementation/
@@ -722,11 +750,13 @@ const { books, highlights, studyCards, tags } = useStore();
 
 // Common operations:
 await importData(text)                     // Import MyClippings.txt
-await addToStudy(highlightId)              // Create StudyCard
+await addToStudy(highlightId)              // Create StudyCard (uses cascading ease factor)
 await updateCard(card)                     // Update after review
 await submitReview(cardId, quality, prev)  // Save review log
 await deleteHighlight(id)                  // Delete with cascade
 await assignTagToHighlight(hId, tId)       // Tag a highlight
+await updateBookSettings(bookId, settings) // Update per-book settings (NEW 2025-12-30)
+await resetAllBooksToDefaults()            // Clear all per-book overrides (NEW 2025-12-30)
 
 // Derived data:
 const due = getCardsDue()                  // All cards due today
@@ -737,6 +767,48 @@ const status = getHighlightStudyStatus(id) // 'new'|'learning'|'review'
 ---
 
 ## 📝 CHANGELOG
+
+### **2025-12-30: Per-Book Study Settings & Typography Update (v1.4.0)**
+
+**Features implemented:**
+1. ✅ **Per-book study settings:** Books can now override global defaults
+   - `Book.settings.dailyReviewLimit`: Override global maxReviewsPerDay
+   - `Book.settings.initialEaseFactor`: Override global defaultInitialEaseFactor
+   - Collapsible UI in Library tab (Settings page)
+   - Auto-save on change (optimistic UI pattern)
+
+2. ✅ **Global default ease factor:** Added `UserSettings.defaultInitialEaseFactor`
+   - Default: 2.5 (SM-2 standard)
+   - Configurable in Preferences tab > Study Options
+   - Cascading defaults: book → global → 2.5
+
+3. ✅ **Study Options section:** Renamed from "Spaced Repetition (SM-2)"
+   - Default Daily Review Limit
+   - Default Initial Ease Factor
+   - "Apply Global Settings to All Books" button (clears all per-book overrides)
+
+4. ✅ **Typography guidelines v1.1:** Increased text sizes for better legibility
+   - H1: 16px → 18px (text-base → text-lg) [+12.5%]
+   - Normal: 12px → 14px (text-xs → text-sm) [+16.7%]
+   - Secondary: 10px → 12px (text-[10px] → text-xs) [+20%]
+   - Updated all examples in compact-ui-design-guidelines.md
+
+**Removals:**
+- ❌ **BookDetails page:** Removed entire page and route (/library/:bookId)
+- ❌ **Save Preferences button:** Removed (settings auto-save on change)
+
+**Schema changes:**
+- `books` table: Added `settings` JSONB column with GIN index
+- `user_settings` table: Added `default_initial_ease_factor` NUMERIC column (default: 2.5)
+
+**Migrations applied:**
+- `add_settings_column_to_books`
+- `add_default_initial_ease_factor_to_user_settings`
+
+**Related commits:**
+- `a9123a4` - feat: add per-book study settings and update typography guidelines
+
+---
 
 ### **2025-12-29: Graveyard System Fixes (v1.3.0)**
 
