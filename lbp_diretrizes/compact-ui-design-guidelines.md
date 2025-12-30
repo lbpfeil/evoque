@@ -48,14 +48,14 @@
 // ✅ Recomendado (compacto)
 <SheetHeader className="mb-2">
   <SheetTitle className="text-base">Título</SheetTitle>
-  <SheetDescription className="text-xs">Descrição</SheetDescription>
+  <SheetDescription className="text-sm">Descrição</SheetDescription>
 </SheetHeader>
 ```
 
 **Diretrizes:**
 - Margem inferior do header: `mb-2` (8px) ou `mb-3` (12px) máximo
-- Título: `text-base` (16px) ou `text-lg` (18px)
-- Descrição: `text-xs` (12px) ou `text-sm` (14px)
+- Título: `text-lg` (18px) ou `text-xl` (20px)
+- Descrição: `text-sm` (14px)
 
 #### Footers/Seções de Ação
 ```tsx
@@ -70,8 +70,8 @@
 // ✅ Recomendado (compacto)
 <div className="pt-1 mt-1 border-t">
   <div className="flex flex-col gap-1">
-    <Input className="h-7 text-xs" />
-    <Button className="h-7 text-xs px-3">Action</Button>
+    <Input className="h-7 text-sm" />
+    <Button className="h-7 text-sm px-3">Action</Button>
   </div>
 </div>
 ```
@@ -107,38 +107,40 @@
 
 | Uso | Classe Tailwind | Tamanho | Line Height |
 |-----|----------------|---------|-------------|
-| Título principal (H1) | `text-base font-semibold` | 16px | 1.2 |
-| Subtítulo/Descrição | `text-xs text-zinc-500` | 12px | 1.4 |
-| Seção secundária | `text-xs font-semibold text-zinc-600` | 12px | 1.4 |
-| Texto de item | `text-xs` | 12px | 1.4 |
-| Texto secundário | `text-[10px] text-zinc-400` | 10px | 1.2 |
-| Labels de input | `text-xs` | 12px | 1.4 |
+| Título principal (H1) | `text-lg font-semibold` | 18px | 1.3 |
+| Subtítulo/Descrição | `text-sm text-zinc-500` | 14px | 1.5 |
+| Seção secundária | `text-sm font-semibold text-zinc-600` | 14px | 1.5 |
+| Texto de item | `text-sm` | 14px | 1.5 |
+| Texto secundário/Metadados | `text-xs text-zinc-400` | 12px | 1.4 |
+| Labels de input | `text-sm` | 14px | 1.5 |
+
+**Nota:** Esta escala foi atualizada em 2025-12-30 para melhor legibilidade (+12.5% a +20% vs. versão anterior).
 
 ### Hierarquia Visual
 
 **Prioridade 1 (Títulos de Página):**
 ```tsx
-<h1 className="text-base font-semibold text-zinc-900">Título Principal</h1>
+<h1 className="text-lg font-semibold text-zinc-900">Título Principal</h1>
 ```
 
 **Prioridade 2 (Subtítulos de Página):**
 ```tsx
-<p className="text-xs text-zinc-500 mt-1">Descrição da página</p>
+<p className="text-sm text-zinc-500 mt-1">Descrição da página</p>
 ```
 
 **Prioridade 3 (Seções Secundárias):**
 ```tsx
-<h2 className="text-xs font-semibold text-zinc-600">Seção</h2>
+<h2 className="text-sm font-semibold text-zinc-600">Seção</h2>
 ```
 
 **Prioridade 4 (Texto normal):**
 ```tsx
-<span className="text-xs text-zinc-700">Texto normal</span>
+<span className="text-sm text-zinc-700">Texto normal</span>
 ```
 
 **Prioridade 5 (Texto secundário/metadados):**
 ```tsx
-<span className="text-[10px] text-zinc-400">Informação adicional</span>
+<span className="text-xs text-zinc-400">Informação adicional</span>
 ```
 
 ---
@@ -150,7 +152,7 @@
 #### Tamanhos
 ```tsx
 // Botão padrão compacto
-<Button className="h-7 text-xs px-3">Action</Button>
+<Button className="h-7 text-sm px-3">Action</Button>
 
 // Botão icon compacto
 <Button size="icon" className="h-5 w-5">
@@ -181,7 +183,7 @@ Para ações principais que merecem destaque visual:
     </div>
     <div className="text-left">
       <div className="text-sm font-semibold">Primary Action</div>
-      <div className="text-xs text-white/70">Supporting description</div>
+      <div className="text-sm text-white/70">Supporting description</div>
     </div>
   </div>
   <div className="text-right">
@@ -196,7 +198,7 @@ Para ações principais que merecem destaque visual:
 - Altura: `py-3` (12px vertical padding)
 - Padding horizontal: `px-4` (16px)
 - Texto principal: `text-sm font-semibold`
-- Texto secundário: `text-xs text-white/70`
+- Texto secundário: `text-sm text-white/70`
 - Ícone container: `w-8 h-8 bg-white/10 rounded`
 - Ícone: `w-4 h-4`
 - Stats/números: `text-lg font-bold`
@@ -208,14 +210,14 @@ Para ações principais que merecem destaque visual:
 
 ```tsx
 // Input compacto
-<Input 
-  className="h-7 text-xs py-0 px-1.5" 
+<Input
+  className="h-7 text-sm py-0 px-1.5"
   placeholder="Placeholder..."
 />
 
 // Input inline (edição)
-<Input 
-  className="h-5 text-xs py-0 px-1" 
+<Input
+  className="h-5 text-sm py-0 px-1"
   autoFocus
 />
 ```
@@ -223,7 +225,7 @@ Para ações principais que merecem destaque visual:
 **Diretrizes:**
 - Altura padrão: `h-7` (28px)
 - Altura inline (edição rápida): `h-5` (20px)
-- Tamanho de texto: `text-xs` (12px)
+- Tamanho de texto: `text-sm` (14px)
 - Padding: `px-1.5` (6px) ou `px-1` (4px) para inline
 
 ### Ícones
@@ -274,8 +276,8 @@ Para ações principais que merecem destaque visual:
 <button className="flex items-center justify-between w-full px-1.5 py-1 hover:bg-zinc-50 rounded transition-colors">
   <div className="flex items-center gap-1.5">
     <Icon className="w-3.5 h-3.5 text-blue-600" />
-    <span className="text-xs font-semibold text-zinc-700">Seção</span>
-    <span className="text-[9px] text-zinc-400">(12 items)</span>
+    <span className="text-sm font-semibold text-zinc-700">Seção</span>
+    <span className="text-xs text-zinc-400">(12 items)</span>
   </div>
   <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
 </button>
@@ -437,9 +439,9 @@ Ao criar um novo componente compacto, verificar:
 - [ ] Padding de itens é `py-0.5 px-1.5` (não `py-2 px-3`)
 
 ### Tipografia
-- [ ] Títulos usam `text-base` ou `text-lg` (não `text-xl`)
-- [ ] Descrições usam `text-xs` (não `text-sm`)
-- [ ] Texto secundário usa `text-[9px]` ou `text-[10px]`
+- [ ] Títulos usam `text-lg` ou `text-xl` (não `text-2xl`)
+- [ ] Descrições usam `text-sm` (não `text-base`)
+- [ ] Texto secundário usa `text-xs`
 
 ### Componentes
 - [ ] Inputs têm altura `h-7` (não `h-10`)
@@ -466,7 +468,7 @@ Ao criar um novo componente compacto, verificar:
 ### TagManagerSidebar
 - **Arquivo:** `components/TagManagerSidebar.tsx`
 - **Características:**
-  - Header compacto: `mb-2`, título `text-base`, descrição `text-xs`
+  - Header compacto: `mb-2`, título `text-lg`, descrição `text-sm`
   - Itens com `py-0.5 px-1.5`
   - Ícones `w-3 h-3` e `w-2.5 h-2.5`
   - Footer com `pt-1 mt-1`, input/button `h-7`
@@ -477,7 +479,7 @@ Ao criar um novo componente compacto, verificar:
 - **Características:**
   - Header compacto com estatísticas inline
   - Ícones pequenos `w-3 h-3`
-  - Texto `text-xs`
+  - Texto `text-sm`
   - Botões `py-3` (reduzido de `py-5`)
   - Progress bar de 1px
 
@@ -496,9 +498,9 @@ Ao criar um novo componente compacto, verificar:
 
 // ✅ FAZER
 <div className="mb-2 mt-2 py-1 px-1.5 gap-1">
-  <h1 className="text-base mb-1">Título</h1>
-  <p className="text-xs mb-1">Descrição</p>
-  <Button className="h-7 px-3 text-xs">Action</Button>
+  <h1 className="text-lg mb-1">Título</h1>
+  <p className="text-sm mb-1">Descrição</p>
+  <Button className="h-7 px-3 text-sm">Action</Button>
 </div>
 ```
 
@@ -527,7 +529,7 @@ Ao criar um novo componente compacto, verificar:
 Um componente bem implementado deve:
 - **Densidade:** Exibir 30-40% mais conteúdo que versão "padrão"
 - **Usabilidade:** Manter touch targets mínimos de 20px
-- **Legibilidade:** Texto mínimo de 12px (text-xs)
+- **Legibilidade:** Texto mínimo de 12px (text-xs) para metadados, 14px (text-sm) para texto normal
 - **Performance:** Sem impacto perceptível (transições leves)
 - **Consistência:** Seguir 100% das diretrizes acima
 
@@ -535,10 +537,16 @@ Um componente bem implementado deve:
 
 ## 🔄 Versionamento
 
+**v1.1** - 2025-12-30
+- **Atualização da escala tipográfica** para melhor legibilidade
+- Aumento proporcional de tamanhos: H1 16px→18px, Normal 12px→14px, Secundário 10px→12px
+- Mudança de classes: `text-base`→`text-lg`, `text-xs`→`text-sm` (texto normal), `text-[10px]`→`text-xs` (metadados)
+- Mantém densidade compacta mas melhora acessibilidade (+12.5% a +20%)
+
 **v1.0** - 2025-12-05
 - Versão inicial baseada em TagManagerSidebar e Study page
 - Estabelecimento de escala de espaçamento 4px
-- Definição de tipografia compacta
+- Definição de tipografia compacta original
 - Padrões de cores e estados
 
 ---

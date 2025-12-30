@@ -11,7 +11,8 @@ export const toSupabaseBook = (book: Book, userId: string) => ({
     author: book.author,
     cover_url: book.coverUrl || null,
     last_imported: book.lastImported,
-    highlight_count: book.highlightCount
+    highlight_count: book.highlightCount,
+    settings: book.settings || {}
 });
 
 export const fromSupabaseBook = (row: any): Book => ({
@@ -20,7 +21,8 @@ export const fromSupabaseBook = (row: any): Book => ({
     author: row.author,
     coverUrl: row.cover_url,
     lastImported: row.last_imported,
-    highlightCount: row.highlight_count
+    highlightCount: row.highlight_count,
+    settings: row.settings || undefined
 });
 
 // ============================================
@@ -112,7 +114,8 @@ export const toSupabaseSettings = (settings: any, userId: string) => ({
     new_cards_per_day: settings.newCardsPerDay,
     daily_progress: settings.dailyProgress,
     full_name: settings.fullName,
-    avatar_url: settings.avatarUrl
+    avatar_url: settings.avatarUrl,
+    default_initial_ease_factor: settings.defaultInitialEaseFactor
 });
 
 export const fromSupabaseSettings = (row: any) => ({
@@ -120,7 +123,8 @@ export const fromSupabaseSettings = (row: any) => ({
     newCardsPerDay: row.new_cards_per_day,
     dailyProgress: row.daily_progress,
     fullName: row.full_name,
-    avatarUrl: row.avatar_url
+    avatarUrl: row.avatar_url,
+    defaultInitialEaseFactor: row.default_initial_ease_factor
 });
 
 // ============================================

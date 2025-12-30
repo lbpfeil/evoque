@@ -54,7 +54,6 @@ evoque/
 │   └── ui/               # Base UI components (Button, Input, etc.)
 ├── pages/                # Route-level components
 │   ├── Dashboard.tsx     # Home page (analytics)
-│   ├── BookDetails.tsx   # Single book view
 │   ├── Highlights.tsx    # All highlights table
 │   ├── Study.tsx         # Deck selection
 │   ├── StudySession.tsx  # Active study interface (550 lines)
@@ -316,7 +315,7 @@ RLS Policies:
    - Compact list view (not grid)
    - Book cards: thumbnail (w-10 h-14) + metadata
    - Title truncated at 100 characters
-   - Click → Navigate to /library/:bookId
+   - Delete button per book
    - No search field (removed for simplicity)
 
 3. ACCOUNT TAB (UPDATED 2025-12-19)

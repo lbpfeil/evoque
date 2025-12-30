@@ -19,7 +19,7 @@ Create a unified **Settings** page that consolidates:
 - **Remove** `/import` route → Integrate as Settings tab
 - **Remove** `/library` route → Integrate as Settings tab  
 - **Update** Sidebar navigation (remove Import, Library items)
-- **Keep** `/library/:bookId` route (BookDetails still accessible)
+- **Removed** `/library/:bookId` route (BookDetails page removed)
 - **Add** `/settings` route with tabbed interface
 
 ---
@@ -356,29 +356,30 @@ const [activeTab, setActiveTab] = useState<'import' | 'library' | 'account' | 'p
 - Book card: Horizontal layout with thumbnail
 - Thumbnail: `w-10 h-14` (40x56px)
 - Typography: Reduce all text sizes
-- Click card → Navigate to `/library/:bookId` (BookDetails)
+- Delete button per book card
 - Search bar: Top-right, compact `h-7 w-48`
 
 **Book Card Component:**
 ```tsx
-<Link 
-  to={`/library/${book.id}`}
-  className="flex items-center gap-2 py-2 px-3 border border-zinc-200 rounded hover:bg-zinc-50 transition-colors"
->
-  <div className="w-10 h-14 bg-zinc-100 rounded border border-zinc-200 shrink-0 overflow-hidden">
-    <img src={book.coverUrl} className="w-full h-full object-cover" />
+<div className="relative py-2 px-3 border border-zinc-200 rounded bg-white">
+  <button className="absolute top-2 right-2 p-1.5 text-zinc-400 hover:text-red-600">
+    <Trash2 className="w-3.5 h-3.5" />
+  </button>
+  <div className="flex items-center gap-2">
+    <div className="w-10 h-14 bg-zinc-100 rounded border border-zinc-200 shrink-0 overflow-hidden">
+      <img src={book.coverUrl} className="w-full h-full object-cover" />
+    </div>
+    <div className="flex-1 min-w-0">
+      <h3 className="text-sm font-semibold text-zinc-900 truncate">{book.title}</h3>
+      <p className="text-xs text-zinc-500 truncate">
+        {book.author} • {book.highlightCount} highlights
+      </p>
+      <p className="text-[10px] text-zinc-400 mt-0.5">
+        Last: {formatDate(book.lastImported)}
+      </p>
+    </div>
   </div>
-  <div className="flex-1 min-w-0">
-    <h3 className="text-sm font-semibold text-zinc-900 truncate">{book.title}</h3>
-    <p className="text-xs text-zinc-500 truncate">
-      {book.author} • {book.highlightCount} highlights
-    </p>
-    <p className="text-[10px] text-zinc-400 mt-0.5">
-      Last: {formatDate(book.lastImported)}
-    </p>
-  </div>
-  <ChevronRight className="w-4 h-4 text-zinc-400 shrink-0" />
-</Link>
+</div>
 ```
 
 ### Phase 4: Account Tab (30 min)
@@ -451,11 +452,10 @@ const navItems = [
 // App.tsx - Update routes
 <Routes>
   <Route path="/" element={<Dashboard />} />
-  <Route path="/library/:bookId" element={<BookDetails />} /> {/* Keep this */}
   <Route path="/highlights" element={<Highlights />} />
   <Route path="/study" element={<Study />} />
   <Route path="/study/session" element={<StudySession />} />
-  <Route path="/settings" element={<Settings />} /> {/* New */}
+  <Route path="/settings" element={<Settings />} />
   <Route path="*" element={<Navigate to="/" replace />} />
 </Routes>
 ```
@@ -504,7 +504,7 @@ const navItems = [
 ### Functional Requirements
 - [ ] All Import functionality works (drag-and-drop, success notification)
 - [ ] Library shows all books in compact list view
-- [ ] Clicking book card navigates to BookDetails page
+- [x] Book cards display info with delete button (no navigation)
 - [ ] Account tab displays correct user info and stats
 - [ ] Preferences save to Supabase and persist
 - [ ] Old routes redirect to new Settings tabs

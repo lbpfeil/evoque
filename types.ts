@@ -5,6 +5,10 @@ export interface Book {
   coverUrl?: string;
   lastImported: string;
   highlightCount: number;
+  settings?: {
+    dailyReviewLimit?: number;      // Override global maxReviewsPerDay
+    initialEaseFactor?: number;     // Override global defaultInitialEaseFactor (for new cards)
+  };
 }
 
 export interface Highlight {
@@ -54,6 +58,7 @@ export interface UserSettings {
   dailyProgress?: DailyProgress;
   fullName?: string;
   avatarUrl?: string;
+  defaultInitialEaseFactor?: number;  // Global default ease factor for new cards (default: 2.5)
 }
 
 export interface ReviewResult {

@@ -57,6 +57,8 @@ interface StoreContextType {
   deleteBook: (id: string) => Promise<void>;
   assignTagToHighlight: (highlightId: string, tagId: string) => Promise<void>;
   removeTagFromHighlight: (highlightId: string, tagId: string) => Promise<void>;
+  updateBookSettings: (bookId: string, settings: Partial<Book['settings']>) => Promise<void>;
+  resetAllBooksToDefaults: () => Promise<void>;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -599,11 +601,21 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     const existingCard = studyCards.find(c => c.highlightId === highlightId);
     if (existingCard) return;
 
+    // Get highlight to find its book
+    const highlight = highlights.find(h => h.id === highlightId);
+    if (!highlight) return;
+
+    // Get book to check for custom initial ease factor
+    const book = books.find(b => b.id === highlight.bookId);
+    const initialEaseFactor = book?.settings?.initialEaseFactor
+      || settings.defaultInitialEaseFactor
+      || 2.5;
+
     // Create new study card
     const newCard: StudyCard = {
       id: crypto.randomUUID(),
       highlightId,
-      easeFactor: 2.5,
+      easeFactor: initialEaseFactor,
       interval: 0,
       repetitions: 0,
       nextReviewDate: new Date().toISOString()
@@ -861,8 +873,11 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
 
     // Check daily limit for specific book
     if (bookId) {
+      const book = books.find(b => b.id === bookId);
+      const dailyLimit = book?.settings?.dailyReviewLimit || settings.maxReviewsPerDay || 10;
+
       const reviewsToday = dailyProgress.bookReviews[bookId] || 0;
-      if (reviewsToday >= 10) {
+      if (reviewsToday >= dailyLimit) {
         // No more cards available for this book today
         return;
       }
@@ -878,7 +893,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       const sortedDue = [...cardsNotReviewedToday].sort((a, b) =>
         new Date(a.nextReviewDate).getTime() - new Date(b.nextReviewDate).getTime()
       );
-      const remaining = 10 - reviewsToday;
+      const remaining = dailyLimit - reviewsToday;
       const sessionCards = sortedDue.slice(0, remaining);
 
       setCurrentSession({
@@ -894,12 +909,13 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       // All books session - get cards from each book respecting daily limits
       const cardsByBook = new Map<string, StudyCard[]>();
 
-      // For each book, get cards available today (respecting 10-card limit)
+      // For each book, get cards available today (respecting per-book daily limit)
       books.forEach(book => {
+        const dailyLimit = book.settings?.dailyReviewLimit || settings.maxReviewsPerDay || 10;
         const bookCards = getBookCardsDue(book.id);
         const reviewsToday = dailyProgress.bookReviews[book.id] || 0;
 
-        if (reviewsToday < 10 && bookCards.length > 0) {
+        if (reviewsToday < dailyLimit && bookCards.length > 0) {
           // Filter cards not reviewed today
           const cardsNotReviewedToday = bookCards.filter(card => {
             if (!card.lastReviewedAt) return true;
@@ -912,7 +928,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
             const sorted = [...cardsNotReviewedToday].sort((a, b) =>
               new Date(a.nextReviewDate).getTime() - new Date(b.nextReviewDate).getTime()
             );
-            const remaining = 10 - reviewsToday;
+            const remaining = dailyLimit - reviewsToday;
             cardsByBook.set(book.id, sorted.slice(0, remaining));
           }
         }
@@ -1351,6 +1367,69 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     }
   };
 
+  const updateBookSettings = async (bookId: string, newSettings: Partial<Book['settings']>) => {
+    if (!user) return;
+
+    // Find the book
+    const book = books.find(b => b.id === bookId);
+    if (!book) return;
+
+    // Merge new settings with existing
+    const updatedSettings = {
+      ...(book.settings || {}),
+      ...newSettings
+    };
+
+    // Optimistic update
+    setBooks(prev => prev.map(b =>
+      b.id === bookId ? { ...b, settings: updatedSettings } : b
+    ));
+
+    // Sync with Supabase
+    try {
+      const { error } = await supabase
+        .from('books')
+        .update({ settings: updatedSettings })
+        .eq('id', bookId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Failed to update book settings:', error);
+      // Rollback
+      const { data } = await supabase
+        .from('books')
+        .select('*')
+        .eq('user_id', user.id);
+      if (data) setBooks(data.map(fromSupabaseBook));
+    }
+  };
+
+  const resetAllBooksToDefaults = async () => {
+    if (!user) return;
+
+    // Optimistic update - remove settings from all books
+    setBooks(prev => prev.map(b => ({ ...b, settings: undefined })));
+
+    // Sync with Supabase - reset all books settings to empty object
+    try {
+      const { error } = await supabase
+        .from('books')
+        .update({ settings: {} })
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Failed to reset all books to defaults:', error);
+      // Rollback
+      const { data } = await supabase
+        .from('books')
+        .select('*')
+        .eq('user_id', user.id);
+      if (data) setBooks(data.map(fromSupabaseBook));
+    }
+  };
+
   const assignTagToHighlight = async (highlightId: string, tagId: string) => {
     if (!user) return;
 
@@ -1441,7 +1520,9 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       deleteTag,
       deleteBook,
       assignTagToHighlight,
-      removeTagFromHighlight
+      removeTagFromHighlight,
+      updateBookSettings,
+      resetAllBooksToDefaults
     }}>
       {children}
     </StoreContext.Provider>

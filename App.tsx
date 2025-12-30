@@ -2,7 +2,6 @@ import React from 'react';
 import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
-import BookDetails from './pages/BookDetails';
 import Highlights from './pages/Highlights';
 import Study from './pages/Study';
 import Settings from './pages/Settings';
@@ -57,7 +56,6 @@ const ProtectedApp = () => {
         <AppLayout>
           <Routes>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/library/:bookId" element={<BookDetails />} />
             <Route path="/highlights" element={<Highlights />} />
             <Route path="/study" element={<Study />} />
             <Route path="/study/session" element={<StudySession />} />

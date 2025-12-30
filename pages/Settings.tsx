@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useStore } from '../components/StoreContext';
 import { useAuth } from '../components/AuthContext';
 import { supabase } from '../lib/supabase';
-import { Upload, Library, User, Sliders, FileText, CheckCircle, AlertCircle, ChevronRight, Download, Trash2, Loader2, Camera } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Upload, Library, User, Sliders, FileText, CheckCircle, AlertCircle, Download, Trash2, Loader2, Camera, ChevronDown, ChevronUp, Settings as SettingsIcon } from 'lucide-react';
 import DeleteBookModal from '../components/DeleteBookModal';
 import { parsePDFKindleHighlights } from '../services/pdfParser';
 import { parseMyClippings } from '../services/parser';
@@ -13,10 +12,9 @@ import { parseAnkiTSV } from '../services/ankiParser';
 type TabId = 'import' | 'library' | 'account' | 'preferences';
 
 const Settings = () => {
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
-  const { books, highlights, studyCards, importData, settings, updateSettings, deleteBook } = useStore();
+  const { books, highlights, studyCards, importData, settings, updateSettings, deleteBook, updateBookSettings, resetAllBooksToDefaults } = useStore();
   const [activeTab, setActiveTab] = useState<TabId>((searchParams.get('tab') as TabId) || 'import');
 
   // Import tab state
@@ -32,6 +30,7 @@ const Settings = () => {
 
   // Library tab state
   const [bookToDelete, setBookToDelete] = useState<string | null>(null);
+  const [expandedBooks, setExpandedBooks] = useState<Set<string>>(new Set());
 
   // Sync with settings when they change
   useEffect(() => {
@@ -393,7 +392,7 @@ const Settings = () => {
             ) : (
               <div className="flex flex-col gap-1">
                 {filteredBooks.map(book => (
-                  <div key={book.id} className="relative py-2 px-3 border border-zinc-200 rounded hover:bg-zinc-50 transition-colors">
+                  <div key={book.id} className="relative py-2 px-3 border border-zinc-200 rounded bg-white">
                     {/* Botão delete (canto superior direito) */}
                     <button
                       onClick={(e) => {
@@ -406,8 +405,8 @@ const Settings = () => {
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
 
-                    {/* Link para detalhes (mantém funcionalidade existente) */}
-                    <Link to={`/library/${book.id}`} className="flex items-center gap-2">
+                    {/* Book card content */}
+                    <div className="flex items-center gap-2">
                       {/* Cover thumbnail */}
                       <div className="w-10 h-14 bg-zinc-100 rounded border border-zinc-200 shrink-0 overflow-hidden">
                         {book.coverUrl ? (
@@ -429,10 +428,82 @@ const Settings = () => {
                           Last: {formatDate(book.lastImported)}
                         </p>
                       </div>
+                    </div>
 
-                      {/* Arrow icon */}
-                      <ChevronRight className="w-4 h-4 text-zinc-400 shrink-0" />
-                    </Link>
+                    {/* Book Settings Collapsible */}
+                    <div className="mt-2 border-t border-zinc-100 pt-2">
+                      <button
+                        onClick={() => {
+                          setExpandedBooks(prev => {
+                            const next = new Set(prev);
+                            if (next.has(book.id)) {
+                              next.delete(book.id);
+                            } else {
+                              next.add(book.id);
+                            }
+                            return next;
+                          });
+                        }}
+                        className="flex items-center gap-1.5 text-xs text-zinc-600 hover:text-zinc-900 transition-colors"
+                      >
+                        <SettingsIcon className="w-3 h-3" />
+                        <span>Book Settings</span>
+                        {expandedBooks.has(book.id) ? (
+                          <ChevronUp className="w-3 h-3" />
+                        ) : (
+                          <ChevronDown className="w-3 h-3" />
+                        )}
+                      </button>
+
+                      {expandedBooks.has(book.id) && (
+                        <div className="mt-2 bg-zinc-50 rounded p-2 space-y-2">
+                          {/* Daily Review Limit */}
+                          <div className="flex items-center justify-between">
+                            <label className="text-xs text-zinc-700">Daily Review Limit:</label>
+                            <div className="flex items-center gap-1.5">
+                              <input
+                                type="number"
+                                min="1"
+                                max="100"
+                                value={book.settings?.dailyReviewLimit ?? ''}
+                                placeholder={String(settings.maxReviewsPerDay || 10)}
+                                onChange={(e) => {
+                                  const value = e.target.value === '' ? undefined : Number(e.target.value);
+                                  updateBookSettings(book.id, { dailyReviewLimit: value });
+                                }}
+                                className="h-6 w-16 px-1.5 text-xs border border-zinc-200 rounded focus:outline-none focus:ring-1 focus:ring-black"
+                              />
+                              <span className="text-[10px] text-zinc-400">cards/day</span>
+                            </div>
+                          </div>
+
+                          {/* Initial Ease Factor */}
+                          <div className="flex items-center justify-between">
+                            <label className="text-xs text-zinc-700">Initial Ease Factor:</label>
+                            <div className="flex items-center gap-1.5">
+                              <input
+                                type="number"
+                                min="1.3"
+                                max="3.5"
+                                step="0.1"
+                                value={book.settings?.initialEaseFactor ?? ''}
+                                placeholder={String(settings.defaultInitialEaseFactor || 2.5)}
+                                onChange={(e) => {
+                                  const value = e.target.value === '' ? undefined : Number(e.target.value);
+                                  updateBookSettings(book.id, { initialEaseFactor: value });
+                                }}
+                                className="h-6 w-16 px-1.5 text-xs border border-zinc-200 rounded focus:outline-none focus:ring-1 focus:ring-black"
+                              />
+                              <span className="text-[10px] text-zinc-400">(new cards)</span>
+                            </div>
+                          </div>
+
+                          <p className="text-[9px] text-zinc-400 italic">
+                            Leave empty to use global defaults
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -554,20 +625,56 @@ const Settings = () => {
               <p className="text-[10px] text-zinc-400 mt-0.5">Customize spaced repetition and study behavior</p>
             </div>
 
-            {/* Spaced Repetition */}
+            {/* Study Options */}
             <div>
-              <h3 className="text-xs font-semibold text-zinc-900 mb-1.5">Spaced Repetition (SM-2)</h3>
+              <h3 className="text-xs font-semibold text-zinc-900 mb-1.5">Study Options</h3>
               <div className="bg-zinc-50 border border-zinc-200 rounded p-3 space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs text-zinc-700">Daily Review Limit</label>
+                  <label className="text-xs text-zinc-700">Default Daily Review Limit</label>
                   <div className="flex items-center gap-2">
-                    <input 
-                      type="number" 
-                      defaultValue={10}
+                    <input
+                      type="number"
+                      min="1"
+                      max="100"
+                      value={settings.maxReviewsPerDay || 10}
+                      onChange={(e) => updateSettings({ maxReviewsPerDay: Number(e.target.value) })}
                       className="h-6 w-16 px-1.5 text-xs border border-zinc-200 rounded focus:outline-none focus:ring-1 focus:ring-black"
                     />
                     <span className="text-[10px] text-zinc-400">cards/book/day</span>
                   </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <label className="text-xs text-zinc-700">Default Initial Ease Factor</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min="1.3"
+                      max="3.5"
+                      step="0.1"
+                      value={settings.defaultInitialEaseFactor || 2.5}
+                      onChange={(e) => updateSettings({ defaultInitialEaseFactor: Number(e.target.value) })}
+                      className="h-6 w-16 px-1.5 text-xs border border-zinc-200 rounded focus:outline-none focus:ring-1 focus:ring-black"
+                    />
+                    <span className="text-[10px] text-zinc-400">(new cards)</span>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-zinc-200">
+                  <button
+                    onClick={async () => {
+                      if (confirm('Apply current global settings to all books?\n\nThis will remove custom settings from all books and use the global defaults above.')) {
+                        await resetAllBooksToDefaults();
+                      }
+                    }}
+                    className="w-full h-7 px-3 text-xs bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <SettingsIcon className="w-3 h-3" />
+                    Apply Global Settings to All Books
+                  </button>
+                  <p className="text-[9px] text-zinc-400 mt-1 text-center">
+                    Removes custom daily limits and ease factors from all books
+                  </p>
                 </div>
               </div>
             </div>
@@ -584,13 +691,11 @@ const Settings = () => {
                   <input type="checkbox" defaultChecked className="w-3.5 h-3.5 rounded border-zinc-300" />
                   Auto-reveal answer after 3 seconds
                 </label>
+                <p className="text-xs text-zinc-400 italic mt-2">
+                  Note: These settings are not yet functional
+                </p>
               </div>
             </div>
-
-            {/* Save Button */}
-            <button className="h-7 px-4 text-xs bg-black hover:bg-zinc-800 text-white rounded transition-colors">
-              Save Preferences
-            </button>
           </div>
         )}
       </div>
