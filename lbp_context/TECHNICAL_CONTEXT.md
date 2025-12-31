@@ -1,9 +1,9 @@
 # EVOQUE - Technical Context for AI Agents
 
-> **Last Updated:** 2025-12-30
-> **Version:** 1.4.0
-> **Status:** Production-Ready
-> **Recent Changes:** Per-book study settings, typography guidelines v1.1
+> **Last Updated:** 2025-12-31
+> **Version:** 1.4.1
+> **Status:** Production-Ready (Deployed)
+> **Recent Changes:** Production deployment on Vercel (evq.vercel.app)
 
 ---
 
@@ -604,6 +604,37 @@ npm run preview  # Preview production build
 
 ---
 
+## 🚀 DEPLOY & PRODUCTION
+
+**Production URL:** https://evq.vercel.app
+
+**Deployment Platform:** Vercel
+- Framework: Vite (auto-detected)
+- Build Command: `npm run build`
+- Output Directory: `dist`
+- Auto-deploy: Enabled (deploys on push to `main`)
+
+**Environment Variables (Vercel Dashboard):**
+```bash
+VITE_SUPABASE_URL=https://wjqvjfpirgyqycmlakgl.supabase.co
+VITE_SUPABASE_ANON_KEY=[configured in Vercel dashboard]
+```
+
+**Supabase Configuration:**
+- Project ID: `wjqvjfpirgyqycmlakgl`
+- Region: `us-west-2`
+- Site URL: `https://evq.vercel.app`
+- Redirect URLs:
+  - `https://evq.vercel.app/**`
+  - `https://evq.vercel.app`
+  - `http://localhost:3000/**` (development)
+  - `http://localhost:3000` (development)
+
+**Deployment Files:**
+- `vercel.json`: Vercel configuration (build settings, framework detection)
+
+---
+
 ## 🚨 CRITICAL FILES (DON'T BREAK)
 
 ```typescript
@@ -767,6 +798,31 @@ const status = getHighlightStudyStatus(id) // 'new'|'learning'|'review'
 ---
 
 ## 📝 CHANGELOG
+
+### **2025-12-31: Production Deployment (v1.4.1)**
+
+**Deployment completed:**
+1. ✅ **Vercel deployment:** Application deployed to production
+   - Production URL: https://evq.vercel.app
+   - Auto-deploy enabled on push to `main` branch
+   - Build configuration: Vite framework with optimized output
+
+2. ✅ **Supabase integration:** Authentication URLs configured
+   - Site URL: https://evq.vercel.app
+   - Redirect URLs configured for production and development
+   - Environment variables configured in Vercel dashboard
+
+3. ✅ **Documentation updated:**
+   - Added "Deploy & Production" section to TECHNICAL_CONTEXT.md
+   - Documented deployment configuration and environment setup
+   - Added Supabase project details and configuration
+
+**Configuration files:**
+- `vercel.json`: Vercel deployment configuration
+
+**Status:** Production-Ready and Live 🚀
+
+---
 
 ### **2025-12-30: Per-Book Study Settings & Typography Update (v1.4.0)**
 
