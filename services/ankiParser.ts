@@ -119,7 +119,7 @@ export const parseAnkiTSV = (text: string): { books: Book[], highlights: Highlig
           author: author,
           lastImported: new Date().toISOString(),
           highlightCount: 0,
-          coverUrl: `https://picsum.photos/300/450?random=${Math.floor(Math.random() * 1000)}`
+          coverUrl: undefined
         });
       }
 

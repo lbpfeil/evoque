@@ -128,7 +128,7 @@ export const parseMyClippings = (text: string): { books: Book[], highlights: Hig
           author,
           lastImported: new Date().toISOString(),
           highlightCount: 0,
-          coverUrl: `https://picsum.photos/300/450?random=${Math.floor(Math.random() * 1000)}`
+          coverUrl: undefined
         });
       }
 

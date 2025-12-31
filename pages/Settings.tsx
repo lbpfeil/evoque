@@ -8,13 +8,14 @@ import DeleteBookModal from '../components/DeleteBookModal';
 import { parsePDFKindleHighlights } from '../services/pdfParser';
 import { parseMyClippings } from '../services/parser';
 import { parseAnkiTSV } from '../services/ankiParser';
+import { resizeImage } from '../lib/imageUtils';
 
 type TabId = 'import' | 'library' | 'account' | 'preferences';
 
 const Settings = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
-  const { books, highlights, studyCards, importData, settings, updateSettings, deleteBook, updateBookSettings, resetAllBooksToDefaults } = useStore();
+  const { books, highlights, studyCards, importData, settings, updateSettings, deleteBook, updateBookSettings, resetAllBooksToDefaults, updateBookCover } = useStore();
   const [activeTab, setActiveTab] = useState<TabId>((searchParams.get('tab') as TabId) || 'import');
 
   // Import tab state
@@ -27,6 +28,7 @@ const Settings = () => {
   const [fullName, setFullName] = useState(settings.fullName || '');
   const [avatarUrl, setAvatarUrl] = useState(settings.avatarUrl || '');
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadingCoverId, setUploadingCoverId] = useState<string | null>(null);
 
   // Library tab state
   const [bookToDelete, setBookToDelete] = useState<string | null>(null);
@@ -197,6 +199,55 @@ const Settings = () => {
       alert(`Failed to upload avatar: ${error.message}`);
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  // Book cover upload handler
+  const handleCoverUpload = async (bookId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    // Validation
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload an image file');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size must be less than 5MB');
+      return;
+    }
+
+    setUploadingCoverId(bookId);
+    try {
+      console.log('Resizing image...');
+      const resizedBlob = await resizeImage(file, 300, 450, 0.85);
+
+      const filePath = `${user.id}/books/${bookId}/cover.jpg`;
+
+      console.log('Uploading to Supabase...');
+      const { error: uploadError } = await supabase.storage
+        .from('book-covers')
+        .upload(filePath, resizedBlob, {
+          upsert: true,
+          contentType: 'image/jpeg'
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('book-covers')
+        .getPublicUrl(filePath);
+
+      console.log('Updating book cover URL...');
+      await updateBookCover(bookId, data.publicUrl);
+
+      console.log('Book cover uploaded successfully');
+    } catch (error: any) {
+      console.error('Cover upload failed:', error);
+      alert(`Failed to upload cover: ${error.message}`);
+    } finally {
+      setUploadingCoverId(null);
+      e.target.value = '';
     }
   };
 
@@ -407,8 +458,8 @@ const Settings = () => {
 
                     {/* Book card content */}
                     <div className="flex items-center gap-2">
-                      {/* Cover thumbnail */}
-                      <div className="w-10 h-14 bg-zinc-100 rounded border border-zinc-200 shrink-0 overflow-hidden">
+                      {/* Cover thumbnail with upload on hover */}
+                      <div className="relative w-10 h-14 bg-zinc-100 rounded border border-zinc-200 shrink-0 overflow-hidden group">
                         {book.coverUrl ? (
                           <img src={book.coverUrl} alt={book.title} className="w-full h-full object-cover" />
                         ) : (
@@ -416,6 +467,24 @@ const Settings = () => {
                             <Library className="w-4 h-4" />
                           </div>
                         )}
+
+                        {/* Hover overlay with camera icon */}
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <label className="cursor-pointer">
+                            {uploadingCoverId === book.id ? (
+                              <Loader2 className="w-4 h-4 text-white animate-spin" />
+                            ) : (
+                              <Camera className="w-4 h-4 text-white" />
+                            )}
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => handleCoverUpload(book.id, e)}
+                              disabled={uploadingCoverId === book.id}
+                              className="hidden"
+                            />
+                          </label>
+                        </div>
                       </div>
 
                       {/* Book info */}

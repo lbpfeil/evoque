@@ -61,6 +61,7 @@ interface StoreContextType {
   removeTagFromHighlight: (highlightId: string, tagId: string) => Promise<void>;
   updateBookSettings: (bookId: string, settings: Partial<Book['settings']>) => Promise<void>;
   resetAllBooksToDefaults: () => Promise<void>;
+  updateBookCover: (bookId: string, coverUrl: string) => Promise<void>;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -1355,6 +1356,24 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
         console.error('Failed to clear graveyard (non-critical):', graveyardError);
         // Non-critical error - continue even if graveyard cleanup fails
       }
+
+      // 7. Delete book cover from storage if exists
+      const book = books.find(b => b.id === id);
+      if (book?.coverUrl && book.coverUrl.includes('book-covers')) {
+        try {
+          const filePath = `${user.id}/books/${id}/cover.jpg`;
+          const { error: storageError } = await supabase.storage
+            .from('book-covers')
+            .remove([filePath]);
+
+          if (storageError) throw storageError;
+
+          console.log(`Book cover deleted from storage: ${filePath}`);
+        } catch (storageError) {
+          console.error('Failed to delete book cover (non-critical):', storageError);
+          // Non-critical error - continue even if cover deletion fails
+        }
+      }
     } catch (error) {
       console.error('Failed to delete book from Supabase:', error);
 
@@ -1427,6 +1446,37 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       if (error) throw error;
     } catch (error) {
       console.error('Failed to reset all books to defaults:', error);
+      // Rollback
+      const { data } = await supabase
+        .from('books')
+        .select('*')
+        .eq('user_id', user.id);
+      if (data) setBooks(data.map(fromSupabaseBook));
+    }
+  };
+
+  const updateBookCover = async (bookId: string, coverUrl: string) => {
+    if (!user) return;
+
+    const book = books.find(b => b.id === bookId);
+    if (!book) return;
+
+    // Optimistic update
+    setBooks(prev => prev.map(b =>
+      b.id === bookId ? { ...b, coverUrl } : b
+    ));
+
+    // Sync with Supabase
+    try {
+      const { error } = await supabase
+        .from('books')
+        .update({ cover_url: coverUrl })
+        .eq('id', bookId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Failed to update book cover:', error);
       // Rollback
       const { data } = await supabase
         .from('books')
@@ -1529,7 +1579,8 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       assignTagToHighlight,
       removeTagFromHighlight,
       updateBookSettings,
-      resetAllBooksToDefaults
+      resetAllBooksToDefaults,
+      updateBookCover
     }}>
       {children}
     </StoreContext.Provider>
