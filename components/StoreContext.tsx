@@ -329,12 +329,16 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
           if (booksError) throw booksError;
         }
 
-        // Upsert highlights (only valid ones - graveyard filtered)
-        const highlightsToUpsert = validHighlights.map(h => toSupabaseHighlight(h, user.id));
-        if (highlightsToUpsert.length > 0) {
+        // Insert only NEW highlights (preserve local edits)
+        // Only insert highlights that don't already exist in the database
+        const newHighlights = validHighlights.filter(ph =>
+          !highlights.find(h => h.id === ph.id)
+        );
+        const highlightsToInsert = newHighlights.map(h => toSupabaseHighlight(h, user.id));
+        if (highlightsToInsert.length > 0) {
           const { error: highlightsError } = await supabase
             .from('highlights')
-            .upsert(highlightsToUpsert, { onConflict: 'id' });
+            .insert(highlightsToInsert);
           if (highlightsError) throw highlightsError;
         }
 
