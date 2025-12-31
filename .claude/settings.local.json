@@ -11,7 +11,8 @@
       "Bash(git commit:*)",
       "Bash(npm install:*)",
       "Bash(npx pwa-asset-generator:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(dir:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
