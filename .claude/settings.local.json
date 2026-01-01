@@ -12,7 +12,8 @@
       "Bash(npm install:*)",
       "Bash(npx pwa-asset-generator:*)",
       "Bash(cat:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "mcp__supabase__get_project"
     ]
   },
   "enableAllProjectMcpServers": true,
