@@ -12,6 +12,7 @@ import { StoreProvider } from './components/StoreContext';
 import { AuthProvider, useAuth } from './components/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import { Loader2 } from 'lucide-react';
+import { SpeedInsights } from "@vercel/speed-insights/react"
 
 const AppLayout = ({ children }: React.PropsWithChildren) => {
   const location = useLocation();
@@ -78,6 +79,7 @@ const App = () => {
     <ErrorBoundary>
       <AuthProvider>
         <ProtectedApp />
+        <SpeedInsights />
       </AuthProvider>
     </ErrorBoundary>
   );
