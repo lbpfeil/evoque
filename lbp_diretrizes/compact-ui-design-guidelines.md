@@ -305,6 +305,168 @@ Para ações principais que merecem destaque visual:
 - Padding: `py-0.5 px-1.5` (2px/6px)
 - Hover: `hover:bg-zinc-50` (sutil)
 
+### Modals Centralizados
+
+Padrão para modais que abrem sobre o conteúdo principal, como seletores e formulários rápidos.
+
+```tsx
+// Modal centrado com backdrop
+{showModal && (
+    <>
+        {/* Backdrop semi-transparente (click to close) */}
+        <div
+            className="fixed inset-0 bg-black/10 z-40"
+            onClick={() => setShowModal(false)}
+        />
+
+        {/* Modal posicionado centralmente */}
+        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 px-2 w-full max-w-md sm:px-4">
+            <div className="bg-white rounded-md shadow-xl border border-zinc-300">
+                {/* Conteúdo do modal */}
+                <ModalContent />
+            </div>
+        </div>
+    </>
+)}
+```
+
+**Diretrizes:**
+- **Backdrop:**
+  - `bg-black/10` - Opacidade sutil (10%) para não ofuscar conteúdo
+  - `z-40` - Layer abaixo do modal
+  - Click handler para fechar modal
+  - `fixed inset-0` - Cobre toda a tela
+
+- **Container do Modal:**
+  - `top-16` - Espaçamento do topo (64px), abaixo do header
+  - `left-1/2 -translate-x-1/2` - Centralização horizontal perfeita
+  - `z-50` - Layer acima do backdrop
+  - `px-2` mobile, `sm:px-4` desktop - Padding lateral responsivo
+  - `w-full max-w-md` - Largura total em mobile, máximo 448px em desktop
+
+- **Card do Modal:**
+  - `bg-white` - Fundo branco sólido
+  - `rounded-md` - Bordas arredondadas (6px)
+  - `shadow-xl` - Sombra pronunciada para elevação visual
+  - `border border-zinc-300` - Borda sutil para definição
+
+**Estrutura Interna (Search + Lista):**
+
+```tsx
+// Padrão de modal com search e lista
+<div className="w-full sm:w-[360px] p-0">
+    <div className="flex flex-col">
+        {/* Search Input */}
+        <div className="flex items-center border-b px-2 py-2">
+            <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+            <input
+                type="text"
+                placeholder="Search..."
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                onKeyDown={(e) => e.stopPropagation()}
+                className="flex h-8 w-full rounded-md bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+            />
+        </div>
+
+        {/* Lista scrollável */}
+        <div className="max-h-[300px] overflow-y-auto overflow-x-hidden">
+            <div className="p-1">
+                {/* Itens da lista */}
+            </div>
+        </div>
+    </div>
+</div>
+```
+
+**Diretrizes de Conteúdo:**
+- **Largura responsiva:**
+  - Mobile: `w-full` (ocupa todo o espaço disponível com padding do container)
+  - Desktop: `sm:w-[360px]` (largura fixa de 360px)
+
+- **Search Input:**
+  - `border-b` - Apenas borda inferior como divisor
+  - `px-2 py-2` - Padding de 8px (alinhado com lista abaixo)
+  - Ícone: `w-4 h-4 opacity-50` - Sutil e pequeno
+  - Input height: `h-8` (32px)
+  - **CRÍTICO:** `onKeyDown={(e) => e.stopPropagation()}` - Previne conflitos com atalhos de teclado da página pai
+
+- **Lista:**
+  - `max-h-[300px]` - Altura máxima de 300px
+  - `overflow-y-auto` - Scroll vertical quando necessário
+  - `overflow-x-hidden` - Previne scroll horizontal
+  - Padding interno: `p-1` (4px) - Alinha com search input
+
+**Comportamento de Teclado:**
+
+```tsx
+// No componente pai, adicionar verificação para prevenir atalhos conflitantes
+useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+        // Ignorar atalhos quando modal está aberto
+        if (showModal) {
+            // Apenas ESC fecha o modal
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                setShowModal(false);
+            }
+            return;
+        }
+
+        // Atalhos normais da página...
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+}, [showModal /* outras dependências */]);
+```
+
+**Diretrizes de Keyboard:**
+- Input do modal deve usar `stopPropagation()` para prevenir conflitos
+- ESC fecha o modal (implementado no componente pai)
+- Atalhos da página (Space, Enter, E, etc.) são desabilitados quando modal está aberto
+- Adicionar `showModal` nas dependências do useEffect de atalhos
+
+**Exemplo Completo (Tag Selector em Study Session):**
+
+```tsx
+// Estado
+const [showTagSelector, setShowTagSelector] = useState(false);
+
+// Render
+{showTagSelector && currentHighlight && (
+    <>
+        <div
+            className="fixed inset-0 bg-black/10 z-40"
+            onClick={() => setShowTagSelector(false)}
+        />
+        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 px-2 w-full max-w-md sm:px-4">
+            <div className="bg-white rounded-md shadow-xl border border-zinc-300">
+                <TagSelector
+                    highlightId={currentHighlight.id}
+                    bookId={currentHighlight.bookId}
+                    open={true}
+                    onOpenChange={(isOpen) => {
+                        if (!isOpen) setShowTagSelector(false);
+                    }}
+                />
+            </div>
+        </div>
+    </>
+)}
+```
+
+**Z-index Layers (Sistema de Elevação):**
+```
+z-0    - Conteúdo base da página
+z-10   - Headers fixos
+z-20   - Sidebars/Navigation
+z-30   - Dropdowns/Tooltips
+z-40   - Modal backdrop
+z-50   - Modal content
+z-60   - Toast notifications (se existir)
+```
+
 ---
 
 ## 🎨 Cores e Estados

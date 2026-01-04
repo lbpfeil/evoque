@@ -2,7 +2,8 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useStore } from '../components/StoreContext';
 import { DeleteCardPopover } from '../components/DeleteCardPopover';
-import { ArrowLeft, CheckCircle, Edit2, Clock, Trash2 } from 'lucide-react';
+import { TagSelector } from '../components/TagSelector';
+import { ArrowLeft, CheckCircle, Edit2, Clock, Trash2, Tag as TagIcon } from 'lucide-react';
 import { calculateNextReview } from '../services/sm2';
 
 const StudySession = () => {
@@ -35,6 +36,7 @@ const StudySession = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [showDeletePopover, setShowDeletePopover] = useState(false);
     const [showAllTags, setShowAllTags] = useState(false);
+    const [showTagSelector, setShowTagSelector] = useState(false);
 
     // Derived state from session
     const queueIds = currentSession ? currentSession.cardIds : [];
@@ -122,6 +124,16 @@ const StudySession = () => {
     // Keyboard shortcuts
     useEffect(() => {
         const handleKeyPress = (e: KeyboardEvent) => {
+            // Ignore keyboard shortcuts when tag selector is open
+            if (showTagSelector) {
+                // Only allow ESC to close tag selector
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    setShowTagSelector(false);
+                }
+                return;
+            }
+
             // Ctrl+Z for undo
             if (e.ctrlKey && e.key === 'z') {
                 e.preventDefault();
@@ -182,7 +194,7 @@ const StudySession = () => {
 
         window.addEventListener('keydown', handleKeyPress);
         return () => window.removeEventListener('keydown', handleKeyPress);
-    }, [showAnswer, isEditingHighlight, isEditingNote, handleResponse, handleEditNote, handleSaveHighlight, handleSaveNote, handleUndo, sessionComplete, currentCard]);
+    }, [showAnswer, isEditingHighlight, isEditingNote, handleResponse, handleEditNote, handleSaveHighlight, handleSaveNote, handleUndo, sessionComplete, currentCard, showTagSelector]);
 
     // Loading state
     if (!isLoaded) {
@@ -291,13 +303,22 @@ const StudySession = () => {
                         Card {currentIndex + 1} / {queueIds.length}
                     </div>
 
-                    <button
-                        onClick={() => setShowDeletePopover(true)}
-                        className="p-2 -mr-2 text-zinc-400 hover:text-red-600 transition-colors rounded-full hover:bg-zinc-100"
-                        title="Delete Card"
-                    >
-                        <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center gap-1">
+                        <button
+                            onClick={() => setShowTagSelector(prev => !prev)}
+                            className="p-2 -mr-1 text-zinc-400 hover:text-blue-600 transition-colors rounded-full hover:bg-zinc-100 min-h-[40px] sm:min-h-0"
+                            title="Manage Tags"
+                        >
+                            <TagIcon className="w-4 h-4" />
+                        </button>
+                        <button
+                            onClick={() => setShowDeletePopover(true)}
+                            className="p-2 -mr-2 text-zinc-400 hover:text-red-600 transition-colors rounded-full hover:bg-zinc-100 min-h-[40px] sm:min-h-0"
+                            title="Delete Card"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Progress bar */}
@@ -547,6 +568,31 @@ const StudySession = () => {
                     />
                 )
             }
+
+            {/* Tag Selector Modal */}
+            {showTagSelector && currentHighlight && (
+                <>
+                    {/* Backdrop (click to close) */}
+                    <div
+                        className="fixed inset-0 bg-black/10 z-40"
+                        onClick={() => setShowTagSelector(false)}
+                    />
+
+                    {/* TagSelector centered */}
+                    <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 px-2 w-full max-w-md sm:px-4">
+                        <div className="bg-white rounded-md shadow-xl border border-zinc-300">
+                            <TagSelector
+                                highlightId={currentHighlight.id}
+                                bookId={currentHighlight.bookId}
+                                open={true}
+                                onOpenChange={(isOpen) => {
+                                    if (!isOpen) setShowTagSelector(false);
+                                }}
+                            />
+                        </div>
+                    </div>
+                </>
+            )}
         </div >
     );
 };
