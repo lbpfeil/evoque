@@ -334,34 +334,65 @@ const StudySession = () => {
             <div className="flex-1 overflow-y-auto px-6 sm:px-8 py-6 sm:py-8">
                 <div className="max-w-2xl mx-auto space-y-6">
                     {/* Book Info */}
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2.5">
+                    <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-center gap-2.5 flex-1 min-w-0">
                             {currentBook.coverUrl && (
                                 <img
                                     src={currentBook.coverUrl}
                                     alt={currentBook.title}
-                                    className="w-10 h-14 object-cover rounded-sm shadow-sm"
+                                    className="w-10 h-14 object-cover rounded-sm shadow-sm flex-shrink-0"
                                 />
                             )}
-                            <div>
+                            <div className="min-w-0">
                                 <h3 className="text-sm font-semibold text-zinc-900">{currentBook.title}</h3>
                                 <p className="text-xs text-zinc-400">{currentBook.author}</p>
                             </div>
                         </div>
-                        {currentHighlight.createdAt && (
-                            <div className="text-right">
-                                <p className="text-[10px] text-zinc-400">
-                                    {new Date(currentHighlight.createdAt).toLocaleDateString('en-US', {
-                                        month: 'short',
-                                        day: 'numeric',
-                                        year: 'numeric'
-                                    })}
-                                </p>
-                            </div>
-                        )}
+
+                        {/* Tags Display - Desktop (same row as book info) */}
+                        {currentHighlight.tags && currentHighlight.tags.length > 0 && (() => {
+                            const highlightTags = currentHighlight.tags
+                                .map(tagId => tags.find(t => t.id === tagId))
+                                .filter((tag): tag is typeof tags[0] => tag !== undefined)
+                                .sort((a, b) => {
+                                    // Global tags first (no bookId), then book-specific tags
+                                    if (!a.bookId && b.bookId) return -1;
+                                    if (a.bookId && !b.bookId) return 1;
+                                    return 0;
+                                });
+
+                            const maxTags = 6;
+                            const displayTags = showAllTags ? highlightTags : highlightTags.slice(0, maxTags);
+                            const remainingCount = highlightTags.length - maxTags;
+
+                            return (
+                                <div className="hidden md:flex flex-wrap gap-1 justify-end items-start max-w-xs">
+                                    {displayTags.map(tag => (
+                                        <span
+                                            key={tag.id}
+                                            className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium ${tag.bookId
+                                                ? 'bg-amber-500 text-white'  // Book-specific
+                                                : 'bg-blue-500 text-white'   // Global
+                                                }`}
+                                        >
+                                            {tag.name}
+                                        </span>
+                                    ))}
+                                    {remainingCount > 0 && (
+                                        <button
+                                            onClick={() => setShowAllTags(!showAllTags)}
+                                            className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-zinc-300 text-zinc-700 hover:bg-zinc-400 transition-colors cursor-pointer"
+                                            title={showAllTags ? 'Show less' : `Show ${remainingCount} more tags`}
+                                        >
+                                            {showAllTags ? '−' : `+${remainingCount}`}
+                                        </button>
+                                    )}
+                                </div>
+                            );
+                        })()}
                     </div>
 
-                    {/* Tags Display */}
+                    {/* Tags Display - Mobile (below book info) */}
                     {currentHighlight.tags && currentHighlight.tags.length > 0 && (() => {
                         const highlightTags = currentHighlight.tags
                             .map(tagId => tags.find(t => t.id === tagId))
@@ -378,7 +409,7 @@ const StudySession = () => {
                         const remainingCount = highlightTags.length - maxTags;
 
                         return (
-                            <div className="flex flex-wrap gap-1 mb-3">
+                            <div className="flex md:hidden flex-wrap gap-1 mb-3">
                                 {displayTags.map(tag => (
                                     <span
                                         key={tag.id}

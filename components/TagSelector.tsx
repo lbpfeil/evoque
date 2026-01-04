@@ -81,7 +81,7 @@ export function TagSelector({ highlightId, bookId, className, open: controlledOp
 
     // Render content directly if in controlled mode
     const renderContent = () => (
-        <div className="w-full sm:w-[360px] p-0">
+        <div className="w-full sm:w-[360px] p-0 mx-auto">
             <div className="flex flex-col">
                 {/* Search Input */}
                 <div className="flex items-center border-b px-2 py-2">
