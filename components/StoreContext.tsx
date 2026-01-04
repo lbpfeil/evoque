@@ -91,104 +91,104 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       setIsLoaded(true);
       return;
     }
-      try {
-        // Load books
-        const { data: booksData, error: booksError } = await supabase
-          .from('books')
-          .select('*')
-          .eq('user_id', user.id);
+    try {
+      // Load books
+      const { data: booksData, error: booksError } = await supabase
+        .from('books')
+        .select('*')
+        .eq('user_id', user.id);
 
-        if (booksError) throw booksError;
-        if (booksData) setBooks(booksData.map(fromSupabaseBook));
+      if (booksError) throw booksError;
+      if (booksData) setBooks(booksData.map(fromSupabaseBook));
 
-        // Load highlights
-        const { data: highlightsData, error: highlightsError } = await supabase
-          .from('highlights')
-          .select('*')
-          .eq('user_id', user.id);
+      // Load highlights
+      const { data: highlightsData, error: highlightsError } = await supabase
+        .from('highlights')
+        .select('*')
+        .eq('user_id', user.id);
 
-        if (highlightsError) throw highlightsError;
-        if (highlightsData) setHighlights(highlightsData.map(fromSupabaseHighlight));
+      if (highlightsError) throw highlightsError;
+      if (highlightsData) setHighlights(highlightsData.map(fromSupabaseHighlight));
 
-        // Load study cards
-        const { data: cardsData, error: cardsError } = await supabase
-          .from('study_cards')
-          .select('*')
-          .eq('user_id', user.id);
+      // Load study cards
+      const { data: cardsData, error: cardsError } = await supabase
+        .from('study_cards')
+        .select('*')
+        .eq('user_id', user.id);
 
-        if (cardsError) throw cardsError;
-        if (cardsData) setStudyCards(cardsData.map(fromSupabaseStudyCard));
+      if (cardsError) throw cardsError;
+      if (cardsData) setStudyCards(cardsData.map(fromSupabaseStudyCard));
 
-        // Load tags
-        const { data: tagsData, error: tagsError } = await supabase
-          .from('tags')
-          .select('*')
-          .eq('user_id', user.id);
+      // Load tags
+      const { data: tagsData, error: tagsError } = await supabase
+        .from('tags')
+        .select('*')
+        .eq('user_id', user.id);
 
-        if (tagsError) throw tagsError;
-        if (tagsData) setTags(tagsData.map(fromSupabaseTag));
+      if (tagsError) throw tagsError;
+      if (tagsData) setTags(tagsData.map(fromSupabaseTag));
 
-        // Load settings
-        const { data: settingsData, error: settingsError } = await supabase
-          .from('user_settings')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
+      // Load settings
+      const { data: settingsData, error: settingsError } = await supabase
+        .from('user_settings')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
 
-        // Load review logs
-        const { data: logsData, error: logsError } = await supabase
-          .from('review_logs')
-          .select('*')
-          .eq('user_id', user.id);
+      // Load review logs
+      const { data: logsData, error: logsError } = await supabase
+        .from('review_logs')
+        .select('*')
+        .eq('user_id', user.id);
 
-        console.log('DEBUG: Review Logs Load', { count: logsData?.length, error: logsError, userId: user.id });
+      console.log('DEBUG: Review Logs Load', { count: logsData?.length, error: logsError, userId: user.id });
 
-        if (logsError) throw logsError;
-        if (logsData) setReviewLogs(logsData.map(fromSupabaseReviewLog));
+      if (logsError) throw logsError;
+      if (logsData) setReviewLogs(logsData.map(fromSupabaseReviewLog));
 
-        if (settingsError && settingsError.code !== 'PGRST116') {
-          throw settingsError;
-        }
-        if (settingsData) {
-          setSettings(fromSupabaseSettings(settingsData));
-
-          if (settingsData.daily_progress) {
-            // Check if the saved progress is for today
-            const today = new Date().toISOString().split('T')[0];
-            if (settingsData.daily_progress.date === today) {
-              setDailyProgress(settingsData.daily_progress);
-            } else {
-              // If stored progress is old, reset it (keeping today's date)
-              setDailyProgress({ date: today, bookReviews: {} });
-              // We should probably flush this reset to DB, but the useEffect will handle it
-            }
-          }
-        }
-
-        // Session e progress ainda do localStorage (dados temporários)
-        const savedSession = localStorage.getItem('khm_session');
-
-
-        if (savedSession) {
-          const session = JSON.parse(savedSession);
-          if (!session.history) session.history = [];
-          const sessionDate = new Date(session.date).toDateString();
-          const today = new Date().toDateString();
-          if (sessionDate === today) {
-            setCurrentSession(session);
-          }
-        }
-
-
-
-        // dailyProgress removed from here - now loads from Supabase settings
-
-
-      } catch (error) {
-        console.error('Failed to load data from Supabase:', error);
-      } finally {
-        setIsLoaded(true);
+      if (settingsError && settingsError.code !== 'PGRST116') {
+        throw settingsError;
       }
+      if (settingsData) {
+        setSettings(fromSupabaseSettings(settingsData));
+
+        if (settingsData.daily_progress) {
+          // Check if the saved progress is for today
+          const today = new Date().toISOString().split('T')[0];
+          if (settingsData.daily_progress.date === today) {
+            setDailyProgress(settingsData.daily_progress);
+          } else {
+            // If stored progress is old, reset it (keeping today's date)
+            setDailyProgress({ date: today, bookReviews: {} });
+            // We should probably flush this reset to DB, but the useEffect will handle it
+          }
+        }
+      }
+
+      // Session e progress ainda do localStorage (dados temporários)
+      const savedSession = localStorage.getItem('khm_session');
+
+
+      if (savedSession) {
+        const session = JSON.parse(savedSession);
+        if (!session.history) session.history = [];
+        const sessionDate = new Date(session.date).toDateString();
+        const today = new Date().toDateString();
+        if (sessionDate === today) {
+          setCurrentSession(session);
+        }
+      }
+
+
+
+      // dailyProgress removed from here - now loads from Supabase settings
+
+
+    } catch (error) {
+      console.error('Failed to load data from Supabase:', error);
+    } finally {
+      setIsLoaded(true);
+    }
   };
 
   // Load data from Supabase on mount
@@ -821,7 +821,6 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
 
     // Optimistic update
     setStudyCards(prev => prev.filter(c => c.id !== cardId));
-    await updateHighlight(card.highlightId, { inStudy: false });
 
     // Remove from current session if present
     if (currentSession) {
@@ -834,6 +833,8 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
         };
       });
     }
+
+    await updateHighlight(card.highlightId, { inStudy: false });
 
     // Sync with Supabase
     try {

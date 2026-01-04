@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useStore } from '../components/StoreContext';
 import { DeleteCardPopover } from '../components/DeleteCardPopover';
-import { ArrowLeft, CheckCircle, Zap, Edit2, Target, Clock } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Edit2, Clock, Trash2 } from 'lucide-react';
 import { calculateNextReview } from '../services/sm2';
 
 const StudySession = () => {
@@ -291,16 +291,13 @@ const StudySession = () => {
                         Card {currentIndex + 1} / {queueIds.length}
                     </div>
 
-                    <div className="flex items-center gap-3">
-                        <span className="text-xs text-zinc-600 flex items-center gap-1">
-                            <Target className="w-3 h-3" />
-                            {sessionStats.reviewed}
-                        </span>
-                        <span className="text-xs text-zinc-600 flex items-center gap-1">
-                            <Zap className="w-3 h-3" />
-                            {sessionStats.streak}
-                        </span>
-                    </div>
+                    <button
+                        onClick={() => setShowDeletePopover(true)}
+                        className="p-2 -mr-2 text-zinc-400 hover:text-red-600 transition-colors rounded-full hover:bg-zinc-100"
+                        title="Delete Card"
+                    >
+                        <Trash2 className="w-4 h-4" />
+                    </button>
                 </div>
 
                 {/* Progress bar */}
@@ -313,7 +310,7 @@ const StudySession = () => {
             </header>
 
             {/* Main Content */}
-            <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 sm:py-8">
+            <div className="flex-1 overflow-y-auto px-6 sm:px-8 py-6 sm:py-8">
                 <div className="max-w-2xl mx-auto space-y-6">
                     {/* Book Info */}
                     <div className="flex items-center justify-between">
@@ -407,7 +404,7 @@ const StudySession = () => {
                     ) : (
                         <div className="relative group">
                             <blockquote
-                                className="text-lg md:text-xl font-serif text-zinc-800 leading-relaxed text-justify"
+                                className="text-lg md:text-xl font-serif italic text-zinc-800 leading-relaxed text-justify"
                             >
                                 "{currentHighlight.text}"
                             </blockquote>
@@ -444,24 +441,41 @@ const StudySession = () => {
                                     <p className="text-[10px] text-zinc-400 mt-2">Press ESC or click outside to save</p>
                                 </div>
                             ) : (
-                                <div className="bg-zinc-50 border-l-2 border-black rounded-sm p-4">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className="text-[10px] uppercase tracking-wider text-zinc-400 font-semibold">
-                                            My Note
-                                        </span>
-                                        <button
-                                            onClick={handleEditNote}
-                                            className="p-1 text-zinc-400 hover:text-black transition-colors"
-                                            title="Edit Note (E)"
-                                        >
-                                            <Edit2 className="w-3.5 h-3.5" />
-                                        </button>
+                                <div className="mt-8">
+                                    <div className="flex items-center justify-center gap-4 mb-8 select-none">
+                                        <div className="h-px flex-1 bg-zinc-200"></div>
+                                        <span className="font-serif italic text-lg text-zinc-300">~</span>
+                                        <div className="h-px flex-1 bg-zinc-200"></div>
                                     </div>
-                                    {currentHighlight.note ? (
-                                        <p className="text-sm text-zinc-700 leading-relaxed whitespace-pre-wrap">{currentHighlight.note}</p>
-                                    ) : (
-                                        <p className="text-sm text-zinc-400 italic">No note attached. Press E to add one.</p>
-                                    )}
+
+                                    <div className="relative group">
+                                        {currentHighlight.note ? (
+                                            <div className="text-lg md:text-xl font-serif text-zinc-800 leading-relaxed text-justify whitespace-pre-wrap">
+                                                {currentHighlight.note}
+                                            </div>
+                                        ) : (
+                                            <div className="text-center py-4">
+                                                <p className="text-sm text-zinc-400 italic mb-2">No note attached</p>
+                                                <button
+                                                    onClick={handleEditNote}
+                                                    className="text-xs text-zinc-500 hover:text-black underline underline-offset-2 transition-colors"
+                                                >
+                                                    Add a note
+                                                </button>
+                                            </div>
+                                        )}
+
+                                        {currentHighlight.note && (
+                                            <button
+                                                onClick={handleEditNote}
+                                                className="absolute -top-6 right-0 p-1 text-zinc-300 hover:text-black transition-colors opacity-0 group-hover:opacity-100 flex items-center gap-1.5"
+                                                title="Edit Note (E)"
+                                            >
+                                                <span className="text-[10px] uppercase tracking-wider font-medium">Edit Note</span>
+                                                <Edit2 className="w-3 h-3" />
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -470,21 +484,10 @@ const StudySession = () => {
             </div>
 
             {/* Fixed Footer - Controls */}
-            <div className="border-t border-zinc-200 bg-white p-3 sm:p-4 safe-area-inset-bottom">
+            <div className="border-t border-zinc-200 bg-white p-3 pb-[calc(2rem+env(safe-area-inset-bottom))] sm:p-4 sm:pb-4">
                 <div className="max-w-2xl mx-auto relative">
-                    {/* Delete button - fixed to left (hidden on mobile) */}
-                    <button
-                        onClick={() => setShowDeletePopover(true)}
-                        className="hidden sm:block absolute left-0 top-1/2 -translate-y-1/2 p-2 bg-zinc-100 hover:bg-red-50 text-zinc-600 hover:text-red-600 rounded-md transition-colors"
-                        title="Delete Card"
-                    >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-
-                    {/* Main controls - centered with margin for delete button on desktop */}
-                    <div className="sm:ml-12">
+                    {/* Main controls - centered */}
+                    <div>
                         {!showAnswer ? (
                             <button
                                 onClick={() => setShowAnswer(true)}
@@ -533,16 +536,18 @@ const StudySession = () => {
             </div>
 
             {/* Delete Confirmation Popover */}
-            {showDeletePopover && (
-                <DeleteCardPopover
-                    onConfirm={() => {
-                        deleteCard(currentCard!.id);
-                        setShowDeletePopover(false);
-                    }}
-                    onCancel={() => setShowDeletePopover(false)}
-                />
-            )}
-        </div>
+            {
+                showDeletePopover && (
+                    <DeleteCardPopover
+                        onConfirm={() => {
+                            deleteCard(currentCard!.id);
+                            setShowDeletePopover(false);
+                        }}
+                        onCancel={() => setShowDeletePopover(false)}
+                    />
+                )
+            }
+        </div >
     );
 };
 
