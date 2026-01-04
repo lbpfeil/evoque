@@ -1,6 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback, ReactNode } from 'react';
 import { Book, Highlight, StudyCard, StudyStatus, UserSettings, StudySession, ReviewLog, Tag, DeckStats, DailyProgress } from '../types';
-import { parseMyClippings } from '../services/parser';
 import { generateUUID } from '../services/idUtils';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
@@ -85,6 +84,9 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     bookReviews: {}
   });
 
+  // Cache today's date to avoid repeated calculations (performance optimization)
+  const today = useMemo(() => new Date().toISOString().split('T')[0], []);
+
   // Load all data from Supabase
   const loadData = async () => {
     if (!user) {
@@ -119,32 +121,12 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       if (cardsError) throw cardsError;
       if (cardsData) setStudyCards(cardsData.map(fromSupabaseStudyCard));
 
-      // Load tags
-      const { data: tagsData, error: tagsError } = await supabase
-        .from('tags')
-        .select('*')
-        .eq('user_id', user.id);
-
-      if (tagsError) throw tagsError;
-      if (tagsData) setTags(tagsData.map(fromSupabaseTag));
-
       // Load settings
       const { data: settingsData, error: settingsError } = await supabase
         .from('user_settings')
         .select('*')
         .eq('user_id', user.id)
         .single();
-
-      // Load review logs
-      const { data: logsData, error: logsError } = await supabase
-        .from('review_logs')
-        .select('*')
-        .eq('user_id', user.id);
-
-      console.log('DEBUG: Review Logs Load', { count: logsData?.length, error: logsError, userId: user.id });
-
-      if (logsError) throw logsError;
-      if (logsData) setReviewLogs(logsData.map(fromSupabaseReviewLog));
 
       if (settingsError && settingsError.code !== 'PGRST116') {
         throw settingsError;
@@ -191,10 +173,51 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     }
   };
 
+  // Load non-critical data (tags, reviewLogs) - deferred for better performance
+  const loadNonCriticalData = async () => {
+    if (!user) return;
+
+    try {
+      // Load tags
+      const { data: tagsData, error: tagsError } = await supabase
+        .from('tags')
+        .select('*')
+        .eq('user_id', user.id);
+
+      if (tagsError) console.error('Failed to load tags:', tagsError);
+      else if (tagsData) setTags(tagsData.map(fromSupabaseTag));
+
+      // Load review logs
+      const { data: logsData, error: logsError } = await supabase
+        .from('review_logs')
+        .select('*')
+        .eq('user_id', user.id);
+
+      console.log('DEBUG: Review Logs Load', { count: logsData?.length, error: logsError, userId: user.id });
+
+      if (logsError) console.error('Failed to load review logs:', logsError);
+      else if (logsData) setReviewLogs(logsData.map(fromSupabaseReviewLog));
+    } catch (error) {
+      console.error('Failed to load non-critical data:', error);
+    }
+  };
+
   // Load data from Supabase on mount
   useEffect(() => {
     loadData();
   }, [user]);
+
+  // Load non-critical data after initial load (deferred for performance)
+  useEffect(() => {
+    if (isLoaded && user) {
+      // Defer by 100ms to prioritize initial render
+      const timeoutId = setTimeout(() => {
+        loadNonCriticalData();
+      }, 100);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [isLoaded, user]);
 
   // Save session and daily progress to localStorage (temporary data only)
   useEffect(() => {
@@ -213,32 +236,21 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
   useEffect(() => {
     if (!isLoaded || !user) return;
 
-    // Debounce slightly to avoid excessive writes during rapid updates
+    // Debounce to avoid excessive writes during rapid updates (increased to 2s for better performance)
     const timeoutId = setTimeout(() => {
       updateSettings({ dailyProgress });
-    }, 1000);
+    }, 2000);
 
     return () => clearTimeout(timeoutId);
   }, [dailyProgress, isLoaded, user]);
 
-  const importData = async (input: string | { books: Book[], highlights: Highlight[] }) => {
+  const importData = async (input: { books: Book[], highlights: Highlight[] }) => {
     if (!user) throw new Error('User not authenticated');
 
     try {
-      // Handle both string (TXT) and object (PDF) inputs
-      let parsedBooks: Book[];
-      let parsedHighlights: Highlight[];
-
-      if (typeof input === 'string') {
-        // Parse TXT file
-        const parsed = parseMyClippings(input);
-        parsedBooks = parsed.books;
-        parsedHighlights = parsed.highlights;
-      } else {
-        // Already parsed (PDF)
-        parsedBooks = input.books;
-        parsedHighlights = input.highlights;
-      }
+      // Input is already parsed (all parsing happens in Settings.tsx now)
+      const parsedBooks = input.books;
+      const parsedHighlights = input.highlights;
 
       // 0. Fetch deleted highlights first to filter them out (ID + Text content)
       const { data: deletedData, error: deletedError } = await supabase
@@ -378,13 +390,13 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     }
   };
 
-  const getCardsDue = () => {
+  const getCardsDue = useCallback(() => {
     const today = new Date().toISOString().split('T')[0]; // Get YYYY-MM-DD format
     return studyCards.filter(card => {
       const cardDueDate = card.nextReviewDate.split('T')[0]; // Get YYYY-MM-DD format
       return cardDueDate <= today;
     });
-  };
+  }, [studyCards]);
 
   const updateCard = async (updatedCard: StudyCard) => {
     if (!user) return;
@@ -425,9 +437,9 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     }
   };
 
-  const getBook = (id: string) => books.find(b => b.id === id);
+  const getBook = useCallback((id: string) => books.find(b => b.id === id), [books]);
 
-  const getBookHighlights = (bookId: string) => highlights.filter(h => h.bookId === bookId);
+  const getBookHighlights = useCallback((bookId: string) => highlights.filter(h => h.bookId === bookId), [highlights]);
 
   const deleteHighlight = async (id: string) => {
     const highlight = highlights.find(h => h.id === id);
@@ -1052,8 +1064,24 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     streak: 0
   };
 
+  // Get cards due for a specific book (must be defined before getDeckStats)
+  const getBookCardsDue = useCallback((bookId: string): StudyCard[] => {
+    const bookHighlightIds = highlights
+      .filter(h => h.bookId === bookId)
+      .map(h => h.id);
+
+    const today = new Date().toISOString().split('T')[0]; // Get YYYY-MM-DD format
+    return studyCards.filter(card => {
+      const highlight = highlights.find(h => h.id === card.highlightId);
+      const cardDueDate = card.nextReviewDate.split('T')[0]; // Get YYYY-MM-DD format
+      return highlight &&
+        bookHighlightIds.includes(highlight.id) &&
+        cardDueDate <= today;
+    });
+  }, [highlights, studyCards]);
+
   // New deck statistics method
-  const getDeckStats = (bookId?: string): DeckStats => {
+  const getDeckStats = useCallback((bookId?: string): DeckStats => {
     if (bookId) {
       // Individual book: show remaining cards for today (max 10 minus already reviewed)
       const cards = getBookCardsDue(bookId);
@@ -1087,23 +1115,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
         total: allBookStats.reduce((sum, stats) => sum + stats.total, 0)
       };
     }
-  };
-
-  // Get cards due for a specific book
-  const getBookCardsDue = (bookId: string): StudyCard[] => {
-    const bookHighlightIds = highlights
-      .filter(h => h.bookId === bookId)
-      .map(h => h.id);
-
-    const today = new Date().toISOString().split('T')[0]; // Get YYYY-MM-DD format
-    return studyCards.filter(card => {
-      const highlight = highlights.find(h => h.id === card.highlightId);
-      const cardDueDate = card.nextReviewDate.split('T')[0]; // Get YYYY-MM-DD format
-      return highlight &&
-        bookHighlightIds.includes(highlight.id) &&
-        cardDueDate <= today;
-    });
-  };
+  }, [books, getBookCardsDue, dailyProgress]);
 
   // Get reviews completed today for a specific book or all books
   const getReviewsToday = (bookId?: string): number => {
@@ -1538,51 +1550,97 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     }
   };
 
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({
+    books,
+    highlights,
+    studyCards,
+    tags,
+    importData,
+    getCardsDue,
+    updateCard,
+    getBook,
+    getBookHighlights,
+    deleteHighlight,
+    updateHighlight,
+    bulkDeleteHighlights,
+    addToStudy,
+    removeFromStudy,
+    bulkAddToStudy,
+    deleteCard,
+    getHighlightStudyStatus,
+    settings,
+    updateSettings,
+    reloadSettings,
+    reloadAllData: loadData,
+    currentSession,
+    startSession,
+    submitReview,
+    resetSession,
+    undoLastReview,
+    sessionStats,
+    getDeckStats,
+    getBookCardsDue,
+    dailyProgress,
+    getReviewsToday,
+    reviewLogs,
+    isLoaded,
+    addTag,
+    updateTag,
+    deleteTag,
+    deleteBook,
+    assignTagToHighlight,
+    removeTagFromHighlight,
+    updateBookSettings,
+    resetAllBooksToDefaults,
+    updateBookCover
+  }), [
+    books,
+    highlights,
+    studyCards,
+    tags,
+    importData,
+    getCardsDue,
+    updateCard,
+    getBook,
+    getBookHighlights,
+    deleteHighlight,
+    updateHighlight,
+    bulkDeleteHighlights,
+    addToStudy,
+    removeFromStudy,
+    bulkAddToStudy,
+    deleteCard,
+    getHighlightStudyStatus,
+    settings,
+    updateSettings,
+    reloadSettings,
+    loadData,
+    currentSession,
+    startSession,
+    submitReview,
+    resetSession,
+    undoLastReview,
+    sessionStats,
+    getDeckStats,
+    getBookCardsDue,
+    dailyProgress,
+    getReviewsToday,
+    reviewLogs,
+    isLoaded,
+    addTag,
+    updateTag,
+    deleteTag,
+    deleteBook,
+    assignTagToHighlight,
+    removeTagFromHighlight,
+    updateBookSettings,
+    resetAllBooksToDefaults,
+    updateBookCover
+  ]);
+
   return (
-    <StoreContext.Provider value={{
-      books,
-      highlights,
-      studyCards,
-      tags,
-      importData,
-      getCardsDue,
-      updateCard,
-      getBook,
-      getBookHighlights,
-      deleteHighlight,
-      updateHighlight,
-      bulkDeleteHighlights,
-      addToStudy,
-      removeFromStudy,
-      bulkAddToStudy,
-      deleteCard,
-      getHighlightStudyStatus,
-      settings,
-      updateSettings,
-      reloadSettings,
-      reloadAllData: loadData,
-      currentSession,
-      startSession,
-      submitReview,
-      resetSession,
-      undoLastReview,
-      sessionStats,
-      getDeckStats,
-      getBookCardsDue,
-      dailyProgress,
-      getReviewsToday,
-      reviewLogs,
-      isLoaded,
-      addTag,
-      updateTag,
-      deleteTag,
-      deleteBook,
-      assignTagToHighlight,
-      removeTagFromHighlight,
-      updateBookSettings,
-      resetAllBooksToDefaults,
-      updateBookCover
-    }}>
+    <StoreContext.Provider value={contextValue}>
       {children}
     </StoreContext.Provider>
   );

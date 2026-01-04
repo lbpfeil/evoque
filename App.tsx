@@ -1,18 +1,30 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import BottomNav from './components/BottomNav';
-import Dashboard from './pages/Dashboard';
-import Highlights from './pages/Highlights';
-import Study from './pages/Study';
-import Settings from './pages/Settings';
-import StudySession from './pages/StudySession';
 import Login from './pages/Login';
 import { StoreProvider } from './components/StoreContext';
 import { AuthProvider, useAuth } from './components/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import { Loader2 } from 'lucide-react';
 import { SpeedInsights } from "@vercel/speed-insights/react"
+
+// Lazy load pages for better performance (code splitting)
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Highlights = lazy(() => import('./pages/Highlights'));
+const Study = lazy(() => import('./pages/Study'));
+const Settings = lazy(() => import('./pages/Settings'));
+const StudySession = lazy(() => import('./pages/StudySession'));
+
+// Loading fallback component for lazy-loaded routes
+const PageLoadingFallback = () => (
+  <div className="flex items-center justify-center py-12">
+    <div className="text-center">
+      <Loader2 className="w-8 h-8 text-blue-600 animate-spin mx-auto mb-2" />
+      <p className="text-xs text-zinc-600">Carregando...</p>
+    </div>
+  </div>
+);
 
 const AppLayout = ({ children }: React.PropsWithChildren) => {
   const location = useLocation();
@@ -24,10 +36,14 @@ const AppLayout = ({ children }: React.PropsWithChildren) => {
       <main className={`flex-1 ${!isStudySession ? 'md:ml-56 p-4 md:p-8 pb-20 md:pb-8' : ''} overflow-y-auto h-screen`}>
         {!isStudySession ? (
           <div className="max-w-6xl mx-auto">
-            {children}
+            <Suspense fallback={<PageLoadingFallback />}>
+              {children}
+            </Suspense>
           </div>
         ) : (
-          children
+          <Suspense fallback={<PageLoadingFallback />}>
+            {children}
+          </Suspense>
         )}
       </main>
       {!isStudySession && <BottomNav />}

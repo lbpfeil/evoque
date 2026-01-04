@@ -65,6 +65,29 @@ export default defineConfig(({ mode }) => {
         alias: {
           '@': path.resolve(__dirname, '.'),
         }
+      },
+      build: {
+        rollupOptions: {
+          output: {
+            // Split large dependencies into separate chunks for better caching
+            manualChunks: {
+              'supabase': ['@supabase/supabase-js'],
+              'router': ['react-router-dom'],
+              'radix': ['@radix-ui/react-dialog', '@radix-ui/react-popover'],
+              'lucide': ['lucide-react'],
+            }
+          }
+        },
+        chunkSizeWarningLimit: 600, // Warn for chunks > 600KB
+        sourcemap: false, // Disable source maps in production for smaller bundle
+        minify: 'terser',
+        terserOptions: {
+          compress: {
+            drop_console: true, // Remove console.log in production
+            dead_code: true,
+            unused: true,
+          }
+        }
       }
     };
 });

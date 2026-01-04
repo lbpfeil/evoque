@@ -5,9 +5,6 @@ import { useAuth } from '../components/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Upload, Library, User, Sliders, FileText, CheckCircle, AlertCircle, Download, Trash2, Loader2, Camera, ChevronDown, ChevronUp, Settings as SettingsIcon } from 'lucide-react';
 import DeleteBookModal from '../components/DeleteBookModal';
-import { parsePDFKindleHighlights } from '../services/pdfParser';
-import { parseMyClippings } from '../services/parser';
-import { parseAnkiTSV } from '../services/ankiParser';
 import { resizeImage } from '../lib/imageUtils';
 
 type TabId = 'import' | 'library' | 'account' | 'preferences';
@@ -79,19 +76,21 @@ const Settings = () => {
 
     try {
       if (isPDF) {
-        // Process PDF file
+        // Dynamic import PDF parser only when needed
+        const { parsePDFKindleHighlights } = await import('../services/pdfParser');
         const { books, highlights } = await parsePDFKindleHighlights(file);
 
-        // Import using the same flow as TXT
         const res = await importData({ books, highlights });
         setImportResult(res);
         setIsProcessing(false);
       } else if (isTSV) {
-        // Process TSV file (Anki format)
+        // Process TSV file (Anki format) with dynamic import
         const reader = new FileReader();
         reader.onload = async (e) => {
           const text = e.target?.result as string;
           try {
+            // Dynamic import Anki parser only when needed
+            const { parseAnkiTSV } = await import('../services/ankiParser');
             const { books, highlights } = parseAnkiTSV(text);
             const res = await importData({ books, highlights });
             setImportResult(res);
@@ -105,12 +104,15 @@ const Settings = () => {
         // Read as latin1 for better encoding support
         reader.readAsText(file, 'ISO-8859-1');
       } else {
-        // Process TXT file (existing flow)
+        // Process TXT file with dynamic import
         const reader = new FileReader();
         reader.onload = async (e) => {
           const text = e.target?.result as string;
           try {
-            const res = await importData(text);
+            // Dynamic import TXT parser only when needed
+            const { parseMyClippings } = await import('../services/parser');
+            const { books, highlights } = parseMyClippings(text);
+            const res = await importData({ books, highlights });
             setImportResult(res);
           } catch (err: any) {
             console.error(err);

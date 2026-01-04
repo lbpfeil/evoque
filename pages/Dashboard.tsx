@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { useStore } from '../components/StoreContext';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, AreaChart, Area } from 'recharts';
-import { Book, Highlighter, Brain, Clock } from 'lucide-react';
+import { Book, Highlighter, Brain, Clock, Loader2 } from 'lucide-react';
+
+// Lazy load charts to reduce initial bundle size
+const DashboardCharts = lazy(() => import('../components/DashboardCharts'));
 
 const StatCard = ({ title, value, icon: Icon }: any) => (
   <div className="bg-white p-6 rounded-md border border-zinc-200 flex flex-col justify-between h-32 hover:border-zinc-300 transition-colors">
@@ -58,44 +60,14 @@ const Dashboard = () => {
         />
       </div>
 
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-white p-8 rounded-md border border-zinc-200">
-          <h3 className="text-sm font-semibold text-zinc-900 uppercase tracking-wider mb-8">Import Activity</h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={mockTimelineData}>
-                <defs>
-                  <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#000000" stopOpacity={0.1}/>
-                    <stop offset="95%" stopColor="#000000" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E4E4E7" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#71717a', fontSize: 12}} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{fill: '#71717a', fontSize: 12}} />
-                <Tooltip contentStyle={{backgroundColor: '#18181b', color: '#fff', border: 'none', borderRadius: '4px'}} itemStyle={{color: '#fff'}} cursor={{stroke: '#e4e4e7'}} />
-                <Area type="monotone" dataKey="count" stroke="#18181b" strokeWidth={2} fillOpacity={1} fill="url(#colorCount)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
+      {/* Charts Section with lazy loading */}
+      <Suspense fallback={
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 text-zinc-400 animate-spin" />
         </div>
-
-        <div className="bg-white p-8 rounded-md border border-zinc-200">
-          <h3 className="text-sm font-semibold text-zinc-900 uppercase tracking-wider mb-8">Highlights per Book</h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={books.slice(0, 5)} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E4E4E7" />
-                <XAxis type="number" hide />
-                <YAxis dataKey="title" type="category" width={120} tick={{fontSize: 12, fill: '#71717a'}} />
-                <Tooltip contentStyle={{backgroundColor: '#18181b', color: '#fff', border: 'none', borderRadius: '4px'}} cursor={{fill: '#f4f4f5'}} />
-                <Bar dataKey="highlightCount" fill="#27272a" radius={[0, 2, 2, 0]} barSize={24} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </div>
+      }>
+        <DashboardCharts timelineData={mockTimelineData} books={books} />
+      </Suspense>
 
       {/* Recent Books */}
       <div>
@@ -106,7 +78,7 @@ const Dashboard = () => {
           {books.slice(0, 3).map(book => (
             <div key={book.id} className="bg-white p-4 rounded-md border border-zinc-200 flex gap-5 hover:border-zinc-300 transition-colors">
                <div className="w-16 h-24 bg-zinc-100 rounded-sm overflow-hidden flex-shrink-0 border border-zinc-100">
-                 <img src={book.coverUrl} alt={book.title} className="w-full h-full object-cover grayscale opacity-90 hover:grayscale-0 transition-all" />
+                 <img src={book.coverUrl} alt={book.title} loading="lazy" className="w-full h-full object-cover grayscale opacity-90 hover:grayscale-0 transition-all" />
                </div>
                <div className="flex flex-col justify-center py-1">
                  <h4 className="font-semibold text-zinc-900 line-clamp-2 leading-tight mb-1">{book.title}</h4>
