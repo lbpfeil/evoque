@@ -59,6 +59,7 @@ export interface UserSettings {
   fullName?: string;
   avatarUrl?: string;
   defaultInitialEaseFactor?: number;  // Global default ease factor for new cards (default: 2.5)
+  theme?: 'light' | 'dark' | 'system';  // Theme preference (default: 'system')
 }
 
 export interface ReviewResult {

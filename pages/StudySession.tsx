@@ -244,7 +244,7 @@ ${currentHighlight.text}`;
     // Loading state
     if (!isLoaded) {
         return (
-            <div className="h-screen flex items-center justify-center text-zinc-500">
+            <div className="h-screen flex items-center justify-center text-zinc-500 dark:text-zinc-500">
                 Loading study session...
             </div>
         );
@@ -258,11 +258,11 @@ ${currentHighlight.text}`;
 
         return (
             <div className="h-screen flex flex-col items-center justify-center text-center space-y-6">
-                <div className="text-zinc-500">
+                <div className="text-zinc-500 dark:text-zinc-500">
                     <p className="text-base font-medium mb-2">
                         {isDailyLimitReached ? 'Daily limit reached!' : 'No cards available'}
                     </p>
-                    <p className="text-sm text-zinc-400">
+                    <p className="text-sm text-zinc-400 dark:text-zinc-500">
                         {isDailyLimitReached
                             ? `You've completed all 10 reviews for this book today. Come back tomorrow for more!`
                             : deckId
@@ -272,7 +272,7 @@ ${currentHighlight.text}`;
                 </div >
                 <button
                     onClick={() => navigate('/study')}
-                    className="px-6 py-2 bg-black text-white rounded-md hover:bg-zinc-800 transition-colors text-sm"
+                    className="px-6 py-2 bg-black text-white rounded-md hover:bg-zinc-800 dark:hover:bg-zinc-800 transition-colors text-sm"
                 >
                     Back to Decks
                 </button>
@@ -284,23 +284,23 @@ ${currentHighlight.text}`;
     if (sessionComplete) {
         return (
             <div className="h-screen flex flex-col items-center justify-center text-center space-y-8">
-                <h2 className="text-2xl font-bold text-zinc-900">Session Complete!</h2>
+                <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">Session Complete!</h2>
                 <div className="flex gap-12">
                     <div className="text-center">
-                        <p className="text-zinc-400 text-xs font-bold uppercase tracking-widest mb-2">Reviewed</p>
-                        <p className="text-4xl font-bold text-zinc-900">{sessionStats.reviewed}</p>
+                        <p className="text-zinc-400 dark:text-zinc-500 text-xs font-bold uppercase tracking-widest mb-2">Reviewed</p>
+                        <p className="text-4xl font-bold text-zinc-900 dark:text-zinc-100">{sessionStats.reviewed}</p>
                     </div>
-                    <div className="w-px bg-zinc-200 h-16"></div>
+                    <div className="w-px bg-zinc-200 dark:bg-zinc-800 h-16"></div>
                     <div className="text-center">
-                        <p className="text-zinc-400 text-xs font-bold uppercase tracking-widest mb-2">Accuracy</p>
-                        <p className="text-4xl font-bold text-zinc-900">
+                        <p className="text-zinc-400 dark:text-zinc-500 text-xs font-bold uppercase tracking-widest mb-2">Accuracy</p>
+                        <p className="text-4xl font-bold text-zinc-900 dark:text-zinc-100">
                             {sessionStats.reviewed > 0 ? Math.round((sessionStats.correct / sessionStats.reviewed) * 100) : 0}%
                         </p>
                     </div>
                 </div>
                 <button
                     onClick={() => navigate('/study')}
-                    className="px-10 py-4 bg-black text-white rounded-md font-medium hover:bg-zinc-800 transition-colors shadow-xl shadow-zinc-200/50"
+                    className="px-10 py-4 bg-black text-white rounded-md font-medium hover:bg-zinc-800 dark:hover:bg-zinc-800 transition-colors shadow-xl shadow-zinc-200/50 dark:shadow-zinc-800/50"
                 >
                     Back to Decks
                 </button>
@@ -314,13 +314,13 @@ ${currentHighlight.text}`;
             <div className="h-screen flex flex-col items-center justify-center text-center space-y-6">
                 <div className="text-red-500">
                     <p className="text-base font-medium mb-2">Card Error</p>
-                    <p className="text-sm text-zinc-400">
+                    <p className="text-sm text-zinc-400 dark:text-zinc-500">
                         The current card data is missing or corrupted.
                     </p>
                 </div>
                 <button
                     onClick={() => navigate('/study')}
-                    className="px-6 py-2 bg-black text-white rounded-md hover:bg-zinc-800 transition-colors text-sm"
+                    className="px-6 py-2 bg-black text-white rounded-md hover:bg-zinc-800 dark:hover:bg-zinc-800 transition-colors text-sm"
                 >
                     Back to Decks
                 </button>
@@ -332,26 +332,26 @@ ${currentHighlight.text}`;
     const isEditing = isEditingHighlight || isEditingNote;
 
     return (
-        <div className="h-screen flex flex-col bg-white">
+        <div className="h-screen flex flex-col bg-white dark:bg-zinc-900">
             {/* Compact Header */}
-            <header className="px-3 sm:px-4 py-2 border-b border-zinc-200">
+            <header className="px-3 sm:px-4 py-2 border-b border-zinc-200 dark:border-zinc-800">
                 <div className="flex items-center justify-between">
                     <button
                         onClick={handleBack}
-                        className="flex items-center gap-1 hover:bg-zinc-100 px-2 py-1.5 sm:py-1 rounded transition-colors min-h-[40px] sm:min-h-0"
+                        className="flex items-center gap-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 px-2 py-1.5 sm:py-1 rounded transition-colors min-h-[40px] sm:min-h-0"
                     >
-                        <ArrowLeft className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-zinc-600" />
-                        <span className="text-xs text-zinc-600 hidden sm:inline">Back to Decks</span>
+                        <ArrowLeft className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-zinc-600 dark:text-zinc-400" />
+                        <span className="text-xs text-zinc-600 dark:text-zinc-400 hidden sm:inline">Back to Decks</span>
                     </button>
 
-                    <div className="text-xs text-zinc-400">
+                    <div className="text-xs text-zinc-400 dark:text-zinc-500">
                         Card {currentIndex + 1} / {queueIds.length}
                     </div>
 
                     <div className="flex items-center gap-1">
                         <button
                             onClick={() => setShowTagSelector(prev => !prev)}
-                            className="p-2 -mr-1 text-zinc-400 hover:text-blue-600 transition-colors rounded-full hover:bg-zinc-100 min-h-[40px] sm:min-h-0"
+                            className="p-2 -mr-1 text-zinc-400 dark:text-zinc-500 hover:text-blue-600 transition-colors rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 min-h-[40px] sm:min-h-0"
                             title="Manage Tags"
                         >
                             <TagIcon className="w-4 h-4" />
@@ -360,14 +360,14 @@ ${currentHighlight.text}`;
                         <button
                             onClick={handleCopyToClipboard}
                             disabled={!currentBook || !currentHighlight}
-                            className="p-2 -mr-1 text-zinc-400 hover:text-green-600 transition-colors rounded-full hover:bg-zinc-100 min-h-[40px] sm:min-h-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="p-2 -mr-1 text-zinc-400 dark:text-zinc-500 hover:text-green-600 transition-colors rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 min-h-[40px] sm:min-h-0 disabled:opacity-50 disabled:cursor-not-allowed"
                             title={justCopied ? "Copiado!" : "Copiar para área de transferência"}
                         >
                             <Copy className={`w-4 h-4 ${justCopied ? 'text-green-600' : ''}`} />
                         </button>
                         <button
                             onClick={() => setShowDeletePopover(true)}
-                            className="p-2 -mr-2 text-zinc-400 hover:text-red-600 transition-colors rounded-full hover:bg-zinc-100 min-h-[40px] sm:min-h-0"
+                            className="p-2 -mr-2 text-zinc-400 dark:text-zinc-500 hover:text-red-600 transition-colors rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 min-h-[40px] sm:min-h-0"
                             title="Delete Card"
                         >
                             <Trash2 className="w-4 h-4" />
@@ -376,7 +376,7 @@ ${currentHighlight.text}`;
                 </div>
 
                 {/* Progress bar */}
-                <div className="h-[3px] bg-zinc-200 mt-2 rounded-full overflow-hidden">
+                <div className="h-[3px] bg-zinc-200 dark:bg-zinc-800 mt-2 rounded-full overflow-hidden">
                     <div
                         className="h-full progress-bar-animated transition-all duration-300 ease-out"
                         style={{ width: `${progress}%` }}
@@ -398,8 +398,8 @@ ${currentHighlight.text}`;
                                 />
                             )}
                             <div className="min-w-0">
-                                <h3 className="text-sm font-semibold text-zinc-900">{currentBook.title}</h3>
-                                <p className="text-xs text-zinc-400">{currentBook.author}</p>
+                                <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{currentBook.title}</h3>
+                                <p className="text-xs text-zinc-400 dark:text-zinc-500">{currentBook.author}</p>
                             </div>
                         </div>
 
@@ -425,8 +425,8 @@ ${currentHighlight.text}`;
                                         <span
                                             key={tag.id}
                                             className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium ${tag.bookId
-                                                ? 'bg-amber-500 text-white'  // Book-specific
-                                                : 'bg-blue-500 text-white'   // Global
+                                                ? 'bg-amber-500 dark:bg-amber-600 text-white'  // Book-specific
+                                                : 'bg-blue-500 dark:bg-blue-600 text-white'   // Global
                                                 }`}
                                         >
                                             {tag.name}
@@ -435,7 +435,7 @@ ${currentHighlight.text}`;
                                     {remainingCount > 0 && (
                                         <button
                                             onClick={() => setShowAllTags(!showAllTags)}
-                                            className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-zinc-300 text-zinc-700 hover:bg-zinc-400 transition-colors cursor-pointer"
+                                            className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-zinc-300 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-400 dark:hover:bg-zinc-600 transition-colors cursor-pointer"
                                             title={showAllTags ? 'Show less' : `Show ${remainingCount} more tags`}
                                         >
                                             {showAllTags ? '−' : `+${remainingCount}`}
@@ -468,8 +468,8 @@ ${currentHighlight.text}`;
                                     <span
                                         key={tag.id}
                                         className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium ${tag.bookId
-                                            ? 'bg-amber-500 text-white'  // Book-specific
-                                            : 'bg-blue-500 text-white'   // Global
+                                            ? 'bg-amber-500 dark:bg-amber-600 text-white'  // Book-specific
+                                            : 'bg-blue-500 dark:bg-blue-600 text-white'   // Global
                                             }`}
                                     >
                                         {tag.name}
@@ -478,7 +478,7 @@ ${currentHighlight.text}`;
                                 {remainingCount > 0 && (
                                     <button
                                         onClick={() => setShowAllTags(!showAllTags)}
-                                        className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-zinc-300 text-zinc-700 hover:bg-zinc-400 transition-colors cursor-pointer"
+                                        className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-zinc-300 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-400 dark:hover:bg-zinc-600 transition-colors cursor-pointer"
                                         title={showAllTags ? 'Show less' : `Show ${remainingCount} more tags`}
                                     >
                                         {showAllTags ? '−' : `+${remainingCount}`}
@@ -490,33 +490,33 @@ ${currentHighlight.text}`;
 
                     {/* Highlight Text - Editable */}
                     {isEditingHighlight ? (
-                        <div className="bg-zinc-50 border border-zinc-200 rounded-md p-4">
+                        <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md p-4">
                             <div className="flex items-center justify-between mb-2">
-                                <span className="text-[10px] uppercase tracking-wider text-zinc-400 font-semibold">
+                                <span className="text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500 font-semibold">
                                     Edit Highlight
                                 </span>
-                                {isSaving && <Clock className="w-3 h-3 text-zinc-400 animate-spin" />}
+                                {isSaving && <Clock className="w-3 h-3 text-zinc-400 dark:text-zinc-500 animate-spin" />}
                             </div>
                             <textarea
                                 value={editedHighlight}
                                 onChange={(e) => setEditedHighlight(e.target.value)}
                                 onBlur={handleSaveHighlight}
-                                className="w-full bg-white border border-zinc-200 rounded-sm p-3 text-base text-zinc-800 focus:outline-none focus:ring-1 focus:ring-black focus:border-black resize-none font-serif"
+                                className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-sm p-3 text-base text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white focus:border-black dark:focus:border-white resize-none font-serif"
                                 rows={6}
                                 autoFocus
                             />
-                            <p className="text-[10px] text-zinc-400 mt-2">Press ESC or click outside to save</p>
+                            <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-2">Press ESC or click outside to save</p>
                         </div>
                     ) : (
                         <div className="relative group">
                             <blockquote
-                                className="text-lg md:text-xl font-serif italic text-zinc-800 leading-relaxed text-justify"
+                                className="text-lg md:text-xl font-serif italic text-zinc-800 dark:text-zinc-200 leading-relaxed text-justify"
                             >
                                 "{currentHighlight.text}"
                             </blockquote>
                             <button
                                 onClick={handleEditHighlight}
-                                className="absolute -top-1 -right-1 p-1 text-zinc-400 hover:text-black transition-colors opacity-0 group-hover:opacity-100"
+                                className="absolute -top-1 -right-1 p-1 text-zinc-400 dark:text-zinc-500 hover:text-black dark:hover:text-white transition-colors opacity-0 group-hover:opacity-100"
                                 title="Edit Highlight"
                             >
                                 <Edit2 className="w-3.5 h-3.5" />
@@ -528,43 +528,43 @@ ${currentHighlight.text}`;
                     {showAnswer && (
                         <div className="animate-fade-in-up">
                             {isEditingNote ? (
-                                <div className="bg-zinc-50 border border-zinc-200 rounded-md p-4">
+                                <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md p-4">
                                     <div className="flex items-center justify-between mb-2">
-                                        <span className="text-[10px] uppercase tracking-wider text-zinc-400 font-semibold">
+                                        <span className="text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500 font-semibold">
                                             Edit Note
                                         </span>
-                                        {isSaving && <Clock className="w-3 h-3 text-zinc-400 animate-spin" />}
+                                        {isSaving && <Clock className="w-3 h-3 text-zinc-400 dark:text-zinc-500 animate-spin" />}
                                     </div>
                                     <textarea
                                         value={editedNote}
                                         onChange={(e) => setEditedNote(e.target.value)}
                                         onBlur={handleSaveNote}
-                                        className="w-full bg-white border border-zinc-200 rounded-sm p-3 text-sm text-zinc-800 focus:outline-none focus:ring-1 focus:ring-black focus:border-black resize-none"
+                                        className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-sm p-3 text-sm text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white focus:border-black dark:focus:border-white resize-none"
                                         rows={6}
                                         placeholder="Add your note here..."
                                         autoFocus
                                     />
-                                    <p className="text-[10px] text-zinc-400 mt-2">Press ESC or click outside to save</p>
+                                    <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-2">Press ESC or click outside to save</p>
                                 </div>
                             ) : (
                                 <div className="mt-8">
                                     <div className="flex items-center justify-center gap-4 mb-8 select-none">
-                                        <div className="h-px flex-1 bg-zinc-200"></div>
-                                        <span className="font-serif italic text-lg text-zinc-300">~</span>
-                                        <div className="h-px flex-1 bg-zinc-200"></div>
+                                        <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800"></div>
+                                        <span className="font-serif italic text-lg text-zinc-300 dark:text-zinc-700">~</span>
+                                        <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800"></div>
                                     </div>
 
                                     <div className="relative group">
                                         {currentHighlight.note ? (
-                                            <div className="text-lg md:text-xl font-serif text-zinc-800 leading-relaxed text-justify whitespace-pre-wrap">
+                                            <div className="text-lg md:text-xl font-serif text-zinc-800 dark:text-zinc-200 leading-relaxed text-justify whitespace-pre-wrap">
                                                 {currentHighlight.note}
                                             </div>
                                         ) : (
                                             <div className="text-center py-4">
-                                                <p className="text-sm text-zinc-400 italic mb-2">No note attached</p>
+                                                <p className="text-sm text-zinc-400 dark:text-zinc-500 italic mb-2">No note attached</p>
                                                 <button
                                                     onClick={handleEditNote}
-                                                    className="text-xs text-zinc-500 hover:text-black underline underline-offset-2 transition-colors"
+                                                    className="text-xs text-zinc-500 dark:text-zinc-500 hover:text-black dark:hover:text-white underline underline-offset-2 transition-colors"
                                                 >
                                                     Add a note
                                                 </button>
@@ -574,7 +574,7 @@ ${currentHighlight.text}`;
                                         {currentHighlight.note && (
                                             <button
                                                 onClick={handleEditNote}
-                                                className="absolute -top-6 right-0 p-1 text-zinc-300 hover:text-black transition-colors opacity-0 group-hover:opacity-100 flex items-center gap-1.5"
+                                                className="absolute -top-6 right-0 p-1 text-zinc-300 dark:text-zinc-700 hover:text-black dark:hover:text-white transition-colors opacity-0 group-hover:opacity-100 flex items-center gap-1.5"
                                                 title="Edit Note (E)"
                                             >
                                                 <span className="text-[10px] uppercase tracking-wider font-medium">Edit Note</span>
@@ -590,23 +590,23 @@ ${currentHighlight.text}`;
             </div>
 
             {/* Fixed Footer - Controls */}
-            <div className="border-t border-zinc-200 bg-white p-3 pb-[calc(2rem+env(safe-area-inset-bottom))] sm:p-4 sm:pb-4">
+            <div className="border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3 pb-[calc(2rem+env(safe-area-inset-bottom))] sm:p-4 sm:pb-4">
                 <div className="max-w-2xl mx-auto relative">
                     {/* Main controls - centered */}
                     <div>
                         {!showAnswer ? (
                             <button
                                 onClick={() => setShowAnswer(true)}
-                                className="w-full py-3.5 sm:py-3 min-h-[48px] bg-black hover:bg-zinc-800 text-white rounded-md font-medium text-sm transition-all active:scale-[0.99]"
+                                className="w-full py-3.5 sm:py-3 min-h-[48px] bg-black dark:bg-white hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-black rounded-md font-medium text-sm transition-all active:scale-[0.99]"
                             >
-                                Reveal Answer <span className="hidden sm:inline text-xs text-zinc-400 ml-2">(Space / Enter)</span>
+                                Reveal Answer <span className="hidden sm:inline text-xs text-zinc-400 dark:text-zinc-500 ml-2">(Space / Enter)</span>
                             </button>
                         ) : (
                             <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
                                 <button
                                     onClick={() => handleResponse(1)}
                                     disabled={isEditing}
-                                    className="py-2.5 sm:py-1.5 min-h-[48px] sm:min-h-0 bg-red-500 hover:bg-red-600 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="py-2.5 sm:py-1.5 min-h-[48px] sm:min-h-0 bg-red-500 dark:bg-red-600 hover:bg-red-600 dark:hover:bg-red-700 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <span>Again</span>
                                     <span className="hidden sm:block text-[10px] opacity-75">(1)</span>
@@ -614,7 +614,7 @@ ${currentHighlight.text}`;
                                 <button
                                     onClick={() => handleResponse(2)}
                                     disabled={isEditing}
-                                    className="py-2.5 sm:py-1.5 min-h-[48px] sm:min-h-0 bg-amber-500 hover:bg-amber-600 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="py-2.5 sm:py-1.5 min-h-[48px] sm:min-h-0 bg-amber-500 dark:bg-amber-600 hover:bg-amber-600 dark:hover:bg-amber-700 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <span>Hard</span>
                                     <span className="hidden sm:block text-[10px] opacity-75">(2)</span>
@@ -622,7 +622,7 @@ ${currentHighlight.text}`;
                                 <button
                                     onClick={() => handleResponse(3)}
                                     disabled={isEditing}
-                                    className="py-2.5 sm:py-1.5 min-h-[48px] sm:min-h-0 bg-blue-500 hover:bg-blue-600 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="py-2.5 sm:py-1.5 min-h-[48px] sm:min-h-0 bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <span>Good</span>
                                     <span className="hidden sm:block text-[10px] opacity-75">(3 / Enter)</span>
@@ -630,7 +630,7 @@ ${currentHighlight.text}`;
                                 <button
                                     onClick={() => handleResponse(4)}
                                     disabled={isEditing}
-                                    className="py-2.5 sm:py-1.5 min-h-[48px] sm:min-h-0 bg-green-500 hover:bg-green-600 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="py-2.5 sm:py-1.5 min-h-[48px] sm:min-h-0 bg-green-500 dark:bg-green-600 hover:bg-green-600 dark:hover:bg-green-700 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <span>Easy</span>
                                     <span className="hidden sm:block text-[10px] opacity-75">(4)</span>
@@ -659,13 +659,13 @@ ${currentHighlight.text}`;
                 <>
                     {/* Backdrop (click to close) */}
                     <div
-                        className="fixed inset-0 bg-black/10 z-40"
+                        className="fixed inset-0 bg-black/10 dark:bg-black/30 z-40"
                         onClick={() => setShowTagSelector(false)}
                     />
 
                     {/* TagSelector centered */}
                     <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 px-2 w-full max-w-md sm:px-4">
-                        <div className="bg-white rounded-md shadow-xl border border-zinc-300">
+                        <div className="bg-white dark:bg-zinc-900 rounded-md shadow-xl border border-zinc-300 dark:border-zinc-700">
                             <TagSelector
                                 highlightId={currentHighlight.id}
                                 bookId={currentHighlight.bookId}

@@ -10,8 +10,8 @@ interface DashboardChartsProps {
 const DashboardCharts: React.FC<DashboardChartsProps> = ({ timelineData, books }) => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      <div className="bg-white p-8 rounded-md border border-zinc-200">
-        <h3 className="text-sm font-semibold text-zinc-900 uppercase tracking-wider mb-8">Import Activity</h3>
+      <div className="bg-white dark:bg-zinc-900 p-8 rounded-md border border-zinc-200 dark:border-zinc-800">
+        <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider mb-8">Import Activity</h3>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={timelineData}>
@@ -31,8 +31,8 @@ const DashboardCharts: React.FC<DashboardChartsProps> = ({ timelineData, books }
         </div>
       </div>
 
-      <div className="bg-white p-8 rounded-md border border-zinc-200">
-        <h3 className="text-sm font-semibold text-zinc-900 uppercase tracking-wider mb-8">Highlights per Book</h3>
+      <div className="bg-white dark:bg-zinc-900 p-8 rounded-md border border-zinc-200 dark:border-zinc-800">
+        <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider mb-8">Highlights per Book</h3>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={books.slice(0, 5)} layout="vertical">

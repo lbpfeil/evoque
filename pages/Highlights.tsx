@@ -177,11 +177,11 @@ const Highlights = () => {
   // Sort icon helper
   const getSortIcon = (column: 'book' | 'highlight' | 'note' | 'date') => {
     if (sortConfig.column !== column) {
-      return <ChevronsUpDown className="w-2.5 h-2.5 text-zinc-300" />;
+      return <ChevronsUpDown className="w-2.5 h-2.5 text-zinc-300 dark:text-zinc-600" />;
     }
     return sortConfig.direction === 'asc'
-      ? <ChevronUp className="w-2.5 h-2.5 text-zinc-600" />
-      : <ChevronDown className="w-2.5 h-2.5 text-zinc-600" />;
+      ? <ChevronUp className="w-2.5 h-2.5 text-zinc-600 dark:text-zinc-400" />
+      : <ChevronDown className="w-2.5 h-2.5 text-zinc-600 dark:text-zinc-400" />;
   };
 
   const formatDateShort = (dateString?: string) => {
@@ -202,13 +202,13 @@ const Highlights = () => {
 
     switch (status) {
       case 'review':
-        return <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-semibold rounded-sm">Review</span>;
+        return <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-[10px] font-semibold rounded-sm">Review</span>;
       case 'learning':
-        return <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-semibold rounded-sm">Learning</span>;
+        return <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-[10px] font-semibold rounded-sm">Learning</span>;
       case 'new':
-        return <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 text-[10px] font-semibold rounded-sm">New</span>;
+        return <span className="px-2 py-0.5 bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 text-[10px] font-semibold rounded-sm">New</span>;
       default:
-        return <span className="px-2 py-0.5 bg-zinc-100 text-zinc-500 text-[10px] font-semibold rounded-sm">Not Started</span>;
+        return <span className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-500 text-[10px] font-semibold rounded-sm">Not Started</span>;
     }
   };
 
@@ -217,14 +217,14 @@ const Highlights = () => {
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">Highlights</h1>
-          <p className="text-zinc-500 mt-1 font-light text-sm">
+          <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Highlights</h1>
+          <p className="text-zinc-500 dark:text-zinc-500 mt-1 font-light text-sm">
             {highlights.length} {highlights.length === 1 ? 'destaque' : 'destaques'} de {stats.uniqueBooks} {stats.uniqueBooks === 1 ? 'livro' : 'livros'}, último destaque em {formatDate(stats.lastHighlight)}.
           </p>
         </div>
         <button
           onClick={() => setIsTagManagerOpen(true)}
-          className="flex items-center gap-2 px-3 py-1.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 rounded-md text-xs font-medium transition-colors"
+          className="flex items-center gap-2 px-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-md text-xs font-medium transition-colors"
         >
           <TagIcon className="w-3.5 h-3.5" />
           Manage Tags
@@ -232,16 +232,16 @@ const Highlights = () => {
       </div>
 
       {/* Toolbar */}
-      <div className="flex items-center gap-1.5 bg-white p-1.5 rounded-md border border-zinc-200 shadow-sm">
+      <div className="flex items-center gap-1.5 bg-white dark:bg-zinc-900 p-1.5 rounded-md border border-zinc-200 dark:border-zinc-800 shadow-sm">
         {/* Search - flex to fill available space */}
         <div className="relative flex-1 min-w-[180px]">
-          <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400" />
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 dark:text-zinc-500" />
           <input
             type="text"
             placeholder="Search..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-7 pr-2 py-1 bg-zinc-50 border border-zinc-200 rounded text-xs focus:outline-none focus:ring-1 focus:ring-black focus:border-black"
+            className="w-full pl-7 pr-2 py-1 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-black focus:border-black"
           />
         </div>
 
@@ -250,7 +250,7 @@ const Highlights = () => {
           <select
             value={selectedBookId}
             onChange={(e) => setSelectedBookId(e.target.value)}
-            className="w-32 pl-2 pr-6 py-1 bg-zinc-50 border border-zinc-200 rounded text-xs appearance-none focus:outline-none focus:ring-1 focus:ring-black focus:border-black truncate"
+            className="w-32 pl-2 pr-6 py-1 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded text-xs text-zinc-900 dark:text-zinc-100 appearance-none focus:outline-none focus:ring-1 focus:ring-black focus:border-black truncate"
             style={{ maxWidth: '128px' }}
           >
             <option value="all">All Books</option>
@@ -258,7 +258,7 @@ const Highlights = () => {
               <option key={b.id} value={b.id} className="truncate">{b.title}</option>
             ))}
           </select>
-          <Filter className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 pointer-events-none" />
+          <Filter className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 dark:text-zinc-500 pointer-events-none" />
         </div>
 
         {/* Tag Filter */}
@@ -266,7 +266,7 @@ const Highlights = () => {
           <select
             value={selectedTagId}
             onChange={(e) => setSelectedTagId(e.target.value)}
-            className="w-28 pl-2 pr-6 py-1 bg-zinc-50 border border-zinc-200 rounded text-xs appearance-none focus:outline-none focus:ring-1 focus:ring-black focus:border-black truncate"
+            className="w-28 pl-2 pr-6 py-1 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded text-xs text-zinc-900 dark:text-zinc-100 appearance-none focus:outline-none focus:ring-1 focus:ring-black focus:border-black truncate"
             style={{ maxWidth: '112px' }}
           >
             <option value="all">All Tags</option>
@@ -313,7 +313,7 @@ const Highlights = () => {
               return flattenTags(undefined);
             })()}
           </select>
-          <TagIcon className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 pointer-events-none" />
+          <TagIcon className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 dark:text-zinc-500 pointer-events-none" />
         </div>
 
         {/* Status Filter */}
@@ -321,23 +321,23 @@ const Highlights = () => {
           <select
             value={studyFilter}
             onChange={(e) => setStudyFilter(e.target.value as any)}
-            className="w-24 pl-2 pr-6 py-1 bg-zinc-50 border border-zinc-200 rounded text-xs appearance-none focus:outline-none focus:ring-1 focus:ring-black focus:border-black"
+            className="w-24 pl-2 pr-6 py-1 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded text-xs text-zinc-900 dark:text-zinc-100 appearance-none focus:outline-none focus:ring-1 focus:ring-black focus:border-black"
             style={{ maxWidth: '96px' }}
           >
             <option value="all">All Status</option>
             <option value="in-study">In Study</option>
             <option value="not-in-study">Not in Study</option>
           </select>
-          <Brain className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 pointer-events-none" />
+          <Brain className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 dark:text-zinc-500 pointer-events-none" />
         </div>
 
         {/* Bulk Actions Indicator */}
         {selectedIds.size > 0 && (
-          <div className="flex items-center gap-2 animate-fade-in bg-zinc-900 text-white px-2 py-1 rounded shadow-md ml-auto">
+          <div className="flex items-center gap-2 animate-fade-in bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 px-2 py-1 rounded shadow-md ml-auto">
             <span className="text-[10px] font-medium">{selectedIds.size} selected</span>
             <button
               onClick={handleBulkDelete}
-              className="flex items-center gap-1 text-[9px] hover:text-zinc-300 transition-colors uppercase tracking-wide font-semibold"
+              className="flex items-center gap-1 text-[9px] hover:text-zinc-300 dark:hover:text-zinc-600 transition-colors uppercase tracking-wide font-semibold"
             >
               <Trash2 className="w-2.5 h-2.5" />
               Delete
@@ -347,9 +347,9 @@ const Highlights = () => {
       </div>
 
       {/* Table Container */}
-      <div className="flex-1 overflow-auto border border-zinc-200 rounded-md bg-white shadow-sm">
-        <table className="w-full text-left text-xs text-zinc-600">
-          <thead className="bg-zinc-50 text-[10px] font-semibold text-zinc-500 sticky top-0 z-10 border-b border-zinc-200">
+      <div className="flex-1 overflow-auto border border-zinc-200 dark:border-zinc-800 rounded-md bg-white dark:bg-zinc-900 shadow-sm">
+        <table className="w-full text-left text-xs text-zinc-600 dark:text-zinc-400">
+          <thead className="bg-zinc-50 dark:bg-zinc-950 text-[10px] font-semibold text-zinc-500 dark:text-zinc-500 sticky top-0 z-10 border-b border-zinc-200 dark:border-zinc-800">
             <tr>
               <th className="px-2 py-1.5 w-8">
                 <input
@@ -362,7 +362,7 @@ const Highlights = () => {
               <th className="px-2 py-1.5 w-[15%]">
                 <button
                   onClick={() => handleSort('book')}
-                  className="flex items-center gap-1 hover:text-zinc-700 transition-colors"
+                  className="flex items-center gap-1 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors"
                 >
                   <span>Livro</span>
                   {getSortIcon('book')}
@@ -371,7 +371,7 @@ const Highlights = () => {
               <th className="px-2 py-1.5 w-[30%]">
                 <button
                   onClick={() => handleSort('highlight')}
-                  className="flex items-center gap-1 hover:text-zinc-700 transition-colors"
+                  className="flex items-center gap-1 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors"
                 >
                   <span>Destaque</span>
                   {getSortIcon('highlight')}
@@ -380,7 +380,7 @@ const Highlights = () => {
               <th className="px-2 py-1.5 w-[15%]">
                 <button
                   onClick={() => handleSort('note')}
-                  className="flex items-center gap-1 hover:text-zinc-700 transition-colors"
+                  className="flex items-center gap-1 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors"
                 >
                   <span>Nota</span>
                   {getSortIcon('note')}
@@ -390,7 +390,7 @@ const Highlights = () => {
               <th className="px-2 py-1.5 w-16 whitespace-nowrap">
                 <button
                   onClick={() => handleSort('date')}
-                  className="flex items-center gap-1 hover:text-zinc-700 transition-colors"
+                  className="flex items-center gap-1 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors"
                 >
                   <span>Data</span>
                   {getSortIcon('date')}
@@ -399,10 +399,10 @@ const Highlights = () => {
               <th className="px-2 py-1.5 w-16">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-100">
+          <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
             {filteredAndSortedHighlights.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-3 py-12 text-center text-zinc-400">
+                <td colSpan={7} className="px-3 py-12 text-center text-zinc-400 dark:text-zinc-500">
                   No highlights match your filters.
                 </td>
               </tr>
@@ -416,8 +416,8 @@ const Highlights = () => {
                   <tr
                     key={highlight.id}
                     className={`
-                      hover:bg-zinc-50 transition-colors group
-                      ${isSelected ? 'bg-zinc-50' : ''}
+                      hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors group
+                      ${isSelected ? 'bg-zinc-50 dark:bg-zinc-800' : ''}
                     `}
                   >
                     <td className="px-2 py-1 align-top">
@@ -432,34 +432,34 @@ const Highlights = () => {
                       <div className="flex flex-col gap-0.5">
                         <button
                           onClick={() => setEditingHighlightId(highlight.id)}
-                          className="font-medium text-zinc-900 line-clamp-1 leading-tight text-xs text-left hover:underline"
+                          className="font-medium text-zinc-900 dark:text-zinc-100 line-clamp-1 leading-tight text-xs text-left hover:underline"
                           title={book?.title}
                         >
                           {book?.title || 'Unknown Book'}
                         </button>
-                        <span className="text-[9px] text-zinc-400 line-clamp-1" title={book?.author}>
+                        <span className="text-[9px] text-zinc-400 dark:text-zinc-500 line-clamp-1" title={book?.author}>
                           {book?.author || 'Unknown Author'}
                         </span>
                       </div>
                     </td>
                     <td className="px-2 py-1 align-top max-w-[300px]">
-                      <div className="font-serif text-zinc-800 line-clamp-2 leading-tight text-xs cursor-pointer hover:text-zinc-600" title={highlight.text} onClick={() => setEditingHighlightId(highlight.id)}>
+                      <div className="font-serif text-zinc-800 dark:text-zinc-200 line-clamp-2 leading-tight text-xs cursor-pointer hover:text-zinc-600 dark:hover:text-zinc-400" title={highlight.text} onClick={() => setEditingHighlightId(highlight.id)}>
                         "{highlight.text}"
                       </div>
                     </td>
                     <td className="px-2 py-1 align-top max-w-[200px]">
                       {highlight.note ? (
-                        <div className="font-serif text-zinc-800 text-[10px] bg-zinc-50 px-1 py-0.5 rounded border border-zinc-100 leading-tight line-clamp-2 cursor-pointer hover:bg-zinc-100" title={highlight.note} onClick={() => setEditingHighlightId(highlight.id)}>
+                        <div className="font-serif text-zinc-800 dark:text-zinc-200 text-[10px] bg-zinc-50 dark:bg-zinc-950 px-1 py-0.5 rounded border border-zinc-100 dark:border-zinc-800 leading-tight line-clamp-2 cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800" title={highlight.note} onClick={() => setEditingHighlightId(highlight.id)}>
                           {highlight.note}
                         </div>
                       ) : (
-                        <span className="text-zinc-300 text-[9px] italic cursor-pointer hover:text-zinc-400" onClick={() => setEditingHighlightId(highlight.id)}>Click to add note</span>
+                        <span className="text-zinc-300 dark:text-zinc-600 text-[9px] italic cursor-pointer hover:text-zinc-400 dark:hover:text-zinc-500" onClick={() => setEditingHighlightId(highlight.id)}>Click to add note</span>
                       )}
                     </td>
                     <td className="px-2 py-1 align-top">
                       <TagSelector highlightId={highlight.id} bookId={highlight.bookId} />
                     </td>
-                    <td className="px-2 py-1 align-top whitespace-nowrap text-[9px] text-zinc-400">
+                    <td className="px-2 py-1 align-top whitespace-nowrap text-[9px] text-zinc-400 dark:text-zinc-500">
                       {formatDateShort(highlight.dateAdded)}
                     </td>
                     <td className="px-2 py-1 align-top">

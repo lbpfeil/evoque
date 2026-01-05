@@ -106,13 +106,13 @@ const HighlightEditModal: React.FC<HighlightEditModalProps> = ({ highlightId, on
                 onMouseDown={handleOverlayMouseDown}
                 onClick={handleOverlayClick}
             >
-                <div className="bg-white rounded-md shadow-2xl max-w-2xl w-full max-h-[95vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
-                    <div className="p-3 border-b border-zinc-200 flex items-start gap-3">
+                <div className="bg-white dark:bg-zinc-900 rounded-md shadow-2xl max-w-2xl w-full max-h-[95vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+                    <div className="p-3 border-b border-zinc-200 dark:border-zinc-800 flex items-start gap-3">
                         <img src={book.coverUrl} alt={book.title} className="w-14 h-[86px] object-cover rounded shadow-sm flex-shrink-0" />
                         <div className="flex-1 min-w-0">
-                            <h2 className="text-base font-bold text-zinc-900 mb-0.5 line-clamp-1">{book.title}</h2>
-                            <p className="text-xs text-zinc-600 mb-2">{book.author}</p>
-                            <div className="flex flex-wrap gap-3 text-[9px] text-zinc-400">
+                            <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100 mb-0.5 line-clamp-1">{book.title}</h2>
+                            <p className="text-xs text-zinc-600 dark:text-zinc-400 mb-2">{book.author}</p>
+                            <div className="flex flex-wrap gap-3 text-[9px] text-zinc-400 dark:text-zinc-500">
                                 <div className="flex items-center gap-1">
                                     <Calendar className="w-3 h-3" />
                                     <span>{formatDate(highlight.dateAdded)}</span>
@@ -125,42 +125,42 @@ const HighlightEditModal: React.FC<HighlightEditModalProps> = ({ highlightId, on
                                 )}
                             </div>
                         </div>
-                        <button onClick={handleClose} className="p-1 hover:bg-zinc-100 rounded transition-colors flex-shrink-0" title="Close">
-                            <X className="w-4 h-4 text-zinc-600" />
+                        <button onClick={handleClose} className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded transition-colors flex-shrink-0" title="Close">
+                            <X className="w-4 h-4 text-zinc-600 dark:text-zinc-400" />
                         </button>
                     </div>
 
                     <div className="flex-1 overflow-y-auto p-3 space-y-2">
-                        <div className="bg-zinc-50 border border-zinc-200 rounded p-2">
-                            <label className="text-[9px] uppercase text-zinc-400 font-semibold mb-1 block">Highlight</label>
+                        <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded p-2">
+                            <label className="text-[9px] uppercase text-zinc-400 dark:text-zinc-500 font-semibold mb-1 block">Highlight</label>
                             <textarea
                                 value={editForm.text}
                                 onChange={(e) => handleChange('text', e.target.value)}
-                                className="w-full bg-transparent border-0 px-0 py-0 text-xs font-serif text-zinc-800 resize-none focus:outline-none placeholder:text-zinc-300"
+                                className="w-full bg-transparent border-0 px-0 py-0 text-xs font-serif text-zinc-800 dark:text-zinc-200 resize-none focus:outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600"
                                 rows={6}
                             />
                         </div>
 
-                        <div className="bg-zinc-50 border border-zinc-200 rounded p-2">
-                            <label className="text-[9px] uppercase text-zinc-400 font-semibold mb-1 block">Note</label>
+                        <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded p-2">
+                            <label className="text-[9px] uppercase text-zinc-400 dark:text-zinc-500 font-semibold mb-1 block">Note</label>
                             <textarea
                                 value={editForm.note}
                                 onChange={(e) => handleChange('note', e.target.value)}
-                                className="w-full bg-transparent border-0 px-0 py-0 text-xs font-serif text-zinc-800 resize-none focus:outline-none placeholder:text-zinc-300"
+                                className="w-full bg-transparent border-0 px-0 py-0 text-xs font-serif text-zinc-800 dark:text-zinc-200 resize-none focus:outline-none placeholder:text-zinc-300 dark:placeholder:text-zinc-600"
                                 rows={5}
                                 placeholder="Add your personal note..."
                             />
                         </div>
 
-                        <div className="border-t border-zinc-200 pt-2">
-                            <button onClick={() => setShowStats(!showStats)} className="flex items-center gap-1.5 text-xs text-zinc-600 hover:text-zinc-900 transition-colors w-full">
+                        <div className="border-t border-zinc-200 dark:border-zinc-800 pt-2">
+                            <button onClick={() => setShowStats(!showStats)} className="flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors w-full">
                                 <TrendingUp className="w-3 h-3" />
                                 <span className="font-medium">Study Statistics</span>
                                 {showStats ? <ChevronUp className="w-3 h-3 ml-auto" /> : <ChevronDown className="w-3 h-3 ml-auto" />}
                             </button>
 
                             {showStats && (
-                                <div className="mt-2 bg-zinc-50 rounded p-2 space-y-2">
+                                <div className="mt-2 bg-zinc-50 dark:bg-zinc-950 rounded p-2 space-y-2">
                                     <div className="h-40 w-full">
                                         {statsData.length > 0 ? (
                                             <ResponsiveContainer width="100%" height="100%">
@@ -173,22 +173,22 @@ const HighlightEditModal: React.FC<HighlightEditModalProps> = ({ highlightId, on
                                                 </LineChart>
                                             </ResponsiveContainer>
                                         ) : (
-                                            <div className="flex items-center justify-center h-full text-zinc-400 text-[10px]">No review history yet.</div>
+                                            <div className="flex items-center justify-center h-full text-zinc-400 dark:text-zinc-500 text-[10px]">No review history yet.</div>
                                         )}
                                     </div>
 
                                     <div className="grid grid-cols-3 gap-1.5">
-                                        <div className="bg-white p-1.5 rounded text-center">
-                                            <p className="text-[9px] text-zinc-400 uppercase tracking-wide font-semibold">Repetitions</p>
-                                            <p className="text-sm font-bold text-zinc-900">{card?.repetitions || 0}</p>
+                                        <div className="bg-white dark:bg-zinc-900 p-1.5 rounded text-center">
+                                            <p className="text-[9px] text-zinc-400 dark:text-zinc-500 uppercase tracking-wide font-semibold">Repetitions</p>
+                                            <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{card?.repetitions || 0}</p>
                                         </div>
-                                        <div className="bg-white p-1.5 rounded text-center">
-                                            <p className="text-[9px] text-zinc-400 uppercase tracking-wide font-semibold">Ease Factor</p>
-                                            <p className="text-sm font-bold text-zinc-900">{card?.easeFactor?.toFixed(2) || '-'}</p>
+                                        <div className="bg-white dark:bg-zinc-900 p-1.5 rounded text-center">
+                                            <p className="text-[9px] text-zinc-400 dark:text-zinc-500 uppercase tracking-wide font-semibold">Ease Factor</p>
+                                            <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{card?.easeFactor?.toFixed(2) || '-'}</p>
                                         </div>
-                                        <div className="bg-white p-1.5 rounded text-center">
-                                            <p className="text-[9px] text-zinc-400 uppercase tracking-wide font-semibold">Next Review</p>
-                                            <p className="text-[10px] font-bold text-zinc-900">
+                                        <div className="bg-white dark:bg-zinc-900 p-1.5 rounded text-center">
+                                            <p className="text-[9px] text-zinc-400 dark:text-zinc-500 uppercase tracking-wide font-semibold">Next Review</p>
+                                            <p className="text-[10px] font-bold text-zinc-900 dark:text-zinc-100">
                                                 {card ? new Date(card.nextReviewDate).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : '-'}
                                             </p>
                                         </div>

@@ -115,7 +115,8 @@ export const toSupabaseSettings = (settings: any, userId: string) => ({
     daily_progress: settings.dailyProgress,
     full_name: settings.fullName,
     avatar_url: settings.avatarUrl,
-    default_initial_ease_factor: settings.defaultInitialEaseFactor
+    default_initial_ease_factor: settings.defaultInitialEaseFactor,
+    theme: settings.theme
 });
 
 export const fromSupabaseSettings = (row: any) => ({
@@ -124,7 +125,8 @@ export const fromSupabaseSettings = (row: any) => ({
     dailyProgress: row.daily_progress,
     fullName: row.full_name,
     avatarUrl: row.avatar_url,
-    defaultInitialEaseFactor: row.default_initial_ease_factor
+    defaultInitialEaseFactor: row.default_initial_ease_factor,
+    theme: row.theme
 });
 
 // ============================================
