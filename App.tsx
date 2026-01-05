@@ -5,6 +5,7 @@ import BottomNav from './components/BottomNav';
 import Login from './pages/Login';
 import { StoreProvider } from './components/StoreContext';
 import { AuthProvider, useAuth } from './components/AuthContext';
+import { SidebarProvider, useSidebarContext } from './components/SidebarContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import { Loader2 } from 'lucide-react';
 import { SpeedInsights } from "@vercel/speed-insights/react"
@@ -29,11 +30,18 @@ const PageLoadingFallback = () => (
 const AppLayout = ({ children }: React.PropsWithChildren) => {
   const location = useLocation();
   const isStudySession = location.pathname === '/study/session';
+  const { isExpanded } = useSidebarContext();
+
+  // Calculate dynamic margin based on sidebar state
+  const mainMarginLeft = !isStudySession ? (isExpanded ? '224px' : '56px') : '0';
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col md:flex-row text-zinc-900 dark:text-zinc-100 font-sans antialiased">
       {!isStudySession && <Sidebar />}
-      <main className={`flex-1 ${!isStudySession ? 'md:ml-56 p-4 md:p-8 pb-20 md:pb-8' : ''} overflow-y-auto h-screen`}>
+      <main
+        className={`flex-1 ${!isStudySession ? 'p-4 md:p-8 pb-20 md:pb-8' : ''} overflow-y-auto h-screen transition-all duration-300 ease-in-out`}
+        style={{ marginLeft: mainMarginLeft }}
+      >
         {!isStudySession ? (
           <div className="max-w-6xl mx-auto">
             <Suspense fallback={<PageLoadingFallback />}>
@@ -71,21 +79,23 @@ const ProtectedApp = () => {
 
   return (
     <HashRouter>
-      <StoreProvider>
-        <AppLayout>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/highlights" element={<Highlights />} />
-            <Route path="/study" element={<Study />} />
-            <Route path="/study/session" element={<StudySession />} />
-            <Route path="/settings" element={<Settings />} />
-            {/* Redirects for old routes */}
-            <Route path="/import" element={<Navigate to="/settings" replace />} />
-            <Route path="/library" element={<Navigate to="/settings" replace />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </AppLayout>
-      </StoreProvider>
+      <SidebarProvider>
+        <StoreProvider>
+          <AppLayout>
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/highlights" element={<Highlights />} />
+              <Route path="/study" element={<Study />} />
+              <Route path="/study/session" element={<StudySession />} />
+              <Route path="/settings" element={<Settings />} />
+              {/* Redirects for old routes */}
+              <Route path="/import" element={<Navigate to="/settings" replace />} />
+              <Route path="/library" element={<Navigate to="/settings" replace />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </AppLayout>
+        </StoreProvider>
+      </SidebarProvider>
     </HashRouter>
   );
 };
