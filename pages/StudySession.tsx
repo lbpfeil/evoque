@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useStore } from '../components/StoreContext';
 import { DeleteCardPopover } from '../components/DeleteCardPopover';
@@ -45,9 +45,21 @@ const StudySession = () => {
     const sessionComplete = queueIds.length > 0 && currentIndex >= queueIds.length;
 
     const currentCardId = queueIds[currentIndex];
-    const currentCard = studyCards.find(c => c.id === currentCardId);
-    const currentHighlight = currentCard ? highlights.find(h => h.id === currentCard.highlightId) : null;
-    const currentBook = currentHighlight ? books.find(b => b.id === currentHighlight.bookId) : null;
+
+    const currentCard = useMemo(
+        () => studyCards.find(c => c.id === currentCardId),
+        [studyCards, currentCardId]
+    );
+
+    const currentHighlight = useMemo(
+        () => currentCard ? highlights.find(h => h.id === currentCard.highlightId) : null,
+        [highlights, currentCard]
+    );
+
+    const currentBook = useMemo(
+        () => currentHighlight ? books.find(b => b.id === currentHighlight.bookId) : null,
+        [books, currentHighlight]
+    );
 
     // Start session on mount
     useEffect(() => {
@@ -56,22 +68,39 @@ const StudySession = () => {
         }
     }, [isLoaded, deckId]);
 
+    // Reset showAnswer when card changes (prevents flashing next card's answer)
+    useEffect(() => {
+        setShowAnswer(false);
+        setIsEditingHighlight(false);
+        setIsEditingNote(false);
+    }, [currentCardId]);
+
     const handleResponse = useCallback(async (quality: number) => {
         if (!currentCard) return;
 
         // Save previous state BEFORE updating
         const previousCard = { ...currentCard };
 
-        // 1. Update Card (SM-2 Algorithm)
+        // 1. Calculate next review (SM-2 Algorithm) - local operation
         const updatedCard = calculateNextReview(currentCard, quality);
-        await updateCard(updatedCard);
 
-        // 2. Update Session and Save Review Log (pass previous state)
-        await submitReview(currentCard.id, quality, previousCard);
+        // 2. Fire both operations in parallel (don't await)
+        // Both functions do optimistic updates internally, so UI updates immediately
+        Promise.allSettled([
+            updateCard(updatedCard),
+            submitReview(currentCard.id, quality, previousCard)
+        ]).then(results => {
+            // Log failures but don't block UI
+            results.forEach((result, idx) => {
+                if (result.status === 'rejected') {
+                    const operation = idx === 0 ? 'updateCard' : 'submitReview';
+                    console.error(`${operation} failed:`, result.reason);
+                }
+            });
+        });
 
-        setShowAnswer(false);
-        setIsEditingHighlight(false);
-        setIsEditingNote(false);
+        // Note: showAnswer reset handled by useEffect on currentCardId change
+        // UI continues immediately - next card loads without waiting for DB
     }, [currentCard, updateCard, submitReview]);
 
     const handleSaveHighlight = useCallback(async () => {
@@ -112,9 +141,7 @@ const StudySession = () => {
 
     const handleUndo = useCallback(async () => {
         await undoLastReview();
-        setShowAnswer(false);
-        setIsEditingHighlight(false);
-        setIsEditingNote(false);
+        // Note: showAnswer reset is handled by useEffect on currentCardId change
     }, [undoLastReview]);
 
     const handleBack = useCallback(() => {

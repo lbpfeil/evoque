@@ -448,24 +448,41 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       const supabaseCard = toSupabaseStudyCard(updatedCard, user.id);
       console.log('DEBUG: Supabase card data', supabaseCard);
 
-      const { error, data } = await supabase
+      const { error } = await supabase
         .from('study_cards')
         .update(supabaseCard)
         .eq('id', updatedCard.id)
-        .eq('user_id', user.id)
-        .select();
+        .eq('user_id', user.id);
+        // .select() removed - optimistic state already has the data
 
-      console.log('DEBUG: updateCard result', { error, data });
+      console.log('DEBUG: updateCard result', { error });
 
       if (error) throw error;
     } catch (error) {
       console.error('Failed to update study card in Supabase:', error);
-      // Reload data on error
-      const { data } = await supabase
+
+      // Try to reload just the failed card first (targeted rollback)
+      const { data, error: fetchError } = await supabase
         .from('study_cards')
         .select('*')
-        .eq('user_id', user.id);
-      if (data) setStudyCards(data.map(fromSupabaseStudyCard));
+        .eq('id', updatedCard.id)
+        .eq('user_id', user.id)
+        .single();
+
+      if (data && !fetchError) {
+        // Targeted rollback - replace only the failed card
+        setStudyCards(prev => prev.map(c =>
+          c.id === updatedCard.id ? fromSupabaseStudyCard(data) : c
+        ));
+      } else {
+        // Fallback: full reload if single fetch fails
+        console.warn('Single card fetch failed, performing full reload');
+        const { data: allCards } = await supabase
+          .from('study_cards')
+          .select('*')
+          .eq('user_id', user.id);
+        if (allCards) setStudyCards(allCards.map(fromSupabaseStudyCard));
+      }
     }
   };
 
