@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useStore } from '../components/StoreContext';
 import { DeleteCardPopover } from '../components/DeleteCardPopover';
 import { TagSelector } from '../components/TagSelector';
-import { ArrowLeft, CheckCircle, Edit2, Clock, Trash2, Tag as TagIcon } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Edit2, Clock, Trash2, Tag as TagIcon, Copy } from 'lucide-react';
 import { calculateNextReview } from '../services/sm2';
 
 const StudySession = () => {
@@ -37,6 +37,7 @@ const StudySession = () => {
     const [showDeletePopover, setShowDeletePopover] = useState(false);
     const [showAllTags, setShowAllTags] = useState(false);
     const [showTagSelector, setShowTagSelector] = useState(false);
+    const [justCopied, setJustCopied] = useState(false);
 
     // Derived state from session
     const queueIds = currentSession ? currentSession.cardIds : [];
@@ -147,6 +148,23 @@ const StudySession = () => {
     const handleBack = useCallback(() => {
         navigate('/study');
     }, [navigate]);
+
+    const handleCopyToClipboard = useCallback(async () => {
+        if (!currentBook || !currentHighlight) return;
+
+        const text = `Título: ${currentBook.title}
+Autor: ${currentBook.author}
+
+${currentHighlight.text}`;
+
+        try {
+            await navigator.clipboard.writeText(text);
+            setJustCopied(true);
+            setTimeout(() => setJustCopied(false), 2000);
+        } catch (err) {
+            console.error('Failed to copy to clipboard:', err);
+        }
+    }, [currentBook, currentHighlight]);
 
     // Keyboard shortcuts
     useEffect(() => {
@@ -337,6 +355,15 @@ const StudySession = () => {
                             title="Manage Tags"
                         >
                             <TagIcon className="w-4 h-4" />
+                        </button>
+                        {/* Copy to Clipboard button */}
+                        <button
+                            onClick={handleCopyToClipboard}
+                            disabled={!currentBook || !currentHighlight}
+                            className="p-2 -mr-1 text-zinc-400 hover:text-green-600 transition-colors rounded-full hover:bg-zinc-100 min-h-[40px] sm:min-h-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                            title={justCopied ? "Copiado!" : "Copiar para área de transferência"}
+                        >
+                            <Copy className={`w-4 h-4 ${justCopied ? 'text-green-600' : ''}`} />
                         </button>
                         <button
                             onClick={() => setShowDeletePopover(true)}
