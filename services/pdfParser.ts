@@ -33,8 +33,10 @@ const extractTextFromPDF = async (file: File): Promise<string> => {
 
 /**
  * Parse Amazon Kindle PDF highlights export
+ * @param file - PDF file to parse
+ * @param userId - User ID to include in book ID generation for multi-tenant isolation
  */
-export const parsePDFKindleHighlights = async (file: File): Promise<{ books: Book[], highlights: Highlight[] }> => {
+export const parsePDFKindleHighlights = async (file: File, userId: string): Promise<{ books: Book[], highlights: Highlight[] }> => {
   try {
     // Extract text from PDF
     const text = await extractTextFromPDF(file);
@@ -50,7 +52,8 @@ export const parsePDFKindleHighlights = async (file: File): Promise<{ books: Boo
     // Remove PDF page numbers from title and author
     const title = metaMatch[1].trim().replace(/^\d+\s+/, '');
     const author = metaMatch[2].trim().replace(/^\d+\s+/, '');
-    const bookId = generateDeterministicUUID(`${title}-${author}`);
+    // Include userId in ID generation for multi-tenant isolation (prevents RLS conflicts)
+    const bookId = generateDeterministicUUID(`${userId}-${title}-${author}`);
 
     // Create book object
     const book: Book = {
@@ -121,7 +124,7 @@ export const parsePDFKindleHighlights = async (file: File): Promise<{ books: Boo
       }
 
       highlights.push({
-        id: generateHighlightID(title, author, highlightText, `page-${page}`),
+        id: generateHighlightID(userId, title, author, highlightText, `page-${page}`),
         bookId,
         text: highlightText,
         location: `page-${page}`,

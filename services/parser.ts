@@ -66,7 +66,7 @@ const parseDate = (dateString: string): string => {
   }
 };
 
-export const parseMyClippings = (text: string): { books: Book[], highlights: Highlight[] } => {
+export const parseMyClippings = (text: string, userId: string): { books: Book[], highlights: Highlight[] } => {
   const entries = text.split('==========').filter((e) => e.trim().length > 0);
   const booksMap = new Map<string, Book>();
   const parsedHighlights: ParsedEntry[] = [];
@@ -118,8 +118,8 @@ export const parseMyClippings = (text: string): { books: Book[], highlights: Hig
 
       if (!content) return;
 
-      // Generate Book ID (deterministic UUID)
-      const bookId = generateDeterministicUUID(`${title}-${author}`);
+      // Generate Book ID (deterministic UUID) with userId for multi-tenant isolation
+      const bookId = generateDeterministicUUID(`${userId}-${title}-${author}`);
 
       if (!booksMap.has(bookId)) {
         booksMap.set(bookId, {
@@ -160,7 +160,7 @@ export const parseMyClippings = (text: string): { books: Book[], highlights: Hig
   const finalHighlights: Highlight[] = [];
 
   parsedHighlights.forEach(ph => {
-    const bookId = generateDeterministicUUID(`${ph.title}-${ph.author}`);
+    const bookId = generateDeterministicUUID(`${userId}-${ph.title}-${ph.author}`);
 
     // Find associated note
     // A note is associated if it's for the same book and its location is within or close to the highlight's location
@@ -174,7 +174,7 @@ export const parseMyClippings = (text: string): { books: Book[], highlights: Hig
     });
 
     finalHighlights.push({
-      id: generateHighlightID(ph.title, ph.author, ph.content, ph.location),
+      id: generateHighlightID(userId, ph.title, ph.author, ph.content, ph.location),
       bookId,
       text: ph.content,
       location: ph.location,

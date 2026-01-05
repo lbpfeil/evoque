@@ -110,7 +110,8 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
         .eq('user_id', user.id);
 
       if (highlightsError) throw highlightsError;
-      if (highlightsData) setHighlights(highlightsData.map(fromSupabaseHighlight));
+      const loadedHighlights = highlightsData ? highlightsData.map(fromSupabaseHighlight) : [];
+      if (highlightsData) setHighlights(loadedHighlights);
 
       // Load study cards
       const { data: cardsData, error: cardsError } = await supabase
@@ -119,7 +120,27 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
         .eq('user_id', user.id);
 
       if (cardsError) throw cardsError;
-      if (cardsData) setStudyCards(cardsData.map(fromSupabaseStudyCard));
+      if (cardsData) {
+        // Filter out orphaned cards (cards pointing to non-existent highlights)
+        const highlightIds = new Set(loadedHighlights.map(h => h.id));
+        const validCards = cardsData
+          .map(fromSupabaseStudyCard)
+          .filter(card => {
+            const isValid = highlightIds.has(card.highlightId);
+            if (!isValid) {
+              console.warn(`[ORPHAN CARD] Study card ${card.id} points to missing highlight ${card.highlightId}`);
+            }
+            return isValid;
+          });
+
+        setStudyCards(validCards);
+
+        // Log orphan count if any
+        const orphanCount = cardsData.length - validCards.length;
+        if (orphanCount > 0) {
+          console.warn(`[DATA CLEANUP] Filtered out ${orphanCount} orphaned study cards`);
+        }
+      }
 
       // Load settings
       const { data: settingsData, error: settingsError } = await supabase
@@ -375,8 +396,19 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
         ]);
 
         if (booksData.data) setBooks(booksData.data.map(fromSupabaseBook));
-        if (highlightsData.data) setHighlights(highlightsData.data.map(fromSupabaseHighlight));
-        if (cardsData.data) setStudyCards(cardsData.data.map(fromSupabaseStudyCard));
+
+        const reloadedHighlights = highlightsData.data ? highlightsData.data.map(fromSupabaseHighlight) : [];
+        if (highlightsData.data) setHighlights(reloadedHighlights);
+
+        if (cardsData.data) {
+          // Filter out orphaned cards (same as loadData)
+          const highlightIds = new Set(reloadedHighlights.map(h => h.id));
+          const validCards = cardsData.data
+            .map(fromSupabaseStudyCard)
+            .filter(card => highlightIds.has(card.highlightId));
+
+          setStudyCards(validCards);
+        }
 
       } catch (supabaseError) {
         console.error('Failed to sync import with Supabase:', supabaseError);

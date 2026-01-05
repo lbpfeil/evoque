@@ -61,6 +61,11 @@ const Settings = () => {
   };
 
   const processFile = async (file: File) => {
+    if (!user) {
+      setImportError('You must be logged in to import files');
+      return;
+    }
+
     const isPDF = file.name.endsWith('.pdf');
     const isTXT = file.name.endsWith('.txt');
     const isTSV = file.name.endsWith('.tsv');
@@ -78,7 +83,7 @@ const Settings = () => {
       if (isPDF) {
         // Dynamic import PDF parser only when needed
         const { parsePDFKindleHighlights } = await import('../services/pdfParser');
-        const { books, highlights } = await parsePDFKindleHighlights(file);
+        const { books, highlights } = await parsePDFKindleHighlights(file, user.id);
 
         const res = await importData({ books, highlights });
         setImportResult(res);
@@ -91,7 +96,7 @@ const Settings = () => {
           try {
             // Dynamic import Anki parser only when needed
             const { parseAnkiTSV } = await import('../services/ankiParser');
-            const { books, highlights } = parseAnkiTSV(text);
+            const { books, highlights } = parseAnkiTSV(text, user!.id);
             const res = await importData({ books, highlights });
             setImportResult(res);
           } catch (err: any) {
@@ -111,7 +116,7 @@ const Settings = () => {
           try {
             // Dynamic import TXT parser only when needed
             const { parseMyClippings } = await import('../services/parser');
-            const { books, highlights } = parseMyClippings(text);
+            const { books, highlights } = parseMyClippings(text, user!.id);
             const res = await importData({ books, highlights });
             setImportResult(res);
           } catch (err: any) {

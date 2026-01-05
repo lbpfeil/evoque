@@ -79,9 +79,10 @@ const fixEncoding = (text: string): string => {
  * Format: [highlight text]\t[note]\t[book title]\t[author]
  *
  * @param text - Raw file content
+ * @param userId - User ID for multi-tenant isolation (prevents RLS conflicts)
  * @returns Object with books and highlights arrays
  */
-export const parseAnkiTSV = (text: string): { books: Book[], highlights: Highlight[] } => {
+export const parseAnkiTSV = (text: string, userId: string): { books: Book[], highlights: Highlight[] } => {
   // Fix encoding issues first
   const fixedText = fixEncoding(text);
 
@@ -108,8 +109,8 @@ export const parseAnkiTSV = (text: string): { books: Book[], highlights: Highlig
         return;
       }
 
-      // Generate deterministic Book ID
-      const bookId = generateDeterministicUUID(`${bookTitle}-${author}`);
+      // Generate deterministic Book ID with userId for multi-tenant isolation
+      const bookId = generateDeterministicUUID(`${userId}-${bookTitle}-${author}`);
 
       // Create or update book in map
       if (!booksMap.has(bookId)) {
@@ -125,7 +126,7 @@ export const parseAnkiTSV = (text: string): { books: Book[], highlights: Highlig
 
       // Create highlight
       highlights.push({
-        id: generateHighlightID(bookTitle, author, highlightText, `anki-${index + 1}`),
+        id: generateHighlightID(userId, bookTitle, author, highlightText, `anki-${index + 1}`),
         bookId,
         text: highlightText,
         note: noteText && noteText.trim() !== '' ? noteText : undefined, // Empty string → undefined

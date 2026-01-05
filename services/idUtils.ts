@@ -36,18 +36,20 @@ export const generateUUID = (): string => {
 
 /**
  * Generates a deterministic ID for a highlight based on its immutable core properties.
- * 
+ *
+ * @param userId User ID for multi-tenant isolation (prevents RLS conflicts)
  * @param bookTitle Title of the book
  * @param author Author of the book
  * @param content The exact text content of the highlight (from source file)
  * @param location The location string (e.g. "page 15", "loc 1024")
  */
-export const generateHighlightID = (bookTitle: string, author: string, content: string, location: string): string => {
+export const generateHighlightID = (userId: string, bookTitle: string, author: string, content: string, location: string): string => {
     // Normalize inputs to ensure stability
     // - Trim whitespace
+    // - Include userId for multi-tenant isolation
     // - We DO NOT lower case content because case might matter, but for stability we could.
     // - Combining all fields with a separator
-    const key = `${bookTitle.trim()}|${author.trim()}|${location.trim()}|${content.trim()}`;
+    const key = `${userId.trim()}|${bookTitle.trim()}|${author.trim()}|${location.trim()}|${content.trim()}`;
 
     // DEBUG: Log the key to help troubleshoot why IDs might change
     console.log(`[ID GEN] Key: "${key}" -> ID: ${generateDeterministicUUID(key)}`);
