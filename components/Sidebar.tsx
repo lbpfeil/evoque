@@ -33,7 +33,7 @@ const Sidebar = () => {
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 ${isExpanded ? 'w-56' : 'w-14'} bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 hidden md:flex flex-col z-10 transition-[width] duration-300 ease-in-out overflow-hidden`}
+      className={`fixed inset-y-0 left-0 ${isExpanded ? 'w-56' : 'w-14'} bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 hidden md:flex flex-col z-50 transition-[width] duration-300 ease-in-out overflow-hidden`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >

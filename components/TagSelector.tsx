@@ -16,9 +16,10 @@ interface TagSelectorProps {
     className?: string;
     open?: boolean;
     onOpenChange?: (open: boolean) => void;
+    variant?: 'default' | 'minimal';
 }
 
-export function TagSelector({ highlightId, bookId, className, open: controlledOpen, onOpenChange }: TagSelectorProps) {
+export function TagSelector({ highlightId, bookId, className, open: controlledOpen, onOpenChange, variant = 'default' }: TagSelectorProps) {
     const { tags, highlights, assignTagToHighlight, removeTagFromHighlight, addTag, getBook } = useStore();
     const [internalOpen, setInternalOpen] = useState(false);
     const [searchValue, setSearchValue] = useState('');
@@ -182,8 +183,9 @@ export function TagSelector({ highlightId, bookId, className, open: controlledOp
                                     className={cn(
                                         "inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border",
                                         tag.bookId
-                                            ? "bg-amber-50 text-amber-700 border-amber-200"
-                                            : "bg-zinc-100 text-zinc-700 border-zinc-200"
+                                            ? "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-500 dark:border-amber-800"
+                                            : "bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700",
+                                        variant === 'minimal' && "rounded-full px-2"
                                     )}
                                 >
                                     {tag.bookId && <Book className="w-3 h-3 mr-1 opacity-50" />}
@@ -192,7 +194,10 @@ export function TagSelector({ highlightId, bookId, className, open: controlledOp
                             ))}
                         </div>
                     ) : (
-                        <span className="text-zinc-400 text-xs italic">Add tags...</span>
+                        <div className={cn("text-zinc-400 text-xs italic flex items-center gap-1", variant === 'minimal' && "opacity-0 group-hover:opacity-100 transition-opacity duration-200")}>
+                            <Plus className="w-3 h-3" />
+                            <span className={cn(variant === 'minimal' && "hidden sm:inline")}>Add tags...</span>
+                        </div>
                     )}
                 </Button>
             </PopoverTrigger>

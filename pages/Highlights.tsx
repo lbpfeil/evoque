@@ -1,16 +1,16 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useStore } from '../components/StoreContext';
-import { Search, Filter, Trash2, ArrowUpDown, Brain, Tag as TagIcon, ChevronUp, ChevronDown, ChevronsUpDown, Book, Plus, Check } from 'lucide-react';
-import { SortOption } from '../types';
+import { Search, Tag as TagIcon, ChevronUp, ChevronDown, ChevronsUpDown, Book, Check, ChevronLeft, ChevronRight } from 'lucide-react';
+import { SortOption, Highlight } from '../types';
 import HighlightEditModal from '../components/HighlightEditModal';
 import HighlightHistoryModal from '../components/HighlightHistoryModal';
-import { TagSelector } from '../components/TagSelector';
 import { TagManagerSidebar } from '../components/TagManagerSidebar';
 import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../components/ui/command';
 import { cn } from '../lib/utils';
+import { HighlightTableRow } from '../components/HighlightTableRow';
 
-const Highlights = () => {
+export const Highlights = () => {
   const {
     highlights,
     books,
@@ -31,6 +31,10 @@ const Highlights = () => {
   }>({ column: 'date', direction: 'desc' });
   const [studyFilter, setStudyFilter] = useState<'all' | 'in-study' | 'not-in-study'>('all');
 
+  // Pagination State
+  const pageLimit = 50;
+  const [currentPage, setCurrentPage] = useState(1);
+
   // Local state for selection & editing
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
@@ -43,13 +47,27 @@ const Highlights = () => {
   // Tag Manager Sidebar
   const [isTagManagerOpen, setIsTagManagerOpen] = useState(false);
 
+  // Ref for table container to scroll to top
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to top when page changes
+  useEffect(() => {
+    if (tableContainerRef.current) {
+      tableContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [currentPage]);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+    setSelectedIds(new Set()); // Also clear selection on filter change to avoid confusion
+  }, [searchTerm, selectedBookId, selectedTagId, studyFilter]);
+
   // Reset tag filter when book filter changes if the selected tag is not valid anymore
   useEffect(() => {
     if (selectedTagId !== 'all') {
       const selectedTag = tags.find(t => t.id === selectedTagId);
       if (selectedTag?.bookId) {
-        // If the selected tag is a chapter tag (has bookId)
-        // and the book filter changed to "all" or a different book, reset tag filter
         if (selectedBookId === 'all' || selectedTag.bookId !== selectedBookId) {
           setSelectedTagId('all');
         }
@@ -143,6 +161,13 @@ const Highlights = () => {
     return filtered;
   }, [highlights, searchTerm, selectedBookId, selectedTagId, sortConfig, studyFilter, books, studyCards, tags]);
 
+  // Pagination Logic
+  const totalPages = Math.ceil(filteredAndSortedHighlights.length / pageLimit);
+  const currentItems = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageLimit;
+    return filteredAndSortedHighlights.slice(startIndex, startIndex + pageLimit);
+  }, [filteredAndSortedHighlights, currentPage, pageLimit]);
+
   // Bulk Selection Handlers
   const toggleSelection = (id: string) => {
     const newSet = new Set(selectedIds);
@@ -155,10 +180,16 @@ const Highlights = () => {
   };
 
   const toggleAll = () => {
-    if (selectedIds.size === filteredAndSortedHighlights.length && filteredAndSortedHighlights.length > 0) {
-      setSelectedIds(new Set());
+    if (selectedIds.size === currentItems.length && currentItems.length > 0) {
+      // Deselect all on current page
+      const newSet = new Set(selectedIds);
+      currentItems.forEach(h => newSet.delete(h.id));
+      setSelectedIds(newSet);
     } else {
-      setSelectedIds(new Set(filteredAndSortedHighlights.map(h => h.id)));
+      // Select all on current page
+      const newSet = new Set(selectedIds);
+      currentItems.forEach(h => newSet.add(h.id));
+      setSelectedIds(newSet);
     }
   };
 
@@ -173,10 +204,8 @@ const Highlights = () => {
   const handleSort = (column: 'book' | 'highlight' | 'note' | 'date') => {
     setSortConfig(prev => {
       if (prev.column === column) {
-        // Toggle direction
         return { column, direction: prev.direction === 'asc' ? 'desc' : 'asc' };
       } else {
-        // New column, default to desc
         return { column, direction: 'desc' };
       }
     });
@@ -184,55 +213,23 @@ const Highlights = () => {
 
   // Sort icon helper
   const getSortIcon = (column: 'book' | 'highlight' | 'note' | 'date') => {
-    if (sortConfig.column !== column) {
-      return <ChevronsUpDown className="w-2.5 h-2.5 text-zinc-300 dark:text-zinc-600" />;
-    }
-    return sortConfig.direction === 'asc'
-      ? <ChevronUp className="w-2.5 h-2.5 text-zinc-600 dark:text-zinc-400" />
-      : <ChevronDown className="w-2.5 h-2.5 text-zinc-600 dark:text-zinc-400" />;
-  };
-
-  const formatDateShort = (dateString?: string) => {
-    if (!dateString) return '-';
-    try {
-      return new Date(dateString).toLocaleDateString('pt-BR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: '2-digit',
-      });
-    } catch (e) {
-      return dateString;
-    }
-  };
-
-  const getStudyBadge = (highlightId: string) => {
-    const status = getHighlightStudyStatus(highlightId);
-
-    switch (status) {
-      case 'review':
-        return <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-[10px] font-semibold rounded-sm">Review</span>;
-      case 'learning':
-        return <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-[10px] font-semibold rounded-sm">Learning</span>;
-      case 'new':
-        return <span className="px-2 py-0.5 bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 text-[10px] font-semibold rounded-sm">New</span>;
-      default:
-        return <span className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-500 text-[10px] font-semibold rounded-sm">Not Started</span>;
-    }
+    if (sortConfig.column !== column) return null;
+    return sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 ml-1" /> : <ChevronDown className="w-3 h-3 ml-1" />;
   };
 
   return (
-    <div className="space-y-3 relative h-full flex flex-col">
+    <div className="space-y-4 relative h-full flex flex-col w-full px-4 sm:px-6">
       {/* Header */}
-      <div className="flex justify-between items-start">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 pt-6 pb-2">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Highlights</h1>
-          <p className="text-zinc-500 dark:text-zinc-500 mt-1 font-light text-sm">
+          <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Highlights</h1>
+          <p className="text-zinc-500 dark:text-zinc-500 mt-1.5 font-light text-sm">
             {highlights.length} {highlights.length === 1 ? 'destaque' : 'destaques'} de {stats.uniqueBooks} {stats.uniqueBooks === 1 ? 'livro' : 'livros'}, último destaque em {formatDate(stats.lastHighlight)}.
           </p>
         </div>
         <button
           onClick={() => setIsTagManagerOpen(true)}
-          className="flex items-center gap-2 px-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-md text-xs font-medium transition-colors"
+          className="self-start flex items-center gap-2 px-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-full text-xs font-medium transition-colors border border-transparent hover:border-zinc-300 dark:hover:border-zinc-600"
         >
           <TagIcon className="w-3.5 h-3.5" />
           Manage Tags
@@ -240,75 +237,100 @@ const Highlights = () => {
       </div>
 
       {/* Toolbar */}
-      <div className="flex items-center gap-1.5 bg-white dark:bg-zinc-900 p-1.5 rounded-md border border-zinc-200 dark:border-zinc-800 shadow-sm">
-        {/* Search - flex to fill available space */}
-        <div className="relative flex-1 min-w-[180px]">
-          <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 dark:text-zinc-500" />
-          <input
-            type="text"
-            placeholder="Search..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-7 pr-2 py-1 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-black focus:border-black"
-          />
-        </div>
+      <div className="sticky top-0 z-20 bg-zinc-50 dark:bg-zinc-950 py-2 -mx-2 px-2 border-b border-transparent">
+        <div className="flex flex-wrap items-center gap-2 bg-white dark:bg-zinc-900 p-2 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm transition-shadow hover:shadow-md">
 
-        {/* Book Filter */}
-        <div className="relative">
+          {/* Bulk Actions (Conditional) */}
+          {selectedIds.size > 0 && (
+            <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2 duration-200 mr-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 px-3 py-1.5 rounded-lg shadow-md">
+              <span className="text-xs font-semibold whitespace-nowrap">{selectedIds.size} selected</span>
+              <div className="h-4 w-[1px] bg-white/20 dark:bg-black/20 mx-1" />
+
+              {/* Bulk Tag Trigger */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button className="flex items-center gap-1 text-[10px] hover:text-zinc-300 dark:hover:text-zinc-600 transition-colors uppercase tracking-wider font-bold">
+                    <TagIcon className="w-3 h-3" /> Tag
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[200px] p-0" align="start">
+                  <div className="max-h-[300px] overflow-y-auto p-1">
+                    <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground border-b border-zinc-100 dark:border-zinc-800 mb-1">
+                      Assign to {selectedIds.size} items
+                    </div>
+                    {(() => {
+                      const availableTagsForBulk = selectedBookId === 'all'
+                        ? tags.filter(t => !t.bookId)
+                        : tags.filter(t => !t.bookId || t.bookId === selectedBookId);
+
+                      const sortedBulkTags = availableTagsForBulk.sort((a, b) => a.name.localeCompare(b.name));
+
+                      if (sortedBulkTags.length === 0) return <div className="px-2 text-xs italic text-zinc-400">No tags available</div>;
+
+                      return sortedBulkTags.map(tag => (
+                        <div key={tag.id} onClick={() => bulkAssignTag(Array.from(selectedIds), tag.id)} className="cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 px-2 py-1.5 rounded text-xs flex items-center gap-2">
+                          {tag.bookId ? <Book className="w-3 h-3 text-amber-500" /> : <TagIcon className="w-3 h-3 text-zinc-400" />}
+                          <span>{tag.name}</span>
+                        </div>
+                      ));
+                    })()}
+                  </div>
+                </PopoverContent>
+              </Popover>
+
+              <div className="h-4 w-[1px] bg-white/20 dark:bg-black/20 mx-1" />
+
+              <button onClick={handleBulkDelete} className="flex items-center gap-1 text-[10px] hover:text-red-300 transition-colors uppercase tracking-wider font-bold">
+                Delete
+              </button>
+            </div>
+          )}
+
+          {/* Search */}
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+            <input
+              type="text"
+              placeholder="Search highlights..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg text-sm transition-all focus:outline-none focus:ring-2 focus:ring-black/5 dark:focus:ring-white/10 focus:border-zinc-400 dark:focus:border-zinc-600"
+            />
+          </div>
+
+          {/* Book Filter */}
           <Popover>
             <PopoverTrigger asChild>
-              <button
-                role="combobox"
-                className="w-48 pl-2 pr-2 py-1 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-black focus:border-black flex items-center justify-between"
-              >
-                <span className="truncate">
-                  {selectedBookId === 'all'
-                    ? "All Books"
-                    : books.find(b => b.id === selectedBookId)?.title || "All Books"}
+              <button role="combobox" className="w-full sm:w-auto min-w-[160px] max-w-[240px] px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg text-sm text-left flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors">
+                <span className="truncate font-medium text-zinc-700 dark:text-zinc-300">
+                  {selectedBookId === 'all' ? "All Books" : books.find(b => b.id === selectedBookId)?.title}
                 </span>
-                <ChevronsUpDown className="ml-2 h-3 w-3 shrink-0 opacity-50" />
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </button>
             </PopoverTrigger>
-            <PopoverContent className="w-[300px] p-0" align="start">
+            <PopoverContent className="w-[300px] p-0">
               <Command>
-                <CommandInput placeholder="Search books..." className="h-9 text-xs" />
+                <CommandInput placeholder="Search books..." className="h-9" />
                 <CommandList>
                   <CommandEmpty>No book found.</CommandEmpty>
                   <CommandGroup>
                     <CommandItem
                       value="all"
-                      disabled={false}
-                      onSelect={() => {
-                        setSelectedBookId('all');
-                      }}
-                      className="text-xs data-[disabled]:pointer-events-auto data-[disabled]:opacity-100"
+                      onSelect={() => setSelectedBookId('all')}
+                      className="data-[disabled]:opacity-100 data-[disabled]:pointer-events-auto cursor-pointer"
                     >
-                      <Check
-                        className={cn(
-                          "mr-2 h-3 w-3",
-                          selectedBookId === 'all' ? "opacity-100" : "opacity-0"
-                        )}
-                      />
+                      <Check className={cn("mr-2 h-4 w-4", selectedBookId === 'all' ? "opacity-100" : "opacity-0")} />
                       All Books
                     </CommandItem>
-                    {sortedBooks.map((book) => (
+                    {sortedBooks.map(book => (
                       <CommandItem
                         key={book.id}
                         value={book.title}
-                        disabled={false}
                         onSelect={() => setSelectedBookId(book.id)}
-                        className="text-xs data-[disabled]:pointer-events-auto data-[disabled]:opacity-100"
+                        className="data-[disabled]:opacity-100 data-[disabled]:pointer-events-auto cursor-pointer"
                       >
-                        <Check
-                          className={cn(
-                            "mr-2 h-3 w-3",
-                            selectedBookId === book.id ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                        <div className="flex flex-col truncate">
-                          <span className="font-bold truncate" title={book.title}>{book.title}</span>
-                          {book.author && <span className="text-zinc-500 font-normal text-[10px] truncate" title={book.author}>{book.author}</span>}
-                        </div>
+                        <Check className={cn("mr-2 h-4 w-4", selectedBookId === book.id ? "opacity-100" : "opacity-0")} />
+                        <span className="truncate">{book.title}</span>
                       </CommandItem>
                     ))}
                   </CommandGroup>
@@ -316,364 +338,213 @@ const Highlights = () => {
               </Command>
             </PopoverContent>
           </Popover>
-        </div>
 
-
-        {/* Tag Filter */}
-        {/* Tag Filter */}
-        <div className="relative">
+          {/* Tag Filter */}
           <Popover>
             <PopoverTrigger asChild>
-              <button
-                role="combobox"
-                className="w-40 pl-2 pr-2 py-1 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-black focus:border-black flex items-center justify-between"
-              >
-                <span className="truncate">
-                  {selectedTagId === 'all'
-                    ? "All Tags"
-                    : tags.find(t => t.id === selectedTagId)?.name || "All Tags"}
+              <button role="combobox" className="w-full sm:w-auto min-w-[140px] px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg text-sm text-left flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors">
+                <span className="truncate font-medium text-zinc-700 dark:text-zinc-300">
+                  {selectedTagId === 'all' ? "All Tags" : tags.find(t => t.id === selectedTagId)?.name}
                 </span>
-                <ChevronsUpDown className="ml-2 h-3 w-3 shrink-0 opacity-50" />
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </button>
             </PopoverTrigger>
-            <PopoverContent className="w-[200px] p-0" align="start">
+            <PopoverContent className="w-[200px] p-0">
               <Command>
-                <CommandInput placeholder="Search tags..." className="h-9 text-xs" />
+                <CommandInput placeholder="Search tags..." className="h-9" />
                 <CommandList>
                   <CommandEmpty>No tag found.</CommandEmpty>
                   <CommandGroup>
                     <CommandItem
                       value="all"
-                      disabled={false}
                       onSelect={() => setSelectedTagId('all')}
-                      className="text-xs data-[disabled]:pointer-events-auto data-[disabled]:opacity-100"
+                      className="data-[disabled]:opacity-100 data-[disabled]:pointer-events-auto cursor-pointer"
                     >
-                      <Check
-                        className={cn(
-                          "mr-2 h-3 w-3",
-                          selectedTagId === 'all' ? "opacity-100" : "opacity-0"
-                        )}
-                      />
+                      <Check className={cn("mr-2 h-4 w-4", selectedTagId === 'all' ? "opacity-100" : "opacity-0")} />
                       All Tags
                     </CommandItem>
+                    {/* Simple Tag List for Filter (Flattened or Recursive - simplified here for brevity, usually recursive) */}
                     {(() => {
-                      const renderTags = (parentId?: string, depth = 0): React.ReactNode[] => {
-                        const children = tags.filter(t => {
-                          const tParent = t.parentId ?? undefined;
-                          const compareParent = parentId ?? undefined;
-                          if (tParent !== compareParent) return false;
-
-                          if (selectedBookId === 'all') {
-                            return !t.bookId;
-                          }
-                          return !t.bookId || t.bookId === selectedBookId;
-                        });
-
-                        children.sort((a, b) => a.name.localeCompare(b.name));
-
-                        return children.flatMap(tag => {
-                          const prefix = depth > 0 ? (
-                            <span className="text-zinc-400 mr-1" style={{ paddingLeft: `${depth * 12}px` }}>└</span>
-                          ) : null;
-
-                          return [
-                            <CommandItem
-                              key={tag.id}
-                              value={tag.name}
-                              disabled={false}
-                              onSelect={() => setSelectedTagId(tag.id)}
-                              className="text-xs data-[disabled]:pointer-events-auto data-[disabled]:opacity-100"
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-3 w-3",
-                                  selectedTagId === tag.id ? "opacity-100" : "opacity-0"
-                                )}
-                              />
-                              {prefix}
-                              {tag.bookId && <Book className="w-3 h-3 mr-1 text-amber-500" />}
-                              <span className={cn("truncate", tag.bookId ? "text-amber-700 dark:text-amber-500" : "text-zinc-700 dark:text-zinc-300")}>
-                                {tag.name}
-                              </span>
-                            </CommandItem>,
-                            ...renderTags(tag.id, depth + 1)
-                          ];
-                        });
-                      };
-                      return renderTags(undefined);
+                      // Reuse the recursive render logic or similar flattening
+                      const visibleTags = tags.filter(t => selectedBookId === 'all' ? !t.bookId : (!t.bookId || t.bookId === selectedBookId));
+                      return visibleTags.sort((a, b) => a.name.localeCompare(b.name)).map(tag => (
+                        <CommandItem
+                          key={tag.id}
+                          value={tag.name}
+                          onSelect={() => setSelectedTagId(tag.id)}
+                          className="data-[disabled]:opacity-100 data-[disabled]:pointer-events-auto cursor-pointer"
+                        >
+                          <Check className={cn("mr-2 h-4 w-4", selectedTagId === tag.id ? "opacity-100" : "opacity-0")} />
+                          {tag.bookId && <Book className="w-3 h-3 mr-1 text-amber-500" />}
+                          <span className={tag.bookId ? "text-amber-700 dark:text-amber-500" : ""}>{tag.name}</span>
+                        </CommandItem>
+                      ));
                     })()}
                   </CommandGroup>
                 </CommandList>
               </Command>
             </PopoverContent>
           </Popover>
-        </div>
 
-        {/* Status Filter */}
-        <div className="relative">
+          {/* Status Filter */}
           <Popover>
             <PopoverTrigger asChild>
-              <button
-                role="combobox"
-                className="w-32 pl-2 pr-2 py-1 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-black focus:border-black flex items-center justify-between"
-              >
-                <span className="truncate">
-                  {studyFilter === 'all'
-                    ? "All Status"
-                    : studyFilter === 'in-study'
-                      ? "In Study"
-                      : "Not in Study"}
+              <button role="combobox" className="w-full sm:w-auto min-w-[120px] px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg text-sm text-left flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors">
+                <span className="truncate font-medium text-zinc-700 dark:text-zinc-300">
+                  {studyFilter === 'all' ? "All Status" : studyFilter === 'in-study' ? "In Study" : "Not in Study"}
                 </span>
-                <ChevronsUpDown className="ml-2 h-3 w-3 shrink-0 opacity-50" />
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </button>
             </PopoverTrigger>
-            <PopoverContent className="w-[150px] p-0" align="start">
+            <PopoverContent className="w-[150px] p-0">
               <Command>
                 <CommandList>
                   <CommandGroup>
                     <CommandItem
                       value="all"
-                      disabled={false}
                       onSelect={() => setStudyFilter('all')}
-                      className="text-xs data-[disabled]:pointer-events-auto data-[disabled]:opacity-100"
+                      className="data-[disabled]:opacity-100 data-[disabled]:pointer-events-auto cursor-pointer"
                     >
-                      <Check
-                        className={cn(
-                          "mr-2 h-3 w-3",
-                          studyFilter === 'all' ? "opacity-100" : "opacity-0"
-                        )}
-                      />
-                      All Status
+                      <Check className={cn("mr-2 h-4 w-4", studyFilter === 'all' ? "opacity-100" : "opacity-0")} /> All Status
                     </CommandItem>
                     <CommandItem
                       value="in-study"
-                      disabled={false}
                       onSelect={() => setStudyFilter('in-study')}
-                      className="text-xs data-[disabled]:pointer-events-auto data-[disabled]:opacity-100"
+                      className="data-[disabled]:opacity-100 data-[disabled]:pointer-events-auto cursor-pointer"
                     >
-                      <Check
-                        className={cn(
-                          "mr-2 h-3 w-3",
-                          studyFilter === 'in-study' ? "opacity-100" : "opacity-0"
-                        )}
-                      />
-                      In Study
+                      <Check className={cn("mr-2 h-4 w-4", studyFilter === 'in-study' ? "opacity-100" : "opacity-0")} /> In Study
                     </CommandItem>
                     <CommandItem
                       value="not-in-study"
-                      disabled={false}
                       onSelect={() => setStudyFilter('not-in-study')}
-                      className="text-xs data-[disabled]:pointer-events-auto data-[disabled]:opacity-100"
+                      className="data-[disabled]:opacity-100 data-[disabled]:pointer-events-auto cursor-pointer"
                     >
-                      <Check
-                        className={cn(
-                          "mr-2 h-3 w-3",
-                          studyFilter === 'not-in-study' ? "opacity-100" : "opacity-0"
-                        )}
-                      />
-                      Not in Study
+                      <Check className={cn("mr-2 h-4 w-4", studyFilter === 'not-in-study' ? "opacity-100" : "opacity-0")} /> Not in Study
                     </CommandItem>
                   </CommandGroup>
                 </CommandList>
               </Command>
             </PopoverContent>
           </Popover>
+
+          {/* Sorting Dropdown (Optional or kept as buttons if preferred) */}
+          <button
+            onClick={() => handleSort('date')}
+            className="px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors flex items-center gap-1"
+          >
+            Date {getSortIcon('date') || <ChevronDown className="w-3 h-3 ml-1 opacity-30" />}
+          </button>
         </div>
-
-        {/* Bulk Actions Indicator */}
-        {selectedIds.size > 0 && (
-          <div className="flex items-center gap-2 animate-fade-in bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 px-2 py-1 rounded shadow-md ml-auto">
-            <span className="text-[10px] font-medium">{selectedIds.size} selected</span>
-
-            <div className="h-3 w-[1px] bg-white/20 dark:bg-black/20 mx-1" />
-
-            {/* Bulk Tag Trigger */}
-            <Popover>
-              <PopoverTrigger asChild>
-                <button
-                  className="flex items-center gap-1 text-[9px] hover:text-zinc-300 dark:hover:text-zinc-600 transition-colors uppercase tracking-wide font-semibold"
-                >
-                  <TagIcon className="w-2.5 h-2.5" />
-                  Tag
-                </button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[200px] p-0" align="end">
-                <div className="max-h-[300px] overflow-y-auto p-1">
-                  <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground border-b border-zinc-100 dark:border-zinc-800 mb-1">
-                    Assign to {selectedIds.size} highlights
-                  </div>
-                  {(() => {
-                    const availableTagsForBulk = selectedBookId === 'all'
-                      ? tags.filter(t => !t.bookId)
-                      : tags.filter(t => !t.bookId || t.bookId === selectedBookId);
-
-                    const sortedBulkTags = availableTagsForBulk.sort((a, b) => a.name.localeCompare(b.name));
-
-                    if (sortedBulkTags.length === 0) {
-                      return <div className="px-2 py-2 text-xs text-zinc-400 italic">No tags available</div>;
-                    }
-
-                    return sortedBulkTags.map(tag => (
-                      <div
-                        key={tag.id}
-                        onClick={() => {
-                          bulkAssignTag(Array.from(selectedIds), tag.id);
-                          // We don't close automatically to allow multiple tags, or we could. 
-                          // User flow: usually select one. 
-                          // For now, let's just do it.
-                        }}
-                        className="cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 px-2 py-1.5 rounded text-xs flex items-center gap-2 transition-colors"
-                      >
-                        {tag.bookId ? <Book className="w-3 h-3 text-amber-500" /> : <TagIcon className="w-3 h-3 text-zinc-400" />}
-                        <span className={tag.bookId ? "text-amber-700 dark:text-amber-500" : "text-zinc-700 dark:text-zinc-300"}>
-                          {tag.name}
-                        </span>
-                      </div>
-                    ));
-                  })()}
-                </div>
-              </PopoverContent>
-            </Popover>
-
-            <div className="h-3 w-[1px] bg-white/20 dark:bg-black/20 mx-1" />
-
-            <button
-              onClick={handleBulkDelete}
-              className="flex items-center gap-1 text-[9px] hover:text-zinc-300 dark:hover:text-zinc-600 transition-colors uppercase tracking-wide font-semibold"
-            >
-              <Trash2 className="w-2.5 h-2.5" />
-              Delete
-            </button>
-          </div>
-        )}
       </div>
 
       {/* Table Container */}
-      <div className="flex-1 overflow-auto border border-zinc-200 dark:border-zinc-800 rounded-md bg-white dark:bg-zinc-900 shadow-sm">
-        <table className="w-full text-left text-xs text-zinc-600 dark:text-zinc-400">
-          <thead className="bg-zinc-50 dark:bg-zinc-950 text-[10px] font-semibold text-zinc-500 dark:text-zinc-500 sticky top-0 z-10 border-b border-zinc-200 dark:border-zinc-800">
+      <div
+        ref={tableContainerRef}
+        className="flex-1 overflow-auto border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 shadow-sm"
+      >
+        <table className="w-full text-left text-xs">
+          <thead className="bg-zinc-50 dark:bg-zinc-950 text-[10px] uppercase tracking-wider font-semibold text-zinc-500 dark:text-zinc-500 sticky top-0 z-10 border-b border-zinc-200 dark:border-zinc-800">
             <tr>
-              <th className="px-2 py-1.5 w-8">
+              <th className="px-4 py-3 w-[40px] font-medium text-zinc-400">
                 <input
                   type="checkbox"
-                  className="accent-black w-3.5 h-3.5 cursor-pointer align-middle"
-                  checked={selectedIds.size > 0 && selectedIds.size === filteredAndSortedHighlights.length}
+                  className="appearance-none w-4 h-4 rounded border border-zinc-300 dark:border-zinc-600 checked:bg-black dark:checked:bg-white checked:border-black dark:checked:border-white transition-colors cursor-pointer relative top-1"
+                  checked={currentItems.length > 0 && selectedIds.size >= currentItems.length && currentItems.every(i => selectedIds.has(i.id))}
                   onChange={toggleAll}
                 />
               </th>
-              <th className="px-2 py-1.5 w-[15%]">
+              <th className="px-4 py-3 w-[180px] max-w-[200px]">
                 <button
                   onClick={() => handleSort('book')}
-                  className="flex items-center gap-1 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors"
+                  className="flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-300 transition-colors"
                 >
-                  <span>Livro</span>
+                  Livro / Autor
                   {getSortIcon('book')}
                 </button>
               </th>
-              <th className="px-2 py-1.5 w-[30%]">
+              <th className="px-4 py-3 min-w-[300px]">
                 <button
                   onClick={() => handleSort('highlight')}
-                  className="flex items-center gap-1 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors"
+                  className="flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-300 transition-colors"
                 >
-                  <span>Destaque</span>
+                  Destaque
                   {getSortIcon('highlight')}
                 </button>
               </th>
-              <th className="px-2 py-1.5 w-[15%]">
+              <th className="px-4 py-3 w-[280px]">
                 <button
                   onClick={() => handleSort('note')}
-                  className="flex items-center gap-1 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors"
+                  className="flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-300 transition-colors"
                 >
-                  <span>Nota</span>
+                  Nota
                   {getSortIcon('note')}
                 </button>
               </th>
-              <th className="px-2 py-1.5 w-[20%]">Tags</th>
-              <th className="px-2 py-1.5 w-16 whitespace-nowrap">
+              <th className="px-4 py-3 w-[140px]">Tags</th>
+              <th className="px-4 py-3 w-[80px]">
                 <button
                   onClick={() => handleSort('date')}
-                  className="flex items-center gap-1 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors"
+                  className="flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-300 transition-colors"
                 >
-                  <span>Data</span>
+                  Data
                   {getSortIcon('date')}
                 </button>
               </th>
-              <th className="px-2 py-1.5 w-16">Status</th>
+              <th className="px-4 py-3 w-[90px]">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-            {filteredAndSortedHighlights.length === 0 ? (
+          <tbody
+            key={currentPage}
+            className="divide-y divide-zinc-100 dark:divide-zinc-800 animate-in fade-in slide-in-from-bottom-2 duration-300"
+          >
+            {currentItems.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-3 py-12 text-center text-zinc-400 dark:text-zinc-500">
+                <td colSpan={7} className="px-4 py-12 text-center text-zinc-400 dark:text-zinc-500 italic">
                   No highlights match your filters.
                 </td>
               </tr>
             ) : (
-              filteredAndSortedHighlights.map(highlight => {
-                const book = books.find(b => b.id === highlight.bookId);
-                const isSelected = selectedIds.has(highlight.id);
-                const isInStudy = studyCards.some(c => c.highlightId === highlight.id);
-
-                return (
-                  <tr
-                    key={highlight.id}
-                    className={`
-                      hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors group
-                      ${isSelected ? 'bg-zinc-50 dark:bg-zinc-800' : ''}
-                    `}
-                  >
-                    <td className="px-2 py-1 align-top">
-                      <input
-                        type="checkbox"
-                        className="accent-black w-3.5 h-3.5 cursor-pointer"
-                        checked={isSelected}
-                        onChange={() => toggleSelection(highlight.id)}
-                      />
-                    </td>
-                    <td className="px-2 py-1 align-top max-w-[150px]">
-                      <div className="flex flex-col gap-0.5">
-                        <button
-                          onClick={() => setEditingHighlightId(highlight.id)}
-                          className="font-medium text-zinc-900 dark:text-zinc-100 line-clamp-1 leading-tight text-xs text-left hover:underline"
-                          title={book?.title}
-                        >
-                          {book?.title || 'Unknown Book'}
-                        </button>
-                        <span className="text-[9px] text-zinc-400 dark:text-zinc-500 line-clamp-1" title={book?.author}>
-                          {book?.author || 'Unknown Author'}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-2 py-1 align-top max-w-[300px]">
-                      <div className="font-serif text-zinc-800 dark:text-zinc-200 line-clamp-2 leading-tight text-xs cursor-pointer hover:text-zinc-600 dark:hover:text-zinc-400" title={highlight.text} onClick={() => setEditingHighlightId(highlight.id)}>
-                        "{highlight.text}"
-                      </div>
-                    </td>
-                    <td className="px-2 py-1 align-top max-w-[200px]">
-                      {highlight.note ? (
-                        <div className="font-serif text-zinc-800 dark:text-zinc-200 text-[10px] bg-zinc-50 dark:bg-zinc-950 px-1 py-0.5 rounded border border-zinc-100 dark:border-zinc-800 leading-tight line-clamp-2 cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800" title={highlight.note} onClick={() => setEditingHighlightId(highlight.id)}>
-                          {highlight.note}
-                        </div>
-                      ) : (
-                        <span className="text-zinc-300 dark:text-zinc-600 text-[9px] italic cursor-pointer hover:text-zinc-400 dark:hover:text-zinc-500" onClick={() => setEditingHighlightId(highlight.id)}>Click to add note</span>
-                      )}
-                    </td>
-                    <td className="px-2 py-1 align-top">
-                      <TagSelector highlightId={highlight.id} bookId={highlight.bookId} />
-                    </td>
-                    <td className="px-2 py-1 align-top whitespace-nowrap text-[9px] text-zinc-400 dark:text-zinc-500">
-                      {formatDateShort(highlight.dateAdded)}
-                    </td>
-                    <td className="px-2 py-1 align-top">
-                      {getStudyBadge(highlight.id)}
-                    </td>
-                  </tr>
-                );
-              })
+              currentItems.map(highlight => (
+                <HighlightTableRow
+                  key={highlight.id}
+                  highlight={highlight}
+                  book={books.find(b => b.id === highlight.bookId)}
+                  isSelected={selectedIds.has(highlight.id)}
+                  onToggleSelection={toggleSelection}
+                  onEdit={(id) => setEditingHighlightId(id)}
+                  studyStatus={getHighlightStudyStatus(highlight.id)}
+                />
+              ))
             )}
           </tbody>
         </table>
       </div>
+
+      {/* Pagination Footer */}
+      {filteredAndSortedHighlights.length > 0 && (
+        <div className="py-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-zinc-200 dark:border-zinc-800">
+          <div className="text-sm text-zinc-500 dark:text-zinc-400">
+            Page <span className="font-medium text-zinc-900 dark:text-zinc-100">{currentPage}</span> of <span className="font-medium text-zinc-900 dark:text-zinc-100">{totalPages}</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-800 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" /> Previous
+            </button>
+            <button
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-800 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+            >
+              Next <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Highlight Edit Modal */}
       <HighlightEditModal highlightId={editingHighlightId} onClose={() => setEditingHighlightId(null)} />
@@ -681,7 +552,7 @@ const Highlights = () => {
 
       {/* Tag Manager Sidebar */}
       <TagManagerSidebar open={isTagManagerOpen} onOpenChange={setIsTagManagerOpen} />
-    </div >
+    </div>
   );
 };
 

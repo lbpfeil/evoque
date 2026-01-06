@@ -30,20 +30,18 @@ const PageLoadingFallback = () => (
 const AppLayout = ({ children }: React.PropsWithChildren) => {
   const location = useLocation();
   const isStudySession = location.pathname === '/study/session';
-  const { isExpanded } = useSidebarContext();
-
-  // Calculate dynamic margin based on sidebar state
-  const mainMarginLeft = !isStudySession ? (isExpanded ? '224px' : '56px') : '0';
+  // Use constant margin for sidebar (collapsed width) so expansion overlaps instead of pushing
+  const sidebarWidth = '56px'; // w-14
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col md:flex-row text-zinc-900 dark:text-zinc-100 font-sans antialiased">
       {!isStudySession && <Sidebar />}
       <main
         className={`flex-1 ${!isStudySession ? 'p-4 md:p-8 pb-20 md:pb-8' : ''} overflow-y-auto h-screen transition-all duration-300 ease-in-out`}
-        style={{ marginLeft: mainMarginLeft }}
+        style={{ marginLeft: !isStudySession ? sidebarWidth : '0' }}
       >
         {!isStudySession ? (
-          <div className="max-w-6xl mx-auto">
+          <div className="w-full mx-auto">
             <Suspense fallback={<PageLoadingFallback />}>
               {children}
             </Suspense>
