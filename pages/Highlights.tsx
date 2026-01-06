@@ -1,11 +1,14 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useStore } from '../components/StoreContext';
-import { Search, Filter, Trash2, ArrowUpDown, Brain, Tag as TagIcon, ChevronUp, ChevronDown, ChevronsUpDown, Book } from 'lucide-react';
+import { Search, Filter, Trash2, ArrowUpDown, Brain, Tag as TagIcon, ChevronUp, ChevronDown, ChevronsUpDown, Book, Plus, Check } from 'lucide-react';
 import { SortOption } from '../types';
 import HighlightEditModal from '../components/HighlightEditModal';
 import HighlightHistoryModal from '../components/HighlightHistoryModal';
 import { TagSelector } from '../components/TagSelector';
 import { TagManagerSidebar } from '../components/TagManagerSidebar';
+import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../components/ui/command';
+import { cn } from '../lib/utils';
 
 const Highlights = () => {
   const {
@@ -14,6 +17,7 @@ const Highlights = () => {
     studyCards,
     tags,
     bulkDeleteHighlights,
+    bulkAssignTag,
     getHighlightStudyStatus
   } = useStore();
 
@@ -61,6 +65,10 @@ const Highlights = () => {
       : null;
     return { uniqueBooks, lastHighlight };
   }, [highlights]);
+
+  const sortedBooks = useMemo(() => {
+    return books.slice().sort((a, b) => a.title.localeCompare(b.title));
+  }, [books]);
 
   const formatDate = (date: Date | null) => {
     if (!date) return 'nunca';
@@ -247,94 +255,288 @@ const Highlights = () => {
 
         {/* Book Filter */}
         <div className="relative">
-          <select
-            value={selectedBookId}
-            onChange={(e) => setSelectedBookId(e.target.value)}
-            className="w-32 pl-2 pr-6 py-1 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded text-xs text-zinc-900 dark:text-zinc-100 appearance-none focus:outline-none focus:ring-1 focus:ring-black focus:border-black truncate"
-            style={{ maxWidth: '128px' }}
-          >
-            <option value="all">All Books</option>
-            {books.map(b => (
-              <option key={b.id} value={b.id} className="truncate">{b.title}</option>
-            ))}
-          </select>
-          <Filter className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 dark:text-zinc-500 pointer-events-none" />
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                role="combobox"
+                className="w-48 pl-2 pr-2 py-1 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-black focus:border-black flex items-center justify-between"
+              >
+                <span className="truncate">
+                  {selectedBookId === 'all'
+                    ? "All Books"
+                    : books.find(b => b.id === selectedBookId)?.title || "All Books"}
+                </span>
+                <ChevronsUpDown className="ml-2 h-3 w-3 shrink-0 opacity-50" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[300px] p-0" align="start">
+              <Command>
+                <CommandInput placeholder="Search books..." className="h-9 text-xs" />
+                <CommandList>
+                  <CommandEmpty>No book found.</CommandEmpty>
+                  <CommandGroup>
+                    <CommandItem
+                      value="all"
+                      disabled={false}
+                      onSelect={() => {
+                        setSelectedBookId('all');
+                      }}
+                      className="text-xs data-[disabled]:pointer-events-auto data-[disabled]:opacity-100"
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-3 w-3",
+                          selectedBookId === 'all' ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      All Books
+                    </CommandItem>
+                    {sortedBooks.map((book) => (
+                      <CommandItem
+                        key={book.id}
+                        value={book.title}
+                        disabled={false}
+                        onSelect={() => setSelectedBookId(book.id)}
+                        className="text-xs data-[disabled]:pointer-events-auto data-[disabled]:opacity-100"
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-3 w-3",
+                            selectedBookId === book.id ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        <div className="flex flex-col truncate">
+                          <span className="font-bold truncate" title={book.title}>{book.title}</span>
+                          {book.author && <span className="text-zinc-500 font-normal text-[10px] truncate" title={book.author}>{book.author}</span>}
+                        </div>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
 
+
+        {/* Tag Filter */}
         {/* Tag Filter */}
         <div className="relative">
-          <select
-            value={selectedTagId}
-            onChange={(e) => setSelectedTagId(e.target.value)}
-            className="w-28 pl-2 pr-6 py-1 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded text-xs text-zinc-900 dark:text-zinc-100 appearance-none focus:outline-none focus:ring-1 focus:ring-black focus:border-black truncate"
-            style={{ maxWidth: '112px' }}
-          >
-            <option value="all">All Tags</option>
-            {(() => {
-              // Flatten tags with depth for display
-              const flattenTags = (parentId?: string, depth = 0): React.ReactNode[] => {
-                const children = tags.filter(t => {
-                  // Only include tags that match the current filter context
-                  // Match both null and undefined as "no parent"
-                  const tParent = t.parentId ?? undefined;
-                  const compareParent = parentId ?? undefined;
-                  if (tParent !== compareParent) return false;
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                role="combobox"
+                className="w-40 pl-2 pr-2 py-1 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-black focus:border-black flex items-center justify-between"
+              >
+                <span className="truncate">
+                  {selectedTagId === 'all'
+                    ? "All Tags"
+                    : tags.find(t => t.id === selectedTagId)?.name || "All Tags"}
+                </span>
+                <ChevronsUpDown className="ml-2 h-3 w-3 shrink-0 opacity-50" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[200px] p-0" align="start">
+              <Command>
+                <CommandInput placeholder="Search tags..." className="h-9 text-xs" />
+                <CommandList>
+                  <CommandEmpty>No tag found.</CommandEmpty>
+                  <CommandGroup>
+                    <CommandItem
+                      value="all"
+                      disabled={false}
+                      onSelect={() => setSelectedTagId('all')}
+                      className="text-xs data-[disabled]:pointer-events-auto data-[disabled]:opacity-100"
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-3 w-3",
+                          selectedTagId === 'all' ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      All Tags
+                    </CommandItem>
+                    {(() => {
+                      const renderTags = (parentId?: string, depth = 0): React.ReactNode[] => {
+                        const children = tags.filter(t => {
+                          const tParent = t.parentId ?? undefined;
+                          const compareParent = parentId ?? undefined;
+                          if (tParent !== compareParent) return false;
 
-                  // If "All Books" is selected, only show global tags (no bookId)
-                  if (selectedBookId === 'all') {
-                    return !t.bookId;
-                  }
+                          if (selectedBookId === 'all') {
+                            return !t.bookId;
+                          }
+                          return !t.bookId || t.bookId === selectedBookId;
+                        });
 
-                  // If a specific book is selected, show:
-                  // 1. Global tags (no bookId)
-                  // 2. Tags specific to the selected book
-                  return !t.bookId || t.bookId === selectedBookId;
-                });
+                        children.sort((a, b) => a.name.localeCompare(b.name));
 
-                // Sort: Global first, then books? Or A-Z?
-                children.sort((a, b) => a.name.localeCompare(b.name));
+                        return children.flatMap(tag => {
+                          const prefix = depth > 0 ? (
+                            <span className="text-zinc-400 mr-1" style={{ paddingLeft: `${depth * 12}px` }}>└</span>
+                          ) : null;
 
-                return children.flatMap(tag => {
-                  const book = tag.bookId ? books.find(b => b.id === tag.bookId) : undefined;
-                  const prefix = '\u00A0'.repeat(depth * 3) + (depth > 0 ? '└ ' : '');
-                  const bookIcon = tag.bookId ? '📖 ' : '';
-                  const label = `${prefix}${bookIcon}${tag.name}${book ? ` (${book.title})` : ''}`;
-
-                  return [
-                    <option key={tag.id} value={tag.id} className="truncate">
-                      {label}
-                    </option>,
-                    ...flattenTags(tag.id, depth + 1)
-                  ];
-                });
-              };
-
-              // Show root tags (including book chapters that are roots)
-              return flattenTags(undefined);
-            })()}
-          </select>
-          <TagIcon className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 dark:text-zinc-500 pointer-events-none" />
+                          return [
+                            <CommandItem
+                              key={tag.id}
+                              value={tag.name}
+                              disabled={false}
+                              onSelect={() => setSelectedTagId(tag.id)}
+                              className="text-xs data-[disabled]:pointer-events-auto data-[disabled]:opacity-100"
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-3 w-3",
+                                  selectedTagId === tag.id ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {prefix}
+                              {tag.bookId && <Book className="w-3 h-3 mr-1 text-amber-500" />}
+                              <span className={cn("truncate", tag.bookId ? "text-amber-700 dark:text-amber-500" : "text-zinc-700 dark:text-zinc-300")}>
+                                {tag.name}
+                              </span>
+                            </CommandItem>,
+                            ...renderTags(tag.id, depth + 1)
+                          ];
+                        });
+                      };
+                      return renderTags(undefined);
+                    })()}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
 
         {/* Status Filter */}
         <div className="relative">
-          <select
-            value={studyFilter}
-            onChange={(e) => setStudyFilter(e.target.value as any)}
-            className="w-24 pl-2 pr-6 py-1 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded text-xs text-zinc-900 dark:text-zinc-100 appearance-none focus:outline-none focus:ring-1 focus:ring-black focus:border-black"
-            style={{ maxWidth: '96px' }}
-          >
-            <option value="all">All Status</option>
-            <option value="in-study">In Study</option>
-            <option value="not-in-study">Not in Study</option>
-          </select>
-          <Brain className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-zinc-400 dark:text-zinc-500 pointer-events-none" />
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                role="combobox"
+                className="w-32 pl-2 pr-2 py-1 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-black focus:border-black flex items-center justify-between"
+              >
+                <span className="truncate">
+                  {studyFilter === 'all'
+                    ? "All Status"
+                    : studyFilter === 'in-study'
+                      ? "In Study"
+                      : "Not in Study"}
+                </span>
+                <ChevronsUpDown className="ml-2 h-3 w-3 shrink-0 opacity-50" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[150px] p-0" align="start">
+              <Command>
+                <CommandList>
+                  <CommandGroup>
+                    <CommandItem
+                      value="all"
+                      disabled={false}
+                      onSelect={() => setStudyFilter('all')}
+                      className="text-xs data-[disabled]:pointer-events-auto data-[disabled]:opacity-100"
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-3 w-3",
+                          studyFilter === 'all' ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      All Status
+                    </CommandItem>
+                    <CommandItem
+                      value="in-study"
+                      disabled={false}
+                      onSelect={() => setStudyFilter('in-study')}
+                      className="text-xs data-[disabled]:pointer-events-auto data-[disabled]:opacity-100"
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-3 w-3",
+                          studyFilter === 'in-study' ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      In Study
+                    </CommandItem>
+                    <CommandItem
+                      value="not-in-study"
+                      disabled={false}
+                      onSelect={() => setStudyFilter('not-in-study')}
+                      className="text-xs data-[disabled]:pointer-events-auto data-[disabled]:opacity-100"
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-3 w-3",
+                          studyFilter === 'not-in-study' ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      Not in Study
+                    </CommandItem>
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
 
         {/* Bulk Actions Indicator */}
         {selectedIds.size > 0 && (
           <div className="flex items-center gap-2 animate-fade-in bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 px-2 py-1 rounded shadow-md ml-auto">
             <span className="text-[10px] font-medium">{selectedIds.size} selected</span>
+
+            <div className="h-3 w-[1px] bg-white/20 dark:bg-black/20 mx-1" />
+
+            {/* Bulk Tag Trigger */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  className="flex items-center gap-1 text-[9px] hover:text-zinc-300 dark:hover:text-zinc-600 transition-colors uppercase tracking-wide font-semibold"
+                >
+                  <TagIcon className="w-2.5 h-2.5" />
+                  Tag
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[200px] p-0" align="end">
+                <div className="max-h-[300px] overflow-y-auto p-1">
+                  <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground border-b border-zinc-100 dark:border-zinc-800 mb-1">
+                    Assign to {selectedIds.size} highlights
+                  </div>
+                  {(() => {
+                    const availableTagsForBulk = selectedBookId === 'all'
+                      ? tags.filter(t => !t.bookId)
+                      : tags.filter(t => !t.bookId || t.bookId === selectedBookId);
+
+                    const sortedBulkTags = availableTagsForBulk.sort((a, b) => a.name.localeCompare(b.name));
+
+                    if (sortedBulkTags.length === 0) {
+                      return <div className="px-2 py-2 text-xs text-zinc-400 italic">No tags available</div>;
+                    }
+
+                    return sortedBulkTags.map(tag => (
+                      <div
+                        key={tag.id}
+                        onClick={() => {
+                          bulkAssignTag(Array.from(selectedIds), tag.id);
+                          // We don't close automatically to allow multiple tags, or we could. 
+                          // User flow: usually select one. 
+                          // For now, let's just do it.
+                        }}
+                        className="cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 px-2 py-1.5 rounded text-xs flex items-center gap-2 transition-colors"
+                      >
+                        {tag.bookId ? <Book className="w-3 h-3 text-amber-500" /> : <TagIcon className="w-3 h-3 text-zinc-400" />}
+                        <span className={tag.bookId ? "text-amber-700 dark:text-amber-500" : "text-zinc-700 dark:text-zinc-300"}>
+                          {tag.name}
+                        </span>
+                      </div>
+                    ));
+                  })()}
+                </div>
+              </PopoverContent>
+            </Popover>
+
+            <div className="h-3 w-[1px] bg-white/20 dark:bg-black/20 mx-1" />
+
             <button
               onClick={handleBulkDelete}
               className="flex items-center gap-1 text-[9px] hover:text-zinc-300 dark:hover:text-zinc-600 transition-colors uppercase tracking-wide font-semibold"
@@ -479,7 +681,7 @@ const Highlights = () => {
 
       {/* Tag Manager Sidebar */}
       <TagManagerSidebar open={isTagManagerOpen} onOpenChange={setIsTagManagerOpen} />
-    </div>
+    </div >
   );
 };
 

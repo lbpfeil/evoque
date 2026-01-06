@@ -58,6 +58,7 @@ interface StoreContextType {
   deleteBook: (id: string) => Promise<void>;
   assignTagToHighlight: (highlightId: string, tagId: string) => Promise<void>;
   removeTagFromHighlight: (highlightId: string, tagId: string) => Promise<void>;
+  bulkAssignTag: (highlightIds: string[], tagId: string) => Promise<void>;
   updateBookSettings: (bookId: string, settings: Partial<Book['settings']>) => Promise<void>;
   resetAllBooksToDefaults: () => Promise<void>;
   updateBookCover: (bookId: string, coverUrl: string) => Promise<void>;
@@ -453,7 +454,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
         .update(supabaseCard)
         .eq('id', updatedCard.id)
         .eq('user_id', user.id);
-        // .select() removed - optimistic state already has the data
+      // .select() removed - optimistic state already has the data
 
       console.log('DEBUG: updateCard result', { error });
 
@@ -1599,6 +1600,47 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     }
   };
 
+  const bulkAssignTag = async (highlightIds: string[], tagId: string) => {
+    if (!user) return;
+
+    // Optimistic update
+    setHighlights(prev => prev.map(h => {
+      if (highlightIds.includes(h.id)) {
+        const currentTags = h.tags || [];
+        if (currentTags.includes(tagId)) return h;
+        return { ...h, tags: [...currentTags, tagId] };
+      }
+      return h;
+    }));
+
+    // Sync with Supabase
+    try {
+      // Fetch current highlights to ensure we have latest state before update
+      const targetHighlights = highlights.filter(h => highlightIds.includes(h.id));
+
+      // Update each highlight in Supabase
+      // Note: A bulk update SQL function would be better for performance, but loop is safer for now without custom RPC
+      await Promise.all(targetHighlights.map(async (h) => {
+        const currentTags = h.tags || [];
+        if (!currentTags.includes(tagId)) {
+          const updatedTags = [...currentTags, tagId];
+          await updateHighlight(h.id, { tags: updatedTags });
+        }
+      }));
+
+    } catch (error) {
+      console.error('Failed to bulk assign tag:', error);
+      // Reload on error to ensure consistency
+      const { data } = await supabase
+        .from('highlights')
+        .select('*')
+        .eq('user_id', user.id);
+      if (data) setHighlights(data.map(fromSupabaseHighlight));
+    }
+  };
+
+
+
   // Memoize context value to prevent unnecessary re-renders
   const contextValue = useMemo(() => ({
     books,
@@ -1640,6 +1682,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     deleteBook,
     assignTagToHighlight,
     removeTagFromHighlight,
+    bulkAssignTag,
     updateBookSettings,
     resetAllBooksToDefaults,
     updateBookCover
