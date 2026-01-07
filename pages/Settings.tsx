@@ -245,8 +245,11 @@ const Settings = () => {
         .from('book-covers')
         .getPublicUrl(filePath);
 
+      // Add timestamp to force browser to reload image (cache-busting)
+      const coverUrlWithTimestamp = `${data.publicUrl}?t=${Date.now()}`;
+
       console.log('Updating book cover URL...');
-      await updateBookCover(bookId, data.publicUrl);
+      await updateBookCover(bookId, coverUrlWithTimestamp);
 
       console.log('Book cover uploaded successfully');
     } catch (error: any) {
