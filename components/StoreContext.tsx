@@ -932,7 +932,21 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     const isNewDay = !currentSession || new Date(currentSession.date).toDateString() !== new Date().toDateString();
     const isDifferentDeck = currentSession && currentSession.bookId !== bookId;
     const isSessionEmpty = currentSession && currentSession.cardIds.length === 0;
-    const shouldReset = isNewDay || isDifferentDeck || isSessionEmpty;
+
+    // Check if session is stale (more cards than current limits allow)
+    // This happens when settings change or cards are reviewed in another session
+    let isSessionStale = false;
+    if (currentSession && !isNewDay && !isDifferentDeck) {
+      const expectedStats = getDeckStats(bookId);
+      const remainingInSession = currentSession.cardIds.length - currentSession.completedIds.length;
+      // If session has more remaining cards than expected, it's stale
+      if (remainingInSession > expectedStats.total) {
+        isSessionStale = true;
+        console.log('Session is stale, resetting', { remainingInSession, expectedTotal: expectedStats.total });
+      }
+    }
+
+    const shouldReset = isNewDay || isDifferentDeck || isSessionEmpty || isSessionStale;
 
     if (!shouldReset) {
       return;
@@ -1133,11 +1147,13 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
   // New deck statistics method
   const getDeckStats = useCallback((bookId?: string): DeckStats => {
     if (bookId) {
-      // Individual book: show remaining cards for today (max 10 minus already reviewed)
+      // Individual book: show remaining cards for today (respecting per-book daily limit)
+      const book = books.find(b => b.id === bookId);
+      const dailyLimit = book?.settings?.dailyReviewLimit || settings.maxReviewsPerDay || 10;
       const cards = getBookCardsDue(bookId);
       const today = new Date().toISOString().split('T')[0];
       const reviewsToday = dailyProgress.bookReviews[bookId] || 0;
-      const remaining = Math.max(0, 10 - reviewsToday);
+      const remaining = Math.max(0, dailyLimit - reviewsToday);
 
       // Filter cards not reviewed today
       const cardsNotReviewedToday = cards.filter(card => {
@@ -1165,7 +1181,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
         total: allBookStats.reduce((sum, stats) => sum + stats.total, 0)
       };
     }
-  }, [books, getBookCardsDue, dailyProgress]);
+  }, [books, getBookCardsDue, dailyProgress, settings]);
 
   // Get reviews completed today for a specific book or all books
   const getReviewsToday = (bookId?: string): number => {
