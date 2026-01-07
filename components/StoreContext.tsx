@@ -309,36 +309,68 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       console.log(`Passed: ${validHighlights.length} / ${parsedHighlights.length}`);
       console.groupEnd();
 
-      // 1. Merge Highlights first to get the complete set
+      // 1. Build book ID mapping first (detect duplicates by title+author)
+      const bookIdMap = new Map<string, string>(); // newBookId -> existingBookId
+      let newBooksCount = 0;
+      const booksMap = new Map<string, Book>(books.map(b => [b.id, { ...b }]));
+
+      parsedBooks.forEach(pb => {
+        // Check for duplicate by ID first
+        if (booksMap.has(pb.id)) {
+          // Book exists with same ID - update lastImported only
+          const existing = booksMap.get(pb.id)!;
+          booksMap.set(pb.id, { ...existing, lastImported: pb.lastImported });
+          bookIdMap.set(pb.id, pb.id); // Map to itself
+          return;
+        }
+
+        // Check for duplicate by title + author (handles ID migration from 04/01/2026)
+        const existingByTitleAuthor = Array.from(booksMap.values()).find(
+          b => b.title === pb.title && b.author === pb.author
+        );
+
+        if (existingByTitleAuthor) {
+          // Book exists with different ID (legacy import) - update lastImported only
+          booksMap.set(existingByTitleAuthor.id, {
+            ...existingByTitleAuthor,
+            lastImported: pb.lastImported
+          });
+          bookIdMap.set(pb.id, existingByTitleAuthor.id); // Map new ID to existing ID
+          console.log(`[Duplicate Book Detected] "${pb.title}" by ${pb.author}`);
+          console.log(`  Old ID: ${existingByTitleAuthor.id} | New ID: ${pb.id}`);
+          console.log(`  Using existing book ID: ${existingByTitleAuthor.id}`);
+          return;
+        }
+
+        // New book - add to map
+        booksMap.set(pb.id, pb);
+        bookIdMap.set(pb.id, pb.id); // Map to itself
+        newBooksCount++;
+      });
+
+      // 2. Merge Highlights using the book ID mapping
       let newHighlightsCount = 0;
       const nextHighlights = [...highlights];
       const nextCards = [...studyCards];
 
       validHighlights.forEach(ph => {
-        const exists = nextHighlights.find(h => h.id === ph.id);
+        // Remap bookId if book is duplicate
+        const correctBookId = bookIdMap.get(ph.bookId) || ph.bookId;
+        const correctedHighlight = { ...ph, bookId: correctBookId };
+
+        const exists = nextHighlights.find(h => h.id === correctedHighlight.id);
         if (!exists) {
-          nextHighlights.push({ ...ph, importedAt: new Date().toISOString() });
+          nextHighlights.push({ ...correctedHighlight, importedAt: new Date().toISOString() });
           // Create a new study card for this highlight
           nextCards.push({
             id: generateUUID(),
-            highlightId: ph.id,
+            highlightId: correctedHighlight.id,
             easeFactor: 2.5,
             interval: 0,
             repetitions: 0,
             nextReviewDate: new Date().toISOString()
           });
           newHighlightsCount++;
-        }
-      });
-
-      // 2. Merge Books and update counts based on nextHighlights
-      let newBooksCount = 0;
-      const booksMap = new Map<string, Book>(books.map(b => [b.id, { ...b }]));
-
-      parsedBooks.forEach(pb => {
-        if (!booksMap.has(pb.id)) {
-          booksMap.set(pb.id, pb);
-          newBooksCount++;
         }
       });
 
@@ -355,8 +387,15 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
 
       // Sync with Supabase
       try {
-        // Upsert books
-        const booksToUpsert = parsedBooks.map(b => toSupabaseBook(b, user.id));
+        // Upsert books (only books that actually exist in the final booksMap)
+        // This excludes duplicate books detected by title+author
+        const booksToUpsert = Array.from(booksMap.values())
+          .filter(b => parsedBooks.some(pb => {
+            const mappedId = bookIdMap.get(pb.id);
+            return mappedId === b.id;
+          }))
+          .map(b => toSupabaseBook(b, user.id));
+
         if (booksToUpsert.length > 0) {
           const { error: booksError } = await supabase
             .from('books')
@@ -366,9 +405,13 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
 
         // Insert only NEW highlights (preserve local edits)
         // Only insert highlights that don't already exist in the database
-        const newHighlights = validHighlights.filter(ph =>
-          !highlights.find(h => h.id === ph.id)
-        );
+        const newHighlights = validHighlights
+          .map(ph => ({
+            ...ph,
+            bookId: bookIdMap.get(ph.bookId) || ph.bookId // Remap bookId
+          }))
+          .filter(ph => !highlights.find(h => h.id === ph.id));
+
         const highlightsToInsert = newHighlights.map(h => toSupabaseHighlight(h, user.id));
         if (highlightsToInsert.length > 0) {
           const { error: highlightsError } = await supabase
