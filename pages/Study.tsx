@@ -4,11 +4,12 @@ import { useStore } from '../components/StoreContext';
 import { DeckTable } from '../components/DeckTable';
 import { EmptyDeckPopover } from '../components/EmptyDeckPopover';
 import { ThemeToggle } from '../components/ThemeToggle';
+import { StudyHeatmap } from '../components/StudyHeatmap';
 import { Settings, RefreshCw } from 'lucide-react';
 
 const Study = () => {
   const navigate = useNavigate();
-  const { books, getDeckStats, isLoaded, reloadAllData } = useStore();
+  const { books, getDeckStats, isLoaded, reloadAllData, reviewLogs } = useStore();
   const [showEmptyPopover, setShowEmptyPopover] = useState(false);
   const [isReloading, setIsReloading] = useState(false);
 
@@ -79,6 +80,11 @@ const Study = () => {
           <Settings className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-400" />
         </button>
       </div>
+
+      {/* Review Activity Heatmap */}
+      {reviewLogs.length > 0 && (
+        <StudyHeatmap reviewLogs={reviewLogs} />
+      )}
 
       {/* Prominent All Books Button */}
       <button
