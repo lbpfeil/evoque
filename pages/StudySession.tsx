@@ -5,6 +5,18 @@ import { DeleteCardPopover } from '../components/DeleteCardPopover';
 import { TagSelector } from '../components/TagSelector';
 import { ArrowLeft, CheckCircle, Edit2, Clock, Trash2, Tag as TagIcon, Copy } from 'lucide-react';
 import { calculateNextReview } from '../services/sm2';
+import { StudyCard } from '../types';
+
+// Determine card status for visual indicator (aligned with getDeckStats)
+function getCardStatus(card: StudyCard): { status: 'new' | 'learning' | 'review'; color: string; label: string } {
+    if (card.repetitions === 0) {
+        return { status: 'new', color: 'bg-blue-500', label: 'New' };
+    }
+    if (card.repetitions >= 1 && card.repetitions < 5) {
+        return { status: 'learning', color: 'bg-amber-500', label: 'Learning' };
+    }
+    return { status: 'review', color: 'bg-green-500', label: 'Review' };
+}
 
 const StudySession = () => {
     const navigate = useNavigate();
@@ -395,6 +407,13 @@ ${currentHighlight.text}`;
                                     src={currentBook.coverUrl}
                                     alt={currentBook.title}
                                     className="w-10 h-14 object-cover rounded-sm shadow-sm flex-shrink-0"
+                                />
+                            )}
+                            {/* Card Status Indicator */}
+                            {currentCard && (
+                                <div
+                                    className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${getCardStatus(currentCard).color}`}
+                                    title={getCardStatus(currentCard).label}
                                 />
                             )}
                             <div className="min-w-0">

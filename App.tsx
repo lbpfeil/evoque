@@ -30,15 +30,12 @@ const PageLoadingFallback = () => (
 const AppLayout = ({ children }: React.PropsWithChildren) => {
   const location = useLocation();
   const isStudySession = location.pathname === '/study/session';
-  // Use constant margin for sidebar (collapsed width) so expansion overlaps instead of pushing
-  const sidebarWidth = '56px'; // w-14
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col md:flex-row text-zinc-900 dark:text-zinc-100 font-sans antialiased">
       {!isStudySession && <Sidebar />}
       <main
-        className={`flex-1 ${!isStudySession ? 'p-4 md:p-8 pb-20 md:pb-8' : ''} overflow-y-auto h-screen transition-all duration-300 ease-in-out`}
-        style={{ marginLeft: !isStudySession ? sidebarWidth : '0' }}
+        className={`flex-1 ${!isStudySession ? 'p-4 md:p-8 pb-20 md:pb-8 md:ml-14' : ''} overflow-y-auto h-screen transition-all duration-300 ease-in-out`}
       >
         {!isStudySession ? (
           <div className="w-full mx-auto">

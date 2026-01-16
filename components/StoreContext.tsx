@@ -1205,7 +1205,12 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
         return lastReviewDate !== today;
       });
 
-      const limitedCards = cardsNotReviewedToday.slice(0, remaining);
+      // Sort by nextReviewDate to match startSession logic
+      const sortedCards = [...cardsNotReviewedToday].sort((a, b) =>
+        new Date(a.nextReviewDate).getTime() - new Date(b.nextReviewDate).getTime()
+      );
+
+      const limitedCards = sortedCards.slice(0, remaining);
 
       return {
         new: limitedCards.filter(c => c.repetitions === 0).length,

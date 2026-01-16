@@ -16,13 +16,18 @@ interface StudyHeatmapProps {
   reviewLogs: ReviewLog[];
 }
 
-// Aggregate reviews by date
+// Aggregate reviews by date (using local timezone)
 function aggregateReviewsByDate(reviewLogs: ReviewLog[]): Map<string, number> {
   const dateMap = new Map<string, number>();
 
   for (const log of reviewLogs) {
-    // Extract YYYY-MM-DD from ISO timestamp
-    const dateKey = log.reviewedAt.split('T')[0];
+    // Convert to local date (JavaScript Date uses browser's timezone)
+    const localDate = new Date(log.reviewedAt);
+    const year = localDate.getFullYear();
+    const month = String(localDate.getMonth() + 1).padStart(2, '0');
+    const day = String(localDate.getDate()).padStart(2, '0');
+    const dateKey = `${year}-${month}-${day}`;
+
     dateMap.set(dateKey, (dateMap.get(dateKey) || 0) + 1);
   }
 
