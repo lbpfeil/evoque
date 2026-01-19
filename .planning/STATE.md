@@ -10,29 +10,29 @@ See: .planning/PROJECT.md (updated 2026-01-19)
 ## Current Position
 
 Phase: 1 of 3 (Foundation)
-Plan: 4 of 5 in phase (gap closure plans: 03, 04, 05)
-Status: Gap closure in progress
-Last activity: 2026-01-19 - Completed 01-04-PLAN.md (Font Configuration)
+Plan: 5 of 5 in phase (gap closure plans: 03, 04, 05)
+Status: Gap closure COMPLETE
+Last activity: 2026-01-19 - Completed 01-05-PLAN.md (Color Palette Adjustment)
 
-Progress: [========--] 80% (Phase 1 gap closure)
+Progress: [==========] 100% (Phase 1 gap closure complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
-- Average duration: 2.8min
-- Total execution time: 11min
+- Total plans completed: 5
+- Average duration: 2.6min
+- Total execution time: 13min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1. Foundation | 4 | 11min | 2.8min |
+| 1. Foundation | 5 | 13min | 2.6min |
 | 2. Component Migration | 0 | - | - |
 | 3. Critical Pages | 0 | - | - |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (3min), 01-02 (4min), 01-03 (n/a), 01-04 (2min)
+- Last 5 plans: 01-01 (3min), 01-02 (4min), 01-03 (n/a), 01-04 (2min), 01-05 (2min)
 - Trend: Consistent fast execution
 
 *Updated after each plan completion*
@@ -53,6 +53,8 @@ Recent decisions affecting current work:
 - [01-04]: Use Outfit Variable font as primary sans-serif
 - [01-04]: Define --font-sans in CSS with full fallback chain
 - [01-04]: Add serif stack for study cards (font-serif class)
+- [01-05]: Light mode L=97% with C=0.015 for visible warmth
+- [01-05]: Sidebar equals background in both modes for seamless UI
 
 ### Pending Todos
 
@@ -62,10 +64,12 @@ None yet.
 
 - ~~HSL/OKLCH mismatch in tailwind.config.js blocks all color work~~ (RESOLVED in 01-01)
 - ~~Font rendering issues (strange font appearance)~~ (RESOLVED in 01-04)
+- ~~Light mode too stark white~~ (RESOLVED in 01-05)
+- ~~Dark mode sidebar/background mismatch~~ (RESOLVED in 01-05)
 - Existing `hooks/useTheme.ts` left in place but unused - can be removed in future cleanup
 
 ## Session Continuity
 
-Last session: 2026-01-19T22:13:57Z
-Stopped at: Completed 01-04-PLAN.md (Font Configuration)
-Resume file: .planning/phases/01-foundation/01-05-PLAN.md (remaining gap closure)
+Last session: 2026-01-19T22:13:59Z
+Stopped at: Completed 01-05-PLAN.md (Color Palette Adjustment) - Phase 1 Gap Closure COMPLETE
+Resume file: .planning/phases/02-component-migration/ (Phase 2 planning needed)
