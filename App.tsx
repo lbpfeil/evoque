@@ -52,9 +52,11 @@ const AppLayout = ({ children }: React.PropsWithChildren) => {
         )}
       </main>
       {!isStudySession && <BottomNav />}
-      <div className="fixed bottom-4 right-4 z-50">
-        <ThemeToggle />
-      </div>
+      {!isStudySession && (
+        <div className="fixed bottom-4 right-4 z-50">
+          <ThemeToggle />
+        </div>
+      )}
     </div>
   );
 };
