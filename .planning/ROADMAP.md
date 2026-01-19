@@ -26,11 +26,11 @@ This roadmap transforms Evoque from a functional but visually inconsistent app i
   3. App respects system preference on first visit (prefers-color-scheme)
   4. No flash of wrong theme on page load (FOUC prevented)
   5. All colors render correctly (no broken OKLCH/HSL values)
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 01-01: TBD
-- [ ] 01-02: TBD
+- [ ] 01-01-PLAN.md — Fix HSL/OKLCH mismatch and apply warm palette
+- [ ] 01-02-PLAN.md — Create ThemeProvider, toggle, anti-FOUC, install shadcn components
 
 ### Phase 2: Component Migration
 **Goal**: All general pages and modals use shadcn components with consistent styling
@@ -70,7 +70,7 @@ Phases execute in numeric order: 1 -> 2 -> 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/TBD | Not started | - |
+| 1. Foundation | 0/2 | Planned | - |
 | 2. Component Migration | 0/TBD | Not started | - |
 | 3. Critical Pages | 0/TBD | Not started | - |
 
