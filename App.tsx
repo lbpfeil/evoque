@@ -6,6 +6,8 @@ import Login from './pages/Login';
 import { StoreProvider } from './components/StoreContext';
 import { AuthProvider, useAuth } from './components/AuthContext';
 import { SidebarProvider, useSidebarContext } from './components/SidebarContext';
+import { ThemeProvider } from './components/ThemeProvider';
+import { ThemeToggle } from './components/ThemeToggle';
 import ErrorBoundary from './components/ErrorBoundary';
 import { Loader2 } from 'lucide-react';
 import { SpeedInsights } from "@vercel/speed-insights/react"
@@ -21,8 +23,8 @@ const StudySession = lazy(() => import('./pages/StudySession'));
 const PageLoadingFallback = () => (
   <div className="flex items-center justify-center py-12">
     <div className="text-center">
-      <Loader2 className="w-8 h-8 text-blue-600 animate-spin mx-auto mb-2" />
-      <p className="text-xs text-zinc-600 dark:text-zinc-400">Carregando...</p>
+      <Loader2 className="w-8 h-8 text-primary animate-spin mx-auto mb-2" />
+      <p className="text-xs text-muted-foreground">Carregando...</p>
     </div>
   </div>
 );
@@ -32,7 +34,7 @@ const AppLayout = ({ children }: React.PropsWithChildren) => {
   const isStudySession = location.pathname === '/study/session';
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col md:flex-row text-zinc-900 dark:text-zinc-100 font-sans antialiased">
+    <div className="min-h-screen bg-background flex flex-col md:flex-row text-foreground font-sans antialiased">
       {!isStudySession && <Sidebar />}
       <main
         className={`flex-1 ${!isStudySession ? 'p-4 md:p-8 pb-20 md:pb-8 md:ml-14' : ''} overflow-y-auto h-screen transition-all duration-300 ease-in-out`}
@@ -50,6 +52,9 @@ const AppLayout = ({ children }: React.PropsWithChildren) => {
         )}
       </main>
       {!isStudySession && <BottomNav />}
+      <div className="fixed bottom-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
     </div>
   );
 };
@@ -59,10 +64,10 @@ const ProtectedApp = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">Carregando...</p>
+          <Loader2 className="w-12 h-12 text-primary animate-spin mx-auto mb-4" />
+          <p className="text-sm text-muted-foreground">Carregando...</p>
         </div>
       </div>
     );
@@ -98,10 +103,12 @@ const ProtectedApp = () => {
 const App = () => {
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <ProtectedApp />
-        <SpeedInsights />
-      </AuthProvider>
+      <ThemeProvider defaultTheme="system" storageKey="evoque-theme">
+        <AuthProvider>
+          <ProtectedApp />
+          <SpeedInsights />
+        </AuthProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 };

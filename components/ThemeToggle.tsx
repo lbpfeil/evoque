@@ -1,46 +1,29 @@
-import React from 'react';
-import { Moon, Sun, Monitor } from 'lucide-react';
-import { useTheme } from '../hooks/useTheme';
+import { Moon, Sun, Monitor } from "lucide-react"
+import { useTheme } from "./ThemeProvider"
 
-interface ThemeToggleProps {
-  variant?: 'desktop' | 'mobile';
-}
+export function ThemeToggle() {
+  const { theme, setTheme, resolvedTheme } = useTheme()
 
-export const ThemeToggle = ({ variant = 'desktop' }: ThemeToggleProps) => {
-  const { theme, effectiveTheme, setTheme } = useTheme();
-
-  const handleToggle = async () => {
-    // Cycle: system → light → dark → system
-    const cycle: Record<string, 'light' | 'dark' | 'system'> = {
-      system: 'light',
-      light: 'dark',
-      dark: 'system'
-    };
-    await setTheme(cycle[theme]);
-  };
-
-  // Determine which icon to show
-  const Icon = theme === 'system'
-    ? Monitor
-    : effectiveTheme === 'dark'
-      ? Moon
-      : Sun;
-
-  // Get tooltip text
-  const getTooltipText = () => {
-    if (theme === 'system') return 'Tema: Sistema';
-    if (theme === 'light') return 'Tema: Claro';
-    return 'Tema: Escuro';
-  };
+  const cycleTheme = () => {
+    if (theme === "light") setTheme("dark")
+    else if (theme === "dark") setTheme("system")
+    else setTheme("light")
+  }
 
   return (
     <button
-      onClick={handleToggle}
-      className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded transition-colors"
-      title={getTooltipText()}
-      aria-label={getTooltipText()}
+      onClick={cycleTheme}
+      className="inline-flex items-center justify-center rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+      title={`Current: ${theme} (${resolvedTheme}). Click to cycle.`}
     >
-      <Icon className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-400" />
+      {theme === "system" ? (
+        <Monitor className="h-5 w-5" />
+      ) : resolvedTheme === "dark" ? (
+        <Moon className="h-5 w-5" />
+      ) : (
+        <Sun className="h-5 w-5" />
+      )}
+      <span className="sr-only">Toggle theme</span>
     </button>
-  );
-};
+  )
+}
