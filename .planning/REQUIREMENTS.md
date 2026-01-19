@@ -81,19 +81,19 @@ Deferred para release futura. Nao no roadmap atual.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FOUND-01 | Phase 1 | Pending |
-| FOUND-02 | Phase 1 | Pending |
-| FOUND-03 | Phase 1 | Pending |
-| FOUND-04 | Phase 1 | Pending |
-| FOUND-05 | Phase 1 | Pending |
-| FOUND-06 | Phase 1 | Pending |
-| FOUND-07 | Phase 1 | Pending |
-| COLOR-01 | Phase 1 | Pending |
-| COLOR-02 | Phase 1 | Pending |
+| FOUND-01 | Phase 1 | Complete |
+| FOUND-02 | Phase 1 | Complete |
+| FOUND-03 | Phase 1 | Complete |
+| FOUND-04 | Phase 1 | Complete |
+| FOUND-05 | Phase 1 | Complete |
+| FOUND-06 | Phase 1 | Complete |
+| FOUND-07 | Phase 1 | Complete |
+| COLOR-01 | Phase 1 | Complete |
+| COLOR-02 | Phase 1 | Complete |
 | COLOR-03 | Phase 2 | Pending |
 | COLOR-04 | Phase 2 | Pending |
-| COLOR-05 | Phase 1 | Pending |
-| COMP-01 | Phase 1 | Pending |
+| COLOR-05 | Phase 1 | Complete |
+| COMP-01 | Phase 1 | Complete |
 | COMP-02 | Phase 2 | Pending |
 | COMP-03 | Phase 2 | Pending |
 | COMP-04 | Phase 2 | Pending |
