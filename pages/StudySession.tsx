@@ -46,6 +46,7 @@ const StudySession = () => {
     const [editedHighlight, setEditedHighlight] = useState('');
     const [editedNote, setEditedNote] = useState('');
     const [isSaving, setIsSaving] = useState(false);
+    const [isSubmittingResponse, setIsSubmittingResponse] = useState(false);
     const [showDeletePopover, setShowDeletePopover] = useState(false);
     const [showAllTags, setShowAllTags] = useState(false);
     const [showTagSelector, setShowTagSelector] = useState(false);
@@ -89,7 +90,10 @@ const StudySession = () => {
     }, [currentCardId]);
 
     const handleResponse = useCallback(async (quality: number) => {
-        if (!currentCard) return;
+        // Prevent double-click / duplicate submissions
+        if (!currentCard || isSubmittingResponse) return;
+
+        setIsSubmittingResponse(true);
 
         // Save previous state BEFORE updating
         const previousCard = { ...currentCard };
@@ -110,11 +114,13 @@ const StudySession = () => {
                     console.error(`${operation} failed:`, result.reason);
                 }
             });
+        }).finally(() => {
+            setIsSubmittingResponse(false);
         });
 
         // Note: showAnswer reset handled by useEffect on currentCardId change
         // UI continues immediately - next card loads without waiting for DB
-    }, [currentCard, updateCard, submitReview]);
+    }, [currentCard, isSubmittingResponse, updateCard, submitReview]);
 
     const handleSaveHighlight = useCallback(async () => {
         if (!currentHighlight) return;
@@ -212,7 +218,7 @@ ${currentHighlight.text}`;
                 }
             }
 
-            if (isEditingHighlight || isEditingNote) return;
+            if (isEditingHighlight || isEditingNote || isSubmittingResponse) return;
 
             switch (e.key) {
                 case ' ':
@@ -251,7 +257,7 @@ ${currentHighlight.text}`;
 
         window.addEventListener('keydown', handleKeyPress);
         return () => window.removeEventListener('keydown', handleKeyPress);
-    }, [showAnswer, isEditingHighlight, isEditingNote, handleResponse, handleEditNote, handleSaveHighlight, handleSaveNote, handleUndo, sessionComplete, currentCard, showTagSelector]);
+    }, [showAnswer, isEditingHighlight, isEditingNote, isSubmittingResponse, handleResponse, handleEditNote, handleSaveHighlight, handleSaveNote, handleUndo, sessionComplete, currentCard, showTagSelector]);
 
     // Loading state
     if (!isLoaded) {
@@ -624,7 +630,7 @@ ${currentHighlight.text}`;
                             <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
                                 <button
                                     onClick={() => handleResponse(1)}
-                                    disabled={isEditing}
+                                    disabled={isEditing || isSubmittingResponse}
                                     className="py-2.5 sm:py-1.5 min-h-[48px] sm:min-h-0 bg-red-500 dark:bg-red-600 hover:bg-red-600 dark:hover:bg-red-700 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <span>Again</span>
@@ -632,7 +638,7 @@ ${currentHighlight.text}`;
                                 </button>
                                 <button
                                     onClick={() => handleResponse(2)}
-                                    disabled={isEditing}
+                                    disabled={isEditing || isSubmittingResponse}
                                     className="py-2.5 sm:py-1.5 min-h-[48px] sm:min-h-0 bg-amber-500 dark:bg-amber-600 hover:bg-amber-600 dark:hover:bg-amber-700 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <span>Hard</span>
@@ -640,7 +646,7 @@ ${currentHighlight.text}`;
                                 </button>
                                 <button
                                     onClick={() => handleResponse(3)}
-                                    disabled={isEditing}
+                                    disabled={isEditing || isSubmittingResponse}
                                     className="py-2.5 sm:py-1.5 min-h-[48px] sm:min-h-0 bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <span>Good</span>
@@ -648,7 +654,7 @@ ${currentHighlight.text}`;
                                 </button>
                                 <button
                                     onClick={() => handleResponse(4)}
-                                    disabled={isEditing}
+                                    disabled={isEditing || isSubmittingResponse}
                                     className="py-2.5 sm:py-1.5 min-h-[48px] sm:min-h-0 bg-green-500 dark:bg-green-600 hover:bg-green-600 dark:hover:bg-green-700 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <span>Easy</span>
