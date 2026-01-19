@@ -78,7 +78,8 @@ module.exports = {
                 sm: "calc(var(--radius) - 4px)",
             },
             fontFamily: {
-                sans: ["var(--font-sans)", ...fontFamily.sans],
+                sans: ["Outfit Variable", "Outfit", "var(--font-sans)", ...fontFamily.sans],
+                serif: ["Georgia", "Cambria", "Times New Roman", "Times", "serif"],
             },
             keyframes: {
                 "accordion-down": {
