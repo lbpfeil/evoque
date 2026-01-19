@@ -5,126 +5,101 @@
 ## Languages
 
 **Primary:**
-- TypeScript 5.8.2 - All application code (frontend, services, scripts)
+- TypeScript ~5.8.2 - All application code (React components, services, types)
 
 **Secondary:**
-- JavaScript - Configuration files (`postcss.config.js`, `tailwind.config.js`)
-- HTML - Entry point (`index.html`)
-- CSS - Styling (`index.css` with Tailwind)
+- JavaScript - Configuration files (`tailwind.config.js`, `postcss.config.js`)
 
 ## Runtime
 
 **Environment:**
-- Node.js (inferred from package.json, no `.nvmrc` present)
-- Browser (React SPA)
+- Node.js (version not pinned, no `.nvmrc` present)
+- Browser (ES2022 target, DOM APIs)
 
 **Package Manager:**
 - npm
-- Lockfile: `package-lock.json` (present)
+- Lockfile: `package-lock.json` present
 
 ## Frameworks
 
 **Core:**
-- React 19.2.1 - UI framework
-- React Router DOM 7.10.0 - Client-side routing (HashRouter)
-- Vite 6.2.0 - Build tool and dev server
+- React ^19.2.1 - UI framework
+- React Router DOM ^7.10.0 - Client-side routing (HashRouter)
+- Vite ^6.2.0 - Build tool and dev server
 
-**Styling:**
-- Tailwind CSS 3.4.17 - Utility-first CSS framework
-- tailwindcss-animate 1.0.7 - Animation utilities
-- class-variance-authority 0.7.1 - Component variant management
-- clsx 2.1.1 + tailwind-merge 3.4.0 - Class name utilities
+**UI/Styling:**
+- Tailwind CSS ^3.4.17 - Utility-first CSS framework
+- shadcn/ui (radix-vega style) - Component library built on Radix primitives
+- Radix UI (Dialog, Popover, Slot) - Accessible UI primitives
+- class-variance-authority ^0.7.1 - Variant-based component styling
+- tailwind-merge ^3.4.0 - Merge Tailwind classes
+- clsx ^2.1.1 - Conditional class names
+- lucide-react ^0.555.0 - Icon library
+
+**Data Visualization:**
+- recharts ^3.5.1 - Charts (AreaChart, BarChart) on Dashboard
 
 **Testing:**
-- Not detected (no test framework configured)
+- Not detected - No test framework configured
 
 **Build/Dev:**
-- Vite 6.2.0 - Bundler and dev server
-- @vitejs/plugin-react 5.0.0 - React plugin for Vite
-- PostCSS 8.5.6 - CSS processing
-- Autoprefixer 10.4.22 - CSS vendor prefixing
-- tsx 4.21.0 - TypeScript execution for scripts
-- ts-node 10.9.2 - TypeScript execution alternative
+- Vite ^6.2.0 - Bundler and dev server
+- @vitejs/plugin-react ^5.0.0 - React Fast Refresh
+- PostCSS ^8.5.6 - CSS processing
+- Autoprefixer ^10.4.22 - CSS vendor prefixes
+- tsx ^4.21.0 - TypeScript execution (scripts)
+- ts-node ^10.9.2 - TypeScript execution (alternative)
 
 ## Key Dependencies
 
 **Critical:**
-- @supabase/supabase-js 2.88.0 - Backend-as-a-Service client (database, auth)
-- pdfjs-dist 5.4.449 - PDF parsing for Kindle highlight imports
-- recharts 3.5.1 - Charts and data visualization
-
-**UI Components:**
-- @radix-ui/react-dialog 1.1.15 - Accessible dialog/modal component
-- @radix-ui/react-popover 1.1.15 - Accessible popover component
-- @radix-ui/react-slot 1.2.4 - Slot pattern for component composition
-- cmdk 1.1.1 - Command palette/search component
-- lucide-react 0.555.0 - Icon library
+- @supabase/supabase-js ^2.88.0 - Backend-as-a-Service (auth, database, real-time)
+- pdfjs-dist ^5.4.449 - PDF parsing for Kindle highlights import
+- cmdk ^1.1.1 - Command palette component
 
 **Infrastructure:**
-- dotenv 17.2.3 - Environment variable loading (dev scripts)
+- dotenv ^17.2.3 - Environment variable loading (dev)
+
+**Fonts:**
+- @fontsource-variable/inter ^5.2.8 - Inter variable font
 
 ## Configuration
 
+**Environment:**
+- `.env` file with Vite-prefixed variables (`VITE_*`)
+- Required env vars:
+  - `VITE_SUPABASE_URL` - Supabase project URL
+  - `VITE_SUPABASE_ANON_KEY` - Supabase anonymous API key
+- Optional: `GEMINI_API_KEY` (defined in vite.config.ts but not actively used in codebase)
+
+**Build:**
+- `vite.config.ts` - Vite configuration with path aliases
+- `tsconfig.json` - TypeScript configuration (ES2022, bundler module resolution)
+- `tailwind.config.js` - Tailwind with shadcn/ui theme
+- `postcss.config.js` - PostCSS with Tailwind and Autoprefixer
+- `components.json` - shadcn/ui configuration (radix-vega style, stone base color)
+
 **TypeScript:**
-- Config: `tsconfig.json`
 - Target: ES2022
 - Module: ESNext with bundler resolution
 - JSX: react-jsx
 - Path alias: `@/*` maps to project root
 
-**Vite:**
-- Config: `vite.config.ts`
-- Dev server: port 3000, host 0.0.0.0
-- Environment variables exposed via `loadEnv()`:
-  - `GEMINI_API_KEY` (defined but API not used in current code)
-- Path alias: `@` maps to project root
-
-**Tailwind:**
-- Config: `tailwind.config.js`
-- Dark mode: class-based
-- Content paths: `./index.html`, `./pages/**`, `./components/**`, `./app/**`, `./src/**`, `./lib/**`
-- Extended theme with CSS variables for theming (shadcn/ui pattern)
-- Plugin: tailwindcss-animate
-
-**PostCSS:**
-- Config: `postcss.config.js`
-- Plugins: tailwindcss, autoprefixer
-
-**Environment Variables:**
-- `.env` file (committed - contains non-secret Supabase public keys)
-- `VITE_SUPABASE_URL` - Supabase project URL
-- `VITE_SUPABASE_ANON_KEY` - Supabase anonymous/public key
-
 ## Platform Requirements
 
 **Development:**
-- Node.js (version not specified)
+- Node.js (LTS recommended)
 - npm
-- Modern browser for testing
+- Dev server runs on port 3000 (host: 0.0.0.0)
 
 **Production:**
-- Static file hosting (Vite builds to `dist/`)
-- Supabase project for backend services
-- No server-side runtime required (SPA)
+- Static SPA deployment (Vite build outputs to `dist/`)
+- Supabase backend (hosted)
+- No server-side rendering
 
-## Build Commands
-
-```bash
-npm run dev      # Start dev server on port 3000
-npm run build    # Production build to dist/
-npm run preview  # Preview production build
-```
-
-## Scripts Directory
-
-Utility scripts in `scripts/`:
-- `check_duplicates.ts` - Duplicate detection utility
-- `check_duplicates_json.ts` - JSON-based duplicate checking
-- `compare_pdfs.ts` - PDF comparison utility
-- `db_inspect.ts` - Database inspection script
-- `map_ids.ts` - ID mapping utility
-
-Run with: `npx tsx scripts/<script>.ts`
+**Browser Support:**
+- Modern browsers (ES2022 features)
+- No explicit polyfills configured
 
 ---
 

@@ -5,231 +5,404 @@
 ## Naming Patterns
 
 **Files:**
-- Components: PascalCase (e.g., `StoreContext.tsx`, `ErrorBoundary.tsx`)
-- Services/utilities: camelCase (e.g., `parser.ts`, `idUtils.ts`, `supabaseHelpers.ts`)
-- UI components: lowercase with single word (e.g., `button.tsx`, `dialog.tsx`, `input.tsx`)
-- Pages: PascalCase (e.g., `Dashboard.tsx`, `Highlights.tsx`, `StudySession.tsx`)
+- Components: PascalCase with `.tsx` extension (`Sidebar.tsx`, `ErrorBoundary.tsx`, `TagSelector.tsx`)
+- Pages: PascalCase in `pages/` directory (`Dashboard.tsx`, `BookDetails.tsx`, `StudySession.tsx`)
+- Services/Utilities: camelCase (`parser.ts`, `sm2.ts`, `idUtils.ts`, `supabaseHelpers.ts`)
+- UI Components (shadcn): lowercase with `.tsx` (`button.tsx`, `dialog.tsx`, `sheet.tsx`)
 
 **Functions:**
-- camelCase for all functions
-- Verbs for actions: `parseMyClippings`, `calculateNextReview`, `generateDeterministicUUID`
-- Prefixes: `get*` for getters, `update*` for mutations, `handle*` for event handlers
-- Async functions follow same pattern: `signIn`, `signOut`, `loadData`
+- Regular functions: camelCase (`parseMyClippings`, `calculateNextReview`, `handleDrag`)
+- Event handlers: `handle` prefix (`handleClose`, `handleDrop`, `handleSelectTag`)
+- Getters: `get` prefix (`getBook`, `getCardsDue`, `getBookHighlights`)
+- Boolean getters: `is` prefix (`isLoaded`, `isProcessing`, `isUploading`)
+- Async operations: descriptive verbs (`importData`, `updateCard`, `deleteHighlight`)
 
 **Variables:**
-- camelCase for local variables and state
-- `is*`/`has*` prefix for booleans: `isLoaded`, `hasNote`, `isCorrect`
-- Descriptive names: `filteredAndSortedHighlights`, `dailyProgress`, `currentSession`
+- State variables: camelCase (`books`, `highlights`, `currentSession`)
+- Boolean state: often descriptive (`dragActive`, `showLogout`, `showStats`)
+- Constants: camelCase (no SCREAMING_SNAKE_CASE used)
 
 **Types/Interfaces:**
-- PascalCase for types and interfaces: `Book`, `Highlight`, `StudyCard`, `UserSettings`
-- Props interfaces: `ComponentNameProps` pattern (e.g., `HighlightEditModalProps`)
-- Context types: `*ContextType` suffix (e.g., `AuthContextType`, `StoreContextType`)
-
-**React Components:**
-- PascalCase function names matching file names
-- Default export for page/feature components
-- Named exports for UI primitives and utilities
+- PascalCase (`Book`, `Highlight`, `StudyCard`, `UserSettings`)
+- Props interfaces: `ComponentNameProps` pattern (`DeleteBookModalProps`, `TagSelectorProps`)
+- Context types: `ContextNameType` pattern (`AuthContextType`, `StoreContextType`)
 
 ## Code Style
 
 **Formatting:**
-- No explicit Prettier config in project root (uses defaults)
-- 2-space indentation
-- Single quotes for strings
-- No trailing semicolons (inconsistent - some files have them)
-- Max line length ~100-120 characters
+- No ESLint or Prettier config in project root
+- 2-space indentation (observed in codebase)
+- Single quotes for strings in TypeScript
+- Semicolons used consistently
 
 **Linting:**
-- No ESLint configuration detected
+- No explicit linting configuration
 - TypeScript strict mode not enabled
-- `allowJs: true` in tsconfig
+- `allowJs: true` in tsconfig for flexibility
 
 ## Import Organization
 
 **Order:**
-1. React and React-related imports (`react`, `react-dom`, `react-router-dom`)
-2. External library imports (`@supabase/supabase-js`, `lucide-react`, `recharts`)
-3. Internal components (relative paths: `./components/*`, `../components/*`)
-4. Internal services/utilities (`../services/*`, `../lib/*`)
+1. React and React-related imports (`react`, `react-router-dom`)
+2. Third-party libraries (`@supabase/supabase-js`, `lucide-react`, `recharts`)
+3. Local components (relative paths `../components/...`)
+4. Local services/utilities (`../services/...`, `../lib/...`)
 5. Types (`../types`)
-6. CSS (`./index.css`)
 
 **Path Aliases:**
 - `@/*` maps to project root (configured in `tsconfig.json` and `vite.config.ts`)
-- Usage example: `import { cn } from "@/lib/utils"`
-- Relative paths more commonly used: `../../lib/utils`
+- Used in shadcn/ui components: `@/lib/utils`, `@/components/ui`
+- Most project code uses relative paths instead of aliases
+
+**Example:**
+```typescript
+// From components/TagSelector.tsx
+import React, { useState, useMemo } from 'react';
+import { Check, Plus, Book, Search } from 'lucide-react';
+import { cn } from '../lib/utils';
+import { Button } from './ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { useStore } from './StoreContext';
+import { Tag } from '../types';
+```
 
 ## Error Handling
 
 **Patterns:**
-- Try-catch blocks with console.error logging
-- Optimistic updates with rollback on failure (Supabase operations)
-- Error state thrown to React error boundaries for critical failures
+- Try-catch blocks with console.error for async operations
+- Optimistic updates with rollback on Supabase errors
+- Error boundaries for React component errors (`components/ErrorBoundary.tsx`)
 
-**Example pattern from `StoreContext.tsx`:**
+**Async Error Pattern:**
 ```typescript
+// From components/StoreContext.tsx
 try {
-  const { error } = await supabase.from('books').delete().eq('id', id);
+  const { error } = await supabase
+    .from('highlights')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', user.id);
+
   if (error) throw error;
 } catch (error) {
-  console.error('Failed to delete book from Supabase:', error);
-  // Rollback: reload data from server
-  const { data } = await supabase.from('books').select('*').eq('user_id', user.id);
-  if (data) setBooks(data.map(fromSupabaseBook));
+  console.error('Failed to delete highlight from Supabase:', error);
+  // Reload data on error (rollback)
+  const { data } = await supabase
+    .from('highlights')
+    .select('*')
+    .eq('user_id', user.id);
+  if (data) setHighlights(data.map(fromSupabaseHighlight));
 }
 ```
 
-**Async error handling:**
-- Supabase errors checked via `if (error) throw error`
-- User-facing errors wrapped in `new Error()` with descriptive messages
-- Non-critical errors logged but not thrown (e.g., review logs)
+**Guard Clauses:**
+```typescript
+// Early returns for invalid state
+if (!user) return;
+if (!highlight || !book) return null;
+if (!bookData) return null;
+```
 
 ## Logging
 
 **Framework:** Native `console` methods
 
 **Patterns:**
+- Debug logging with `DEBUG:` prefix for development
 - `console.error()` for caught exceptions
-- `console.warn()` for recoverable issues (e.g., parsing failures)
-- `console.log()` with `DEBUG:` prefix for development logging
-- `console.group()`/`console.groupEnd()` for grouped output
+- `console.warn()` for recoverable issues
+- `console.log()` for debug tracing (should be removed in production)
+- `console.group()`/`console.groupEnd()` for related logs
 
-**When to log:**
-- Supabase operation failures
-- Data parsing errors
-- Debug information during development (should be removed for production)
+```typescript
+console.log('DEBUG: updateCard called', { cardId, repetitions, nextReviewDate });
+console.error('Failed to load data from Supabase:', error);
+console.warn('Failed to parse date:', dateString, e);
+```
 
 ## Comments
 
 **When to Comment:**
-- JSDoc-style comments for utility functions with parameters
-- Section dividers using `// ============================================`
-- Inline comments for complex business logic
+- Complex algorithms (SM-2 implementation in `services/sm2.ts`)
+- Non-obvious business logic
+- TODO markers for incomplete features
 
 **JSDoc/TSDoc:**
-- Used in service files (`services/sm2.ts`, `services/idUtils.ts`)
-- Document parameters with `@param` tags
-- Not consistently applied across all files
+- Used sparingly, mainly in service functions
+- Parameter descriptions for complex functions
 
-**Example from `sm2.ts`:**
 ```typescript
 /**
  * Calculates the next review schedule based on the SM-2 algorithm.
  * @param card Current state of the card
  * @param quality Response quality (1-4):
  *   - 1: Again (Fail) - Reset card
- *   - 2: Hard - Pass but difficult
+ *   - 2: Hard - Pass but difficult (reduced interval)
  *   - 3: Good - Pass normally
- *   - 4: Easy - Pass easily
+ *   - 4: Easy - Pass easily (increased interval)
  */
 ```
 
 ## Function Design
 
-**Size:**
-- Small, focused functions preferred
-- Larger functions (100+ lines) exist in `StoreContext.tsx` for complex state operations
+**Size:** Functions are generally focused but can be long in complex components (StoreContext is 1400+ lines)
 
 **Parameters:**
-- Destructuring for React props
-- Object parameters for functions with multiple options
-- Optional parameters with defaults or `?` syntax
+- Destructure props at function signature
+- Use TypeScript interfaces for complex params
+- Optional parameters with sensible defaults
 
 **Return Values:**
-- Explicit return types not consistently used (TypeScript inference)
-- Async functions return `Promise<void>` or `Promise<T>`
-- Context methods return void or simple types
+- Explicit return types for utility functions
+- React components return JSX or null
+- Async functions return Promise
 
 ## Module Design
 
 **Exports:**
-- Default exports for React components
-- Named exports for utilities and types
-- Barrel exports in UI folder (`components/ui/*.tsx`)
+- Named exports preferred over default exports
+- Default exports used for page components and main components
+- Grouped related exports from UI components
 
 **Barrel Files:**
-- Not used (no `index.ts` files for re-exports)
-- Direct imports to specific files
+- No barrel files (index.ts) used
+- Each component/service imported directly
 
-## React Patterns
+## Component Patterns
 
-**State Management:**
-- React Context for global state (`StoreContext`, `AuthContext`)
-- `useState` for local component state
-- `useMemo` for expensive computations
-- `useEffect` for side effects and data loading
+### React Component Structure
 
-**Component Structure:**
+**Functional Components Only:**
+- All components are functional (except ErrorBoundary which uses class)
+- Use hooks for state and effects
+
+**Standard Component Pattern:**
 ```typescript
-// 1. Imports
-import React, { useState, useEffect } from 'react';
-
-// 2. Type definitions (inline or imported)
 interface ComponentProps {
-  prop: string;
+  prop1: string;
+  prop2?: number;
 }
 
-// 3. Component function
-const Component: React.FC<ComponentProps> = ({ prop }) => {
-  // 4. Hooks at top
-  const [state, setState] = useState();
+const Component: React.FC<ComponentProps> = ({ prop1, prop2 }) => {
+  // Hooks first
+  const [state, setState] = useState<Type>(initial);
+  const { contextValue } = useContext(Context);
 
-  // 5. Derived state / memoized values
-  const computed = useMemo(() => {}, []);
+  // Derived state / memoized values
+  const computed = useMemo(() => ..., [deps]);
 
-  // 6. Effects
-  useEffect(() => {}, []);
+  // Effects
+  useEffect(() => { ... }, [deps]);
 
-  // 7. Event handlers
-  const handleClick = () => {};
+  // Event handlers
+  const handleEvent = () => { ... };
 
-  // 8. Render
-  return <div />;
+  // Early returns for loading/error states
+  if (!data) return null;
+
+  // JSX
+  return (...);
 };
 
-// 9. Export
 export default Component;
 ```
 
-## Styling Conventions
+### Context Pattern
 
-**Approach:** Tailwind CSS with utility classes
-
-**Class naming:**
-- Use `cn()` utility from `lib/utils.ts` for conditional classes
-- Class-variance-authority (CVA) for component variants (see `components/ui/button.tsx`)
-
-**Color scheme:**
-- Zinc-based grayscale: `zinc-50`, `zinc-100`, `zinc-200`, `zinc-500`, `zinc-900`
-- Accent colors via CSS variables: `--primary`, `--secondary`, `--destructive`
-- HSL color format in Tailwind config
-
-**Spacing:**
-- Consistent use of Tailwind spacing scale
-- Common patterns: `p-4`, `p-6`, `p-8`, `gap-2`, `gap-4`, `space-y-4`
-
-## Data Transformation
-
-**Supabase helpers pattern:**
-- `toSupabase*` functions convert app types to database format
-- `fromSupabase*` functions convert database rows to app types
-- Located in `lib/supabaseHelpers.ts`
-
-**Example:**
+**Provider Pattern with Custom Hook:**
 ```typescript
-export const toSupabaseBook = (book: Book, userId: string) => ({
-  id: book.id,
-  user_id: userId,
-  title: book.title,
-  cover_url: book.coverUrl || null,  // camelCase to snake_case
-});
+// From components/AuthContext.tsx
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const fromSupabaseBook = (row: any): Book => ({
-  id: row.id,
-  title: row.title,
-  coverUrl: row.cover_url,  // snake_case to camelCase
-});
+export const AuthProvider = ({ children }: React.PropsWithChildren) => {
+  // State and logic
+  return (
+    <AuthContext.Provider value={{ ... }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
+```
+
+### shadcn/ui Component Patterns
+
+**Configuration:** `components.json`
+- Style: `radix-vega`
+- Base color: `stone`
+- CSS Variables: enabled
+- Icon library: `lucide`
+
+**UI Components Location:** `components/ui/`
+
+**Standard shadcn Pattern:**
+```typescript
+// From components/ui/button.tsx
+import * as React from "react"
+import { Slot } from "@radix-ui/react-slot"
+import { cva, type VariantProps } from "class-variance-authority"
+import { cn } from "../../lib/utils"
+
+const buttonVariants = cva(
+  "inline-flex items-center justify-center...",
+  {
+    variants: {
+      variant: { default: "...", destructive: "...", ... },
+      size: { default: "...", sm: "...", lg: "...", icon: "..." },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+)
+
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, asChild = false, ...props }, ref) => {
+    const Comp = asChild ? Slot : "button"
+    return (
+      <Comp
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        {...props}
+      />
+    )
+  }
+)
+Button.displayName = "Button"
+
+export { Button, buttonVariants }
+```
+
+**Using shadcn Components:**
+```typescript
+// From components/TagSelector.tsx
+import { Button } from './ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+
+<Popover open={open} onOpenChange={setOpen}>
+  <PopoverTrigger asChild>
+    <Button
+      variant="ghost"
+      role="combobox"
+      aria-expanded={open}
+      className={cn("h-auto p-1 hover:bg-zinc-100", className)}
+    >
+      ...
+    </Button>
+  </PopoverTrigger>
+  <PopoverContent className="w-[220px] p-0" align="start">
+    ...
+  </PopoverContent>
+</Popover>
+```
+
+**Key shadcn Utilities:**
+- `cn()` from `lib/utils.ts` - Tailwind class merging
+- `cva()` - Class variance authority for variants
+- `asChild` prop - Radix slot pattern for composition
+
+### Modal/Dialog Pattern
+
+**Custom Modal (non-shadcn):**
+```typescript
+// From components/DeleteBookModal.tsx
+<div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50" onClick={onCancel}>
+  <div className="bg-white rounded-md shadow-lg..." onClick={(e) => e.stopPropagation()}>
+    {/* Modal content */}
+  </div>
+</div>
+```
+
+**Portal Pattern:**
+```typescript
+// From components/Portal.tsx - for rendering outside component tree
+<Portal>
+  <div className="fixed top-0 left-0 right-0 bottom-0...">
+    {/* Overlay and modal */}
+  </div>
+</Portal>
+```
+
+### State Management
+
+**Context-Based Global State:**
+- `StoreContext` - Main app state (books, highlights, cards, settings)
+- `AuthContext` - Authentication state
+- No Redux or Zustand - pure React Context
+
+**Optimistic Updates Pattern:**
+```typescript
+// 1. Update local state immediately
+setHighlights(prev => prev.filter(h => h.id !== id));
+
+// 2. Sync with backend
+try {
+  const { error } = await supabase.from('highlights').delete()...;
+  if (error) throw error;
+} catch (error) {
+  // 3. Rollback on error
+  const { data } = await supabase.from('highlights').select('*')...;
+  if (data) setHighlights(data.map(fromSupabaseHighlight));
+}
+```
+
+## Tailwind CSS Patterns
+
+**Color Palette:** zinc-based neutral colors
+- Background: `bg-zinc-50`, `bg-white`
+- Text: `text-zinc-900`, `text-zinc-600`, `text-zinc-400`
+- Borders: `border-zinc-200`, `border-zinc-100`
+- Accents: `text-blue-600`, `text-red-600`, `text-amber-600`
+
+**Common Utility Patterns:**
+```typescript
+// Interactive states
+"hover:bg-zinc-100 transition-colors"
+
+// Flexbox layouts
+"flex items-center gap-2"
+"flex flex-col space-y-2"
+
+// Responsive
+"hidden md:flex"
+"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+
+// Text truncation
+"truncate" or "line-clamp-2"
+
+// Sizing
+"h-10 w-10" (fixed)
+"flex-1 min-w-0" (flexible with overflow protection)
+```
+
+**CSS Variables:** Defined in `index.css` using oklch color space
+
+## TypeScript Patterns
+
+**Type Definitions:** Centralized in `types.ts`
+
+**Interface vs Type:**
+- Interfaces for object shapes (`interface Book { ... }`)
+- Types for unions and utilities (`type StudyStatus = 'new' | 'learning' | 'review'`)
+
+**Generic Patterns:**
+```typescript
+// From Supabase helpers
+export const fromSupabaseBook = (row: any): Book => ({ ... });
+```
+
+**Optional Chaining:**
+```typescript
+highlight?.tags || []
+card?.easeFactor?.toFixed(2) || '-'
 ```
 
 ---

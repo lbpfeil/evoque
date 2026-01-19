@@ -5,217 +5,506 @@
 ## Test Framework
 
 **Runner:**
-- No test framework configured
-- No test runner present (no Jest, Vitest, or other)
-- No test configuration files found
+- Not configured - no testing framework installed
 
 **Assertion Library:**
-- Not applicable (no tests)
+- Not configured
 
 **Run Commands:**
 ```bash
-# No test commands in package.json
-# Only available scripts:
-npm run dev      # Development server
-npm run build    # Production build
-npm run preview  # Preview production build
+# No test scripts defined in package.json
+# package.json only has: dev, build, preview
+```
+
+## Current State: No Tests
+
+This codebase does not have any testing infrastructure set up. The following analysis documents what would be recommended based on the project's technology stack.
+
+**Evidence of No Testing:**
+- No `jest.config.*` or `vitest.config.*` files
+- No test-related dependencies in `package.json`
+- No `*.test.ts`, `*.test.tsx`, `*.spec.ts` files in project (only in `node_modules/`)
+- No `test` or `coverage` scripts in `package.json`
+
+## Recommended Testing Setup
+
+Based on the tech stack (React 19, Vite, TypeScript), the recommended testing setup would be:
+
+### Vitest (Recommended)
+
+**Why Vitest:**
+- Native Vite integration (same transforms, same config)
+- Fast execution with HMR
+- Jest-compatible API
+- Built-in TypeScript support
+
+**Installation:**
+```bash
+npm install -D vitest @vitest/ui @testing-library/react @testing-library/jest-dom jsdom
+```
+
+**Recommended Config (`vitest.config.ts`):**
+```typescript
+import { defineConfig } from 'vitest/config'
+import react from '@vitejs/plugin-react'
+import path from 'path'
+
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./tests/setup.ts'],
+    include: ['**/*.{test,spec}.{ts,tsx}'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html'],
+      exclude: ['node_modules/', 'tests/setup.ts']
+    }
+  },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, '.'),
+    }
+  }
+})
+```
+
+**Setup File (`tests/setup.ts`):**
+```typescript
+import '@testing-library/jest-dom'
+import { vi } from 'vitest'
+
+// Mock Supabase
+vi.mock('@/lib/supabase', () => ({
+  supabase: {
+    auth: {
+      getSession: vi.fn(),
+      onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe: vi.fn() } } })),
+      signInWithPassword: vi.fn(),
+      signUp: vi.fn(),
+      signOut: vi.fn(),
+    },
+    from: vi.fn(() => ({
+      select: vi.fn().mockReturnThis(),
+      insert: vi.fn().mockReturnThis(),
+      update: vi.fn().mockReturnThis(),
+      delete: vi.fn().mockReturnThis(),
+      upsert: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn(),
+    })),
+    storage: {
+      from: vi.fn(() => ({
+        upload: vi.fn(),
+        getPublicUrl: vi.fn(),
+      })),
+    },
+  },
+}))
 ```
 
 ## Test File Organization
 
-**Location:**
-- No test files exist in the project
-- No `__tests__` directories
-- No `.test.ts`, `.test.tsx`, `.spec.ts`, or `.spec.tsx` files in source code
+**Recommended Location:**
+- Co-located pattern: `Component.test.tsx` next to `Component.tsx`
+- Or separate `tests/` directory mirroring `src/` structure
 
-**Naming:**
-- Not established (no tests to set pattern)
+**Recommended Naming:**
+- `*.test.ts` / `*.test.tsx` for unit tests
+- `*.integration.test.ts` for integration tests
+- `*.e2e.test.ts` for E2E tests (if using Playwright)
 
-**Structure:**
-- Not applicable
+**Recommended Structure:**
+```
+evoque/
+├── components/
+│   ├── Sidebar.tsx
+│   ├── Sidebar.test.tsx
+│   ├── StoreContext.tsx
+│   ├── StoreContext.test.tsx
+│   └── ui/
+│       ├── button.tsx
+│       └── button.test.tsx
+├── services/
+│   ├── parser.ts
+│   ├── parser.test.ts
+│   ├── sm2.ts
+│   └── sm2.test.ts
+├── tests/
+│   ├── setup.ts
+│   └── utils/
+│       └── test-utils.tsx
+└── vitest.config.ts
+```
 
-## Test Structure
+## Recommended Test Structure
 
-**Suite Organization:**
-- Not established
+**Unit Test Pattern:**
+```typescript
+// services/sm2.test.ts
+import { describe, it, expect } from 'vitest'
+import { calculateNextReview, initializeCard } from './sm2'
 
-**Patterns:**
-- Not established
+describe('SM-2 Algorithm', () => {
+  describe('initializeCard', () => {
+    it('creates a card with default values', () => {
+      const card = initializeCard('highlight-123')
+
+      expect(card.highlightId).toBe('highlight-123')
+      expect(card.easeFactor).toBe(2.5)
+      expect(card.interval).toBe(0)
+      expect(card.repetitions).toBe(0)
+    })
+  })
+
+  describe('calculateNextReview', () => {
+    it('resets card on quality 1 (Again)', () => {
+      const card = {
+        id: '1',
+        highlightId: 'h1',
+        easeFactor: 2.5,
+        interval: 10,
+        repetitions: 5,
+        nextReviewDate: new Date().toISOString()
+      }
+
+      const result = calculateNextReview(card, 1)
+
+      expect(result.repetitions).toBe(0)
+      expect(result.interval).toBe(1)
+    })
+
+    it('increases interval on quality 3 (Good)', () => {
+      const card = {
+        id: '1',
+        highlightId: 'h1',
+        easeFactor: 2.5,
+        interval: 6,
+        repetitions: 2,
+        nextReviewDate: new Date().toISOString()
+      }
+
+      const result = calculateNextReview(card, 3)
+
+      expect(result.repetitions).toBe(3)
+      expect(result.interval).toBeGreaterThan(card.interval)
+    })
+  })
+})
+```
+
+**Component Test Pattern:**
+```typescript
+// components/Sidebar.test.tsx
+import { describe, it, expect, vi } from 'vitest'
+import { render, screen, fireEvent } from '@testing-library/react'
+import { BrowserRouter } from 'react-router-dom'
+import Sidebar from './Sidebar'
+import { AuthProvider } from './AuthContext'
+import { StoreProvider } from './StoreContext'
+
+const wrapper = ({ children }: { children: React.ReactNode }) => (
+  <BrowserRouter>
+    <AuthProvider>
+      <StoreProvider>
+        {children}
+      </StoreProvider>
+    </AuthProvider>
+  </BrowserRouter>
+)
+
+describe('Sidebar', () => {
+  it('renders navigation items', () => {
+    render(<Sidebar />, { wrapper })
+
+    expect(screen.getByText('Dashboard')).toBeInTheDocument()
+    expect(screen.getByText('Highlights')).toBeInTheDocument()
+    expect(screen.getByText('Study')).toBeInTheDocument()
+    expect(screen.getByText('Settings')).toBeInTheDocument()
+  })
+
+  it('toggles logout menu on user click', () => {
+    render(<Sidebar />, { wrapper })
+
+    const userButton = screen.getByRole('button', { name: /user/i })
+    fireEvent.click(userButton)
+
+    expect(screen.getByText('Sair')).toBeInTheDocument()
+  })
+})
+```
+
+**Parser Test Pattern:**
+```typescript
+// services/parser.test.ts
+import { describe, it, expect } from 'vitest'
+import { parseMyClippings } from './parser'
+
+describe('parseMyClippings', () => {
+  it('parses a single highlight', () => {
+    const input = `Book Title (Author Name)
+- Your Highlight on Location 100-105 | Added on Monday, January 1, 2024 12:00:00 PM
+
+This is the highlight text.
+==========`
+
+    const result = parseMyClippings(input)
+
+    expect(result.books).toHaveLength(1)
+    expect(result.books[0].title).toBe('Book Title')
+    expect(result.books[0].author).toBe('Author Name')
+    expect(result.highlights).toHaveLength(1)
+    expect(result.highlights[0].text).toBe('This is the highlight text.')
+  })
+
+  it('handles Portuguese date format', () => {
+    const input = `Livro (Autor)
+- Seu destaque na posição 50-55 | Adicionado: terça-feira, 22 de julho de 2025 02:05:09
+
+Texto do destaque.
+==========`
+
+    const result = parseMyClippings(input)
+
+    expect(result.highlights).toHaveLength(1)
+    expect(result.highlights[0].dateAdded).toContain('2025')
+  })
+
+  it('associates notes with highlights', () => {
+    const input = `Book (Author)
+- Your Highlight on Location 100-105 | Added on Monday, January 1, 2024 12:00:00 PM
+
+Highlight text.
+==========
+Book (Author)
+- Your Note on Location 105 | Added on Monday, January 1, 2024 12:01:00 PM
+
+Note content.
+==========`
+
+    const result = parseMyClippings(input)
+
+    expect(result.highlights).toHaveLength(1)
+    expect(result.highlights[0].note).toBe('Note content.')
+  })
+})
+```
 
 ## Mocking
 
-**Framework:** Not applicable
+**Recommended Framework:** Vitest built-in `vi`
 
 **Patterns:**
-- Not established
 
-**What to Mock (recommendations for future tests):**
-- Supabase client (`lib/supabase.ts`)
-- `crypto.randomUUID()` for deterministic ID generation
-- `Date` for time-based logic (SM-2 algorithm, daily progress)
-- localStorage for session persistence
+**Mocking Supabase:**
+```typescript
+import { vi } from 'vitest'
 
-**What NOT to Mock (recommendations):**
-- Pure utility functions (`lib/utils.ts`)
-- Type transformations (`lib/supabaseHelpers.ts`)
-- Parsing logic (`services/parser.ts`, `services/pdfParser.ts`)
+// Mock entire module
+vi.mock('@/lib/supabase', () => ({
+  supabase: {
+    from: vi.fn(() => ({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+    })),
+  },
+}))
+
+// Or per-test mocking
+const mockSupabase = {
+  from: vi.fn().mockReturnValue({
+    select: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockResolvedValue({
+      data: [{ id: '1', title: 'Test Book' }],
+      error: null
+    })
+  })
+}
+```
+
+**Mocking localStorage:**
+```typescript
+const localStorageMock = {
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn(),
+}
+Object.defineProperty(window, 'localStorage', { value: localStorageMock })
+```
+
+**Mocking crypto.randomUUID:**
+```typescript
+vi.stubGlobal('crypto', {
+  randomUUID: vi.fn(() => 'mock-uuid-123')
+})
+```
+
+**What to Mock:**
+- External services (Supabase)
+- Browser APIs (localStorage, crypto)
+- File system operations (FileReader)
+- Date/Time for deterministic tests
+
+**What NOT to Mock:**
+- Pure utility functions (parser, sm2)
+- React hooks (use real implementations)
+- Internal component interactions
 
 ## Fixtures and Factories
 
-**Test Data:**
-- `services/mockData.ts` exists with sample data:
-
+**Test Data Pattern:**
 ```typescript
-// From services/mockData.ts - could be used as test fixtures
-export const mockBooks: Book[] = [/* ... */];
-export const mockHighlights: Highlight[] = [/* ... */];
+// tests/fixtures/books.ts
+import { Book, Highlight, StudyCard } from '@/types'
+
+export const createBook = (overrides?: Partial<Book>): Book => ({
+  id: 'book-1',
+  title: 'Test Book',
+  author: 'Test Author',
+  coverUrl: 'https://example.com/cover.jpg',
+  lastImported: '2024-01-01T00:00:00.000Z',
+  highlightCount: 5,
+  ...overrides,
+})
+
+export const createHighlight = (overrides?: Partial<Highlight>): Highlight => ({
+  id: 'highlight-1',
+  bookId: 'book-1',
+  text: 'Test highlight text',
+  location: '100-105',
+  dateAdded: '2024-01-01T00:00:00.000Z',
+  ...overrides,
+})
+
+export const createStudyCard = (overrides?: Partial<StudyCard>): StudyCard => ({
+  id: 'card-1',
+  highlightId: 'highlight-1',
+  easeFactor: 2.5,
+  interval: 0,
+  repetitions: 0,
+  nextReviewDate: new Date().toISOString(),
+  ...overrides,
+})
 ```
 
 **Location:**
-- Mock data in `services/mockData.ts`
-- No dedicated test fixtures directory
+- `tests/fixtures/` for shared fixtures
+- Or inline in test files for simple cases
 
 ## Coverage
 
-**Requirements:** None enforced
+**Requirements:** Not enforced (no coverage tool configured)
 
-**View Coverage:**
+**Recommended Targets:**
+- Services/utilities: 90%+
+- Components: 70%+
+- Overall: 80%+
+
+**View Coverage (after setup):**
 ```bash
-# Not configured
+npm run test:coverage
+# or
+npx vitest --coverage
 ```
 
 ## Test Types
 
 **Unit Tests:**
-- Not implemented
-- Recommended targets:
-  - `services/sm2.ts` - SM-2 algorithm calculations
-  - `services/parser.ts` - Kindle clippings parsing
-  - `services/pdfParser.ts` - PDF highlights parsing
-  - `services/ankiParser.ts` - Anki TSV parsing
-  - `services/idUtils.ts` - Deterministic ID generation
-  - `lib/supabaseHelpers.ts` - Data transformations
+- Scope: Individual functions and components
+- Approach: Test pure functions directly, mock external deps
+- Priority files:
+  - `services/parser.ts` - complex parsing logic
+  - `services/sm2.ts` - algorithm correctness
+  - `services/idUtils.ts` - deterministic ID generation
+  - `lib/supabaseHelpers.ts` - data transformation
 
 **Integration Tests:**
-- Not implemented
-- Recommended targets:
-  - `components/StoreContext.tsx` - State management with mocked Supabase
-  - `components/AuthContext.tsx` - Authentication flow
+- Scope: Multiple components working together
+- Approach: Render with real providers, mock Supabase
+- Priority scenarios:
+  - Import flow (file upload -> parsing -> storage)
+  - Study session flow (start -> review -> complete)
+  - Authentication flow (login -> data load)
 
 **E2E Tests:**
-- Not used
-- Framework not configured
+- Framework: Playwright (recommended)
+- Scope: Full user journeys
+- Not currently implemented
 
 ## Common Patterns
 
 **Async Testing:**
-- Not established (no tests)
-- Recommendation for future:
 ```typescript
-// Example pattern for testing async Supabase operations
-it('should import data correctly', async () => {
-  const mockSupabase = { /* ... */ };
-  const result = await importData(testInput);
-  expect(result.newHighlights).toBe(5);
-});
+import { describe, it, expect, vi } from 'vitest'
+import { waitFor } from '@testing-library/react'
+
+it('loads data on mount', async () => {
+  const { getByText } = render(<Component />)
+
+  await waitFor(() => {
+    expect(getByText('Loaded')).toBeInTheDocument()
+  })
+})
 ```
 
 **Error Testing:**
-- Not established (no tests)
-- Recommendation for future:
 ```typescript
-// Example pattern for testing error handling
-it('should throw on invalid PDF format', async () => {
-  await expect(parsePDFKindleHighlights(invalidFile))
-    .rejects.toThrow('Formato de PDF inválido');
-});
+it('handles parsing errors gracefully', () => {
+  const invalidInput = 'not valid clippings format'
+
+  const result = parseMyClippings(invalidInput)
+
+  expect(result.books).toHaveLength(0)
+  expect(result.highlights).toHaveLength(0)
+})
+
+it('throws on invalid PDF', async () => {
+  const file = new File(['invalid'], 'test.pdf', { type: 'application/pdf' })
+
+  await expect(parsePDFKindleHighlights(file)).rejects.toThrow()
+})
 ```
 
-## Testable Units Analysis
-
-**High Priority (core business logic):**
-
-1. **`services/sm2.ts`** - Spaced repetition algorithm
-   - `calculateNextReview(card, quality)` - Pure function, easily testable
-   - `initializeCard(highlightId)` - Pure function
-   - Edge cases: quality boundaries, ease factor limits
-
-2. **`services/parser.ts`** - Kindle clippings parser
-   - `parseMyClippings(text)` - Pure function
-   - `parseDate(dateString)` - Internal, but important
-   - Edge cases: Portuguese dates, missing metadata
-
-3. **`services/idUtils.ts`** - ID generation
-   - `generateDeterministicUUID(input)` - Must be stable across runs
-   - `generateHighlightID(...)` - Must be deterministic
-
-4. **`lib/supabaseHelpers.ts`** - Data transformers
-   - All `toSupabase*` and `fromSupabase*` functions
-   - Pure functions, no side effects
-
-**Medium Priority (parsing variants):**
-
-5. **`services/pdfParser.ts`** - PDF highlights
-   - `parsePDFKindleHighlights(file)` - Requires file mocking
-   - Complex regex patterns to validate
-
-6. **`services/ankiParser.ts`** - Anki TSV
-   - `parseAnkiTSV(text)` - Pure function
-   - `fixEncoding(text)` - Encoding fixes
-
-**Lower Priority (UI/integration):**
-
-7. **`components/StoreContext.tsx`** - State management
-   - Complex, requires mocking Supabase
-   - Integration tests more valuable than unit tests
-
-## Recommended Test Setup
-
-**Install Vitest (recommended for Vite projects):**
-```bash
-npm install -D vitest @testing-library/react @testing-library/jest-dom jsdom
-```
-
-**Add vitest.config.ts:**
+**Testing User Interactions:**
 ```typescript
-import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react';
+import { fireEvent, screen } from '@testing-library/react'
 
-export default defineConfig({
-  plugins: [react()],
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: ['./tests/setup.ts'],
-  },
-});
-```
+it('submits form on button click', () => {
+  render(<ImportForm />)
 
-**Add test script to package.json:**
-```json
-{
-  "scripts": {
-    "test": "vitest",
-    "test:coverage": "vitest --coverage"
-  }
-}
+  const input = screen.getByLabelText('File')
+  const file = new File(['content'], 'test.txt', { type: 'text/plain' })
+  fireEvent.change(input, { target: { files: [file] } })
+
+  const button = screen.getByRole('button', { name: /import/i })
+  fireEvent.click(button)
+
+  expect(mockImport).toHaveBeenCalled()
+})
 ```
 
-**Suggested test file structure:**
-```
-tests/
-├── setup.ts              # Test setup and global mocks
-├── services/
-│   ├── sm2.test.ts       # SM-2 algorithm tests
-│   ├── parser.test.ts    # Kindle parser tests
-│   ├── idUtils.test.ts   # ID generation tests
-│   └── ankiParser.test.ts
-├── lib/
-│   └── supabaseHelpers.test.ts
-└── fixtures/
-    ├── clippings.txt     # Sample Kindle clippings
-    └── highlights.json   # Expected parsed output
-```
+## Priority Test Targets
+
+Based on criticality and complexity:
+
+1. **High Priority:**
+   - `services/parser.ts` - Core import functionality
+   - `services/sm2.ts` - Study algorithm correctness
+   - `services/idUtils.ts` - ID stability affects data integrity
+   - `components/StoreContext.tsx` - Central state management
+
+2. **Medium Priority:**
+   - `services/pdfParser.ts` - PDF import
+   - `services/ankiParser.ts` - Anki import
+   - `lib/supabaseHelpers.ts` - Data transformations
+   - `components/AuthContext.tsx` - Auth flow
+
+3. **Lower Priority:**
+   - UI components (shadcn/ui)
+   - Page components
+   - Styling/layout
 
 ---
 
