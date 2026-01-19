@@ -20,19 +20,19 @@ Progress: [==========] 100% (Phase 1 gap closure complete)
 
 **Velocity:**
 - Total plans completed: 5
-- Average duration: 2.6min
-- Total execution time: 13min
+- Average duration: 2.8min
+- Total execution time: 14min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1. Foundation | 5 | 13min | 2.6min |
+| 1. Foundation | 5 | 14min | 2.8min |
 | 2. Component Migration | 0 | - | - |
 | 3. Critical Pages | 0 | - | - |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (3min), 01-02 (4min), 01-03 (n/a), 01-04 (2min), 01-05 (2min)
+- Last 5 plans: 01-01 (3min), 01-02 (4min), 01-04 (2min), 01-05 (2min), 01-03 (3min)
 - Trend: Consistent fast execution
 
 *Updated after each plan completion*
@@ -55,6 +55,8 @@ Recent decisions affecting current work:
 - [01-04]: Add serif stack for study cards (font-serif class)
 - [01-05]: Light mode L=97% with C=0.015 for visible warmth
 - [01-05]: Sidebar equals background in both modes for seamless UI
+- [01-03]: Sidebar uses semantic color tokens (bg-sidebar, text-sidebar-foreground)
+- [01-03]: ThemeToggle hidden on StudySession page to prevent footer overlap
 
 ### Pending Todos
 
@@ -70,6 +72,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-19T22:13:59Z
-Stopped at: Completed 01-05-PLAN.md (Color Palette Adjustment) - Phase 1 Gap Closure COMPLETE
+Last session: 2026-01-19T22:35:00Z
+Stopped at: Completed 01-03-PLAN.md (Layout Gap Closure) - Phase 1 COMPLETE
 Resume file: .planning/phases/02-component-migration/ (Phase 2 planning needed)
