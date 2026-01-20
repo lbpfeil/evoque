@@ -10,7 +10,7 @@ This roadmap transforms Evoque from a functional but visually inconsistent app i
 - Integer phases (1, 2, 3): Planned milestone work
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
-- [x] **Phase 1: Foundation** - Fix color system, create ThemeProvider, install shadcn components
+- [ ] **Phase 1: Foundation** - Fix color system, create ThemeProvider, install shadcn components
 - [ ] **Phase 2: Component Migration** - Modernize all general pages, modals, and transitions
 - [ ] **Phase 3: Critical Pages** - Study and StudySession with user-approved decisions
 
@@ -30,7 +30,7 @@ This roadmap transforms Evoque from a functional but visually inconsistent app i
   7. Font renders correctly with Outfit family
   8. Light mode has warm cream/beige tone
   9. Dark mode has consistent sidebar/background colors
-**Plans**: 5 plans
+**Plans**: 7 plans
 
 Plans:
 - [x] 01-01-PLAN.md — Fix HSL/OKLCH mismatch and apply warm palette
@@ -38,6 +38,8 @@ Plans:
 - [x] 01-03-PLAN.md — Fix sidebar layout and theme toggle position (GAP-01, GAP-05)
 - [x] 01-04-PLAN.md — Install and configure Outfit font (GAP-02)
 - [x] 01-05-PLAN.md — Adjust color palette for warmer light and consistent dark mode (GAP-03, GAP-04)
+- [ ] 01-06-PLAN.md — Remove redundant ThemeToggle from App.tsx and Study.tsx (UAT gap closure)
+- [ ] 01-07-PLAN.md — Fix sidebar layout overlap and BottomNav dark mode colors (UAT gap closure)
 
 ### Phase 2: Component Migration
 **Goal**: All general pages and modals use shadcn components with consistent styling
@@ -77,10 +79,10 @@ Phases execute in numeric order: 1 -> 2 -> 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 5/5 | Complete ✓ | 2026-01-19 |
+| 1. Foundation | 5/7 | Gap closure in progress | - |
 | 2. Component Migration | 0/TBD | Not started | - |
 | 3. Critical Pages | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-01-19*
-*Last updated: 2026-01-19*
+*Last updated: 2026-01-20*
