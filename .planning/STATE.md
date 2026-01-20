@@ -10,29 +10,29 @@ See: .planning/PROJECT.md (updated 2026-01-19)
 ## Current Position
 
 Phase: 1 of 3 (Foundation - Gap Closure)
-Plan: 6 of 8 in phase
+Plan: 7 of 8 in phase
 Status: In progress - UAT gap closure
-Last activity: 2026-01-20 - Completed 01-06-PLAN.md (Visual Harmony)
+Last activity: 2026-01-20 - Completed 01-07-PLAN.md (Sidebar Layout + BottomNav)
 
-Progress: [========░░] 75% (Phase 1 Gap Closure)
+Progress: [=========░] 88% (Phase 1 Gap Closure)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
-- Average duration: 2.7min
-- Total execution time: 16min
+- Total plans completed: 7
+- Average duration: 2.6min
+- Total execution time: 18min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1. Foundation | 6 | 16min | 2.7min |
+| 1. Foundation | 7 | 18min | 2.6min |
 | 2. Component Migration | 0 | - | - |
 | 3. Critical Pages | 0 | - | - |
 
 **Recent Trend:**
-- Last 5 plans: 01-02 (4min), 01-04 (2min), 01-05 (2min), 01-03 (3min), 01-06 (2min)
+- Last 5 plans: 01-04 (2min), 01-05 (2min), 01-03 (3min), 01-06 (2min), 01-07 (2min)
 - Trend: Consistent fast execution
 
 *Updated after each plan completion*
@@ -58,6 +58,8 @@ Recent decisions affecting current work:
 - [01-03]: Sidebar uses semantic color tokens (bg-sidebar, text-sidebar-foreground)
 - [01-03]: ThemeToggle hidden on StudySession page to prevent footer overlap
 - [01-06]: ThemeToggle only exists in Sidebar (removed from App.tsx and Study.tsx)
+- [01-07]: Use isExpanded from SidebarContext for dynamic main margin (md:ml-56/md:ml-14)
+- [01-07]: BottomNav uses semantic tokens (bg-background, border-border, text-foreground)
 
 ### Pending Todos
 
@@ -70,10 +72,12 @@ None yet.
 - ~~Light mode too stark white~~ (RESOLVED in 01-05)
 - ~~Dark mode sidebar/background mismatch~~ (RESOLVED in 01-05)
 - ~~Redundant ThemeToggle in multiple locations~~ (RESOLVED in 01-06)
+- ~~Sidebar overlap on desktop when expanded~~ (RESOLVED in 01-07)
+- ~~BottomNav gray colors in dark mode~~ (RESOLVED in 01-07)
 - Existing `hooks/useTheme.ts` left in place but unused - can be removed in future cleanup
 
 ## Session Continuity
 
-Last session: 2026-01-20T00:02:00Z
-Stopped at: Completed 01-06-PLAN.md (Visual Harmony - gap closure)
-Resume file: .planning/phases/01-foundation/01-07-PLAN.md (next gap closure plan)
+Last session: 2026-01-20T15:48:50Z
+Stopped at: Completed 01-07-PLAN.md (Sidebar Layout + BottomNav - gap closure)
+Resume file: .planning/phases/01-foundation/01-08-PLAN.md (final gap closure plan)
