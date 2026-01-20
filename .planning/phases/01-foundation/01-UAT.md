@@ -1,5 +1,5 @@
 ---
-status: complete
+status: diagnosed
 phase: 01-foundation
 source: 01-01-SUMMARY.md, 01-02-SUMMARY.md, 01-03-SUMMARY.md, 01-04-SUMMARY.md, 01-05-SUMMARY.md
 started: 2026-01-19T23:00:00Z
@@ -72,27 +72,49 @@ skipped: 0
   reason: "User reported: Já temos um botão de theme na sidebar e dentro da aba Study, não precisamos de mais um."
   severity: minor
   test: 1
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "ThemeToggle rendered in 3 locations (App.tsx fixed, Sidebar.tsx, Study.tsx) when only sidebar version should exist"
+  artifacts:
+    - path: "App.tsx"
+      issue: "Lines 10, 55-59: imports and renders fixed ThemeToggle at bottom-right"
+    - path: "pages/Study.tsx"
+      issue: "Lines 6, 66: imports and renders ThemeToggle in action buttons"
+  missing:
+    - "Remove ThemeToggle from App.tsx (import and JSX block)"
+    - "Remove ThemeToggle from pages/Study.tsx (import and component)"
+  debug_session: ".planning/debug/redundant-theme-toggles.md"
 
 - truth: "Dark mode sidebar and content have unified colors, content not hidden behind sidebar"
   status: failed
   reason: "User reported: Na versão mobile não, ainda está com a cor antiga. Desktop: páginas ainda estão aparecendo atrás da barra lateral (conteúdo cortado à esquerda)."
   severity: major
   test: 5
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "Components use hardcoded zinc colors (dark:bg-zinc-900) instead of semantic tokens (bg-background), bypassing warm oklch palette"
+  artifacts:
+    - path: "components/BottomNav.tsx"
+      issue: "Mobile nav uses dark:bg-zinc-900 instead of bg-background"
+    - path: "components/ui/*.tsx"
+      issue: "50+ instances of hardcoded dark:bg-zinc-* in UI components"
+    - path: "components/StudyHeatmap.tsx"
+      issue: "Multiple dark:bg-zinc-* variants"
+  missing:
+    - "Replace dark:bg-zinc-900 with bg-card or bg-popover"
+    - "Replace dark:border-zinc-800 with border-border"
+    - "Update BottomNav.tsx for mobile"
+  debug_session: ".planning/debug/mobile-dark-mode-colors.md"
 
 - truth: "Sidebar displays beside main content without overlapping"
   status: failed
   reason: "User reported: Mesmo problema do teste 5 - conteúdo da página aparecendo atrás da sidebar, texto cortado à esquerda."
   severity: major
   test: 7
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "Main content has static md:ml-14 margin but sidebar expands to w-56 on hover, causing 168px overlap"
+  artifacts:
+    - path: "App.tsx"
+      issue: "Line 40: main content uses static md:ml-14 regardless of sidebar state"
+    - path: "components/Sidebar.tsx"
+      issue: "Sidebar transitions between w-14 (collapsed) and w-56 (expanded)"
+  missing:
+    - "Make main content margin dynamic based on isExpanded state"
+    - "Import useSidebarContext in AppLayout"
+    - "Add transition to main content for smooth animation"
+  debug_session: ".planning/debug/sidebar-layout-issue.md"
