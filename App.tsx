@@ -7,7 +7,6 @@ import { StoreProvider } from './components/StoreContext';
 import { AuthProvider, useAuth } from './components/AuthContext';
 import { SidebarProvider, useSidebarContext } from './components/SidebarContext';
 import { ThemeProvider } from './components/ThemeProvider';
-import { ThemeToggle } from './components/ThemeToggle';
 import ErrorBoundary from './components/ErrorBoundary';
 import { Loader2 } from 'lucide-react';
 import { SpeedInsights } from "@vercel/speed-insights/react"
@@ -52,11 +51,6 @@ const AppLayout = ({ children }: React.PropsWithChildren) => {
         )}
       </main>
       {!isStudySession && <BottomNav />}
-      {!isStudySession && (
-        <div className="fixed bottom-4 right-4 z-50">
-          <ThemeToggle />
-        </div>
-      )}
     </div>
   );
 };
