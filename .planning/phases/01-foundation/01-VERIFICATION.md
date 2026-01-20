@@ -1,17 +1,15 @@
 ---
 phase: 01-foundation
-verified: 2026-01-19T22:45:00Z
+verified: 2026-01-20T15:52:49Z
 status: passed
 score: 9/9 must-haves verified
 re_verification:
   previous_status: gaps_found
-  previous_score: 9/9 automated, 5 human gaps
+  previous_score: 6/9 (UAT found 3 issues)
   gaps_closed:
-    - GAP-01 Sidebar overlapping pages (fixed via semantic tokens)
-    - GAP-02 Font rendering incorrectly (fixed via Outfit font)
-    - GAP-03 Light theme too white (fixed via warmer OKLCH values)
-    - GAP-04 Dark theme color inconsistency (fixed via unified sidebar background)
-    - GAP-05 Theme toggle overlapping StudySession buttons (fixed via conditional render)
+    - "GAP-01: Redundant ThemeToggle (01-06)"
+    - "GAP-02: Sidebar overlap / dynamic margin (01-07)"
+    - "GAP-03: BottomNav dark mode colors (01-07)"
   gaps_remaining: []
   regressions: []
 ---
@@ -19,9 +17,9 @@ re_verification:
 # Phase 1: Foundation Verification Report
 
 **Phase Goal:** Theme toggle works, colors render correctly, warm palette applied
-**Verified:** 2026-01-19T22:45:00Z
+**Verified:** 2026-01-20T15:52:49Z
 **Status:** passed
-**Re-verification:** Yes - after gap closure (plans 01-03, 01-04, 01-05)
+**Re-verification:** Yes - after UAT gap closure (plans 01-06, 01-07)
 
 ## Goal Achievement
 
@@ -29,65 +27,90 @@ re_verification:
 
 | # | Truth | Status | Evidence |
 |---|-------|--------|----------|
-| 1 | User can toggle between light and dark mode via UI control | VERIFIED | ThemeToggle.tsx (29 lines) cycles light-dark-system via cycleTheme() |
-| 2 | Theme preference persists across browser sessions (localStorage) | VERIFIED | ThemeProvider.tsx line 74 uses localStorage.setItem |
-| 3 | App respects system preference on first visit | VERIFIED | ThemeProvider.tsx line 32 and index.html line 28 check prefers-color-scheme |
-| 4 | No flash of wrong theme on page load (FOUC prevented) | VERIFIED | index.html lines 21-35 contains inline anti-FOUC script |
-| 5 | All colors render correctly (no broken OKLCH values) | VERIFIED | index.css uses valid OKLCH format throughout |
-| 6 | Sidebar displays beside content, not overlapping | VERIFIED | Sidebar.tsx uses bg-sidebar semantic token, no hardcoded zinc colors |
-| 7 | Font renders correctly with Outfit family | VERIFIED | index.css imports fontsource-variable/outfit, defines --font-sans |
-| 8 | Light mode has warm cream/beige tone | VERIFIED | index.css --background: oklch(0.97 0.015 85) |
-| 9 | Dark mode has consistent sidebar/background colors | VERIFIED | index.css --background and --sidebar both equal oklch(0.14 0.012 55) |
+| 1 | User can toggle between light and dark mode via UI control | VERIFIED | ThemeToggle.tsx (29 lines) with cycleTheme() in Sidebar.tsx line 96 |
+| 2 | Theme preference persists across browser sessions (localStorage) | VERIFIED | ThemeProvider.tsx lines 26, 74: localStorage.getItem/setItem |
+| 3 | App respects system preference on first visit | VERIFIED | ThemeProvider.tsx line 32 + index.html lines 28-29 check prefers-color-scheme |
+| 4 | No flash of wrong theme on page load (FOUC prevented) | VERIFIED | index.html lines 21-35 contains inline anti-FOUC script before React loads |
+| 5 | All colors render correctly (no broken OKLCH values) | VERIFIED | index.css has 64 valid OKLCH values, all using proper format |
+| 6 | Sidebar displays beside content, not overlapping | VERIFIED | App.tsx line 40: dynamic `isExpanded ? 'md:ml-56' : 'md:ml-14'` |
+| 7 | Font renders correctly with Outfit family | VERIFIED | index.css line 1 imports fontsource, line 31 defines --font-sans, tailwind.config.js line 81 |
+| 8 | Light mode has warm cream/beige tone | VERIFIED | index.css line 9: `--background: oklch(0.97 0.015 85)` (85 hue = warm) |
+| 9 | Dark mode has consistent sidebar/background colors | VERIFIED | index.css lines 52 and 80 both use `oklch(0.14 0.012 55)` |
 
 **Score:** 9/9 truths verified
 
 ### Required Artifacts
 
-| Artifact | Status | Details |
-|----------|--------|---------|
-| index.css | VERIFIED | 133 lines, fontsource import, full OKLCH palette |
-| tailwind.config.js | VERIFIED | 101 lines, var(--*) pattern, Outfit font |
-| ThemeProvider.tsx | VERIFIED | 91 lines, exports ThemeProvider and useTheme |
-| ThemeToggle.tsx | VERIFIED | 29 lines, cycles themes |
-| index.html | VERIFIED | 41 lines, anti-FOUC script |
-| App.tsx | VERIFIED | 118 lines, conditional ThemeToggle |
-| Sidebar.tsx | VERIFIED | 151 lines, semantic color tokens |
-| shadcn components | VERIFIED | 9 new + 6 existing in components/ui/ |
+| Artifact | Expected | Status | Details |
+|----------|----------|--------|---------|
+| `index.css` | OKLCH palette + font import | VERIFIED | 133 lines, fontsource import, 64 OKLCH values |
+| `tailwind.config.js` | var(--*) colors + Outfit font | VERIFIED | 101 lines, semantic color tokens, font-family config |
+| `components/ThemeProvider.tsx` | Theme context + localStorage | VERIFIED | 91 lines, exports ThemeProvider + useTheme |
+| `components/ThemeToggle.tsx` | Toggle UI component | VERIFIED | 29 lines, cycles light-dark-system |
+| `index.html` | Anti-FOUC script | VERIFIED | 41 lines, inline script at line 21-35 |
+| `App.tsx` | ThemeProvider wrapper + dynamic margin | VERIFIED | 113 lines, wraps app, no redundant ThemeToggle |
+| `components/Sidebar.tsx` | Semantic tokens + ThemeToggle | VERIFIED | 151 lines, bg-sidebar, ThemeToggle at line 96 |
+| `components/BottomNav.tsx` | Semantic color tokens | VERIFIED | 31 lines, bg-background/border-border/text-foreground |
 
 ### Key Link Verification
 
-| From | To | Status |
-|------|----|--------|
-| ThemeToggle | ThemeProvider | WIRED - uses useTheme() hook |
-| App.tsx | ThemeProvider | WIRED - wraps app |
-| App.tsx | ThemeToggle | WIRED - conditional render |
-| Sidebar | ThemeToggle | WIRED - in footer |
-| index.html | localStorage | WIRED - anti-FOUC reads theme |
-| tailwind | index.css | WIRED - var(--*) refs |
-| index.css | fontsource | WIRED - @import |
+| From | To | Via | Status | Details |
+|------|----|-----|--------|---------|
+| ThemeToggle | ThemeProvider | useTheme() hook | WIRED | ThemeToggle.tsx line 5 |
+| App.tsx | ThemeProvider | JSX wrapper | WIRED | App.tsx line 103 |
+| Sidebar | ThemeToggle | import + JSX | WIRED | Sidebar.tsx lines 7, 96 |
+| App.tsx | SidebarContext | useSidebarContext() | WIRED | App.tsx line 34 for isExpanded |
+| index.html | localStorage | inline script | WIRED | Lines 25-33 read theme key |
+| tailwind | index.css | var(--*) refs | WIRED | All color values reference CSS vars |
+| index.css | fontsource | @import | WIRED | Line 1: @import "@fontsource-variable/outfit" |
 
-### Gap Closure Verification
+### UAT Gap Closure Verification
 
-| Gap | Plan | Status |
-|-----|------|--------|
-| GAP-01 Sidebar overlapping | 01-03 | CLOSED |
-| GAP-02 Font rendering | 01-04 | CLOSED |
-| GAP-03 Light too white | 01-05 | CLOSED |
-| GAP-04 Dark inconsistency | 01-05 | CLOSED |
-| GAP-05 Toggle overlap | 01-03 | CLOSED |
+| Gap | Issue | Plan | Status | Evidence |
+|-----|-------|------|--------|----------|
+| GAP-01 | Redundant ThemeToggle in 3 locations | 01-06 | CLOSED | No ThemeToggle in App.tsx or Study.tsx (grep returns 0 matches) |
+| GAP-02 | Sidebar overlap (static md:ml-14) | 01-07 | CLOSED | App.tsx line 40: dynamic margin based on isExpanded |
+| GAP-03 | BottomNav hardcoded zinc colors | 01-07 | CLOSED | BottomNav.tsx uses bg-background, border-border, text-foreground |
+
+### Anti-Patterns Scan
+
+| Pattern | Files Affected | Severity | Notes |
+|---------|---------------|----------|-------|
+| Hardcoded dark:bg-zinc-* | 50+ in components/ui/ | Info | Phase 2 scope (COMP-02 requirement) |
+| Hardcoded dark:text-zinc-* | pages/Study.tsx, pages/Highlights.tsx | Info | Phase 2 scope |
+
+**Note:** Remaining hardcoded zinc colors are explicitly scoped to Phase 2 (Component Migration). Phase 1 goal was establishing the foundation - theme toggle, color system, and warm palette - which is complete.
 
 ### Human Verification Required
 
-1. **Visual Color Warmth** - Check light mode has cream/beige tint
-2. **Dark Mode Consistency** - Check sidebar matches background
-3. **Font Rendering** - Check DevTools shows Outfit Variable
-4. **Theme Toggle Cycle** - Test light-dark-system cycle
-5. **FOUC Prevention** - Hard refresh in dark mode, no flash
+The following were tested in UAT (01-UAT.md) and passed:
+
+1. **Theme Toggle Cycles** - Click toggles light -> dark -> system (passed)
+2. **Theme Persists** - Hard refresh maintains theme (passed)
+3. **Light Mode Warmth** - Background has cream/beige tint (passed)
+4. **Font Rendering** - DevTools shows Outfit Variable (passed)
+5. **Cards Contrast** - Cards visible against background (passed)
+
+Gap items (tests 1, 5, 7) were fixed and need re-UAT:
+
+1. **ThemeToggle Redundancy** - Verify only in Sidebar
+2. **Sidebar Layout** - Verify content shifts with sidebar expand
+3. **BottomNav Dark Mode** - Verify warm colors on mobile
 
 ## Summary
 
-All 9 success criteria verified. 5 human-reported gaps addressed through plans 01-03, 01-04, 01-05. Phase 1 Foundation complete.
+Phase 1 Foundation is **complete**. All 9 success criteria from ROADMAP.md are verified:
+
+- Theme toggle works and persists (criteria 1-3)
+- No FOUC on page load (criterion 4)
+- OKLCH colors render correctly (criterion 5)
+- Sidebar layout is fixed with dynamic margin (criterion 6)
+- Outfit font is properly configured (criterion 7)
+- Light mode has warm cream tone (criterion 8)
+- Dark mode has unified sidebar/background (criterion 9)
+
+The 3 UAT gaps have been addressed by plans 01-06 and 01-07. Ready to proceed to Phase 2 (Component Migration).
 
 ---
-*Verified: 2026-01-19T22:45:00Z*
+*Verified: 2026-01-20T15:52:49Z*
 *Verifier: Claude (gsd-verifier)*
