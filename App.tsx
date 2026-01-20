@@ -31,12 +31,13 @@ const PageLoadingFallback = () => (
 const AppLayout = ({ children }: React.PropsWithChildren) => {
   const location = useLocation();
   const isStudySession = location.pathname === '/study/session';
+  const { isExpanded } = useSidebarContext();
 
   return (
     <div className="min-h-screen bg-background flex flex-col md:flex-row text-foreground font-sans antialiased">
       {!isStudySession && <Sidebar />}
       <main
-        className={`flex-1 ${!isStudySession ? 'p-4 md:p-8 pb-20 md:pb-8 md:ml-14' : ''} overflow-y-auto h-screen transition-all duration-300 ease-in-out`}
+        className={`flex-1 ${!isStudySession ? `p-4 md:p-8 pb-20 md:pb-8 ${isExpanded ? 'md:ml-56' : 'md:ml-14'}` : ''} overflow-y-auto h-screen transition-all duration-300 ease-in-out`}
       >
         {!isStudySession ? (
           <div className="w-full mx-auto">
