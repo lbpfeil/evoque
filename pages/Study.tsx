@@ -3,15 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { useStore } from '../components/StoreContext';
 import { DeckTable } from '../components/DeckTable';
 import { EmptyDeckPopover } from '../components/EmptyDeckPopover';
-import { ThemeToggle } from '../components/ThemeToggle';
 import { StudyHeatmap } from '../components/StudyHeatmap';
-import { Settings, RefreshCw } from 'lucide-react';
 
 const Study = () => {
   const navigate = useNavigate();
-  const { books, getDeckStats, isLoaded, reloadAllData, reviewLogs } = useStore();
+  const { books, getDeckStats, isLoaded, reviewLogs } = useStore();
   const [showEmptyPopover, setShowEmptyPopover] = useState(false);
-  const [isReloading, setIsReloading] = useState(false);
 
   if (!isLoaded) {
     return (
@@ -40,17 +37,6 @@ const Study = () => {
     }
   };
 
-  const handleSettings = () => {
-    // TODO: Open settings modal
-    console.log('Settings clicked');
-  };
-
-  const handleReload = async () => {
-    setIsReloading(true);
-    await reloadAllData();
-    setTimeout(() => setIsReloading(false), 500);
-  };
-
   return (
     <div className="p-4 sm:p-6">
       {/* Header */}
@@ -60,26 +46,6 @@ const Study = () => {
           Start your daily study session with all books, or choose a specific book below for focused practice.
         </p>
       </header>
-
-      {/* Action Buttons */}
-      <div className="flex justify-end gap-2 mb-3">
-        <ThemeToggle variant="mobile" />
-        <button
-          onClick={handleReload}
-          disabled={isReloading}
-          className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded transition-colors disabled:opacity-50"
-          title="Reload data"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 text-zinc-600 dark:text-zinc-400 ${isReloading ? 'animate-spin' : ''}`} />
-        </button>
-        <button
-          onClick={handleSettings}
-          className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded transition-colors"
-          title="Study Settings"
-        >
-          <Settings className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-400" />
-        </button>
-      </div>
 
       {/* Review Activity Heatmap */}
       {reviewLogs.length > 0 && (
