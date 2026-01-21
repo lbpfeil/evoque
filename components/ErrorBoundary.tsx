@@ -27,18 +27,18 @@ class ErrorBoundary extends Component<Props, State> {
     public render() {
         if (this.state.hasError) {
             return (
-                <div className="min-h-screen flex items-center justify-center bg-zinc-50 p-4">
-                    <div className="bg-white p-8 rounded-lg shadow-xl max-w-md w-full text-center border border-zinc-200">
+                <div className="min-h-screen flex items-center justify-center bg-background p-4">
+                    <div className="bg-card p-8 rounded-lg shadow-xl max-w-md w-full text-center border border-border">
                         <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
                             <AlertTriangle className="w-8 h-8" />
                         </div>
-                        <h1 className="text-2xl font-bold text-zinc-900 mb-2">Something went wrong</h1>
-                        <p className="text-zinc-500 mb-6 text-sm leading-relaxed">
+                        <h1 className="text-2xl font-bold text-foreground mb-2">Something went wrong</h1>
+                        <p className="text-muted-foreground mb-6 text-sm leading-relaxed">
                             We encountered an unexpected error. Please try refreshing the page.
                         </p>
 
                         {this.state.error && (
-                            <div className="mb-6 p-3 bg-zinc-50 rounded text-left overflow-auto max-h-32">
+                            <div className="mb-6 p-3 bg-muted rounded text-left overflow-auto max-h-32">
                                 <p className="text-xs font-mono text-red-600 break-all">
                                     {this.state.error.toString()}
                                 </p>
@@ -47,7 +47,7 @@ class ErrorBoundary extends Component<Props, State> {
 
                         <button
                             onClick={() => window.location.reload()}
-                            className="w-full py-3 bg-black text-white rounded-md font-medium hover:bg-zinc-800 transition-colors flex items-center justify-center gap-2"
+                            className="w-full py-3 bg-primary text-primary-foreground rounded-md font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
                         >
                             <RefreshCw className="w-4 h-4" />
                             Reload Application
