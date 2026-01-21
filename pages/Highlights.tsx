@@ -249,7 +249,7 @@ export const Highlights = () => {
               {/* Bulk Tag Trigger */}
               <Popover>
                 <PopoverTrigger asChild>
-                  <button className="flex items-center gap-1 text-[10px] hover:text-zinc-300 dark:hover:text-zinc-600 transition-colors uppercase tracking-wider font-bold">
+                  <button className="flex items-center gap-1 text-[10px] hover:text-background/60 transition-colors duration-200 uppercase tracking-wider font-bold">
                     <TagIcon className="w-3 h-3" /> Tag
                   </button>
                 </PopoverTrigger>
