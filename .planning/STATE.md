@@ -10,29 +10,29 @@ See: .planning/PROJECT.md (updated 2026-01-19)
 ## Current Position
 
 Phase: 2 of 3 (Component Migration)
-Plan: 3 of 6 in phase
+Plan: 6 of 6 in phase
 Status: In progress
-Last activity: 2026-01-21 - Completed 02-03-PLAN.md (Settings Page)
+Last activity: 2026-01-21 - Completed 02-06-PLAN.md (Content Modals)
 
-Progress: [==========] 100% (Phase 1) | [===░░░░░░░] 50% (Phase 2)
+Progress: [==========] 100% (Phase 1) | [======░░░░] 67% (Phase 2)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 10
+- Total plans completed: 11
 - Average duration: 2.9min
-- Total execution time: 31min
+- Total execution time: 35min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Foundation | 7 | 18min | 2.6min |
-| 2. Component Migration | 3 | 13min | 4.3min |
+| 2. Component Migration | 4 | 17min | 4.3min |
 | 3. Critical Pages | 0 | - | - |
 
 **Recent Trend:**
-- Last 5 plans: 01-06 (2min), 01-07 (2min), 02-01 (3min), 02-02 (4min), 02-03 (6min)
+- Last 5 plans: 01-07 (2min), 02-01 (3min), 02-02 (4min), 02-03 (6min), 02-06 (4min)
 - Trend: Consistent fast execution
 
 *Updated after each plan completion*
@@ -68,6 +68,9 @@ Recent decisions affecting current work:
 - [02-02]: Use hover:border-primary/30 for subtle card hover effects
 - [02-03]: Keep bg-blue-600 for avatar placeholder (brand color intentional)
 - [02-03]: Success states use explicit dark mode: bg-green-500/10 text-green-600 dark:text-green-400
+- [02-06]: Use hsl(var(--primary)) for Recharts colors (theme-aware charts)
+- [02-06]: Use Dialog open={!!id} pattern for controlled modal state
+- [02-06]: Tooltip uses card/border CSS variables for consistent styling
 
 ### Pending Todos
 
@@ -86,6 +89,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-21T21:38:32Z
-Stopped at: Completed 02-03-PLAN.md (Settings Page)
-Resume file: .planning/phases/02-component-migration/02-04-PLAN.md
+Last session: 2026-01-21T21:44:53Z
+Stopped at: Completed 02-06-PLAN.md (Content Modals)
+Resume file: None (Wave 3 complete)
