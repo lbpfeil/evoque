@@ -36,7 +36,7 @@ Requirements para o redesign. Cada um mapeia para fases do roadmap.
 
 - [ ] **PAGE-01**: Modernizar Dashboard.tsx com shadcn components
 - [ ] **PAGE-02**: Modernizar Highlights.tsx com shadcn components
-- [ ] **PAGE-03**: Modernizar BookDetails.tsx com shadcn components
+- [x] **PAGE-03**: ~~Modernizar BookDetails.tsx com shadcn components~~ **OBSOLETE** - BookDetails.tsx was removed from codebase (see TECHNICAL_CONTEXT.md)
 - [ ] **PAGE-04**: Modernizar Settings.tsx com shadcn components (nao tocar parsers)
 - [ ] **PAGE-05**: Modernizar Login.tsx com shadcn components
 - [ ] **PAGE-06**: Modernizar Sidebar.tsx com theme toggle
@@ -90,19 +90,19 @@ Deferred para release futura. Nao no roadmap atual.
 | FOUND-07 | Phase 1 | Complete |
 | COLOR-01 | Phase 1 | Complete |
 | COLOR-02 | Phase 1 | Complete |
-| COLOR-03 | Phase 2 | Pending |
+| COLOR-03 | Phase 1 | **Pre-completed** (App.tsx already uses semantic tokens) |
 | COLOR-04 | Phase 2 | Pending |
 | COLOR-05 | Phase 1 | Complete |
 | COMP-01 | Phase 1 | Complete |
-| COMP-02 | Phase 2 | Pending |
+| COMP-02 | Phase 1 | **Pre-completed** (ThemeToggle in Sidebar since 01-06) |
 | COMP-03 | Phase 2 | Pending |
 | COMP-04 | Phase 2 | Pending |
 | PAGE-01 | Phase 2 | Pending |
 | PAGE-02 | Phase 2 | Pending |
-| PAGE-03 | Phase 2 | Pending |
+| PAGE-03 | N/A | **OBSOLETE** (file removed) |
 | PAGE-04 | Phase 2 | Pending |
 | PAGE-05 | Phase 2 | Pending |
-| PAGE-06 | Phase 2 | Pending |
+| PAGE-06 | Phase 1 | **Pre-completed** (Sidebar uses semantic tokens since 01-03) |
 | CRIT-01 | Phase 3 | Pending |
 | CRIT-02 | Phase 3 | Pending |
 | MODAL-01 | Phase 2 | Pending |
@@ -113,13 +113,13 @@ Deferred para release futura. Nao no roadmap atual.
 | MODAL-06 | Phase 2 | Pending |
 
 **Coverage:**
-- v1 requirements: 28 total
-- Phase 1 (Foundation): 11 requirements
-- Phase 2 (Component Migration): 15 requirements
+- v1 requirements: 28 total (1 obsolete)
+- Phase 1 (Foundation): 11 requirements + 3 pre-completed from Phase 2
+- Phase 2 (Component Migration): 11 remaining requirements (was 15, minus 3 pre-completed, minus 1 obsolete)
 - Phase 3 (Critical Pages): 2 requirements
-- Mapped to phases: 28
-- Unmapped: 0
+- Mapped to phases: 27 active
+- Obsolete: 1 (PAGE-03)
 
 ---
 *Requirements defined: 2026-01-19*
-*Last updated: 2026-01-19 after roadmap creation*
+*Last updated: 2026-01-21 - Marked PAGE-03 obsolete, COLOR-03/COMP-02/PAGE-06 pre-completed*

@@ -44,18 +44,20 @@ Plans:
 ### Phase 2: Component Migration
 **Goal**: All general pages and modals use shadcn components with consistent styling
 **Depends on**: Phase 1
-**Requirements**: COLOR-03, COLOR-04, COMP-02, COMP-03, COMP-04, PAGE-01, PAGE-02, PAGE-03, PAGE-04, PAGE-05, PAGE-06, MODAL-01, MODAL-02, MODAL-03, MODAL-04, MODAL-05, MODAL-06
+**Requirements**: COLOR-04, COMP-03, COMP-04, PAGE-01, PAGE-02, PAGE-04, PAGE-05, MODAL-01, MODAL-02, MODAL-03, MODAL-04, MODAL-05, MODAL-06
+**Pre-completed by Phase 1**: COLOR-03 (App.tsx), PAGE-06 (Sidebar.tsx), COMP-02 (ThemeToggle in Sidebar)
+**Obsolete**: PAGE-03 (BookDetails.tsx was removed from codebase)
 **Success Criteria** (what must be TRUE):
   1. Dashboard displays stats and charts using shadcn Card components
-  2. All pages (Highlights, BookDetails, Settings, Login, Sidebar) use semantic color tokens (no hardcoded zinc-*)
-  3. Theme toggle is accessible from Sidebar
+  2. All pages (Highlights, Settings, Login, Sidebar) use semantic color tokens (no hardcoded zinc-*)
+  3. Theme toggle is accessible from Sidebar (pre-completed)
   4. All modals and popovers follow shadcn Dialog/Popover patterns
   5. Interactive elements have visible hover states and smooth transitions (150-300ms)
 **Plans**: 6 plans
 
 Plans:
 - [ ] 02-01-PLAN.md — Fix UI component semantic tokens (button, input, dialog, popover, command, sheet)
-- [ ] 02-02-PLAN.md — Migrate Login and Dashboard pages to semantic tokens
+- [ ] 02-02-PLAN.md — Migrate Login and Dashboard pages to semantic tokens + verify Phase 1 completions
 - [ ] 02-03-PLAN.md — Migrate Settings page to semantic tokens (preserving parser imports)
 - [ ] 02-04-PLAN.md — Migrate Highlights page and related components
 - [ ] 02-05-PLAN.md — Install AlertDialog, migrate DeleteBookModal, DeleteCardPopover, EmptyDeckPopover
@@ -88,4 +90,4 @@ Phases execute in numeric order: 1 -> 2 -> 3
 
 ---
 *Roadmap created: 2026-01-19*
-*Last updated: 2026-01-21*
+*Last updated: 2026-01-21 - Updated Phase 2 requirements (PAGE-03 obsolete, pre-completions noted)*
