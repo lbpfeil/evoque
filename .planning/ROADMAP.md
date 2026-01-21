@@ -51,12 +51,15 @@ Plans:
   3. Theme toggle is accessible from Sidebar
   4. All modals and popovers follow shadcn Dialog/Popover patterns
   5. Interactive elements have visible hover states and smooth transitions (150-300ms)
-**Plans**: TBD
+**Plans**: 6 plans
 
 Plans:
-- [ ] 02-01: TBD
-- [ ] 02-02: TBD
-- [ ] 02-03: TBD
+- [ ] 02-01-PLAN.md — Fix UI component semantic tokens (button, input, dialog, popover, command, sheet)
+- [ ] 02-02-PLAN.md — Migrate Login and Dashboard pages to semantic tokens
+- [ ] 02-03-PLAN.md — Migrate Settings page to semantic tokens (preserving parser imports)
+- [ ] 02-04-PLAN.md — Migrate Highlights page and related components
+- [ ] 02-05-PLAN.md — Install AlertDialog, migrate DeleteBookModal, DeleteCardPopover, EmptyDeckPopover
+- [ ] 02-06-PLAN.md — Migrate HighlightEditModal, HighlightHistoryModal, BookContextModal to Dialog
 
 ### Phase 3: Critical Pages
 **Goal**: Study and StudySession pages modernized with user approval at each step
@@ -80,9 +83,9 @@ Phases execute in numeric order: 1 -> 2 -> 3
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 7/7 | ✓ Complete | 2026-01-20 |
-| 2. Component Migration | 0/TBD | Not started | - |
+| 2. Component Migration | 0/6 | Ready to execute | - |
 | 3. Critical Pages | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-01-19*
-*Last updated: 2026-01-20*
+*Last updated: 2026-01-21*
