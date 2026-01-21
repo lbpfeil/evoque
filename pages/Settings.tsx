@@ -280,14 +280,14 @@ const Settings = () => {
     <div className="p-6">
       {/* Header */}
       <header className="mb-3">
-        <h1 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">Settings</h1>
-        <p className="text-xs text-zinc-500 mt-1">
+        <h1 className="text-base font-semibold text-foreground">Settings</h1>
+        <p className="text-xs text-muted-foreground mt-1">
           Manage your library, import highlights, and preferences.
         </p>
       </header>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-zinc-200 dark:border-zinc-800 mb-3">
+      <div className="flex gap-1 border-b border-border mb-3">
         {tabs.map(tab => (
           <button
             key={tab.id}
@@ -295,8 +295,8 @@ const Settings = () => {
             className={`
               px-3 py-1 text-xs font-medium rounded-t transition-colors flex items-center gap-1.5
               ${activeTab === tab.id
-                ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border-t border-x border-zinc-200 dark:border-zinc-800 -mb-px'
-                : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800'
+                ? 'bg-card text-card-foreground border-t border-x border-border -mb-px'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted'
               }
             `}
           >
@@ -312,22 +312,22 @@ const Settings = () => {
         {activeTab === 'import' && (
           <div className="space-y-3">
             <div>
-              <h2 className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Import Highlights</h2>
-              <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-0.5">Upload 'My Clippings.txt', Kindle PDF export, or Anki TSV file</p>
+              <h2 className="text-xs font-semibold text-muted-foreground">Import Highlights</h2>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Upload 'My Clippings.txt', Kindle PDF export, or Anki TSV file</p>
             </div>
 
             {/* Success Notification */}
             {importResult && (
-              <div className="bg-green-50 border border-green-200 rounded p-2 flex items-center justify-between">
+              <div className="bg-green-500/10 border border-green-500/30 rounded p-2 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-green-600 shrink-0" />
-                  <span className="text-xs text-green-800">
+                  <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400 shrink-0" />
+                  <span className="text-xs text-green-600 dark:text-green-400">
                     Imported {importResult.newBooks} books, {importResult.newHighlights} highlights
                   </span>
                 </div>
-                <button 
-                  onClick={() => setActiveTab('library')} 
-                  className="text-xs text-green-700 hover:underline shrink-0"
+                <button
+                  onClick={() => setActiveTab('library')}
+                  className="text-xs text-green-600 dark:text-green-400 hover:underline shrink-0"
                 >
                   View Library →
                 </button>
@@ -336,7 +336,7 @@ const Settings = () => {
 
             {/* Error Notification */}
             {importError && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded text-xs">
+              <div className="bg-destructive/10 border border-destructive/30 text-destructive px-3 py-2 rounded text-xs">
                 <strong className="font-semibold">Error: </strong>
                 <span>{importError}</span>
               </div>
@@ -346,7 +346,7 @@ const Settings = () => {
             <div
               className={`
                 relative border border-dashed rounded p-8 text-center transition-all
-                ${dragActive ? 'border-black bg-zinc-50 dark:bg-zinc-950' : 'border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:border-zinc-400 dark:hover:border-zinc-600'}
+                ${dragActive ? 'border-primary bg-primary/5' : 'border-border bg-card hover:border-primary/30'}
                 ${isProcessing ? 'opacity-50 pointer-events-none' : ''}
               `}
               onDragEnter={handleDrag}
@@ -363,25 +363,25 @@ const Settings = () => {
               />
 
               <div className="flex flex-col items-center justify-center space-y-3">
-                <div className="w-12 h-12 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800 rounded-full flex items-center justify-center">
+                <div className="w-12 h-12 bg-muted text-foreground border border-border rounded-full flex items-center justify-center">
                   {isProcessing ? (
-                    <div className="animate-spin w-5 h-5 border-2 border-black dark:border-white border-t-transparent rounded-full" />
+                    <div className="animate-spin w-5 h-5 border-2 border-foreground border-t-transparent rounded-full" />
                   ) : (
                     <Upload className="w-5 h-5" />
                   )}
                 </div>
 
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                  <p className="text-sm font-medium text-foreground">
                     {isProcessing ? 'Processing highlights...' : 'Drag & drop file here'}
                   </p>
-                  <p className="text-xs text-zinc-500">
-                    or <label htmlFor="file-upload" className="text-black dark:text-white hover:underline cursor-pointer font-medium">browse to upload</label>
+                  <p className="text-xs text-muted-foreground">
+                    or <label htmlFor="file-upload" className="text-foreground hover:underline cursor-pointer font-medium">browse to upload</label>
                   </p>
                 </div>
 
                 {!isProcessing && (
-                  <div className="flex items-center text-[10px] text-zinc-400 dark:text-zinc-500 bg-zinc-50 dark:bg-zinc-950 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-800">
+                  <div className="flex items-center text-[10px] text-muted-foreground bg-muted px-2 py-1 rounded border border-border">
                     <FileText className="w-3 h-3 mr-1.5" />
                     .txt, .pdf, or .tsv
                   </div>
@@ -390,13 +390,13 @@ const Settings = () => {
             </div>
 
             {/* Instructions */}
-            <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded p-3 flex gap-2 items-start">
-              <AlertCircle className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-400 shrink-0 mt-0.5" />
-              <div className="text-xs text-zinc-600 dark:text-zinc-400 space-y-1">
-                <p className="font-semibold text-zinc-900 dark:text-zinc-100">Instructions</p>
+            <div className="bg-muted border border-border rounded p-3 flex gap-2 items-start">
+              <AlertCircle className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-0.5" />
+              <div className="text-xs text-muted-foreground space-y-1">
+                <p className="font-semibold text-foreground">Instructions</p>
                 <div className="space-y-2 text-[11px] leading-relaxed">
                   <div>
-                    <p className="font-medium text-zinc-800 dark:text-zinc-300">Option 1: My Clippings.txt</p>
+                    <p className="font-medium text-foreground">Option 1: My Clippings.txt</p>
                     <ol className="list-decimal list-inside space-y-0.5 ml-2">
                       <li>Connect your Kindle to your computer via USB</li>
                       <li>Open the "Kindle" drive in your file explorer</li>
@@ -405,7 +405,7 @@ const Settings = () => {
                     </ol>
                   </div>
                   <div>
-                    <p className="font-medium text-zinc-800 dark:text-zinc-300">Option 2: PDF Export</p>
+                    <p className="font-medium text-foreground">Option 2: PDF Export</p>
                     <ol className="list-decimal list-inside space-y-0.5 ml-2">
                       <li>On your Kindle, select a book and view highlights</li>
                       <li>Choose "Email highlights" to send them to your email</li>
@@ -414,7 +414,7 @@ const Settings = () => {
                     </ol>
                   </div>
                   <div>
-                    <p className="font-medium text-zinc-800 dark:text-zinc-300">Option 3: Anki TSV</p>
+                    <p className="font-medium text-foreground">Option 3: Anki TSV</p>
                     <ol className="list-decimal list-inside space-y-0.5 ml-2">
                       <li>Export your Anki deck as TSV (tab-separated values)</li>
                       <li>Format: [highlight] TAB [note] TAB [book title] TAB [author]</li>
@@ -431,20 +431,20 @@ const Settings = () => {
         {activeTab === 'library' && (
           <div className="space-y-3">
             <div>
-              <h2 className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Book Library</h2>
-              <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-0.5">{books.length} books in your collection</p>
+              <h2 className="text-xs font-semibold text-muted-foreground">Book Library</h2>
+              <p className="text-[10px] text-muted-foreground mt-0.5">{books.length} books in your collection</p>
             </div>
 
             {/* Books List */}
             {filteredBooks.length === 0 ? (
-              <div className="text-center py-12 bg-zinc-50 dark:bg-zinc-950 rounded border border-dashed border-zinc-300 dark:border-zinc-700">
-                <p className="text-xs text-zinc-400 dark:text-zinc-500">
+              <div className="text-center py-12 bg-muted rounded border border-dashed border-border">
+                <p className="text-xs text-muted-foreground">
                   No books in library. Import highlights to get started.
                 </p>
                 {books.length === 0 && (
                   <button
                     onClick={() => setActiveTab('import')}
-                    className="mt-2 text-xs text-black dark:text-white hover:underline"
+                    className="mt-2 text-xs text-foreground hover:underline"
                   >
                     Go to Import Tab →
                   </button>
@@ -453,14 +453,14 @@ const Settings = () => {
             ) : (
               <div className="flex flex-col gap-1">
                 {filteredBooks.map(book => (
-                  <div key={book.id} className="relative py-2 px-3 border border-zinc-200 dark:border-zinc-800 rounded bg-white dark:bg-zinc-900">
+                  <div key={book.id} className="relative py-2 px-3 border border-border rounded bg-card">
                     {/* Botão delete (canto superior direito) */}
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         setBookToDelete(book.id);
                       }}
-                      className="absolute top-2 right-2 p-1.5 text-zinc-400 dark:text-zinc-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors z-10"
+                      className="absolute top-2 right-2 p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded transition-colors z-10"
                       title="Delete book"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -469,11 +469,11 @@ const Settings = () => {
                     {/* Book card content */}
                     <div className="flex items-center gap-2">
                       {/* Cover thumbnail with upload on hover */}
-                      <div className="relative w-10 h-14 bg-zinc-100 dark:bg-zinc-800 rounded border border-zinc-200 dark:border-zinc-800 shrink-0 overflow-hidden group">
+                      <div className="relative w-10 h-14 bg-muted rounded border border-border shrink-0 overflow-hidden group">
                         {book.coverUrl ? (
                           <img src={book.coverUrl} alt={book.title} className="w-full h-full object-cover" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-zinc-400 dark:text-zinc-500">
+                          <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                             <Library className="w-4 h-4" />
                           </div>
                         )}
@@ -499,18 +499,18 @@ const Settings = () => {
 
                       {/* Book info */}
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+                        <h3 className="text-sm font-semibold text-card-foreground truncate">
                           {book.title.length > 100 ? `${book.title.substring(0, 100)}...` : book.title}
                         </h3>
-                        <p className="text-xs text-zinc-500 truncate">{book.author} • {book.highlightCount} highlights</p>
-                        <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-0.5">
+                        <p className="text-xs text-muted-foreground truncate">{book.author} • {book.highlightCount} highlights</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">
                           Last: {formatDate(book.lastImported)}
                         </p>
                       </div>
                     </div>
 
                     {/* Book Settings Collapsible */}
-                    <div className="mt-2 border-t border-zinc-100 dark:border-zinc-800 pt-2">
+                    <div className="mt-2 border-t border-border/50 pt-2">
                       <button
                         onClick={() => {
                           setExpandedBooks(prev => {
@@ -523,7 +523,7 @@ const Settings = () => {
                             return next;
                           });
                         }}
-                        className="flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+                        className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
                       >
                         <SettingsIcon className="w-3 h-3" />
                         <span>Book Settings</span>
@@ -535,10 +535,10 @@ const Settings = () => {
                       </button>
 
                       {expandedBooks.has(book.id) && (
-                        <div className="mt-2 bg-zinc-50 dark:bg-zinc-950 rounded p-2 space-y-2">
+                        <div className="mt-2 bg-muted rounded p-2 space-y-2">
                           {/* Daily Review Limit */}
                           <div className="flex items-center justify-between">
-                            <label className="text-xs text-zinc-700 dark:text-zinc-300">Daily Review Limit:</label>
+                            <label className="text-xs text-foreground">Daily Review Limit:</label>
                             <div className="flex items-center gap-1.5">
                               <input
                                 type="number"
@@ -550,15 +550,15 @@ const Settings = () => {
                                   const value = e.target.value === '' ? undefined : Number(e.target.value);
                                   updateBookSettings(book.id, { dailyReviewLimit: value });
                                 }}
-                                className="h-6 w-16 px-1.5 text-xs border border-zinc-200 dark:border-zinc-800 rounded focus:outline-none focus:ring-1 focus:ring-black bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100"
+                                className="h-6 w-16 px-1.5 text-xs border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring bg-background text-foreground"
                               />
-                              <span className="text-[10px] text-zinc-400 dark:text-zinc-500">cards/day</span>
+                              <span className="text-[10px] text-muted-foreground">cards/day</span>
                             </div>
                           </div>
 
                           {/* Initial Ease Factor */}
                           <div className="flex items-center justify-between">
-                            <label className="text-xs text-zinc-700 dark:text-zinc-300">Initial Ease Factor:</label>
+                            <label className="text-xs text-foreground">Initial Ease Factor:</label>
                             <div className="flex items-center gap-1.5">
                               <input
                                 type="number"
@@ -571,13 +571,13 @@ const Settings = () => {
                                   const value = e.target.value === '' ? undefined : Number(e.target.value);
                                   updateBookSettings(book.id, { initialEaseFactor: value });
                                 }}
-                                className="h-6 w-16 px-1.5 text-xs border border-zinc-200 dark:border-zinc-800 rounded focus:outline-none focus:ring-1 focus:ring-black bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100"
+                                className="h-6 w-16 px-1.5 text-xs border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring bg-background text-foreground"
                               />
-                              <span className="text-[10px] text-zinc-400 dark:text-zinc-500">(new cards)</span>
+                              <span className="text-[10px] text-muted-foreground">(new cards)</span>
                             </div>
                           </div>
 
-                          <p className="text-[9px] text-zinc-400 dark:text-zinc-500 italic">
+                          <p className="text-[9px] text-muted-foreground italic">
                             Leave empty to use global defaults
                           </p>
                         </div>
@@ -594,14 +594,14 @@ const Settings = () => {
         {activeTab === 'account' && (
           <div className="space-y-4">
             <div>
-              <h2 className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Account Settings</h2>
-              <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-0.5">Manage your account and profile</p>
+              <h2 className="text-xs font-semibold text-muted-foreground">Account Settings</h2>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Manage your account and profile</p>
             </div>
 
             {/* Profile Photo */}
             <div>
-              <h3 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 mb-1.5">Profile Photo</h3>
-              <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded p-3 flex items-center gap-3">
+              <h3 className="text-xs font-semibold text-card-foreground mb-1.5">Profile Photo</h3>
+              <div className="bg-muted border border-border rounded p-3 flex items-center gap-3">
                 {/* Avatar Preview */}
                 <div className="relative">
                   <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-lg overflow-hidden">
@@ -617,7 +617,7 @@ const Settings = () => {
                     </div>
                   )}
                 </div>
-                
+
                 {/* Upload Button */}
                 <div className="flex-1">
                   <input
@@ -629,12 +629,12 @@ const Settings = () => {
                   />
                   <label
                     htmlFor="avatar-upload"
-                    className="inline-flex items-center gap-1.5 h-7 px-3 text-xs bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 h-7 px-3 text-xs bg-secondary hover:bg-accent text-secondary-foreground rounded transition-colors cursor-pointer"
                   >
                     <Camera className="w-3 h-3" />
                     Change Photo
                   </label>
-                  <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">
+                  <p className="text-[10px] text-muted-foreground mt-1">
                     JPG, PNG or GIF. Max 2MB.
                   </p>
                 </div>
@@ -643,51 +643,51 @@ const Settings = () => {
 
             {/* Profile Information */}
             <div>
-              <h3 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 mb-1.5">Profile Information</h3>
-              <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded p-3 space-y-2">
+              <h3 className="text-xs font-semibold text-card-foreground mb-1.5">Profile Information</h3>
+              <div className="bg-muted border border-border rounded p-3 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-zinc-600 dark:text-zinc-400">Name:</span>
+                  <span className="text-xs text-muted-foreground">Name:</span>
                   <input
                     type="text"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     onBlur={handleSaveFullName}
                     placeholder="Your full name"
-                    className="h-6 px-2 text-xs border border-zinc-200 dark:border-zinc-800 rounded w-48 focus:outline-none focus:ring-1 focus:ring-black bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100"
+                    className="h-6 px-2 text-xs border border-input rounded w-48 focus:outline-none focus:ring-1 focus:ring-ring bg-background text-foreground"
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-zinc-600 dark:text-zinc-400">Email:</span>
-                  <span className="text-xs font-medium text-zinc-900 dark:text-zinc-100">{user?.email}</span>
+                  <span className="text-xs text-muted-foreground">Email:</span>
+                  <span className="text-xs font-medium text-foreground">{user?.email}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-zinc-600 dark:text-zinc-400">Plan:</span>
-                  <span className="text-xs font-medium text-zinc-900 dark:text-zinc-100">Free</span>
+                  <span className="text-xs text-muted-foreground">Plan:</span>
+                  <span className="text-xs font-medium text-foreground">Free</span>
                 </div>
               </div>
             </div>
 
             {/* Statistics */}
             <div>
-              <h3 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 mb-1.5">Statistics</h3>
-              <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded p-3">
-                <p className="text-xs text-zinc-600 dark:text-zinc-400">
-                  <span className="font-semibold text-zinc-900 dark:text-zinc-100">{books.length}</span> Books •{' '}
-                  <span className="font-semibold text-zinc-900 dark:text-zinc-100">{highlights.length}</span> Highlights •{' '}
-                  <span className="font-semibold text-zinc-900 dark:text-zinc-100">{studyCards.length}</span> Study Cards
+              <h3 className="text-xs font-semibold text-card-foreground mb-1.5">Statistics</h3>
+              <div className="bg-muted border border-border rounded p-3">
+                <p className="text-xs text-muted-foreground">
+                  <span className="font-semibold text-foreground">{books.length}</span> Books •{' '}
+                  <span className="font-semibold text-foreground">{highlights.length}</span> Highlights •{' '}
+                  <span className="font-semibold text-foreground">{studyCards.length}</span> Study Cards
                 </p>
               </div>
             </div>
 
             {/* Danger Zone */}
             <div>
-              <h3 className="text-xs font-semibold text-red-600 mb-1.5">Danger Zone</h3>
+              <h3 className="text-xs font-semibold text-destructive mb-1.5">Danger Zone</h3>
               <div className="flex gap-2">
-                <button className="flex-1 h-7 px-3 text-xs bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded transition-colors border border-zinc-200 dark:border-zinc-800 flex items-center justify-center gap-1.5">
+                <button className="flex-1 h-7 px-3 text-xs bg-secondary hover:bg-accent text-secondary-foreground rounded transition-colors border border-border flex items-center justify-center gap-1.5">
                   <Download className="w-3 h-3" />
                   Export Data
                 </button>
-                <button className="flex-1 h-7 px-3 text-xs bg-zinc-100 dark:bg-zinc-800 hover:bg-red-50 text-red-600 rounded transition-colors border border-red-200 dark:border-red-800 flex items-center justify-center gap-1.5">
+                <button className="flex-1 h-7 px-3 text-xs bg-secondary hover:bg-destructive/10 text-destructive rounded transition-colors border border-destructive/30 flex items-center justify-center gap-1.5">
                   <Trash2 className="w-3 h-3" />
                   Delete Account
                 </button>
@@ -700,16 +700,16 @@ const Settings = () => {
         {activeTab === 'preferences' && (
           <div className="space-y-4">
             <div>
-              <h2 className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Study Preferences</h2>
-              <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-0.5">Customize spaced repetition and study behavior</p>
+              <h2 className="text-xs font-semibold text-muted-foreground">Study Preferences</h2>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Customize spaced repetition and study behavior</p>
             </div>
 
             {/* Study Options */}
             <div>
-              <h3 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 mb-1.5">Study Options</h3>
-              <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded p-3 space-y-2">
+              <h3 className="text-xs font-semibold text-card-foreground mb-1.5">Study Options</h3>
+              <div className="bg-muted border border-border rounded p-3 space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs text-zinc-700 dark:text-zinc-300">Default Daily Review Limit</label>
+                  <label className="text-xs text-foreground">Default Daily Review Limit</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="number"
@@ -717,14 +717,14 @@ const Settings = () => {
                       max="100"
                       value={settings.maxReviewsPerDay || 10}
                       onChange={(e) => updateSettings({ maxReviewsPerDay: Number(e.target.value) })}
-                      className="h-6 w-16 px-1.5 text-xs border border-zinc-200 dark:border-zinc-800 rounded focus:outline-none focus:ring-1 focus:ring-black bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100"
+                      className="h-6 w-16 px-1.5 text-xs border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring bg-background text-foreground"
                     />
-                    <span className="text-[10px] text-zinc-400 dark:text-zinc-500">cards/book/day</span>
+                    <span className="text-[10px] text-muted-foreground">cards/book/day</span>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <label className="text-xs text-zinc-700 dark:text-zinc-300">Default Initial Ease Factor</label>
+                  <label className="text-xs text-foreground">Default Initial Ease Factor</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="number"
@@ -733,25 +733,25 @@ const Settings = () => {
                       step="0.1"
                       value={settings.defaultInitialEaseFactor || 2.5}
                       onChange={(e) => updateSettings({ defaultInitialEaseFactor: Number(e.target.value) })}
-                      className="h-6 w-16 px-1.5 text-xs border border-zinc-200 dark:border-zinc-800 rounded focus:outline-none focus:ring-1 focus:ring-black bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100"
+                      className="h-6 w-16 px-1.5 text-xs border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring bg-background text-foreground"
                     />
-                    <span className="text-[10px] text-zinc-400 dark:text-zinc-500">(new cards)</span>
+                    <span className="text-[10px] text-muted-foreground">(new cards)</span>
                   </div>
                 </div>
 
-                <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800">
+                <div className="pt-2 border-t border-border">
                   <button
                     onClick={async () => {
                       if (confirm('Apply current global settings to all books?\n\nThis will remove custom settings from all books and use the global defaults above.')) {
                         await resetAllBooksToDefaults();
                       }
                     }}
-                    className="w-full h-7 px-3 text-xs bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded transition-colors flex items-center justify-center gap-1.5"
+                    className="w-full h-7 px-3 text-xs bg-secondary hover:bg-accent text-secondary-foreground rounded transition-colors flex items-center justify-center gap-1.5"
                   >
                     <SettingsIcon className="w-3 h-3" />
                     Apply Global Settings to All Books
                   </button>
-                  <p className="text-[9px] text-zinc-400 dark:text-zinc-500 mt-1 text-center">
+                  <p className="text-[9px] text-muted-foreground mt-1 text-center">
                     Removes custom daily limits and ease factors from all books
                   </p>
                 </div>
@@ -760,17 +760,17 @@ const Settings = () => {
 
             {/* Display & Interface */}
             <div>
-              <h3 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 mb-1.5">Display & Interface</h3>
-              <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded p-3 space-y-2">
-                <label className="flex items-center gap-2 text-xs text-zinc-700 dark:text-zinc-300 cursor-pointer">
-                  <input type="checkbox" className="w-3.5 h-3.5 rounded border-zinc-300 dark:border-zinc-700" />
+              <h3 className="text-xs font-semibold text-card-foreground mb-1.5">Display & Interface</h3>
+              <div className="bg-muted border border-border rounded p-3 space-y-2">
+                <label className="flex items-center gap-2 text-xs text-foreground cursor-pointer">
+                  <input type="checkbox" className="w-3.5 h-3.5 rounded border-border" />
                   Show keyboard shortcuts hints
                 </label>
-                <label className="flex items-center gap-2 text-xs text-zinc-700 dark:text-zinc-300 cursor-pointer">
-                  <input type="checkbox" defaultChecked className="w-3.5 h-3.5 rounded border-zinc-300 dark:border-zinc-700" />
+                <label className="flex items-center gap-2 text-xs text-foreground cursor-pointer">
+                  <input type="checkbox" defaultChecked className="w-3.5 h-3.5 rounded border-border" />
                   Auto-reveal answer after 3 seconds
                 </label>
-                <p className="text-xs text-zinc-400 dark:text-zinc-500 italic mt-2">
+                <p className="text-xs text-muted-foreground italic mt-2">
                   Note: These settings are not yet functional
                 </p>
               </div>
