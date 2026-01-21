@@ -222,14 +222,14 @@ export const Highlights = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 pt-6 pb-2">
         <div>
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Highlights</h1>
-          <p className="text-zinc-500 dark:text-zinc-500 mt-1.5 font-light text-sm">
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">Highlights</h1>
+          <p className="text-muted-foreground mt-1.5 font-light text-sm">
             {highlights.length} {highlights.length === 1 ? 'destaque' : 'destaques'} de {stats.uniqueBooks} {stats.uniqueBooks === 1 ? 'livro' : 'livros'}, último destaque em {formatDate(stats.lastHighlight)}.
           </p>
         </div>
         <button
           onClick={() => setIsTagManagerOpen(true)}
-          className="self-start flex items-center gap-2 px-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-full text-xs font-medium transition-colors border border-transparent hover:border-zinc-300 dark:hover:border-zinc-600"
+          className="self-start flex items-center gap-2 px-3 py-1.5 bg-muted hover:bg-accent text-foreground rounded-full text-xs font-medium transition-colors duration-200 border border-transparent hover:border-primary/30"
         >
           <TagIcon className="w-3.5 h-3.5" />
           Manage Tags
@@ -237,14 +237,14 @@ export const Highlights = () => {
       </div>
 
       {/* Toolbar */}
-      <div className="sticky top-0 z-20 bg-zinc-50 dark:bg-zinc-950 py-2 -mx-2 px-2 border-b border-transparent">
-        <div className="flex flex-wrap items-center gap-2 bg-white dark:bg-zinc-900 p-2 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm transition-shadow hover:shadow-md">
+      <div className="sticky top-0 z-20 bg-background py-2 -mx-2 px-2 border-b border-transparent">
+        <div className="flex flex-wrap items-center gap-2 bg-card p-2 rounded-xl border border-border shadow-sm transition-shadow hover:shadow-md">
 
           {/* Bulk Actions (Conditional) */}
           {selectedIds.size > 0 && (
-            <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2 duration-200 mr-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 px-3 py-1.5 rounded-lg shadow-md">
+            <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2 duration-200 mr-2 bg-foreground text-background px-3 py-1.5 rounded-lg shadow-md">
               <span className="text-xs font-semibold whitespace-nowrap">{selectedIds.size} selected</span>
-              <div className="h-4 w-[1px] bg-white/20 dark:bg-black/20 mx-1" />
+              <div className="h-4 w-[1px] bg-background/20 mx-1" />
 
               {/* Bulk Tag Trigger */}
               <Popover>
@@ -255,7 +255,7 @@ export const Highlights = () => {
                 </PopoverTrigger>
                 <PopoverContent className="w-[200px] p-0" align="start">
                   <div className="max-h-[300px] overflow-y-auto p-1">
-                    <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground border-b border-zinc-100 dark:border-zinc-800 mb-1">
+                    <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground border-b border-border mb-1">
                       Assign to {selectedIds.size} items
                     </div>
                     {(() => {
@@ -265,11 +265,11 @@ export const Highlights = () => {
 
                       const sortedBulkTags = availableTagsForBulk.sort((a, b) => a.name.localeCompare(b.name));
 
-                      if (sortedBulkTags.length === 0) return <div className="px-2 text-xs italic text-zinc-400">No tags available</div>;
+                      if (sortedBulkTags.length === 0) return <div className="px-2 text-xs italic text-muted-foreground">No tags available</div>;
 
                       return sortedBulkTags.map(tag => (
-                        <div key={tag.id} onClick={() => bulkAssignTag(Array.from(selectedIds), tag.id)} className="cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 px-2 py-1.5 rounded text-xs flex items-center gap-2">
-                          {tag.bookId ? <Book className="w-3 h-3 text-amber-500" /> : <TagIcon className="w-3 h-3 text-zinc-400" />}
+                        <div key={tag.id} onClick={() => bulkAssignTag(Array.from(selectedIds), tag.id)} className="cursor-pointer hover:bg-accent px-2 py-1.5 rounded text-xs flex items-center gap-2 transition-colors duration-200">
+                          {tag.bookId ? <Book className="w-3 h-3 text-amber-500" /> : <TagIcon className="w-3 h-3 text-muted-foreground" />}
                           <span>{tag.name}</span>
                         </div>
                       ));
@@ -278,9 +278,9 @@ export const Highlights = () => {
                 </PopoverContent>
               </Popover>
 
-              <div className="h-4 w-[1px] bg-white/20 dark:bg-black/20 mx-1" />
+              <div className="h-4 w-[1px] bg-background/20 mx-1" />
 
-              <button onClick={handleBulkDelete} className="flex items-center gap-1 text-[10px] hover:text-red-300 transition-colors uppercase tracking-wider font-bold">
+              <button onClick={handleBulkDelete} className="flex items-center gap-1 text-[10px] hover:text-destructive transition-colors duration-200 uppercase tracking-wider font-bold">
                 Delete
               </button>
             </div>
@@ -288,21 +288,21 @@ export const Highlights = () => {
 
           {/* Search */}
           <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               type="text"
               placeholder="Search highlights..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg text-sm transition-all focus:outline-none focus:ring-2 focus:ring-black/5 dark:focus:ring-white/10 focus:border-zinc-400 dark:focus:border-zinc-600"
+              className="w-full pl-9 pr-3 py-2 bg-background border border-input rounded-lg text-sm transition-all focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
             />
           </div>
 
           {/* Book Filter */}
           <Popover>
             <PopoverTrigger asChild>
-              <button role="combobox" className="w-full sm:w-auto min-w-[160px] max-w-[240px] px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg text-sm text-left flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors">
-                <span className="truncate font-medium text-zinc-700 dark:text-zinc-300">
+              <button role="combobox" className="w-full sm:w-auto min-w-[160px] max-w-[240px] px-3 py-2 bg-background border border-input rounded-lg text-sm text-left flex items-center justify-between hover:bg-accent transition-colors duration-200">
+                <span className="truncate font-medium text-foreground">
                   {selectedBookId === 'all' ? "All Books" : books.find(b => b.id === selectedBookId)?.title}
                 </span>
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -342,8 +342,8 @@ export const Highlights = () => {
           {/* Tag Filter */}
           <Popover>
             <PopoverTrigger asChild>
-              <button role="combobox" className="w-full sm:w-auto min-w-[140px] px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg text-sm text-left flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors">
-                <span className="truncate font-medium text-zinc-700 dark:text-zinc-300">
+              <button role="combobox" className="w-full sm:w-auto min-w-[140px] px-3 py-2 bg-background border border-input rounded-lg text-sm text-left flex items-center justify-between hover:bg-accent transition-colors duration-200">
+                <span className="truncate font-medium text-foreground">
                   {selectedTagId === 'all' ? "All Tags" : tags.find(t => t.id === selectedTagId)?.name}
                 </span>
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -376,7 +376,7 @@ export const Highlights = () => {
                         >
                           <Check className={cn("mr-2 h-4 w-4", selectedTagId === tag.id ? "opacity-100" : "opacity-0")} />
                           {tag.bookId && <Book className="w-3 h-3 mr-1 text-amber-500" />}
-                          <span className={tag.bookId ? "text-amber-700 dark:text-amber-500" : ""}>{tag.name}</span>
+                          <span className={tag.bookId ? "text-amber-600" : ""}>{tag.name}</span>
                         </CommandItem>
                       ));
                     })()}
@@ -389,8 +389,8 @@ export const Highlights = () => {
           {/* Status Filter */}
           <Popover>
             <PopoverTrigger asChild>
-              <button role="combobox" className="w-full sm:w-auto min-w-[120px] px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg text-sm text-left flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors">
-                <span className="truncate font-medium text-zinc-700 dark:text-zinc-300">
+              <button role="combobox" className="w-full sm:w-auto min-w-[120px] px-3 py-2 bg-background border border-input rounded-lg text-sm text-left flex items-center justify-between hover:bg-accent transition-colors duration-200">
+                <span className="truncate font-medium text-foreground">
                   {studyFilter === 'all' ? "All Status" : studyFilter === 'in-study' ? "In Study" : "Not in Study"}
                 </span>
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -430,7 +430,7 @@ export const Highlights = () => {
           {/* Sorting Dropdown (Optional or kept as buttons if preferred) */}
           <button
             onClick={() => handleSort('date')}
-            className="px-3 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors flex items-center gap-1"
+            className="px-3 py-2 bg-background border border-input rounded-lg text-sm font-medium text-foreground hover:bg-accent transition-colors duration-200 flex items-center gap-1"
           >
             Date {getSortIcon('date') || <ChevronDown className="w-3 h-3 ml-1 opacity-30" />}
           </button>
@@ -440,15 +440,15 @@ export const Highlights = () => {
       {/* Table Container */}
       <div
         ref={tableContainerRef}
-        className="flex-1 overflow-auto border border-zinc-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 shadow-sm"
+        className="flex-1 overflow-auto border border-border rounded-xl bg-card shadow-sm"
       >
         <table className="w-full text-left text-xs">
-          <thead className="bg-zinc-50 dark:bg-zinc-950 text-[10px] uppercase tracking-wider font-semibold text-zinc-500 dark:text-zinc-500 sticky top-0 z-10 border-b border-zinc-200 dark:border-zinc-800">
+          <thead className="bg-muted text-[10px] uppercase tracking-wider font-semibold text-muted-foreground sticky top-0 z-10 border-b border-border">
             <tr>
-              <th className="px-4 py-3 w-[40px] font-medium text-zinc-400">
+              <th className="px-4 py-3 w-[40px] font-medium text-muted-foreground">
                 <input
                   type="checkbox"
-                  className="appearance-none w-4 h-4 rounded border border-zinc-300 dark:border-zinc-600 checked:bg-black dark:checked:bg-white checked:border-black dark:checked:border-white transition-colors cursor-pointer relative top-1"
+                  className="appearance-none w-4 h-4 rounded border border-input checked:bg-primary checked:border-primary transition-colors duration-200 cursor-pointer relative top-1"
                   checked={currentItems.length > 0 && selectedIds.size >= currentItems.length && currentItems.every(i => selectedIds.has(i.id))}
                   onChange={toggleAll}
                 />
@@ -456,7 +456,7 @@ export const Highlights = () => {
               <th className="px-4 py-3 w-[180px] max-w-[200px]">
                 <button
                   onClick={() => handleSort('book')}
-                  className="flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-300 transition-colors"
+                  className="flex items-center gap-1 hover:text-foreground transition-colors duration-200"
                 >
                   Livro / Autor
                   {getSortIcon('book')}
@@ -465,7 +465,7 @@ export const Highlights = () => {
               <th className="px-4 py-3 min-w-[300px]">
                 <button
                   onClick={() => handleSort('highlight')}
-                  className="flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-300 transition-colors"
+                  className="flex items-center gap-1 hover:text-foreground transition-colors duration-200"
                 >
                   Destaque
                   {getSortIcon('highlight')}
@@ -474,7 +474,7 @@ export const Highlights = () => {
               <th className="px-4 py-3 w-[280px]">
                 <button
                   onClick={() => handleSort('note')}
-                  className="flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-300 transition-colors"
+                  className="flex items-center gap-1 hover:text-foreground transition-colors duration-200"
                 >
                   Nota
                   {getSortIcon('note')}
@@ -484,7 +484,7 @@ export const Highlights = () => {
               <th className="px-4 py-3 w-[80px]">
                 <button
                   onClick={() => handleSort('date')}
-                  className="flex items-center gap-1 hover:text-zinc-900 dark:hover:text-zinc-300 transition-colors"
+                  className="flex items-center gap-1 hover:text-foreground transition-colors duration-200"
                 >
                   Data
                   {getSortIcon('date')}
@@ -495,11 +495,11 @@ export const Highlights = () => {
           </thead>
           <tbody
             key={currentPage}
-            className="divide-y divide-zinc-100 dark:divide-zinc-800 animate-in fade-in slide-in-from-bottom-2 duration-300"
+            className="divide-y divide-border animate-in fade-in slide-in-from-bottom-2 duration-300"
           >
             {currentItems.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-12 text-center text-zinc-400 dark:text-zinc-500 italic">
+                <td colSpan={7} className="px-4 py-12 text-center text-muted-foreground italic">
                   No highlights match your filters.
                 </td>
               </tr>
@@ -522,23 +522,23 @@ export const Highlights = () => {
 
       {/* Pagination Footer */}
       {filteredAndSortedHighlights.length > 0 && (
-        <div className="py-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-zinc-200 dark:border-zinc-800">
-          <div className="text-sm text-zinc-500 dark:text-zinc-400">
-            Page <span className="font-medium text-zinc-900 dark:text-zinc-100">{currentPage}</span> of <span className="font-medium text-zinc-900 dark:text-zinc-100">{totalPages}</span>
+        <div className="py-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-border">
+          <div className="text-sm text-muted-foreground">
+            Page <span className="font-medium text-foreground">{currentPage}</span> of <span className="font-medium text-foreground">{totalPages}</span>
           </div>
 
           <div className="flex items-center gap-2">
             <button
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-800 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-md border border-border text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent transition-colors duration-200"
             >
               <ChevronLeft className="w-4 h-4" /> Previous
             </button>
             <button
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-md border border-zinc-200 dark:border-zinc-800 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-md border border-border text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent transition-colors duration-200"
             >
               Next <ChevronRight className="w-4 h-4" />
             </button>
