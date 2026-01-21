@@ -38,15 +38,15 @@ export const HighlightTableRow: React.FC<HighlightTableRowProps> = ({
     return (
         <tr
             className={cn(
-                "group border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors",
-                isSelected && "bg-zinc-50 dark:bg-zinc-800/50"
+                "group border-b border-border hover:bg-accent/50 transition-colors duration-200",
+                isSelected && "bg-primary/5"
             )}
         >
             {/* Checkbox */}
             <td className="px-4 py-3 align-top w-[40px]">
                 <input
                     type="checkbox"
-                    className="appearance-none w-4 h-4 rounded border border-zinc-300 dark:border-zinc-600 checked:bg-black dark:checked:bg-white checked:border-black dark:checked:border-white transition-colors cursor-pointer relative top-1"
+                    className="appearance-none w-4 h-4 rounded border border-input checked:bg-primary checked:border-primary transition-colors duration-200 cursor-pointer relative top-1"
                     checked={isSelected}
                     onChange={() => onToggleSelection(highlight.id)}
                 />
@@ -63,11 +63,11 @@ export const HighlightTableRow: React.FC<HighlightTableRowProps> = ({
             {/* Book */}
             <td className="px-4 py-3 align-top w-[180px] max-w-[200px]">
                 <div className="flex flex-col gap-0.5">
-                    <div className="flex items-center gap-1.5 text-zinc-900 dark:text-zinc-100 font-medium text-xs">
-                        <Book className="w-3 h-3 text-zinc-400 shrink-0" />
+                    <div className="flex items-center gap-1.5 text-foreground font-medium text-xs">
+                        <Book className="w-3 h-3 text-muted-foreground shrink-0" />
                         <span className="truncate" title={book?.title}>{book?.title || 'Unknown Book'}</span>
                     </div>
-                    <span className="text-[11px] text-zinc-500 pl-4 truncate" title={book?.author}>
+                    <span className="text-[11px] text-muted-foreground pl-4 truncate" title={book?.author}>
                         {book?.author}
                     </span>
                 </div>
@@ -76,7 +76,7 @@ export const HighlightTableRow: React.FC<HighlightTableRowProps> = ({
             {/* Highlight Text */}
             <td className="px-4 py-3 align-top min-w-[300px]">
                 <div
-                    className="font-serif text-sm leading-relaxed text-zinc-800 dark:text-zinc-200 cursor-pointer hover:text-zinc-600 dark:hover:text-zinc-400 line-clamp-3 transition-colors"
+                    className="font-serif text-sm leading-relaxed text-foreground cursor-pointer hover:text-muted-foreground line-clamp-3 transition-colors duration-200"
                     onClick={() => onEdit(highlight.id)}
                     title={highlight.text}
                 >
@@ -88,7 +88,7 @@ export const HighlightTableRow: React.FC<HighlightTableRowProps> = ({
             <td className="px-4 py-3 align-top w-[280px]">
                 {highlight.note ? (
                     <div
-                        className="font-serif text-sm leading-relaxed text-zinc-800 dark:text-zinc-200 cursor-pointer hover:text-zinc-600 dark:hover:text-zinc-400 line-clamp-3 transition-colors"
+                        className="font-serif text-sm leading-relaxed text-foreground cursor-pointer hover:text-muted-foreground line-clamp-3 transition-colors duration-200"
                         onClick={() => onEdit(highlight.id)}
                         title={highlight.note}
                     >
@@ -97,7 +97,7 @@ export const HighlightTableRow: React.FC<HighlightTableRowProps> = ({
                 ) : (
                     <button
                         onClick={() => onEdit(highlight.id)}
-                        className="text-[10px] text-zinc-300 dark:text-zinc-600 hover:text-zinc-500 transition-colors italic group-hover:block"
+                        className="text-[10px] text-muted-foreground/50 hover:text-muted-foreground transition-colors duration-200 italic group-hover:block"
                     >
                         Add note...
                     </button>
@@ -112,7 +112,7 @@ export const HighlightTableRow: React.FC<HighlightTableRowProps> = ({
             </td>
 
             {/* Date */}
-            <td className="px-4 py-3 align-top whitespace-nowrap w-[80px] text-zinc-500 text-[11px] font-medium pt-3.5">
+            <td className="px-4 py-3 align-top whitespace-nowrap w-[80px] text-muted-foreground text-[11px] font-medium pt-3.5">
                 {formatDateShort(highlight.dateAdded)}
             </td>
 
