@@ -5,34 +5,34 @@
 See: .planning/PROJECT.md (updated 2026-01-19)
 
 **Core value:** Sistema de temas funcionando perfeitamente em light/dark mode
-**Current focus:** Phase 2 - Component Migration (in progress)
+**Current focus:** Phase 2 - Component Migration (complete, with gap closure)
 
 ## Current Position
 
 Phase: 2 of 3 (Component Migration)
-Plan: 6 of 6 in phase (all complete)
+Plan: 7 of 7 in phase (all complete, including gap closure)
 Status: Phase complete
-Last activity: 2026-01-21 - Completed 02-04-PLAN.md (Highlights Page)
+Last activity: 2026-01-21 - Completed 02-07-PLAN.md (Gap Closure)
 
 Progress: [==========] 100% (Phase 1) | [==========] 100% (Phase 2)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 13
-- Average duration: 3.2min
-- Total execution time: 48min
+- Total plans completed: 14
+- Average duration: 3.1min
+- Total execution time: 51min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Foundation | 7 | 18min | 2.6min |
-| 2. Component Migration | 6 | 30min | 5.0min |
+| 2. Component Migration | 7 | 33min | 4.7min |
 | 3. Critical Pages | 0 | - | - |
 
 **Recent Trend:**
-- Last 5 plans: 02-02 (4min), 02-03 (6min), 02-05 (5min), 02-06 (4min), 02-04 (8min)
+- Last 5 plans: 02-03 (6min), 02-05 (5min), 02-06 (4min), 02-04 (8min), 02-07 (3min)
 - Trend: Consistent fast execution
 
 *Updated after each plan completion*
@@ -76,6 +76,8 @@ Recent decisions affecting current work:
 - [02-06]: Use hsl(var(--primary)) for Recharts colors (theme-aware charts)
 - [02-06]: Use Dialog open={!!id} pattern for controlled modal state
 - [02-06]: Tooltip uses card/border CSS variables for consistent styling
+- [02-07]: Use hsl(var(--*)) for Recharts colors (DashboardCharts now theme-aware)
+- [02-07]: Delete orphaned components (HighlightStats.tsx removed)
 
 ### Pending Todos
 
@@ -94,6 +96,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-21T21:48:43Z
-Stopped at: Completed 02-04-PLAN.md (Highlights Page)
+Last session: 2026-01-21T22:14:02Z
+Stopped at: Completed 02-07-PLAN.md (Gap Closure)
 Resume file: .planning/phases/03-critical-pages/03-01-PLAN.md
