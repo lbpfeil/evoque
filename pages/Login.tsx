@@ -30,53 +30,53 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <div className="min-h-screen flex items-center justify-center bg-background">
             <div className="w-full max-w-md px-4 py-6 sm:p-8">
                 {/* Logo */}
                 <div className="flex items-center justify-center gap-3 mb-6 sm:mb-8">
-                    <div className="p-2 bg-black text-white rounded-lg">
+                    <div className="p-2 bg-foreground text-background rounded-lg">
                         <BookOpen className="w-6 h-6" />
                     </div>
                     <h1 className="text-2xl font-bold tracking-tight">EVOQUE</h1>
                 </div>
 
                 {/* Card */}
-                <div className="bg-white rounded-2xl shadow-xl border border-zinc-200 p-6 sm:p-8">
-                    <h2 className="text-xl font-semibold text-zinc-900 mb-4 sm:mb-6">
+                <div className="bg-card rounded-2xl shadow-xl border border-border p-6 sm:p-8">
+                    <h2 className="text-xl font-semibold text-card-foreground mb-4 sm:mb-6">
                         {isSignUp ? 'Criar Conta' : 'Entrar'}
                     </h2>
 
                     {error && (
-                        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-                            <AlertCircle className="w-4 h-4 text-red-600 mt-0.5 shrink-0" />
-                            <p className="text-sm text-red-800">{error}</p>
+                        <div className="mb-4 p-3 bg-destructive/10 border border-destructive/30 rounded-lg flex items-start gap-2">
+                            <AlertCircle className="w-4 h-4 text-destructive mt-0.5 shrink-0" />
+                            <p className="text-sm text-destructive">{error}</p>
                         </div>
                     )}
 
                     <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-zinc-700 mb-1.5">
+                            <label className="block text-sm font-medium text-foreground mb-1.5">
                                 Email
                             </label>
                             <input
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full px-3 py-2.5 sm:py-2 border border-zinc-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full px-3 py-2.5 sm:py-2 border border-input bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                                 placeholder="seu@email.com"
                                 required
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-zinc-700 mb-1.5">
+                            <label className="block text-sm font-medium text-foreground mb-1.5">
                                 Senha
                             </label>
                             <input
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full px-3 py-2.5 sm:py-2 border border-zinc-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full px-3 py-2.5 sm:py-2 border border-input bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                                 placeholder="••••••••"
                                 required
                                 minLength={6}
@@ -86,7 +86,7 @@ const Login = () => {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 sm:py-2.5 min-h-[44px] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-3 sm:py-2.5 min-h-[44px] rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         >
                             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
                             {isSignUp ? 'Criar Conta' : 'Entrar'}
@@ -99,14 +99,14 @@ const Login = () => {
                                 setIsSignUp(!isSignUp);
                                 setError('');
                             }}
-                            className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                            className="text-sm text-primary hover:text-primary/80 font-medium transition-colors duration-200"
                         >
                             {isSignUp ? 'Já tem uma conta? Entrar' : 'Não tem conta? Criar agora'}
                         </button>
                     </div>
                 </div>
 
-                <p className="text-center text-xs text-zinc-500 mt-6">
+                <p className="text-center text-xs text-muted-foreground mt-6">
                     Seus dados são protegidos e criptografados
                 </p>
             </div>
