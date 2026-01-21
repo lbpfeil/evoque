@@ -53,7 +53,7 @@ Plans:
   3. Theme toggle is accessible from Sidebar (pre-completed)
   4. All modals and popovers follow shadcn Dialog/Popover patterns
   5. Interactive elements have visible hover states and smooth transitions (150-300ms)
-**Plans**: 6 plans
+**Plans**: 7 plans
 
 Plans:
 - [ ] 02-01-PLAN.md — Fix UI component semantic tokens (button, input, dialog, popover, command, sheet)
@@ -62,6 +62,7 @@ Plans:
 - [ ] 02-04-PLAN.md — Migrate Highlights page and related components
 - [ ] 02-05-PLAN.md — Install AlertDialog, migrate DeleteBookModal, DeleteCardPopover, EmptyDeckPopover
 - [ ] 02-06-PLAN.md — Migrate HighlightEditModal, HighlightHistoryModal, BookContextModal to Dialog
+- [ ] 02-07-PLAN.md — Migrate remaining child components (gap closure: DashboardCharts, TagSelector, StudyStatusBadge, ErrorBoundary)
 
 ### Phase 3: Critical Pages
 **Goal**: Study and StudySession pages modernized with user approval at each step
@@ -84,10 +85,10 @@ Phases execute in numeric order: 1 -> 2 -> 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 7/7 | ✓ Complete | 2026-01-20 |
-| 2. Component Migration | 0/6 | Ready to execute | - |
+| 1. Foundation | 7/7 | Complete | 2026-01-20 |
+| 2. Component Migration | 6/7 | Gap closure needed | - |
 | 3. Critical Pages | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-01-19*
-*Last updated: 2026-01-21 - Updated Phase 2 requirements (PAGE-03 obsolete, pre-completions noted)*
+*Last updated: 2026-01-21 - Added 02-07-PLAN.md for gap closure (5 remaining components)*
