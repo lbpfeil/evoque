@@ -10,29 +10,29 @@ See: .planning/PROJECT.md (updated 2026-01-19)
 ## Current Position
 
 Phase: 2 of 3 (Component Migration)
-Plan: 1 of 6 in phase
+Plan: 2 of 6 in phase
 Status: In progress
-Last activity: 2026-01-21 - Completed 02-01-PLAN.md (Core shadcn Components)
+Last activity: 2026-01-21 - Completed 02-02-PLAN.md (Login & Dashboard Pages)
 
-Progress: [==========] 100% (Phase 1) | [=░░░░░░░░░] 17% (Phase 2)
+Progress: [==========] 100% (Phase 1) | [==░░░░░░░░] 33% (Phase 2)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
-- Average duration: 2.6min
-- Total execution time: 21min
+- Total plans completed: 9
+- Average duration: 2.8min
+- Total execution time: 25min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Foundation | 7 | 18min | 2.6min |
-| 2. Component Migration | 1 | 3min | 3min |
+| 2. Component Migration | 2 | 7min | 3.5min |
 | 3. Critical Pages | 0 | - | - |
 
 **Recent Trend:**
-- Last 5 plans: 01-05 (2min), 01-03 (3min), 01-06 (2min), 01-07 (2min), 02-01 (3min)
+- Last 5 plans: 01-03 (3min), 01-06 (2min), 01-07 (2min), 02-01 (3min), 02-02 (4min)
 - Trend: Consistent fast execution
 
 *Updated after each plan completion*
@@ -63,6 +63,9 @@ Recent decisions affecting current work:
 - [02-01]: Use bg-popover/text-popover-foreground for floating elements (command, popover)
 - [02-01]: Use bg-accent/text-accent-foreground for interactive hover states
 - [02-01]: Use bg-secondary/text-secondary-foreground for secondary button variant
+- [02-02]: Use bg-foreground/text-background for inverted logo (theme-aware contrast)
+- [02-02]: Use bg-destructive/10 + border-destructive/30 + text-destructive for error states
+- [02-02]: Use hover:border-primary/30 for subtle card hover effects
 
 ### Pending Todos
 
@@ -81,6 +84,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-21T21:30:48Z
-Stopped at: Completed 02-01-PLAN.md (Core shadcn Components)
-Resume file: .planning/phases/02-component-migration/02-02-PLAN.md
+Last session: 2026-01-21T21:36:23Z
+Stopped at: Completed 02-02-PLAN.md (Login & Dashboard Pages)
+Resume file: .planning/phases/02-component-migration/02-03-PLAN.md
