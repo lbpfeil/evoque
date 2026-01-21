@@ -100,7 +100,7 @@ export function TagSelector({ highlightId, bookId, className, open: controlledOp
                 {/* Tags List */}
                 <div className="max-h-[300px] overflow-y-auto overflow-x-hidden">
                     {sortedTags.length === 0 ? (
-                        <div className="p-2 text-xs text-zinc-500 flex flex-col gap-1">
+                        <div className="p-2 text-xs text-muted-foreground flex flex-col gap-1">
                             <span>No tags found.</span>
 
                             {searchValue && (
@@ -173,7 +173,7 @@ export function TagSelector({ highlightId, bookId, className, open: controlledOp
                     variant="ghost"
                     role="combobox"
                     aria-expanded={open}
-                    className={cn("h-auto p-1 hover:bg-zinc-100 justify-start font-normal text-left", className)}
+                    className={cn("h-auto p-1 hover:bg-accent justify-start font-normal text-left", className)}
                 >
                     {selectedTags.length > 0 ? (
                         <div className="flex flex-wrap gap-1">
@@ -184,7 +184,7 @@ export function TagSelector({ highlightId, bookId, className, open: controlledOp
                                         "inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border",
                                         tag.bookId
                                             ? "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-500 dark:border-amber-800"
-                                            : "bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700",
+                                            : "bg-muted text-muted-foreground border-border",
                                         variant === 'minimal' && "rounded-full px-2"
                                     )}
                                 >
@@ -194,7 +194,7 @@ export function TagSelector({ highlightId, bookId, className, open: controlledOp
                             ))}
                         </div>
                     ) : (
-                        <div className={cn("text-zinc-400 text-xs italic flex items-center gap-1", variant === 'minimal' && "opacity-0 group-hover:opacity-100 transition-opacity duration-200")}>
+                        <div className={cn("text-muted-foreground text-xs italic flex items-center gap-1", variant === 'minimal' && "opacity-0 group-hover:opacity-100 transition-opacity duration-200")}>
                             <Plus className="w-3 h-3" />
                             <span className={cn(variant === 'minimal' && "hidden sm:inline")}>Add tags...</span>
                         </div>
@@ -219,7 +219,7 @@ export function TagSelector({ highlightId, bookId, className, open: controlledOp
                     {/* Tags List */}
                     <div className="max-h-[300px] overflow-y-auto overflow-x-hidden">
                         {sortedTags.length === 0 ? (
-                            <div className="p-2 text-xs text-zinc-500 flex flex-col gap-1">
+                            <div className="p-2 text-xs text-muted-foreground flex flex-col gap-1">
                                 <span>No tags found.</span>
 
                                 {searchValue && (

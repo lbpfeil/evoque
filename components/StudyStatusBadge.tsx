@@ -33,7 +33,7 @@ export const StudyStatusBadge: React.FC<StudyStatusBadgeProps> = ({ status, clas
             );
         default:
             return (
-                <span className={cn("inline-flex items-center gap-1 px-2 py-0.5 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-500 dark:text-zinc-500 text-[10px] uppercase font-bold tracking-wider rounded-full border border-zinc-200 dark:border-zinc-800", className)}>
+                <span className={cn("inline-flex items-center gap-1 px-2 py-0.5 bg-muted text-muted-foreground text-[10px] uppercase font-bold tracking-wider rounded-full border border-border", className)}>
                     <CircleDashed className="w-3 h-3" />
                     Not Started
                 </span>
