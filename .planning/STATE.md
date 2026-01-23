@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-19)
 
 **Core value:** Sistema de temas funcionando perfeitamente em light/dark mode
-**Current focus:** Phase 2 - Component Migration (complete, with gap closure)
+**Current focus:** Phase 3 - Critical Pages (in progress)
 
 ## Current Position
 
-Phase: 2 of 3 (Component Migration)
-Plan: 7 of 7 in phase (all complete, including gap closure)
-Status: Phase complete
-Last activity: 2026-01-21 - Completed 02-07-PLAN.md (Gap Closure)
+Phase: 3 of 3 (Critical Pages)
+Plan: 1 of 6 in phase (complete)
+Status: In progress
+Last activity: 2026-01-23 - Completed 03-01-PLAN.md (Study.tsx Header and All Books Button)
 
-Progress: [==========] 100% (Phase 1) | [==========] 100% (Phase 2)
+Progress: [==========] 100% (Phase 1) | [==========] 100% (Phase 2) | [=---------] 17% (Phase 3)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 14
+- Total plans completed: 15
 - Average duration: 3.1min
-- Total execution time: 51min
+- Total execution time: 55min
 
 **By Phase:**
 
@@ -29,10 +29,10 @@ Progress: [==========] 100% (Phase 1) | [==========] 100% (Phase 2)
 |-------|-------|-------|----------|
 | 1. Foundation | 7 | 18min | 2.6min |
 | 2. Component Migration | 7 | 33min | 4.7min |
-| 3. Critical Pages | 0 | - | - |
+| 3. Critical Pages | 1 | 4min | 4.0min |
 
 **Recent Trend:**
-- Last 5 plans: 02-03 (6min), 02-05 (5min), 02-06 (4min), 02-04 (8min), 02-07 (3min)
+- Last 5 plans: 02-05 (5min), 02-06 (4min), 02-04 (8min), 02-07 (3min), 03-01 (4min)
 - Trend: Consistent fast execution
 
 *Updated after each plan completion*
@@ -78,6 +78,8 @@ Recent decisions affecting current work:
 - [02-06]: Tooltip uses card/border CSS variables for consistent styling
 - [02-07]: Use hsl(var(--*)) for Recharts colors (DashboardCharts now theme-aware)
 - [02-07]: Delete orphaned components (HighlightStats.tsx removed)
+- [03-01]: Use bg-foreground/text-background for prominent action buttons (inverted pattern)
+- [03-01]: Preserve SRS-meaningful colors (blue/amber/green) for study stats
 
 ### Pending Todos
 
@@ -96,6 +98,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-21T22:14:02Z
-Stopped at: Completed 02-07-PLAN.md (Gap Closure)
-Resume file: .planning/phases/03-critical-pages/03-01-PLAN.md
+Last session: 2026-01-23
+Stopped at: Completed 03-01-PLAN.md (Study.tsx Header and All Books Button)
+Resume file: .planning/phases/03-critical-pages/03-02-PLAN.md
