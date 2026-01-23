@@ -22,38 +22,38 @@ Requirements para o redesign. Cada um mapeia para fases do roadmap.
 - [ ] **COLOR-01**: Aplicar paleta warm (stone com tint ambar) nas CSS variables light
 - [ ] **COLOR-02**: Aplicar paleta warm nas CSS variables dark (menos saturada)
 - [ ] **COLOR-03**: Substituir cores hardcoded em App.tsx por tokens semanticos
-- [ ] **COLOR-04**: Auditar e substituir cores hardcoded em todos os componentes
+- [x] **COLOR-04**: Auditar e substituir cores hardcoded em todos os componentes
 - [ ] **COLOR-05**: Aumentar border-radius global de 0.45rem para 0.75rem
 
 ### Components
 
 - [ ] **COMP-01**: Instalar shadcn components (card, tabs, badge, select, checkbox, switch, tooltip, scroll-area, dropdown-menu)
 - [ ] **COMP-02**: Criar ModeToggle component na Sidebar
-- [ ] **COMP-03**: Aplicar transicoes basicas (150-300ms) em elementos interativos
-- [ ] **COMP-04**: Refinar hover states com feedback visual consistente
+- [x] **COMP-03**: Aplicar transicoes basicas (150-300ms) em elementos interativos
+- [x] **COMP-04**: Refinar hover states com feedback visual consistente
 
 ### Pages - General
 
-- [ ] **PAGE-01**: Modernizar Dashboard.tsx com shadcn components
-- [ ] **PAGE-02**: Modernizar Highlights.tsx com shadcn components
+- [x] **PAGE-01**: Modernizar Dashboard.tsx com shadcn components
+- [x] **PAGE-02**: Modernizar Highlights.tsx com shadcn components
 - [x] **PAGE-03**: ~~Modernizar BookDetails.tsx com shadcn components~~ **OBSOLETE** - BookDetails.tsx was removed from codebase (see TECHNICAL_CONTEXT.md)
-- [ ] **PAGE-04**: Modernizar Settings.tsx com shadcn components (nao tocar parsers)
-- [ ] **PAGE-05**: Modernizar Login.tsx com shadcn components
-- [ ] **PAGE-06**: Modernizar Sidebar.tsx com theme toggle
+- [x] **PAGE-04**: Modernizar Settings.tsx com shadcn components (nao tocar parsers)
+- [x] **PAGE-05**: Modernizar Login.tsx com shadcn components
+- [x] **PAGE-06**: Modernizar Sidebar.tsx com theme toggle
 
 ### Pages - Critical (participacao do usuario)
 
-- [ ] **CRIT-01**: Modernizar Study.tsx (cada decisao aprovada pelo usuario)
-- [ ] **CRIT-02**: Modernizar StudySession.tsx (cada decisao aprovada, preservar fonte serif)
+- [x] **CRIT-01**: Modernizar Study.tsx (cada decisao aprovada pelo usuario)
+- [x] **CRIT-02**: Modernizar StudySession.tsx (cada decisao aprovada, preservar fonte serif)
 
 ### Modals & Popovers
 
-- [ ] **MODAL-01**: Padronizar DeleteCardPopover com shadcn patterns
-- [ ] **MODAL-02**: Padronizar DeleteBookModal com shadcn Dialog
-- [ ] **MODAL-03**: Padronizar EmptyDeckPopover com shadcn patterns
-- [ ] **MODAL-04**: Padronizar HighlightEditModal com shadcn Dialog
-- [ ] **MODAL-05**: Padronizar HighlightHistoryModal com shadcn Dialog
-- [ ] **MODAL-06**: Padronizar BookContextModal com shadcn Dialog
+- [x] **MODAL-01**: Padronizar DeleteCardPopover com shadcn patterns
+- [x] **MODAL-02**: Padronizar DeleteBookModal com shadcn Dialog
+- [x] **MODAL-03**: Padronizar EmptyDeckPopover com shadcn patterns
+- [x] **MODAL-04**: Padronizar HighlightEditModal com shadcn Dialog
+- [x] **MODAL-05**: Padronizar HighlightHistoryModal com shadcn Dialog
+- [x] **MODAL-06**: Padronizar BookContextModal com shadcn Dialog
 
 ## v2 Requirements
 
@@ -91,35 +91,32 @@ Deferred para release futura. Nao no roadmap atual.
 | COLOR-01 | Phase 1 | Complete |
 | COLOR-02 | Phase 1 | Complete |
 | COLOR-03 | Phase 1 | **Pre-completed** (App.tsx already uses semantic tokens) |
-| COLOR-04 | Phase 2 | Pending |
+| COLOR-04 | Phase 2 | Complete |
 | COLOR-05 | Phase 1 | Complete |
 | COMP-01 | Phase 1 | Complete |
-| COMP-02 | Phase 1 | **Pre-completed** (ThemeToggle in Sidebar since 01-06) |
-| COMP-03 | Phase 2 | Pending |
-| COMP-04 | Phase 2 | Pending |
-| PAGE-01 | Phase 2 | Pending |
-| PAGE-02 | Phase 2 | Pending |
+| COMP-02 | Phase 1 | Complete |
+| COMP-03 | Phase 2 | Complete |
+| COMP-04 | Phase 2 | Complete |
+| PAGE-01 | Phase 2 | Complete |
+| PAGE-02 | Phase 2 | Complete |
 | PAGE-03 | N/A | **OBSOLETE** (file removed) |
-| PAGE-04 | Phase 2 | Pending |
-| PAGE-05 | Phase 2 | Pending |
-| PAGE-06 | Phase 1 | **Pre-completed** (Sidebar uses semantic tokens since 01-03) |
-| CRIT-01 | Phase 3 | Pending |
-| CRIT-02 | Phase 3 | Pending |
-| MODAL-01 | Phase 2 | Pending |
-| MODAL-02 | Phase 2 | Pending |
-| MODAL-03 | Phase 2 | Pending |
-| MODAL-04 | Phase 2 | Pending |
-| MODAL-05 | Phase 2 | Pending |
-| MODAL-06 | Phase 2 | Pending |
+| PAGE-04 | Phase 2 | Complete |
+| PAGE-05 | Phase 2 | Complete |
+| PAGE-06 | Phase 1 | Complete |
+| CRIT-01 | Phase 3 | Complete |
+| CRIT-02 | Phase 3 | Complete |
+| MODAL-01 | Phase 2 | Complete |
+| MODAL-02 | Phase 2 | Complete |
+| MODAL-03 | Phase 2 | Complete |
+| MODAL-04 | Phase 2 | Complete |
+| MODAL-05 | Phase 2 | Complete |
+| MODAL-06 | Phase 2 | Complete |
 
 **Coverage:**
 - v1 requirements: 28 total (1 obsolete)
-- Phase 1 (Foundation): 11 requirements + 3 pre-completed from Phase 2
-- Phase 2 (Component Migration): 11 remaining requirements (was 15, minus 3 pre-completed, minus 1 obsolete)
-- Phase 3 (Critical Pages): 2 requirements
-- Mapped to phases: 27 active
+- All 27 active requirements: Complete
 - Obsolete: 1 (PAGE-03)
 
 ---
 *Requirements defined: 2026-01-19*
-*Last updated: 2026-01-21 - Marked PAGE-03 obsolete, COLOR-03/COMP-02/PAGE-06 pre-completed*
+*Last updated: 2026-01-23 - All v1 requirements complete*

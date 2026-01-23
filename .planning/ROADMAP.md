@@ -12,7 +12,7 @@ This roadmap transforms Evoque from a functional but visually inconsistent app i
 
 - [x] **Phase 1: Foundation** - Fix color system, create ThemeProvider, install shadcn components
 - [x] **Phase 2: Component Migration** - Modernize all general pages, modals, and transitions
-- [ ] **Phase 3: Critical Pages** - Study and StudySession with user-approved decisions
+- [x] **Phase 3: Critical Pages** - Study and StudySession with user-approved decisions
 
 ## Phase Details
 
@@ -76,12 +76,12 @@ Plans:
 **Plans**: 6 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Migrate Study.tsx header and All Books button to semantic tokens
-- [ ] 03-02-PLAN.md — Migrate DeckTable.tsx to semantic tokens (preserving SRS stat colors)
-- [ ] 03-03-PLAN.md — Migrate StudyHeatmap.tsx container and text to semantic tokens
-- [ ] 03-04-PLAN.md — Migrate StudySession.tsx container, header, footer shell to semantic tokens
-- [ ] 03-05-PLAN.md — Migrate StudySession.tsx card display (preserving serif font)
-- [ ] 03-06-PLAN.md — Complete StudySession.tsx: tag selector modal and verify SRS colors preserved
+- [x] 03-01-PLAN.md — Migrate Study.tsx header and All Books button to semantic tokens
+- [x] 03-02-PLAN.md — Migrate DeckTable.tsx to semantic tokens (preserving SRS stat colors)
+- [x] 03-03-PLAN.md — Migrate StudyHeatmap.tsx container and text to semantic tokens
+- [x] 03-04-PLAN.md — Migrate StudySession.tsx container, header, footer shell to semantic tokens
+- [x] 03-05-PLAN.md — Migrate StudySession.tsx card display (preserving serif font)
+- [x] 03-06-PLAN.md — Complete StudySession.tsx: tag selector modal and verify SRS colors preserved
 
 ## Progress
 
@@ -92,8 +92,8 @@ Phases execute in numeric order: 1 -> 2 -> 3
 |-------|----------------|--------|-----------|
 | 1. Foundation | 7/7 | Complete | 2026-01-20 |
 | 2. Component Migration | 7/7 | Complete | 2026-01-21 |
-| 3. Critical Pages | 0/6 | Ready for execution | - |
+| 3. Critical Pages | 6/6 | Complete | 2026-01-23 |
 
 ---
 *Roadmap created: 2026-01-19*
-*Last updated: 2026-01-23 - Phase 3 planned with 6 plans (user approval required at each step)*
+*Last updated: 2026-01-23 - Phase 3 complete (all 6 plans executed with user approval)*
