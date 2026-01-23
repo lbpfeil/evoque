@@ -515,33 +515,33 @@ ${currentHighlight.text}`;
 
                     {/* Highlight Text - Editable */}
                     {isEditingHighlight ? (
-                        <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md p-4">
+                        <div className="bg-muted border border-border rounded-md p-4">
                             <div className="flex items-center justify-between mb-2">
-                                <span className="text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500 font-semibold">
+                                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
                                     Edit Highlight
                                 </span>
-                                {isSaving && <Clock className="w-3 h-3 text-zinc-400 dark:text-zinc-500 animate-spin" />}
+                                {isSaving && <Clock className="w-3 h-3 text-muted-foreground animate-spin" />}
                             </div>
                             <textarea
                                 value={editedHighlight}
                                 onChange={(e) => setEditedHighlight(e.target.value)}
                                 onBlur={handleSaveHighlight}
-                                className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-sm p-3 text-base text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white focus:border-black dark:focus:border-white resize-none font-serif"
+                                className="w-full bg-background border border-input rounded-sm p-3 text-base text-foreground focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring resize-none font-serif"
                                 rows={6}
                                 autoFocus
                             />
-                            <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-2">Press ESC or click outside to save</p>
+                            <p className="text-[10px] text-muted-foreground mt-2">Press ESC or click outside to save</p>
                         </div>
                     ) : (
                         <div className="relative group">
                             <blockquote
-                                className="text-lg md:text-xl font-serif italic text-zinc-800 dark:text-zinc-200 leading-relaxed text-justify"
+                                className="text-lg md:text-xl font-serif italic text-foreground leading-relaxed text-justify"
                             >
                                 "{currentHighlight.text}"
                             </blockquote>
                             <button
                                 onClick={handleEditHighlight}
-                                className="absolute -top-1 -right-1 p-1 text-zinc-400 dark:text-zinc-500 hover:text-black dark:hover:text-white transition-colors opacity-0 group-hover:opacity-100"
+                                className="absolute -top-1 -right-1 p-1 text-muted-foreground hover:text-foreground transition-colors opacity-0 group-hover:opacity-100"
                                 title="Edit Highlight"
                             >
                                 <Edit2 className="w-3.5 h-3.5" />
