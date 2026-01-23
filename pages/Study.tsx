@@ -12,7 +12,7 @@ const Study = () => {
 
   if (!isLoaded) {
     return (
-      <div className="flex items-center justify-center h-full text-zinc-500 dark:text-zinc-400">
+      <div className="flex items-center justify-center h-full text-muted-foreground">
         Loading...
       </div>
     );
@@ -41,8 +41,8 @@ const Study = () => {
     <div className="p-4 sm:p-6">
       {/* Header */}
       <header className="mb-3">
-        <h1 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">Study</h1>
-        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+        <h1 className="text-base font-semibold text-foreground">Study</h1>
+        <p className="text-xs text-muted-foreground mt-1">
           Start your daily study session with all books, or choose a specific book below for focused practice.
         </p>
       </header>
@@ -100,14 +100,14 @@ const Study = () => {
 
       {/* Individual Books Section */}
       <div className="mb-2">
-        <h2 className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Study by Book</h2>
+        <h2 className="text-xs font-semibold text-muted-foreground">Study by Book</h2>
       </div>
 
       {/* Deck Table (without All Books row) */}
       {books.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-2">No books imported yet</p>
-          <p className="text-zinc-400 dark:text-zinc-500 text-xs">
+          <p className="text-muted-foreground text-sm mb-2">No books imported yet</p>
+          <p className="text-muted-foreground text-xs">
             Import your Kindle highlights to start studying
           </p>
         </div>
