@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-19)
 ## Current Position
 
 Phase: 3 of 3 (Critical Pages)
-Plan: 1 of 6 in phase (complete)
+Plan: 2 of 6 in phase (complete)
 Status: In progress
-Last activity: 2026-01-23 - Completed 03-01-PLAN.md (Study.tsx Header and All Books Button)
+Last activity: 2026-01-23 - Completed 03-02-PLAN.md (DeckTable)
 
-Progress: [==========] 100% (Phase 1) | [==========] 100% (Phase 2) | [=---------] 17% (Phase 3)
+Progress: [==========] 100% (Phase 1) | [==========] 100% (Phase 2) | [==--------] 33% (Phase 3)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 15
+- Total plans completed: 16
 - Average duration: 3.1min
-- Total execution time: 55min
+- Total execution time: 57min
 
 **By Phase:**
 
@@ -29,10 +29,10 @@ Progress: [==========] 100% (Phase 1) | [==========] 100% (Phase 2) | [=--------
 |-------|-------|-------|----------|
 | 1. Foundation | 7 | 18min | 2.6min |
 | 2. Component Migration | 7 | 33min | 4.7min |
-| 3. Critical Pages | 1 | 4min | 4.0min |
+| 3. Critical Pages | 2 | 6min | 3.0min |
 
 **Recent Trend:**
-- Last 5 plans: 02-05 (5min), 02-06 (4min), 02-04 (8min), 02-07 (3min), 03-01 (4min)
+- Last 5 plans: 02-06 (4min), 02-04 (8min), 02-07 (3min), 03-01 (4min), 03-02 (2min)
 - Trend: Consistent fast execution
 
 *Updated after each plan completion*
@@ -80,6 +80,8 @@ Recent decisions affecting current work:
 - [02-07]: Delete orphaned components (HighlightStats.tsx removed)
 - [03-01]: Use bg-foreground/text-background for prominent action buttons (inverted pattern)
 - [03-01]: Preserve SRS-meaningful colors (blue/amber/green) for study stats
+- [03-02]: Use hover:bg-accent/50 for table row hover (consistent pattern)
+- [03-02]: Use bg-muted/50 for special row differentiation (All Books)
 
 ### Pending Todos
 
@@ -99,5 +101,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-23
-Stopped at: Completed 03-01-PLAN.md (Study.tsx Header and All Books Button)
-Resume file: .planning/phases/03-critical-pages/03-02-PLAN.md
+Stopped at: Completed 03-02-PLAN.md (DeckTable)
+Resume file: .planning/phases/03-critical-pages/03-03-PLAN.md
