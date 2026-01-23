@@ -262,7 +262,7 @@ ${currentHighlight.text}`;
     // Loading state
     if (!isLoaded) {
         return (
-            <div className="h-screen flex items-center justify-center text-zinc-500 dark:text-zinc-500">
+            <div className="h-screen flex items-center justify-center text-muted-foreground">
                 Loading study session...
             </div>
         );
@@ -276,11 +276,11 @@ ${currentHighlight.text}`;
 
         return (
             <div className="h-screen flex flex-col items-center justify-center text-center space-y-6">
-                <div className="text-zinc-500 dark:text-zinc-500">
+                <div className="text-muted-foreground">
                     <p className="text-base font-medium mb-2">
                         {isDailyLimitReached ? 'Daily limit reached!' : 'No cards available'}
                     </p>
-                    <p className="text-sm text-zinc-400 dark:text-zinc-500">
+                    <p className="text-sm text-muted-foreground">
                         {isDailyLimitReached
                             ? `You've completed all 10 reviews for this book today. Come back tomorrow for more!`
                             : deckId
@@ -290,7 +290,7 @@ ${currentHighlight.text}`;
                 </div >
                 <button
                     onClick={() => navigate('/study')}
-                    className="px-6 py-2 bg-black text-white rounded-md hover:bg-zinc-800 dark:hover:bg-zinc-800 transition-colors text-sm"
+                    className="px-6 py-2 bg-foreground text-background rounded-md hover:bg-foreground/90 transition-colors text-sm"
                 >
                     Back to Decks
                 </button>
@@ -302,23 +302,23 @@ ${currentHighlight.text}`;
     if (sessionComplete) {
         return (
             <div className="h-screen flex flex-col items-center justify-center text-center space-y-8">
-                <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">Session Complete!</h2>
+                <h2 className="text-2xl font-bold text-foreground">Session Complete!</h2>
                 <div className="flex gap-12">
                     <div className="text-center">
-                        <p className="text-zinc-400 dark:text-zinc-500 text-xs font-bold uppercase tracking-widest mb-2">Reviewed</p>
-                        <p className="text-4xl font-bold text-zinc-900 dark:text-zinc-100">{sessionStats.reviewed}</p>
+                        <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest mb-2">Reviewed</p>
+                        <p className="text-4xl font-bold text-foreground">{sessionStats.reviewed}</p>
                     </div>
-                    <div className="w-px bg-zinc-200 dark:bg-zinc-800 h-16"></div>
+                    <div className="w-px bg-border h-16"></div>
                     <div className="text-center">
-                        <p className="text-zinc-400 dark:text-zinc-500 text-xs font-bold uppercase tracking-widest mb-2">Accuracy</p>
-                        <p className="text-4xl font-bold text-zinc-900 dark:text-zinc-100">
+                        <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest mb-2">Accuracy</p>
+                        <p className="text-4xl font-bold text-foreground">
                             {sessionStats.reviewed > 0 ? Math.round((sessionStats.correct / sessionStats.reviewed) * 100) : 0}%
                         </p>
                     </div>
                 </div>
                 <button
                     onClick={() => navigate('/study')}
-                    className="px-10 py-4 bg-black text-white rounded-md font-medium hover:bg-zinc-800 dark:hover:bg-zinc-800 transition-colors shadow-xl shadow-zinc-200/50 dark:shadow-zinc-800/50"
+                    className="px-10 py-4 bg-foreground text-background rounded-md font-medium hover:bg-foreground/90 transition-colors shadow-xl shadow-foreground/10"
                 >
                     Back to Decks
                 </button>
@@ -332,13 +332,13 @@ ${currentHighlight.text}`;
             <div className="h-screen flex flex-col items-center justify-center text-center space-y-6">
                 <div className="text-red-500">
                     <p className="text-base font-medium mb-2">Card Error</p>
-                    <p className="text-sm text-zinc-400 dark:text-zinc-500">
+                    <p className="text-sm text-muted-foreground">
                         The current card data is missing or corrupted.
                     </p>
                 </div>
                 <button
                     onClick={() => navigate('/study')}
-                    className="px-6 py-2 bg-black text-white rounded-md hover:bg-zinc-800 dark:hover:bg-zinc-800 transition-colors text-sm"
+                    className="px-6 py-2 bg-foreground text-background rounded-md hover:bg-foreground/90 transition-colors text-sm"
                 >
                     Back to Decks
                 </button>
@@ -423,8 +423,8 @@ ${currentHighlight.text}`;
                                 />
                             )}
                             <div className="min-w-0">
-                                <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{currentBook.title}</h3>
-                                <p className="text-xs text-zinc-400 dark:text-zinc-500">{currentBook.author}</p>
+                                <h3 className="text-sm font-semibold text-foreground">{currentBook.title}</h3>
+                                <p className="text-xs text-muted-foreground">{currentBook.author}</p>
                             </div>
                         </div>
 
@@ -684,13 +684,13 @@ ${currentHighlight.text}`;
                 <>
                     {/* Backdrop (click to close) */}
                     <div
-                        className="fixed inset-0 bg-black/10 dark:bg-black/30 z-40"
+                        className="fixed inset-0 bg-foreground/10 dark:bg-foreground/30 z-40"
                         onClick={() => setShowTagSelector(false)}
                     />
 
                     {/* TagSelector centered */}
                     <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 px-2 w-full max-w-md sm:px-4">
-                        <div className="bg-white dark:bg-zinc-900 rounded-md shadow-xl border border-zinc-300 dark:border-zinc-700">
+                        <div className="bg-card rounded-md shadow-xl border border-border">
                             <TagSelector
                                 highlightId={currentHighlight.id}
                                 bookId={currentHighlight.bookId}
