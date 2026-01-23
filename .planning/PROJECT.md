@@ -12,22 +12,21 @@ Uma modernização completa da interface do Evoque, um app de flashcards para re
 
 ### Validated
 
-(None yet — ship to validate)
+- ✓ Sistema de temas com toggle, persistência localStorage, e detecção de preferência do sistema — v1.0
+- ✓ Todos os componentes usando tokens semânticos (não cores hardcoded) — v1.0
+- ✓ Componentes shadcn instalados e configurados — v1.0
+- ✓ Dashboard modernizado com shadcn components — v1.0
+- ✓ Highlights page modernizada — v1.0
+- ✓ Settings page modernizada (parsers não tocados) — v1.0
+- ✓ Login page modernizada — v1.0
+- ✓ Sidebar modernizada com theme toggle — v1.0
+- ✓ Modals e popovers padronizados — v1.0
+- ✓ Study page modernizada (aprovada pelo usuário) — v1.0
+- ✓ StudySession page modernizada (fonte serif preservada) — v1.0
 
 ### Active
 
-- [ ] Sistema de temas com toggle, persistência localStorage, e detecção de preferência do sistema
-- [ ] Todos os componentes usando tokens semânticos (não cores hardcoded)
-- [ ] Componentes shadcn instalados: card, tabs, badge, select, checkbox, switch, tooltip, scroll-area, dropdown-menu
-- [ ] Dashboard modernizado com shadcn components
-- [ ] Highlights page modernizada
-- [ ] BookDetails page modernizada
-- [ ] Settings page modernizada (cuidado: não tocar nos parsers)
-- [ ] Login page modernizada
-- [ ] Sidebar modernizada com theme toggle
-- [ ] Modals e popovers padronizados
-- [ ] Study page modernizada (participação do usuário em cada decisão)
-- [ ] StudySession page modernizada (participação do usuário em cada decisão, preservar fonte serif dos cards)
+(None — run `/gsd:new-milestone` to define next goals)
 
 ### Out of Scope
 
@@ -85,4 +84,4 @@ Uma modernização completa da interface do Evoque, um app de flashcards para re
 | Study/StudySession por último | São críticos, usuário quer participar | — Pending |
 
 ---
-*Last updated: 2026-01-19 after initialization*
+*Last updated: 2026-01-23 after v1.0 milestone*
