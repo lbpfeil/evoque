@@ -553,43 +553,43 @@ ${currentHighlight.text}`;
                     {showAnswer && (
                         <div className="animate-fade-in-up">
                             {isEditingNote ? (
-                                <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md p-4">
+                                <div className="bg-muted border border-border rounded-md p-4">
                                     <div className="flex items-center justify-between mb-2">
-                                        <span className="text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500 font-semibold">
+                                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
                                             Edit Note
                                         </span>
-                                        {isSaving && <Clock className="w-3 h-3 text-zinc-400 dark:text-zinc-500 animate-spin" />}
+                                        {isSaving && <Clock className="w-3 h-3 text-muted-foreground animate-spin" />}
                                     </div>
                                     <textarea
                                         value={editedNote}
                                         onChange={(e) => setEditedNote(e.target.value)}
                                         onBlur={handleSaveNote}
-                                        className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-sm p-3 text-sm text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white focus:border-black dark:focus:border-white resize-none"
+                                        className="w-full bg-background border border-input rounded-sm p-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring resize-none"
                                         rows={6}
                                         placeholder="Add your note here..."
                                         autoFocus
                                     />
-                                    <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-2">Press ESC or click outside to save</p>
+                                    <p className="text-[10px] text-muted-foreground mt-2">Press ESC or click outside to save</p>
                                 </div>
                             ) : (
                                 <div className="mt-8">
                                     <div className="flex items-center justify-center gap-4 mb-8 select-none">
-                                        <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800"></div>
-                                        <span className="font-serif italic text-lg text-zinc-300 dark:text-zinc-700">~</span>
-                                        <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800"></div>
+                                        <div className="h-px flex-1 bg-border"></div>
+                                        <span className="font-serif italic text-lg text-border">~</span>
+                                        <div className="h-px flex-1 bg-border"></div>
                                     </div>
 
                                     <div className="relative group">
                                         {currentHighlight.note ? (
-                                            <div className="text-lg md:text-xl font-serif text-zinc-800 dark:text-zinc-200 leading-relaxed text-justify whitespace-pre-wrap">
+                                            <div className="text-lg md:text-xl font-serif text-foreground leading-relaxed text-justify whitespace-pre-wrap">
                                                 {currentHighlight.note}
                                             </div>
                                         ) : (
                                             <div className="text-center py-4">
-                                                <p className="text-sm text-zinc-400 dark:text-zinc-500 italic mb-2">No note attached</p>
+                                                <p className="text-sm text-muted-foreground italic mb-2">No note attached</p>
                                                 <button
                                                     onClick={handleEditNote}
-                                                    className="text-xs text-zinc-500 dark:text-zinc-500 hover:text-black dark:hover:text-white underline underline-offset-2 transition-colors"
+                                                    className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 transition-colors"
                                                 >
                                                     Add a note
                                                 </button>
@@ -599,7 +599,7 @@ ${currentHighlight.text}`;
                                         {currentHighlight.note && (
                                             <button
                                                 onClick={handleEditNote}
-                                                className="absolute -top-6 right-0 p-1 text-zinc-300 dark:text-zinc-700 hover:text-black dark:hover:text-white transition-colors opacity-0 group-hover:opacity-100 flex items-center gap-1.5"
+                                                className="absolute -top-6 right-0 p-1 text-border hover:text-foreground transition-colors opacity-0 group-hover:opacity-100 flex items-center gap-1.5"
                                                 title="Edit Note (E)"
                                             >
                                                 <span className="text-[10px] uppercase tracking-wider font-medium">Edit Note</span>
