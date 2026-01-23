@@ -11,7 +11,7 @@ This roadmap transforms Evoque from a functional but visually inconsistent app i
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
 - [x] **Phase 1: Foundation** - Fix color system, create ThemeProvider, install shadcn components
-- [ ] **Phase 2: Component Migration** - Modernize all general pages, modals, and transitions
+- [x] **Phase 2: Component Migration** - Modernize all general pages, modals, and transitions
 - [ ] **Phase 3: Critical Pages** - Study and StudySession with user-approved decisions
 
 ## Phase Details
@@ -56,13 +56,13 @@ Plans:
 **Plans**: 7 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Fix UI component semantic tokens (button, input, dialog, popover, command, sheet)
-- [ ] 02-02-PLAN.md — Migrate Login and Dashboard pages to semantic tokens + verify Phase 1 completions
-- [ ] 02-03-PLAN.md — Migrate Settings page to semantic tokens (preserving parser imports)
-- [ ] 02-04-PLAN.md — Migrate Highlights page and related components
-- [ ] 02-05-PLAN.md — Install AlertDialog, migrate DeleteBookModal, DeleteCardPopover, EmptyDeckPopover
-- [ ] 02-06-PLAN.md — Migrate HighlightEditModal, HighlightHistoryModal, BookContextModal to Dialog
-- [ ] 02-07-PLAN.md — Migrate remaining child components (gap closure: DashboardCharts, TagSelector, StudyStatusBadge, ErrorBoundary)
+- [x] 02-01-PLAN.md — Fix UI component semantic tokens (button, input, dialog, popover, command, sheet)
+- [x] 02-02-PLAN.md — Migrate Login and Dashboard pages to semantic tokens + verify Phase 1 completions
+- [x] 02-03-PLAN.md — Migrate Settings page to semantic tokens (preserving parser imports)
+- [x] 02-04-PLAN.md — Migrate Highlights page and related components
+- [x] 02-05-PLAN.md — Install AlertDialog, migrate DeleteBookModal, DeleteCardPopover, EmptyDeckPopover
+- [x] 02-06-PLAN.md — Migrate HighlightEditModal, HighlightHistoryModal, BookContextModal to Dialog
+- [x] 02-07-PLAN.md — Migrate remaining child components (gap closure: DashboardCharts, TagSelector, StudyStatusBadge, ErrorBoundary)
 
 ### Phase 3: Critical Pages
 **Goal**: Study and StudySession pages modernized with user approval at each step
@@ -73,10 +73,15 @@ Plans:
   2. StudySession.tsx uses shadcn components while preserving serif font on cards (user approved each change)
   3. Both pages respond correctly to light/dark theme toggle
   4. User has explicitly approved the final appearance of both pages
-**Plans**: TBD
+**Plans**: 6 plans
 
 Plans:
-- [ ] 03-01: TBD
+- [ ] 03-01-PLAN.md — Migrate Study.tsx header and All Books button to semantic tokens
+- [ ] 03-02-PLAN.md — Migrate DeckTable.tsx to semantic tokens (preserving SRS stat colors)
+- [ ] 03-03-PLAN.md — Migrate StudyHeatmap.tsx container and text to semantic tokens
+- [ ] 03-04-PLAN.md — Migrate StudySession.tsx container, header, footer shell to semantic tokens
+- [ ] 03-05-PLAN.md — Migrate StudySession.tsx card display (preserving serif font)
+- [ ] 03-06-PLAN.md — Complete StudySession.tsx: tag selector modal and verify SRS colors preserved
 
 ## Progress
 
@@ -86,9 +91,9 @@ Phases execute in numeric order: 1 -> 2 -> 3
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 7/7 | Complete | 2026-01-20 |
-| 2. Component Migration | 6/7 | Gap closure needed | - |
-| 3. Critical Pages | 0/TBD | Not started | - |
+| 2. Component Migration | 7/7 | Complete | 2026-01-21 |
+| 3. Critical Pages | 0/6 | Ready for execution | - |
 
 ---
 *Roadmap created: 2026-01-19*
-*Last updated: 2026-01-21 - Added 02-07-PLAN.md for gap closure (5 remaining components)*
+*Last updated: 2026-01-23 - Phase 3 planned with 6 plans (user approval required at each step)*
