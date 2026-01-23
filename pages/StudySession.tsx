@@ -350,26 +350,26 @@ ${currentHighlight.text}`;
     const isEditing = isEditingHighlight || isEditingNote;
 
     return (
-        <div className="h-screen flex flex-col bg-white dark:bg-zinc-900">
+        <div className="h-screen flex flex-col bg-background">
             {/* Compact Header */}
-            <header className="px-3 sm:px-4 py-2 border-b border-zinc-200 dark:border-zinc-800">
+            <header className="px-3 sm:px-4 py-2 border-b border-border">
                 <div className="flex items-center justify-between">
                     <button
                         onClick={handleBack}
-                        className="flex items-center gap-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 px-2 py-1.5 sm:py-1 rounded transition-colors min-h-[40px] sm:min-h-0"
+                        className="flex items-center gap-1 hover:bg-accent px-2 py-1.5 sm:py-1 rounded transition-colors min-h-[40px] sm:min-h-0"
                     >
-                        <ArrowLeft className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-zinc-600 dark:text-zinc-400" />
-                        <span className="text-xs text-zinc-600 dark:text-zinc-400 hidden sm:inline">Back to Decks</span>
+                        <ArrowLeft className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground hidden sm:inline">Back to Decks</span>
                     </button>
 
-                    <div className="text-xs text-zinc-400 dark:text-zinc-500">
+                    <div className="text-xs text-muted-foreground">
                         Card {currentIndex + 1} / {queueIds.length}
                     </div>
 
                     <div className="flex items-center gap-1">
                         <button
                             onClick={() => setShowTagSelector(prev => !prev)}
-                            className="p-2 -mr-1 text-zinc-400 dark:text-zinc-500 hover:text-blue-600 transition-colors rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 min-h-[40px] sm:min-h-0"
+                            className="p-2 -mr-1 text-muted-foreground hover:text-primary transition-colors rounded-full hover:bg-accent min-h-[40px] sm:min-h-0"
                             title="Manage Tags"
                         >
                             <TagIcon className="w-4 h-4" />
@@ -460,7 +460,7 @@ ${currentHighlight.text}`;
                                     {remainingCount > 0 && (
                                         <button
                                             onClick={() => setShowAllTags(!showAllTags)}
-                                            className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-zinc-300 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-400 dark:hover:bg-zinc-600 transition-colors cursor-pointer"
+                                            className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-colors cursor-pointer"
                                             title={showAllTags ? 'Show less' : `Show ${remainingCount} more tags`}
                                         >
                                             {showAllTags ? '−' : `+${remainingCount}`}
@@ -503,7 +503,7 @@ ${currentHighlight.text}`;
                                 {remainingCount > 0 && (
                                     <button
                                         onClick={() => setShowAllTags(!showAllTags)}
-                                        className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-zinc-300 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-400 dark:hover:bg-zinc-600 transition-colors cursor-pointer"
+                                        className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-colors cursor-pointer"
                                         title={showAllTags ? 'Show less' : `Show ${remainingCount} more tags`}
                                     >
                                         {showAllTags ? '−' : `+${remainingCount}`}
