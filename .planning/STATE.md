@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-19)
 ## Current Position
 
 Phase: 3 of 3 (Critical Pages)
-Plan: 3 of 6 in phase (03-01, 03-02, 03-03 complete)
+Plan: 4 of 6 in phase (03-01, 03-02, 03-03, 03-04 complete)
 Status: In progress
-Last activity: 2026-01-23 - Completed 03-03-PLAN.md (StudyHeatmap Migration)
+Last activity: 2026-01-23 - Completed 03-04-PLAN.md (StudySession Shell Migration)
 
-Progress: [==========] 100% (Phase 1) | [==========] 100% (Phase 2) | [=====-----] 50% (Phase 3)
+Progress: [==========] 100% (Phase 1) | [==========] 100% (Phase 2) | [=======---] 67% (Phase 3)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 17
-- Average duration: 3.0min
-- Total execution time: 59min
+- Total plans completed: 18
+- Average duration: 3.1min
+- Total execution time: 62min
 
 **By Phase:**
 
@@ -29,10 +29,10 @@ Progress: [==========] 100% (Phase 1) | [==========] 100% (Phase 2) | [=====----
 |-------|-------|-------|----------|
 | 1. Foundation | 7 | 18min | 2.6min |
 | 2. Component Migration | 7 | 33min | 4.7min |
-| 3. Critical Pages | 3 | 8min | 2.7min |
+| 3. Critical Pages | 4 | 11min | 2.8min |
 
 **Recent Trend:**
-- Last 5 plans: 02-04 (8min), 02-07 (3min), 03-01 (4min), 03-02 (2min), 03-03 (2min)
+- Last 5 plans: 02-07 (3min), 03-01 (4min), 03-02 (2min), 03-03 (2min), 03-04 (3min)
 - Trend: Fast execution continuing
 
 *Updated after each plan completion*
@@ -85,6 +85,10 @@ Recent decisions affecting current work:
 - [03-03]: Keep green heatmap colors (green-200 to green-900) for data visualization meaning
 - [03-03]: Keep inverted tooltip pattern for visibility in both themes
 - [03-03]: Use bg-muted for empty/future heatmap cells
+- [03-04]: Use bg-foreground/text-background for all "Back to Decks" buttons (inverted pattern)
+- [03-04]: Use hover:bg-accent for icon buttons (tag, copy, delete)
+- [03-04]: Keep green-600 for copy success feedback (intentional semantic color)
+- [03-04]: Use hover:text-destructive for delete button hover
 
 ### Pending Todos
 
@@ -103,6 +107,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-23T19:54:43Z
-Stopped at: Completed 03-03-PLAN.md (StudyHeatmap Migration)
-Resume file: .planning/phases/03-critical-pages/03-04-PLAN.md
+Last session: 2026-01-23T20:15:12Z
+Stopped at: Completed 03-04-PLAN.md (StudySession Shell Migration)
+Resume file: .planning/phases/03-critical-pages/03-05-PLAN.md
