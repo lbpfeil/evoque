@@ -378,14 +378,14 @@ ${currentHighlight.text}`;
                         <button
                             onClick={handleCopyToClipboard}
                             disabled={!currentBook || !currentHighlight}
-                            className="p-2 -mr-1 text-zinc-400 dark:text-zinc-500 hover:text-green-600 transition-colors rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 min-h-[40px] sm:min-h-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="p-2 -mr-1 text-muted-foreground hover:text-green-600 transition-colors rounded-full hover:bg-accent min-h-[40px] sm:min-h-0 disabled:opacity-50 disabled:cursor-not-allowed"
                             title={justCopied ? "Copiado!" : "Copiar para área de transferência"}
                         >
                             <Copy className={`w-4 h-4 ${justCopied ? 'text-green-600' : ''}`} />
                         </button>
                         <button
                             onClick={() => setShowDeletePopover(true)}
-                            className="p-2 -mr-2 text-zinc-400 dark:text-zinc-500 hover:text-red-600 transition-colors rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 min-h-[40px] sm:min-h-0"
+                            className="p-2 -mr-2 text-muted-foreground hover:text-destructive transition-colors rounded-full hover:bg-accent min-h-[40px] sm:min-h-0"
                             title="Delete Card"
                         >
                             <Trash2 className="w-4 h-4" />
