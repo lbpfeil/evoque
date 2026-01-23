@@ -76,7 +76,7 @@ export const HighlightTableRow: React.FC<HighlightTableRowProps> = ({
             {/* Highlight Text */}
             <td className="px-4 py-3 align-top min-w-[300px]">
                 <div
-                    className="font-serif text-sm leading-relaxed text-foreground cursor-pointer hover:text-muted-foreground line-clamp-3 transition-colors duration-200"
+                    className="text-sm leading-relaxed text-foreground cursor-pointer hover:text-muted-foreground line-clamp-3 transition-colors duration-200"
                     onClick={() => onEdit(highlight.id)}
                     title={highlight.text}
                 >
@@ -88,7 +88,7 @@ export const HighlightTableRow: React.FC<HighlightTableRowProps> = ({
             <td className="px-4 py-3 align-top w-[280px]">
                 {highlight.note ? (
                     <div
-                        className="font-serif text-sm leading-relaxed text-foreground cursor-pointer hover:text-muted-foreground line-clamp-3 transition-colors duration-200"
+                        className="text-sm leading-relaxed text-foreground cursor-pointer hover:text-muted-foreground line-clamp-3 transition-colors duration-200"
                         onClick={() => onEdit(highlight.id)}
                         title={highlight.note}
                     >
