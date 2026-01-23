@@ -207,11 +207,11 @@ function getIntensityClass(intensity: number, date: string): string {
   const isFuture = cellDate > today;
 
   if (isFuture) {
-    return 'bg-zinc-50 dark:bg-zinc-900/50 cursor-default';
+    return 'bg-muted/50 cursor-default';
   }
 
   const classes: Record<number, string> = {
-    0: 'bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700',
+    0: 'bg-muted hover:bg-muted/80',
     1: 'bg-green-200 dark:bg-green-900 hover:bg-green-300 dark:hover:bg-green-800',
     2: 'bg-green-400 dark:bg-green-700 hover:bg-green-500 dark:hover:bg-green-600',
     3: 'bg-green-500 dark:bg-green-600 hover:bg-green-600 dark:hover:bg-green-500',
@@ -293,16 +293,16 @@ export const StudyHeatmap: React.FC<StudyHeatmapProps> = ({ reviewLogs }) => {
   };
 
   return (
-    <div ref={containerRef} className="bg-white dark:bg-zinc-900 rounded border border-zinc-200 dark:border-zinc-800 p-3 mb-3">
+    <div ref={containerRef} className="bg-card rounded border border-border p-3 mb-3">
       {/* Stats Row */}
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Review Activity</h3>
+        <h3 className="text-xs font-semibold text-muted-foreground">Review Activity</h3>
         <div className="flex items-center gap-3 text-xs">
           <div className="flex items-center gap-1 text-orange-500" title="Current streak">
             <Flame className="w-3 h-3" />
             <span>{stats.currentStreak}</span>
           </div>
-          <div className="flex items-center gap-1 text-zinc-400 dark:text-zinc-500" title="Longest streak">
+          <div className="flex items-center gap-1 text-muted-foreground" title="Longest streak">
             <TrendingUp className="w-3 h-3" />
             <span>{stats.longestStreak}</span>
           </div>
@@ -318,7 +318,7 @@ export const StudyHeatmap: React.FC<StudyHeatmapProps> = ({ reviewLogs }) => {
               {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
                 <div
                   key={i}
-                  className="w-2.5 h-2.5 text-[8px] text-zinc-400 dark:text-zinc-500 flex items-center justify-center"
+                  className="w-2.5 h-2.5 text-[8px] text-muted-foreground flex items-center justify-center"
                 >
                   {i % 2 === 1 ? day : ''}
                 </div>
@@ -345,7 +345,7 @@ export const StudyHeatmap: React.FC<StudyHeatmapProps> = ({ reviewLogs }) => {
             {monthLabels.map((label, i) => (
               <div
                 key={i}
-                className="text-[8px] text-zinc-400 dark:text-zinc-500"
+                className="text-[8px] text-muted-foreground"
                 style={{ width: `${label.span * 12}px` }}
               >
                 {label.name}
