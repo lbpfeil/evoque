@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-19)
 
 **Core value:** Sistema de temas funcionando perfeitamente em light/dark mode
-**Current focus:** Phase 3 - Critical Pages (in progress)
+**Current focus:** Phase 3 - Critical Pages (COMPLETE)
 
 ## Current Position
 
 Phase: 3 of 3 (Critical Pages)
-Plan: 4 of 6 in phase (03-01, 03-02, 03-03, 03-04 complete)
-Status: In progress
-Last activity: 2026-01-23 - Completed 03-04-PLAN.md (StudySession Shell Migration)
+Plan: 6 of 6 in phase (all complete)
+Status: PROJECT COMPLETE
+Last activity: 2026-01-23 - Completed 03-06-PLAN.md (StudySession Tag Selector Modal)
 
-Progress: [==========] 100% (Phase 1) | [==========] 100% (Phase 2) | [=======---] 67% (Phase 3)
+Progress: [==========] 100% (Phase 1) | [==========] 100% (Phase 2) | [==========] 100% (Phase 3)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 18
-- Average duration: 3.1min
-- Total execution time: 62min
+- Total plans completed: 20
+- Average duration: 3.2min
+- Total execution time: 66min
 
 **By Phase:**
 
@@ -29,11 +29,11 @@ Progress: [==========] 100% (Phase 1) | [==========] 100% (Phase 2) | [=======--
 |-------|-------|-------|----------|
 | 1. Foundation | 7 | 18min | 2.6min |
 | 2. Component Migration | 7 | 33min | 4.7min |
-| 3. Critical Pages | 4 | 11min | 2.8min |
+| 3. Critical Pages | 6 | 15min | 2.5min |
 
 **Recent Trend:**
-- Last 5 plans: 02-07 (3min), 03-01 (4min), 03-02 (2min), 03-03 (2min), 03-04 (3min)
-- Trend: Fast execution continuing
+- Last 5 plans: 03-02 (2min), 03-03 (2min), 03-04 (3min), 03-05 (2min), 03-06 (2min)
+- Trend: Consistent fast execution
 
 *Updated after each plan completion*
 
@@ -89,6 +89,11 @@ Recent decisions affecting current work:
 - [03-04]: Use hover:bg-accent for icon buttons (tag, copy, delete)
 - [03-04]: Keep green-600 for copy success feedback (intentional semantic color)
 - [03-04]: Use hover:text-destructive for delete button hover
+- [03-05]: Preserve font-serif on highlight text, note text, edit textareas, and divider tilde
+- [03-05]: Use bg-muted for edit containers (highlight and note editing)
+- [03-05]: Keep tag colors explicit (blue=global, amber=book-specific) for data meaning
+- [03-06]: Use bg-foreground/10 for modal backdrops (tag selector)
+- [03-06]: Keep SRS response button colors explicit (red/amber/blue/green for learning convention)
 
 ### Pending Todos
 
@@ -107,6 +112,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-23T20:15:12Z
-Stopped at: Completed 03-04-PLAN.md (StudySession Shell Migration)
-Resume file: .planning/phases/03-critical-pages/03-05-PLAN.md
+Last session: 2026-01-23T20:14:43Z
+Stopped at: PROJECT COMPLETE - All phases finished
+Resume file: None - project complete
