@@ -394,7 +394,7 @@ ${currentHighlight.text}`;
                 </div>
 
                 {/* Progress bar */}
-                <div className="h-[3px] bg-zinc-200 dark:bg-zinc-800 mt-2 rounded-full overflow-hidden">
+                <div className="h-[3px] bg-border mt-2 rounded-full overflow-hidden">
                     <div
                         className="h-full progress-bar-animated transition-all duration-300 ease-out"
                         style={{ width: `${progress}%` }}
@@ -615,16 +615,16 @@ ${currentHighlight.text}`;
             </div>
 
             {/* Fixed Footer - Controls */}
-            <div className="border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3 pb-[calc(2rem+env(safe-area-inset-bottom))] sm:p-4 sm:pb-4">
+            <div className="border-t border-border bg-background p-3 pb-[calc(2rem+env(safe-area-inset-bottom))] sm:p-4 sm:pb-4">
                 <div className="max-w-2xl mx-auto relative">
                     {/* Main controls - centered */}
                     <div>
                         {!showAnswer ? (
                             <button
                                 onClick={() => setShowAnswer(true)}
-                                className="w-full py-3.5 sm:py-3 min-h-[48px] bg-black dark:bg-white hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-black rounded-md font-medium text-sm transition-all active:scale-[0.99]"
+                                className="w-full py-3.5 sm:py-3 min-h-[48px] bg-foreground hover:bg-foreground/90 text-background rounded-md font-medium text-sm transition-all active:scale-[0.99]"
                             >
-                                Reveal Answer <span className="hidden sm:inline text-xs text-zinc-400 dark:text-zinc-500 ml-2">(Space / Enter)</span>
+                                Reveal Answer <span className="hidden sm:inline text-xs text-muted-foreground ml-2">(Space / Enter)</span>
                             </button>
                         ) : (
                             <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
