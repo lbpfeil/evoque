@@ -122,7 +122,7 @@ const HighlightEditModal: React.FC<HighlightEditModalProps> = ({ highlightId, on
             <textarea
               value={editForm.text}
               onChange={(e) => handleChange('text', e.target.value)}
-              className="w-full bg-transparent border-0 px-0 py-0 text-xs font-serif text-foreground resize-none focus:outline-none placeholder:text-muted-foreground"
+              className="w-full bg-transparent border-0 px-0 py-0 text-xs text-foreground resize-none focus:outline-none placeholder:text-muted-foreground"
               rows={6}
             />
           </div>
@@ -133,7 +133,7 @@ const HighlightEditModal: React.FC<HighlightEditModalProps> = ({ highlightId, on
             <textarea
               value={editForm.note}
               onChange={(e) => handleChange('note', e.target.value)}
-              className="w-full bg-transparent border-0 px-0 py-0 text-xs font-serif text-foreground resize-none focus:outline-none placeholder:text-muted-foreground"
+              className="w-full bg-transparent border-0 px-0 py-0 text-xs text-foreground resize-none focus:outline-none placeholder:text-muted-foreground"
               rows={5}
               placeholder="Add a note..."
             />
