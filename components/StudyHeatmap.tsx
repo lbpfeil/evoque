@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ReviewLog } from '../types';
 import { Flame, TrendingUp } from 'lucide-react';
 
@@ -170,9 +171,9 @@ function calculateStreaks(dateCountMap: Map<string, number>): { current: number;
 }
 
 // Generate month labels
-function generateMonthLabels(weeks: HeatmapWeek[]): Array<{ name: string; span: number }> {
+function generateMonthLabels(weeks: HeatmapWeek[], monthNames: string[]): Array<{ name: string; span: number }> {
   const labels: Array<{ name: string; span: number }> = [];
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const months = monthNames;
 
   let currentMonth = -1;
   let currentSpan = 0;
@@ -240,9 +241,24 @@ function calculateNumWeeks(containerWidth: number): number {
 }
 
 export const StudyHeatmap: React.FC<StudyHeatmapProps> = ({ reviewLogs }) => {
+  const { t } = useTranslation('study');
   const [tooltip, setTooltip] = useState<{ x: number; y: number; date: string; count: number } | null>(null);
   const [numWeeks, setNumWeeks] = useState(26); // Default to 6 months
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Get translated month and day names
+  const monthNames = [
+    t('heatmap.months.jan'), t('heatmap.months.feb'), t('heatmap.months.mar'),
+    t('heatmap.months.apr'), t('heatmap.months.may'), t('heatmap.months.jun'),
+    t('heatmap.months.jul'), t('heatmap.months.aug'), t('heatmap.months.sep'),
+    t('heatmap.months.oct'), t('heatmap.months.nov'), t('heatmap.months.dec')
+  ];
+
+  const dayLabels = [
+    t('heatmap.days.sun'), t('heatmap.days.mon'), t('heatmap.days.tue'),
+    t('heatmap.days.wed'), t('heatmap.days.thu'), t('heatmap.days.fri'),
+    t('heatmap.days.sat')
+  ];
 
   // Responsive: adjust weeks based on container width
   useEffect(() => {
@@ -272,9 +288,9 @@ export const StudyHeatmap: React.FC<StudyHeatmapProps> = ({ reviewLogs }) => {
         currentStreak: streaks.current,
         longestStreak: streaks.longest,
       },
-      monthLabels: generateMonthLabels(weeks)
+      monthLabels: generateMonthLabels(weeks, monthNames)
     };
-  }, [reviewLogs, numWeeks]);
+  }, [reviewLogs, numWeeks, monthNames]);
 
   // Handle hover
   const handleCellHover = (event: React.MouseEvent, day: HeatmapDay) => {
@@ -296,13 +312,13 @@ export const StudyHeatmap: React.FC<StudyHeatmapProps> = ({ reviewLogs }) => {
     <div ref={containerRef} className="bg-card rounded border border-border p-3 mb-3">
       {/* Stats Row */}
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-xs font-semibold text-muted-foreground">Review Activity</h3>
+        <h3 className="text-xs font-semibold text-muted-foreground">{t('heatmap.title')}</h3>
         <div className="flex items-center gap-3 text-xs">
-          <div className="flex items-center gap-1 text-orange-500" title="Current streak">
+          <div className="flex items-center gap-1 text-orange-500" title={t('heatmap.currentStreak')}>
             <Flame className="w-3 h-3" />
             <span>{stats.currentStreak}</span>
           </div>
-          <div className="flex items-center gap-1 text-muted-foreground" title="Longest streak">
+          <div className="flex items-center gap-1 text-muted-foreground" title={t('heatmap.longestStreak')}>
             <TrendingUp className="w-3 h-3" />
             <span>{stats.longestStreak}</span>
           </div>
@@ -315,7 +331,7 @@ export const StudyHeatmap: React.FC<StudyHeatmapProps> = ({ reviewLogs }) => {
           <div className="flex gap-0.5">
             {/* Day labels */}
             <div className="flex flex-col gap-0.5 pr-1">
-              {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
+              {dayLabels.map((day, i) => (
                 <div
                   key={i}
                   className="w-2.5 h-2.5 text-[8px] text-muted-foreground flex items-center justify-center"
@@ -367,7 +383,7 @@ export const StudyHeatmap: React.FC<StudyHeatmapProps> = ({ reviewLogs }) => {
         >
           <div className="font-medium">{formatDate(tooltip.date)}</div>
           <div className="text-zinc-300 dark:text-zinc-600">
-            {tooltip.count} {tooltip.count === 1 ? 'review' : 'reviews'}
+            {t('heatmap.reviews', { count: tooltip.count })}
           </div>
         </div>
       )}

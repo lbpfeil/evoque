@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { DeckStats } from '../types';
 import { cn } from '../lib/utils';
 
@@ -16,15 +17,17 @@ interface DeckTableProps {
 }
 
 export const DeckTable: React.FC<DeckTableProps> = ({ decks, onDeckClick }) => {
+    const { t } = useTranslation('study');
+
     return (
         <div className="border border-border rounded overflow-hidden">
             {/* Table Header */}
             <div className="bg-muted border-b border-border px-2 py-1 grid grid-cols-[1fr_48px] sm:grid-cols-[1fr_48px_64px_48px_48px] gap-2 items-center">
-                <div className="text-xs font-semibold text-muted-foreground">Deck</div>
-                <div className="hidden sm:block text-xs font-semibold text-muted-foreground text-right">New</div>
-                <div className="hidden sm:block text-xs font-semibold text-muted-foreground text-right">Learning</div>
-                <div className="hidden sm:block text-xs font-semibold text-muted-foreground text-right">Review</div>
-                <div className="text-xs font-semibold text-muted-foreground text-right">Total</div>
+                <div className="text-xs font-semibold text-muted-foreground">{t('table.deck')}</div>
+                <div className="hidden sm:block text-xs font-semibold text-muted-foreground text-right">{t('table.new')}</div>
+                <div className="hidden sm:block text-xs font-semibold text-muted-foreground text-right">{t('table.learning')}</div>
+                <div className="hidden sm:block text-xs font-semibold text-muted-foreground text-right">{t('table.review')}</div>
+                <div className="text-xs font-semibold text-muted-foreground text-right">{t('table.total')}</div>
             </div>
 
             {/* Table Body */}
