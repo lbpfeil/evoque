@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useStore } from '../components/StoreContext';
 import { DeleteCardPopover } from '../components/DeleteCardPopover';
 import { TagSelector } from '../components/TagSelector';
@@ -8,17 +9,18 @@ import { calculateNextReview } from '../services/sm2';
 import { StudyCard } from '../types';
 
 // Determine card status for visual indicator (aligned with getDeckStats)
-function getCardStatus(card: StudyCard): { status: 'new' | 'learning' | 'review'; color: string; label: string } {
+function getCardStatus(card: StudyCard, t: (key: string) => string): { status: 'new' | 'learning' | 'review'; color: string; label: string } {
     if (card.repetitions === 0) {
-        return { status: 'new', color: 'bg-blue-500', label: 'New' };
+        return { status: 'new', color: 'bg-blue-500', label: t('status.new') };
     }
     if (card.repetitions >= 1 && card.repetitions < 5) {
-        return { status: 'learning', color: 'bg-amber-500', label: 'Learning' };
+        return { status: 'learning', color: 'bg-amber-500', label: t('status.learning') };
     }
-    return { status: 'review', color: 'bg-green-500', label: 'Review' };
+    return { status: 'review', color: 'bg-green-500', label: t('status.review') };
 }
 
 const StudySession = () => {
+    const { t } = useTranslation('session');
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const deckId = searchParams.get('deck');
@@ -263,7 +265,7 @@ ${currentHighlight.text}`;
     if (!isLoaded) {
         return (
             <div className="h-screen flex items-center justify-center text-muted-foreground">
-                Loading study session...
+                {t('loading')}
             </div>
         );
     }
@@ -278,21 +280,21 @@ ${currentHighlight.text}`;
             <div className="h-screen flex flex-col items-center justify-center text-center space-y-6">
                 <div className="text-muted-foreground">
                     <p className="text-base font-medium mb-2">
-                        {isDailyLimitReached ? 'Daily limit reached!' : 'No cards available'}
+                        {isDailyLimitReached ? t('dailyLimit.title') : t('noCards.title')}
                     </p>
                     <p className="text-sm text-muted-foreground">
                         {isDailyLimitReached
-                            ? `You've completed all 10 reviews for this book today. Come back tomorrow for more!`
+                            ? t('dailyLimit.message')
                             : deckId
-                                ? 'This deck has no cards due for review.'
-                                : 'You have no cards due for review.'}
+                                ? t('noCards.deckEmpty')
+                                : t('noCards.allEmpty')}
                     </p >
                 </div >
                 <button
                     onClick={() => navigate('/study')}
                     className="px-6 py-2 bg-foreground text-background rounded-md hover:bg-foreground/90 transition-colors text-sm"
                 >
-                    Back to Decks
+                    {t('actions.backToDecks')}
                 </button>
             </div >
         );
@@ -302,15 +304,15 @@ ${currentHighlight.text}`;
     if (sessionComplete) {
         return (
             <div className="h-screen flex flex-col items-center justify-center text-center space-y-8">
-                <h2 className="text-2xl font-bold text-foreground">Session Complete!</h2>
+                <h2 className="text-2xl font-bold text-foreground">{t('complete.title')}</h2>
                 <div className="flex gap-12">
                     <div className="text-center">
-                        <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest mb-2">Reviewed</p>
+                        <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest mb-2">{t('complete.reviewed')}</p>
                         <p className="text-4xl font-bold text-foreground">{sessionStats.reviewed}</p>
                     </div>
                     <div className="w-px bg-border h-16"></div>
                     <div className="text-center">
-                        <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest mb-2">Accuracy</p>
+                        <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest mb-2">{t('complete.accuracy')}</p>
                         <p className="text-4xl font-bold text-foreground">
                             {sessionStats.reviewed > 0 ? Math.round((sessionStats.correct / sessionStats.reviewed) * 100) : 0}%
                         </p>
@@ -418,8 +420,8 @@ ${currentHighlight.text}`;
                             {/* Card Status Indicator */}
                             {currentCard && (
                                 <div
-                                    className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${getCardStatus(currentCard).color}`}
-                                    title={getCardStatus(currentCard).label}
+                                    className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${getCardStatus(currentCard, t).color}`}
+                                    title={getCardStatus(currentCard, t).label}
                                 />
                             )}
                             <div className="min-w-0">
@@ -624,7 +626,7 @@ ${currentHighlight.text}`;
                                 onClick={() => setShowAnswer(true)}
                                 className="w-full py-3.5 sm:py-3 min-h-[48px] bg-foreground hover:bg-foreground/90 text-background rounded-md font-medium text-sm transition-all active:scale-[0.99]"
                             >
-                                Reveal Answer <span className="hidden sm:inline text-xs text-muted-foreground ml-2">(Space / Enter)</span>
+                                {t('actions.revealAnswer')} <span className="hidden sm:inline text-xs text-muted-foreground ml-2">{t('keyboard.revealHint')}</span>
                             </button>
                         ) : (
                             <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
@@ -633,32 +635,32 @@ ${currentHighlight.text}`;
                                     disabled={isEditing || isSubmittingResponse}
                                     className="py-2.5 sm:py-1.5 min-h-[48px] sm:min-h-0 bg-red-500 dark:bg-red-600 hover:bg-red-600 dark:hover:bg-red-700 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    <span>Again</span>
-                                    <span className="hidden sm:block text-[10px] opacity-75">(1)</span>
+                                    <span>{t('rating.again')}</span>
+                                    <span className="hidden sm:block text-[10px] opacity-75">{t('keyboard.again')}</span>
                                 </button>
                                 <button
                                     onClick={() => handleResponse(2)}
                                     disabled={isEditing || isSubmittingResponse}
                                     className="py-2.5 sm:py-1.5 min-h-[48px] sm:min-h-0 bg-amber-500 dark:bg-amber-600 hover:bg-amber-600 dark:hover:bg-amber-700 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    <span>Hard</span>
-                                    <span className="hidden sm:block text-[10px] opacity-75">(2)</span>
+                                    <span>{t('rating.hard')}</span>
+                                    <span className="hidden sm:block text-[10px] opacity-75">{t('keyboard.hard')}</span>
                                 </button>
                                 <button
                                     onClick={() => handleResponse(3)}
                                     disabled={isEditing || isSubmittingResponse}
                                     className="py-2.5 sm:py-1.5 min-h-[48px] sm:min-h-0 bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    <span>Good</span>
-                                    <span className="hidden sm:block text-[10px] opacity-75">(3 / Enter)</span>
+                                    <span>{t('rating.good')}</span>
+                                    <span className="hidden sm:block text-[10px] opacity-75">{t('keyboard.good')}</span>
                                 </button>
                                 <button
                                     onClick={() => handleResponse(4)}
                                     disabled={isEditing || isSubmittingResponse}
                                     className="py-2.5 sm:py-1.5 min-h-[48px] sm:min-h-0 bg-green-500 dark:bg-green-600 hover:bg-green-600 dark:hover:bg-green-700 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    <span>Easy</span>
-                                    <span className="hidden sm:block text-[10px] opacity-75">(4)</span>
+                                    <span>{t('rating.easy')}</span>
+                                    <span className="hidden sm:block text-[10px] opacity-75">{t('keyboard.easy')}</span>
                                 </button>
                             </div>
                         )}
