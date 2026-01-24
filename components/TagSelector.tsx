@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Check, Plus, Book, Search } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { Button } from './ui/button';
@@ -20,6 +21,7 @@ interface TagSelectorProps {
 }
 
 export function TagSelector({ highlightId, bookId, className, open: controlledOpen, onOpenChange, variant = 'default' }: TagSelectorProps) {
+    const { t } = useTranslation('highlights');
     const { tags, highlights, assignTagToHighlight, removeTagFromHighlight, addTag, getBook } = useStore();
     const [internalOpen, setInternalOpen] = useState(false);
     const [searchValue, setSearchValue] = useState('');
@@ -89,7 +91,7 @@ export function TagSelector({ highlightId, bookId, className, open: controlledOp
                     <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
                     <input
                         type="text"
-                        placeholder="Search tags..."
+                        placeholder={t('tagSelector.searchPlaceholder')}
                         value={searchValue}
                         onChange={(e) => setSearchValue(e.target.value)}
                         onKeyDown={(e) => e.stopPropagation()}
@@ -101,7 +103,7 @@ export function TagSelector({ highlightId, bookId, className, open: controlledOp
                 <div className="max-h-[300px] overflow-y-auto overflow-x-hidden">
                     {sortedTags.length === 0 ? (
                         <div className="p-2 text-xs text-muted-foreground flex flex-col gap-1">
-                            <span>No tags found.</span>
+                            <span>{t('tagSelector.noTagsFound')}</span>
 
                             {searchValue && (
                                 <>
@@ -110,7 +112,7 @@ export function TagSelector({ highlightId, bookId, className, open: controlledOp
                                         className="w-full flex items-center gap-1 px-2 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50 rounded text-left"
                                     >
                                         <Plus className="w-3 h-3" />
-                                        Create Global "{searchValue}"
+                                        {t('tagSelector.createGlobal', { name: searchValue })}
                                     </button>
 
                                     {bookId && (
@@ -119,7 +121,7 @@ export function TagSelector({ highlightId, bookId, className, open: controlledOp
                                             className="w-full flex items-center gap-1 px-2 py-1.5 text-xs font-medium text-amber-600 hover:bg-amber-50 rounded text-left"
                                         >
                                             <Book className="w-3 h-3" />
-                                            Create Chapter "{searchValue}"
+                                            {t('tagSelector.createChapter', { name: searchValue })}
                                         </button>
                                     )}
                                 </>
@@ -127,7 +129,7 @@ export function TagSelector({ highlightId, bookId, className, open: controlledOp
                         </div>
                     ) : (
                         <div className="p-1">
-                            <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">Tags</div>
+                            <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">{t('tagSelector.tagsLabel')}</div>
                             {sortedTags.map((tag) => {
                                 const isSelected = selectedTagIds.includes(tag.id);
                                 return (
@@ -196,7 +198,7 @@ export function TagSelector({ highlightId, bookId, className, open: controlledOp
                     ) : (
                         <div className={cn("text-muted-foreground text-xs italic flex items-center gap-1", variant === 'minimal' && "opacity-0 group-hover:opacity-100 transition-opacity duration-200")}>
                             <Plus className="w-3 h-3" />
-                            <span className={cn(variant === 'minimal' && "hidden sm:inline")}>Add tags...</span>
+                            <span className={cn(variant === 'minimal' && "hidden sm:inline")}>{t('tagSelector.addTags')}</span>
                         </div>
                     )}
                 </Button>
@@ -208,7 +210,7 @@ export function TagSelector({ highlightId, bookId, className, open: controlledOp
                         <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
                         <input
                             type="text"
-                            placeholder="Search tags..."
+                            placeholder={t('tagSelector.searchPlaceholder')}
                             value={searchValue}
                             onChange={(e) => setSearchValue(e.target.value)}
                             onKeyDown={(e) => e.stopPropagation()}
@@ -220,7 +222,7 @@ export function TagSelector({ highlightId, bookId, className, open: controlledOp
                     <div className="max-h-[300px] overflow-y-auto overflow-x-hidden">
                         {sortedTags.length === 0 ? (
                             <div className="p-2 text-xs text-muted-foreground flex flex-col gap-1">
-                                <span>No tags found.</span>
+                                <span>{t('tagSelector.noTagsFound')}</span>
 
                                 {searchValue && (
                                     <>
@@ -229,7 +231,7 @@ export function TagSelector({ highlightId, bookId, className, open: controlledOp
                                             className="w-full flex items-center gap-1 px-2 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50 rounded text-left"
                                         >
                                             <Plus className="w-3 h-3" />
-                                            Create Global "{searchValue}"
+                                            {t('tagSelector.createGlobal', { name: searchValue })}
                                         </button>
 
                                         {bookId && (
@@ -238,7 +240,7 @@ export function TagSelector({ highlightId, bookId, className, open: controlledOp
                                                 className="w-full flex items-center gap-1 px-2 py-1.5 text-xs font-medium text-amber-600 hover:bg-amber-50 rounded text-left"
                                             >
                                                 <Book className="w-3 h-3" />
-                                                Create Chapter "{searchValue}"
+                                                {t('tagSelector.createChapter', { name: searchValue })}
                                             </button>
                                         )}
                                     </>
@@ -246,7 +248,7 @@ export function TagSelector({ highlightId, bookId, className, open: controlledOp
                             </div>
                         ) : (
                             <div className="p-1">
-                                <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">Tags</div>
+                                <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">{t('tagSelector.tagsLabel')}</div>
                                 {sortedTags.map((tag) => {
                                     const isSelected = selectedTagIds.includes(tag.id);
                                     return (

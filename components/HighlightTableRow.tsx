@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Book as BookType, Highlight, StudyStatus } from '../types';
 import { TagSelector } from './TagSelector';
 import { StudyStatusBadge } from './StudyStatusBadge';
@@ -22,6 +23,7 @@ export const HighlightTableRow: React.FC<HighlightTableRowProps> = ({
     onEdit,
     studyStatus
 }) => {
+    const { t } = useTranslation('highlights');
     const formatDateShort = (dateString?: string) => {
         if (!dateString) return '-';
         try {
@@ -65,7 +67,7 @@ export const HighlightTableRow: React.FC<HighlightTableRowProps> = ({
                 <div className="flex flex-col gap-0.5">
                     <div className="flex items-center gap-1.5 text-foreground font-medium text-xs">
                         <Book className="w-3 h-3 text-muted-foreground shrink-0" />
-                        <span className="truncate" title={book?.title}>{book?.title || 'Unknown Book'}</span>
+                        <span className="truncate" title={book?.title}>{book?.title || t('table.unknownBook')}</span>
                     </div>
                     <span className="text-[11px] text-muted-foreground pl-4 truncate" title={book?.author}>
                         {book?.author}
@@ -99,7 +101,7 @@ export const HighlightTableRow: React.FC<HighlightTableRowProps> = ({
                         onClick={() => onEdit(highlight.id)}
                         className="text-[10px] text-muted-foreground/50 hover:text-muted-foreground transition-colors duration-200 italic group-hover:block"
                     >
-                        Add note...
+                        {t('table.addNote')}
                     </button>
                 )}
             </td>
