@@ -7,6 +7,7 @@ import { StoreProvider } from './components/StoreContext';
 import { AuthProvider, useAuth } from './components/AuthContext';
 import { SidebarProvider, useSidebarContext } from './components/SidebarContext';
 import { ThemeProvider } from './components/ThemeProvider';
+import { I18nProvider } from './components/I18nProvider';
 import ErrorBoundary from './components/ErrorBoundary';
 import { Loader2 } from 'lucide-react';
 import { SpeedInsights } from "@vercel/speed-insights/react"
@@ -102,7 +103,9 @@ const App = () => {
     <ErrorBoundary>
       <ThemeProvider defaultTheme="system" storageKey="evoque-theme">
         <AuthProvider>
-          <ProtectedApp />
+          <I18nProvider>
+            <ProtectedApp />
+          </I18nProvider>
           <SpeedInsights />
         </AuthProvider>
       </ThemeProvider>
