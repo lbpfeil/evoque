@@ -19,7 +19,15 @@
     "highlights": "Destaques",
     "study": "Estudar",
     "dashboard": "Dashboard",
-    "settings": "Configuracoes"
+    "settings": "Configuracoes",
+    "home": "Inicio"
+  },
+  "sidebar": {
+    "collapse": "Recolher sidebar",
+    "expand": "Expandir sidebar",
+    "logout": "Sair",
+    "freePlan": "Free Plan",
+    "defaultUser": "Usuario"
   },
   "labels": {
     "all": "Todos",

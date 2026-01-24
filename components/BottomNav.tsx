@@ -1,11 +1,14 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, Target } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const BottomNav = () => {
+  const { t } = useTranslation('common');
+
   const navItems = [
-    { name: 'Home', icon: LayoutDashboard, path: '/' },
-    { name: 'Study', icon: Target, path: '/study' },
+    { name: t('nav.home'), icon: LayoutDashboard, path: '/' },
+    { name: t('nav.study'), icon: Target, path: '/study' },
   ];
 
   return (
