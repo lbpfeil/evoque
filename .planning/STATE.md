@@ -29,7 +29,7 @@
 | 1 | 05-01 | Login/Auth | Complete |
 | 1 | 05-02 | Sidebar/Common | Complete |
 | 2 | 05-03 | Dashboard | Complete |
-| 2 | 05-04 | Study Page | Pending |
+| 2 | 05-04 | Study Page | Complete |
 | 3 | 05-05 | Highlights | Pending |
 | 4 | 05-06 | StudySession | Pending |
 | 5 | 05-07 | Settings | Pending |
@@ -40,7 +40,7 @@
 **Progress:**
 ```
 Milestone v1.1: [██░░░░░░░░] 25% (1/4 phases)
-Phase 5:       [███░░░░░░░] 30% (3/10 plans)
+Phase 5:       [████░░░░░░] 40% (4/10 plans)
 ```
 
 ## Performance Metrics
@@ -56,9 +56,9 @@ Phase 5:       [███░░░░░░░] 30% (3/10 plans)
 - Started: 2026-01-24
 - Phases planned: 4
 - Requirements: 21
-- Plans executed: 4 (Phase 4: 2, Phase 5: 2)
+- Plans executed: 6 (Phase 4: 2, Phase 5: 4)
 - Plans planned: 10 (Phase 5)
-- Commits: 9
+- Commits: 15
 
 **Velocity:** 4.5 min/plan (Phase 4 baseline)
 
@@ -78,6 +78,7 @@ Phase 5:       [███░░░░░░░] 30% (3/10 plans)
 | 2026-01-24 | Wave-based plan execution | Wave 1-2 parallel (foundational), Wave 3-5 sequential (complex), Wave 6-7 cleanup | Optimal parallelization |
 | 2026-01-24 | Manual string extraction | i18next-cli for validation only, manual t() wrapping | Reliability over automation |
 | 2026-01-24 | Pluralization with _one suffix | i18next standard for count-based strings | Proper singular/plural handling |
+| 2026-01-24 | Full heatmap localization | Month/day abbreviations need Portuguese | Complete study page i18n |
 
 ### Active TODOs
 
@@ -114,12 +115,12 @@ None currently.
 - Completed Phase 5 research (05-RESEARCH.md)
 - Created 10 plans for Phase 5 (05-01 through 05-10)
 
-**Last activity:** 2026-01-24 - Completed 05-03-PLAN.md (Dashboard)
+**Last activity:** 2026-01-24 - Completed 05-04-PLAN.md (Study Page)
 **Resume file:** None
 
 **Next steps:**
-1. Execute remaining Wave 2 (05-04 Study Page)
-2. Continue through Waves 3-7
+1. Execute Wave 3 (05-05 Highlights)
+2. Continue through Waves 4-7
 3. Plan Phase 6 after Phase 5 completion
 
 ---
