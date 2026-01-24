@@ -1,12 +1,12 @@
 {
   "_meta": "Dashboard page strings (stats, charts, recent books)",
   "title": "Dashboard",
-  "subtitle": "Visao geral do seu progresso de leitura e aprendizado",
+  "subtitle": "Visão geral do seu progresso de leitura e aprendizado",
   "stats": {
     "books": "Livros",
     "highlights": "Destaques",
     "toReview": "Para Revisar",
-    "streak": "Sequencia",
+    "streak": "Sequência",
     "streakValue": "{{count}} dias",
     "streakValue_one": "{{count}} dia"
   },
@@ -16,7 +16,7 @@
     "highlightsCount_one": "{{count}} destaque"
   },
   "charts": {
-    "importActivity": "Atividade de Importacao",
+    "importActivity": "Atividade de Importação",
     "highlightsPerBook": "Destaques por Livro"
   }
 }

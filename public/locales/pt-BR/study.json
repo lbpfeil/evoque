@@ -1,11 +1,11 @@
 {
   "_meta": "Study page strings (decks, cards overview, review stats)",
   "title": "Estudar",
-  "subtitle": "Inicie sua sessao de estudo diaria com todos os livros, ou escolha um livro especifico abaixo.",
+  "subtitle": "Inicie sua sessão de estudo diária com todos os livros, ou escolha um livro específico abaixo.",
   "loading": "Carregando...",
   "allBooks": {
     "title": "Estudar Todos os Livros",
-    "subtitle": "Revise cartoes de toda sua biblioteca"
+    "subtitle": "Revise cartões de toda sua biblioteca"
   },
   "byBook": {
     "title": "Estudar por Livro"
@@ -14,30 +14,30 @@
     "due": "Pendentes",
     "new": "Novos",
     "learning": "Aprendendo",
-    "review": "Revisao",
+    "review": "Revisão",
     "total": "Total"
   },
   "table": {
     "deck": "Baralho",
     "new": "Novos",
     "learning": "Aprendendo",
-    "review": "Revisao",
+    "review": "Revisão",
     "total": "Total"
   },
   "emptyState": {
     "noBooks": "Nenhum livro importado ainda",
-    "importPrompt": "Importe seus destaques do Kindle para comecar a estudar"
+    "importPrompt": "Importe seus destaques do Kindle para começar a estudar"
   },
   "emptyDeck": {
-    "title": "Nenhum cartao disponivel",
-    "message": "Todas as revisoes deste baralho foram concluidas hoje. Volte amanha!"
+    "title": "Nenhum cartão disponível",
+    "message": "Todas as revisões deste baralho foram concluídas hoje. Volte amanhã!"
   },
   "heatmap": {
-    "title": "Atividade de Revisao",
-    "currentStreak": "Sequencia atual",
-    "longestStreak": "Maior sequencia",
-    "reviews": "{{count}} revisao",
-    "reviews_other": "{{count}} revisoes",
+    "title": "Atividade de Revisão",
+    "currentStreak": "Sequência atual",
+    "longestStreak": "Maior sequência",
+    "reviews": "{{count}} revisão",
+    "reviews_other": "{{count}} revisões",
     "months": {
       "jan": "Jan",
       "feb": "Fev",
