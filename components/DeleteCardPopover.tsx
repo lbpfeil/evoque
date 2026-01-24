@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { AlertTriangle } from 'lucide-react';
 import {
   AlertDialog,
@@ -17,25 +18,27 @@ interface DeleteCardPopoverProps {
 }
 
 export const DeleteCardPopover: React.FC<DeleteCardPopoverProps> = ({ onConfirm, onCancel }) => {
+  const { t } = useTranslation('session');
+
   return (
     <AlertDialog open={true} onOpenChange={(isOpen) => !isOpen && onCancel()}>
       <AlertDialogContent className="max-w-xs">
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2 text-sm">
             <AlertTriangle className="w-4 h-4 text-destructive" />
-            Delete this card?
+            {t('deleteCard.title')}
           </AlertDialogTitle>
           <AlertDialogDescription className="text-xs">
-            This will remove the card from your study system. This action cannot be undone.
+            {t('deleteCard.message')}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel className="text-xs">Cancel</AlertDialogCancel>
+          <AlertDialogCancel className="text-xs">{t('common:buttons.cancel')}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90 text-xs"
           >
-            Delete
+            {t('common:buttons.delete')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
