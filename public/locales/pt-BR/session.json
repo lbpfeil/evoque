@@ -1,41 +1,72 @@
 {
   "_meta": "Study session strings (rating buttons, progress, flip)",
+  "loading": "Carregando sessão de estudo...",
   "card": {
-    "flip": "Virar cartao",
+    "flip": "Virar cartão",
     "show_answer": "Mostrar resposta",
     "front": "Frente",
     "back": "Verso"
   },
+  "status": {
+    "new": "Novo",
+    "learning": "Aprendendo",
+    "review": "Revisão"
+  },
   "rating": {
-    "again": "Denovo",
-    "hard": "Dificil",
+    "again": "De novo",
+    "hard": "Difícil",
     "good": "Bom",
-    "easy": "Facil",
+    "easy": "Fácil",
     "hint_again": "< 1 min",
     "hint_hard": "~10 min",
     "hint_good": "1 dia",
     "hint_easy": "4 dias"
   },
-  "progress": {
-    "card_of": "Cartao {{current}} de {{total}}",
-    "remaining": "{{count}} restantes",
-    "done": "Concluido"
-  },
-  "actions": {
-    "undo": "Desfazer",
-    "skip": "Pular",
-    "edit": "Editar cartao",
-    "finish": "Finalizar sessao"
-  },
   "keyboard": {
-    "space": "Espaco para virar",
+    "revealHint": "(Espaço / Enter)",
+    "again": "(1)",
+    "hard": "(2)",
+    "good": "(3 / Enter)",
+    "easy": "(4)",
+    "space": "Espaço para virar",
     "numbers": "1-4 para avaliar"
   },
+  "progress": {
+    "card_of": "Cartão {{current}} de {{total}}",
+    "remaining": "{{count}} restantes",
+    "done": "Concluído"
+  },
+  "actions": {
+    "revealAnswer": "Revelar Resposta",
+    "backToDecks": "Voltar aos Decks",
+    "undo": "Desfazer",
+    "skip": "Pular",
+    "edit": "Editar cartão",
+    "finish": "Finalizar sessão"
+  },
+  "noCards": {
+    "title": "Nenhum cartão disponível",
+    "deckEmpty": "Este deck não tem cartões para revisar.",
+    "allEmpty": "Você não tem cartões para revisar."
+  },
+  "dailyLimit": {
+    "title": "Limite diário atingido!",
+    "message": "Você completou todas as 10 revisões deste livro hoje. Volte amanhã para mais!"
+  },
+  "complete": {
+    "title": "Sessão Concluída!",
+    "reviewed": "Revisados",
+    "accuracy": "Acurácia"
+  },
+  "deleteCard": {
+    "title": "Excluir este cartão?",
+    "message": "Isso removerá o cartão do seu sistema de estudo. Esta ação não pode ser desfeita."
+  },
   "summary": {
-    "title": "Sessao concluida",
-    "cards_reviewed": "Cartoes revisados",
+    "title": "Sessão concluída",
+    "cards_reviewed": "Cartões revisados",
     "time_spent": "Tempo gasto",
-    "accuracy": "Acuracia",
+    "accuracy": "Acurácia",
     "continue": "Continuar estudando",
     "finish": "Finalizar"
   },
