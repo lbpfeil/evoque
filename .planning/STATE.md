@@ -2,19 +2,19 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-01-23)
+See: .planning/PROJECT.md (updated 2026-01-24)
 
-**Core value:** Sistema de temas funcionando perfeitamente em light/dark mode
-**Current focus:** Planning next milestone
+**Core value:** Experiência de estudo fluida e sem fricção
+**Current focus:** v1.1 Internationalization
 
 ## Current Position
 
-Phase: v1.0 complete — archived
-Plan: N/A
-Status: Ready to plan next milestone
-Last activity: 2026-01-23 - v1.0 milestone archived
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-01-24 — Milestone v1.1 started
 
-Progress: v1.0 SHIPPED
+Progress: v1.1 PLANNING
 
 ## Performance Metrics
 

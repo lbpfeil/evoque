@@ -1,12 +1,23 @@
-# Evoque UI Overhaul
+# Evoque
 
 ## What This Is
 
-Uma modernização completa da interface do Evoque, um app de flashcards para revisão de highlights de leitura. O foco é padronizar todos os componentes usando shadcn/ui, implementar um sistema de temas claro/escuro funcional, e criar uma estética warm/friendly consistente em toda a aplicação.
+Evoque é um app de flashcards para revisão de highlights de leitura usando repetição espaçada (SM-2). Importa highlights do Kindle e permite estudo organizado por livro ou deck geral.
 
 ## Core Value
 
-**Sistema de temas funcionando perfeitamente** — o toggle deve funcionar, persistir, e todos os componentes devem responder corretamente em ambos os modos.
+**Experiência de estudo fluida e sem fricção** — o usuário deve conseguir revisar seus highlights de forma rápida e agradável.
+
+## Current Milestone: v1.1 Internationalization
+
+**Goal:** Sistema multi-idioma com PT-BR como padrão e inglês disponível.
+
+**Target features:**
+- Sistema i18n completo (react-i18next ou similar)
+- Tradução de toda a UI para PT-BR
+- Formatação localizada (datas, números, pluralização)
+- Toggle de idioma nas configurações
+- Inglês mantido como opção
 
 ## Requirements
 
@@ -26,14 +37,19 @@ Uma modernização completa da interface do Evoque, um app de flashcards para re
 
 ### Active
 
-(None — run `/gsd:new-milestone` to define next goals)
+- [ ] Sistema i18n configurado e funcionando
+- [ ] Todas as strings da UI extraídas para arquivos de tradução
+- [ ] Tradução completa para PT-BR
+- [ ] Formatação localizada de datas e números
+- [ ] Toggle de idioma nas configurações
+- [ ] Persistência da preferência de idioma
 
 ### Out of Scope
 
 - Parsers de importação (My Clippings, PDF, Anki) — já funcionam, não mexer
 - Lógica do SM-2 (algoritmo de repetição espaçada) — já funciona
-- Backend/Supabase — não é escopo deste projeto
-- Novas features — foco é visual/UX, não funcionalidades
+- Backend/Supabase — não é escopo deste milestone
+- Tradução de conteúdo do usuário (highlights, notas) — apenas UI
 
 ## Context
 
@@ -70,10 +86,10 @@ Uma modernização completa da interface do Evoque, um app de flashcards para re
 
 ## Constraints
 
-- **Preservar:** Fonte serif nos cards de StudySession
-- **Participação:** Usuário quer aprovar cada mudança em Study.tsx e StudySession.tsx
+- **Preservar:** Fonte serif nos cards de StudySession, estética warm/friendly
 - **Não tocar:** Parsers de importação, lógica SM-2, backend
-- **Estética:** Warm/friendly, não dark/techy
+- **i18n:** PT-BR como idioma padrão, EN disponível
+- **Performance:** Bundle size deve permanecer razoável (lazy load translations)
 
 ## Key Decisions
 
@@ -84,4 +100,4 @@ Uma modernização completa da interface do Evoque, um app de flashcards para re
 | Study/StudySession por último | São críticos, usuário quer participar | — Pending |
 
 ---
-*Last updated: 2026-01-23 after v1.0 milestone*
+*Last updated: 2026-01-24 after v1.1 milestone start*
