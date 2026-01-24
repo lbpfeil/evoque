@@ -71,10 +71,38 @@ Plans:
 
 **Research Flags:** Medium (automation tools for detection)
 
-**Plans:** (created by /gsd:plan-phase)
+**Plans:** 13 plans
+
+| Wave | Plan | Focus | Requirements |
+|------|------|-------|--------------|
+| 1 | 05-01 | Login and Auth Strings | TRANS-07 |
+| 1 | 05-02 | Sidebar and Common Strings | TRANS-01 |
+| 2 | 05-03 | Dashboard Strings | TRANS-02 |
+| 2 | 05-04 | Study Page Strings | TRANS-04 |
+| 3 | 05-05 | Highlights Page Core Strings | TRANS-03 |
+| 3 | 05-05a | TagManager Component Strings | TRANS-03 |
+| 4 | 05-06 | StudySession UI States | TRANS-05 |
+| 4 | 05-06a | StudySession Rating Actions | TRANS-05 |
+| 5 | 05-07 | Settings Import/Library Tabs | TRANS-06 |
+| 5 | 05-07a | Settings Account/Preferences | TRANS-06 |
+| 6 | 05-08 | Modals and Remaining Components | TRANS-08 |
+| 6 | 05-09 | Error Messages and Validation | TRANS-09 |
+| 7 | 05-10 | Final Validation and Cleanup | All TRANS-* |
 
 Plans:
-- [ ] TBD — awaiting planning
+- [x] 05-01-PLAN.md — Login and Auth Strings (auth namespace)
+- [x] 05-02-PLAN.md — Sidebar and Common Strings (common namespace)
+- [x] 05-03-PLAN.md — Dashboard Strings (dashboard namespace)
+- [x] 05-04-PLAN.md — Study Page Strings (study namespace)
+- [x] 05-05-PLAN.md — Highlights Page Strings (highlights namespace)
+- [x] 05-05a-PLAN.md — TagManager Component Strings (highlights namespace)
+- [x] 05-06-PLAN.md — StudySession UI States Strings (session namespace)
+- [x] 05-06a-PLAN.md — StudySession Rating Actions Strings (session namespace)
+- [x] 05-07-PLAN.md — Settings Import/Library Tabs (settings namespace)
+- [x] 05-07a-PLAN.md — Settings Account/Preferences Tabs (settings namespace)
+- [x] 05-08-PLAN.md — Modals and Remaining Components
+- [x] 05-09-PLAN.md — Error Messages and Validation (errors namespace)
+- [x] 05-10-PLAN.md — Final Validation and Cleanup
 
 ---
 
@@ -151,15 +179,17 @@ All v1.1 requirements mapped:
 | Phase | Status | Plans | Completed |
 |-------|--------|-------|-----------|
 | 4 - Foundation | ✓ Complete | 2/2 | 100% |
-| 5 - String Extraction | Pending | 0/0 | 0% |
+| 5 - String Extraction | ✓ Complete | 13/13 | 100% |
 | 6 - Language Switching | Pending | 0/0 | 0% |
 | 7 - Localization | Pending | 0/0 | 0% |
 
-**Overall:** 1/4 phases complete (25%)
+**Overall:** 2/4 phases complete (50%)
 
 ---
 
 *Roadmap created: 2026-01-24*
 *Phase 4 planned: 2026-01-24*
 *Phase 4 complete: 2026-01-24*
-*Next: `/gsd:plan-phase 5`*
+*Phase 5 planned: 2026-01-24*
+*Phase 5 complete: 2026-01-24*
+*Next: `/gsd:plan-phase 6`*
