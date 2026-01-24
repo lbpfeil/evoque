@@ -26,7 +26,7 @@
 **Plans:**
 | Wave | Plan | Focus | Status |
 |------|------|-------|--------|
-| 1 | 05-01 | Login/Auth | In Progress |
+| 1 | 05-01 | Login/Auth | Complete |
 | 1 | 05-02 | Sidebar/Common | Complete |
 | 2 | 05-03 | Dashboard | Pending |
 | 2 | 05-04 | Study Page | Pending |
@@ -40,7 +40,7 @@
 **Progress:**
 ```
 Milestone v1.1: [██░░░░░░░░] 25% (1/4 phases)
-Phase 5:       [█░░░░░░░░░] 10% (1/10 plans)
+Phase 5:       [██░░░░░░░░] 20% (2/10 plans)
 ```
 
 ## Performance Metrics
@@ -56,9 +56,9 @@ Phase 5:       [█░░░░░░░░░] 10% (1/10 plans)
 - Started: 2026-01-24
 - Phases planned: 4
 - Requirements: 21
-- Plans executed: 2 (Phase 4)
+- Plans executed: 4 (Phase 4: 2, Phase 5: 2)
 - Plans planned: 10 (Phase 5)
-- Commits: 5
+- Commits: 9
 
 **Velocity:** 4.5 min/plan (Phase 4 baseline)
 
@@ -113,14 +113,13 @@ None currently.
 - Completed Phase 5 research (05-RESEARCH.md)
 - Created 10 plans for Phase 5 (05-01 through 05-10)
 
-**Last activity:** 2026-01-24 - Completed 05-02-PLAN.md (Sidebar/Common)
+**Last activity:** 2026-01-24 - Completed 05-01-PLAN.md (Login/Auth)
 **Resume file:** None
 
 **Next steps:**
-1. Complete 05-01 (Login/Auth - in progress)
-2. Execute Wave 2 (05-03, 05-04)
-3. Continue through Waves 3-7
-4. Plan Phase 6 after Phase 5 completion
+1. Execute Wave 2 (05-03 Dashboard, 05-04 Study Page)
+2. Continue through Waves 3-7
+3. Plan Phase 6 after Phase 5 completion
 
 ---
 
