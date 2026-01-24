@@ -28,7 +28,7 @@
 |------|------|-------|--------|
 | 1 | 05-01 | Login/Auth | Complete |
 | 1 | 05-02 | Sidebar/Common | Complete |
-| 2 | 05-03 | Dashboard | Pending |
+| 2 | 05-03 | Dashboard | Complete |
 | 2 | 05-04 | Study Page | Pending |
 | 3 | 05-05 | Highlights | Pending |
 | 4 | 05-06 | StudySession | Pending |
@@ -40,7 +40,7 @@
 **Progress:**
 ```
 Milestone v1.1: [██░░░░░░░░] 25% (1/4 phases)
-Phase 5:       [██░░░░░░░░] 20% (2/10 plans)
+Phase 5:       [███░░░░░░░] 30% (3/10 plans)
 ```
 
 ## Performance Metrics
@@ -77,6 +77,7 @@ Phase 5:       [██░░░░░░░░] 20% (2/10 plans)
 | 2026-01-24 | Hardcoded Portuguese in loading fallback | Translations not loaded yet during initial render | UX consideration |
 | 2026-01-24 | Wave-based plan execution | Wave 1-2 parallel (foundational), Wave 3-5 sequential (complex), Wave 6-7 cleanup | Optimal parallelization |
 | 2026-01-24 | Manual string extraction | i18next-cli for validation only, manual t() wrapping | Reliability over automation |
+| 2026-01-24 | Pluralization with _one suffix | i18next standard for count-based strings | Proper singular/plural handling |
 
 ### Active TODOs
 
@@ -113,11 +114,11 @@ None currently.
 - Completed Phase 5 research (05-RESEARCH.md)
 - Created 10 plans for Phase 5 (05-01 through 05-10)
 
-**Last activity:** 2026-01-24 - Completed 05-01-PLAN.md (Login/Auth)
+**Last activity:** 2026-01-24 - Completed 05-03-PLAN.md (Dashboard)
 **Resume file:** None
 
 **Next steps:**
-1. Execute Wave 2 (05-03 Dashboard, 05-04 Study Page)
+1. Execute remaining Wave 2 (05-04 Study Page)
 2. Continue through Waves 3-7
 3. Plan Phase 6 after Phase 5 completion
 
