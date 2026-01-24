@@ -1,440 +1,304 @@
-# Stack Research: shadcn/ui Warm/Friendly UI Redesign
+# Stack Research: Internationalization (i18n)
 
-**Project:** evoque (Kindle Highlights Manager)
-**Researched:** 2025-01-19
-**Mode:** Stack dimension for UI redesign
-**Overall Confidence:** HIGH
-
----
-
-## Executive Summary
-
-Your existing setup is well-positioned for a warm/friendly redesign. You already have:
-- shadcn v3.7.0 with the modern "radix-vega" style
-- OKLCH color variables with a warm palette (hue 49-70, stone-based)
-- Tailwind CSS v3.4.17 with `darkMode: ["class"]`
-- Six shadcn components installed (button, dialog, input, popover, command, sheet)
-
-The primary work is: (1) installing additional components, (2) implementing a proper theme provider for light/dark toggle, and (3) refining the warm color palette for better consistency.
+**Project:** Evoque (React 19 + Vite + Tailwind CSS)
+**Researched:** January 24, 2026
+**Confidence:** HIGH
 
 ---
 
-## shadcn Components to Install
+## Recommended Stack
 
-### Required Components (High Priority)
+### Core i18n Framework
 
-| Component | Installation | Why You Need It |
-|-----------|--------------|-----------------|
-| **card** | `npx shadcn@latest add card` | Flashcard display, settings panels, import/export dialogs. Core visual container. |
-| **tabs** | `npx shadcn@latest add tabs` | Navigation between views (highlights, books, tags). Essential for content organization. |
-| **dropdown-menu** | `npx shadcn@latest add dropdown-menu` | Actions menu on cards, sort/filter options. Already using command for search. |
-| **badge** | `npx shadcn@latest add badge` | Tag display on highlights, status indicators (new, reviewed). Visual metadata. |
-| **tooltip** | `npx shadcn@latest add tooltip` | Accessibility for icon buttons, explain truncated text. UX polish. |
+| Package | Version | Purpose | Why |
+|---------|---------|---------|-----|
+| **i18next** | 25.7.4 | Core internationalization engine | Industry standard (11+ years), language-agnostic, 40k+ GitHub stars. Powers react-i18next without coupling to React. |
+| **react-i18next** | 16.5.3 | React bindings + hooks for i18next | Most popular React i18n solution (6.4M weekly downloads). React 19 compatible (fixes in v15.5.2+, v16.3.0+). Hooks-first API aligns with modern React. |
+| **i18next-browser-languagedetector** | 8.0.0+ | Auto language detection | Handles localStorage persistence + browser language fallback. Standard approach for web apps. |
 
-### Secondary Components (Medium Priority)
+### Date/Number Formatting
 
-| Component | Installation | Why You Need It |
-|-----------|--------------|-----------------|
-| **scroll-area** | `npx shadcn@latest add scroll-area` | Custom scrollbars for highlight lists, maintains aesthetic in overflow areas. |
-| **select** | `npx shadcn@latest add select` | Book/tag filtering, sort order selection. More structured than dropdown-menu. |
-| **checkbox** | `npx shadcn@latest add checkbox` | Bulk selection for export, settings toggles. |
-| **switch** | `npx shadcn@latest add switch` | Theme toggle, feature on/off in settings. Binary choices. |
+| Package | Version | Purpose | Why |
+|---------|---------|---------|-----|
+| **date-fns** | 4.x | Date manipulation + locale support | Modular (~15 locales built-in, 200+ functions). Works seamlessly with i18next + React. Modern alternative to moment.js. Zero external dependencies. |
+| **Intl API** (native) | — | Number/currency formatting | Built-in to JavaScript. Use `Intl.NumberFormat`, `Intl.DateTimeFormat` for locale-aware formatting. No additional package needed for basic cases. |
 
-### Batch Installation Command
+### Translation Loading (Choose One)
+
+#### Option A: Build-Time Bundling (Recommended)
+| Package | Version | Purpose | Why |
+|---------|---------|---------|-----|
+| **vite-plugin-i18next-loader** | 2.2.0+ | Vite plugin for bundling translations | **RECOMMENDED**: Zero HTTP requests. Translations bundled in JS. HMR support. Tree-shakable. Best for Vite. |
+
+#### Option B: Runtime HTTP Loading
+| Package | Version | Purpose | Why |
+|---------|---------|---------|-----|
+| **i18next-http-backend** | 2.5.0+ | Load translations from HTTP | Use only if translations update frequently or you need CDN distribution. Adds HTTP latency. |
+
+---
+
+## Complete Installation
 
 ```bash
-npx shadcn@latest add card tabs dropdown-menu badge tooltip scroll-area select checkbox switch -y
+# Core i18n
+npm install i18next react-i18next i18next-browser-languagedetector
+
+# Date/Number formatting
+npm install date-fns
+
+# Choose one translation loader:
+
+# Option A: Build-time bundling (RECOMMENDED)
+npm install -D vite-plugin-i18next-loader
+
+# OR
+
+# Option B: Runtime HTTP loading
+npm install i18next-http-backend
 ```
-
-**Rationale:** The `-y` flag skips confirmation. All components use your existing radix-vega style and OKLCH variables from `components.json`.
-
-### Component Dependencies (Already Satisfied)
-
-Your current dependencies cover the requirements:
-- `@radix-ui/react-dialog` - base for dialog, sheet
-- `@radix-ui/react-popover` - base for popover, dropdown-menu, tooltip
-- `@radix-ui/react-slot` - composition utility
-- `lucide-react` - icon library (matches your config)
-- `class-variance-authority` - variant styling
-- `tailwind-merge` - class merging
-
-New Radix primitives will be auto-installed by shadcn CLI as needed.
 
 ---
 
-## Theme Implementation
+## Why This Stack
 
-### Recommended: Custom Theme Provider (Not next-themes)
+### Why react-i18next (not react-intl or LinguiJS)?
 
-**Why NOT next-themes:**
-- next-themes is optimized for Next.js SSR/hydration concerns
-- You're using Vite + React SPA (no SSR)
-- next-themes adds unnecessary complexity for client-only apps
-- Your setup already has `darkMode: ["class"]` configured
+| Criteria | react-i18next | react-intl | LinguiJS |
+|----------|---------------|-----------|----------|
+| **Weekly downloads** | 6.4M | 1.3M | 306K |
+| **Bundle size** | ~30 kB | 17.8 kB | 10.4 kB |
+| **React 19 support** | Full (v15.5.2+) | Yes | Yes |
+| **Plugin ecosystem** | Extensive | Moderate | Limited |
+| **TypeScript support** | Excellent (native) | Good | Good |
+| **DX: Dynamic translations** | Easy | Complex | Macro-based |
+| **Language persistence** | Built-in | Manual | Manual |
+| **Pluralization** | Rich rule system | ICU rules | Yes |
 
-**Confidence:** HIGH (verified from shadcn/ui Vite documentation)
+**Recommendation: react-i18next**
 
-### Implementation Pattern
+- **Largest ecosystem** - 10+ years of plugins and patterns
+- **Best for YOUR use case** - Dynamic language toggle in settings + localStorage persistence = built-in
+- **Most flexible** - Fits both simple and complex translation scenarios
+- **Active maintenance** - Just released v16.5.3 (6 days ago) with React 19 fixes
 
-Create `components/theme-provider.tsx`:
+**When to choose alternatives:**
+- **react-intl**: If you need strict ICU compliance for enterprise TMS workflows
+- **LinguiJS**: If bundle size is critical (<10 kB requirement) and you don't need runtime flexibility
+
+---
+
+## Integration with Your Stack
+
+### Vite Configuration
+
+Add to `vite.config.ts`:
 
 ```typescript
-import { createContext, useContext, useEffect, useState } from "react"
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import i18nextLoader from 'vite-plugin-i18next-loader'
 
-type Theme = "dark" | "light" | "system"
+export default defineConfig({
+  plugins: [
+    react(),
+    i18nextLoader({
+      paths: ['./public/locales'],
+      namespaceResolution: 'basename',
+    }),
+  ],
+})
+```
 
-type ThemeProviderProps = {
-  children: React.ReactNode
-  defaultTheme?: Theme
-  storageKey?: string
-}
+### File Structure
 
-type ThemeProviderState = {
-  theme: Theme
-  setTheme: (theme: Theme) => void
-}
+```
+evoque/
+├── public/
+│   └── locales/
+│       ├── en/
+│       │   ├── common.json       # UI strings, buttons
+│       │   ├── settings.json     # Settings page
+│       │   └── study.json        # Study session
+│       └── pt-BR/
+│           ├── common.json
+│           ├── settings.json
+│           └── study.json
+├── src/
+│   ├── lib/
+│   │   └── i18n.ts              # i18n initialization
+│   └── App.tsx                  # Import i18n at top
+```
 
-const ThemeProviderContext = createContext<ThemeProviderState | undefined>(undefined)
+### Initialization (`src/lib/i18n.ts`)
 
-export function ThemeProvider({
-  children,
-  defaultTheme = "system",
-  storageKey = "evoque-ui-theme",
-  ...props
-}: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
-  )
+```typescript
+import i18n from 'i18next'
+import { initReactI18next } from 'react-i18next'
+import LanguageDetector from 'i18next-browser-languagedetector'
 
-  useEffect(() => {
-    const root = window.document.documentElement
+// Import translations from vite-plugin-i18next-loader
+import resources from 'virtual:i18next-loader'
 
-    root.classList.remove("light", "dark")
+i18n
+  .use(LanguageDetector)
+  .use(initReactI18next)
+  .init({
+    resources,
+    fallbackLng: 'pt-BR',
+    defaultNS: 'common',
 
-    if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-        .matches
-        ? "dark"
-        : "light"
-
-      root.classList.add(systemTheme)
-      return
-    }
-
-    root.classList.add(theme)
-  }, [theme])
-
-  const value = {
-    theme,
-    setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme)
-      setTheme(theme)
+    // Language detection: localStorage → browser language → fallback
+    detection: {
+      order: ['localStorage', 'navigator'],
+      caches: ['localStorage'],
     },
+
+    ns: ['common', 'settings', 'study'],
+
+    interpolation: {
+      escapeValue: false, // React already escapes
+    },
+  })
+
+export default i18n
+```
+
+### React Component Usage
+
+```typescript
+import { useTranslation } from 'react-i18next'
+
+export function MyComponent() {
+  const { t, i18n } = useTranslation()
+
+  // Simple string translation
+  const label = t('submitButton')
+
+  // Language toggle in Settings
+  const handleLanguageChange = (lng: string) => {
+    i18n.changeLanguage(lng) // Auto-saves to localStorage
   }
 
-  return (
-    <ThemeProviderContext.Provider {...props} value={value}>
-      {children}
-    </ThemeProviderContext.Provider>
-  )
-}
-
-export const useTheme = () => {
-  const context = useContext(ThemeProviderContext)
-
-  if (context === undefined)
-    throw new Error("useTheme must be used within a ThemeProvider")
-
-  return context
-}
-```
-
-### Theme Toggle Component
-
-Create `components/mode-toggle.tsx`:
-
-```typescript
-import { Moon, Sun } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { useTheme } from "@/components/theme-provider"
-
-export function ModeToggle() {
-  const { setTheme } = useTheme()
+  // Date formatting
+  const date = new Date()
+  const formatted = new Intl.DateTimeFormat(i18n.language).format(date)
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon">
-          <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          <span className="sr-only">Toggle theme</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("light")}>
-          Light
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
-          Dark
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")}>
-          System
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <button>{label}</button>
+      <p>{formatted}</p>
+    </>
   )
 }
 ```
 
-### App Integration
+### Translation Files (`public/locales/pt-BR/common.json`)
 
-Wrap your app in `main.tsx` or `App.tsx`:
-
-```typescript
-import { ThemeProvider } from "@/components/theme-provider"
-
-function App() {
-  return (
-    <ThemeProvider defaultTheme="system" storageKey="evoque-ui-theme">
-      {/* Your app content */}
-    </ThemeProvider>
-  )
-}
-```
-
----
-
-## Color Palette: Warm/Friendly
-
-### Current Analysis
-
-Your existing palette is already warm-toned (hue range 46-70 in OKLCH):
-- Primary: `oklch(0.67 0.16 58)` - Amber/copper tone
-- Chart colors: Hue 46-92 (yellow-orange family)
-- Stone-based grays (warm undertones)
-
-**Assessment:** Good foundation. Refinements below enhance warmth and accessibility.
-
-### Recommended Warm Palette
-
-Based on 2025 design trends and color psychology research, a "warm/friendly" aesthetic uses:
-- **Primary:** Amber/warm orange (energetic, optimistic, approachable)
-- **Neutral base:** Stone/warm gray (not cold zinc/slate)
-- **Accent:** Soft peach or terracotta (inviting without being loud)
-
-#### Light Mode Variables
-
-```css
-:root {
-  /* Backgrounds - warm white/cream undertones */
-  --background: oklch(0.995 0.003 90);  /* Warm white with slight cream */
-  --foreground: oklch(0.18 0.01 50);     /* Warm dark brown-gray */
-
-  /* Cards - slightly warmer than background */
-  --card: oklch(1 0.002 85);
-  --card-foreground: oklch(0.18 0.01 50);
-
-  /* Primary - warm amber (your existing is good) */
-  --primary: oklch(0.67 0.16 58);        /* Amber */
-  --primary-foreground: oklch(0.99 0.02 95);
-
-  /* Secondary - soft warm gray */
-  --secondary: oklch(0.95 0.008 80);
-  --secondary-foreground: oklch(0.25 0.01 55);
-
-  /* Muted - warm stone */
-  --muted: oklch(0.96 0.006 80);
-  --muted-foreground: oklch(0.50 0.02 55);
-
-  /* Accent - soft peach for highlights */
-  --accent: oklch(0.94 0.04 70);
-  --accent-foreground: oklch(0.25 0.01 55);
-
-  /* Borders - warm undertone */
-  --border: oklch(0.90 0.01 70);
-  --input: oklch(0.90 0.01 70);
-  --ring: oklch(0.67 0.16 58);
-
-  /* Destructive - warm red (not cold) */
-  --destructive: oklch(0.58 0.22 30);
-  --destructive-foreground: oklch(0.98 0.01 90);
-
-  /* Radius - slightly rounded for friendly feel */
-  --radius: 0.5rem;
-}
-```
-
-#### Dark Mode Variables
-
-```css
-.dark {
-  /* Backgrounds - warm dark, not pure black */
-  --background: oklch(0.16 0.01 50);     /* Warm charcoal */
-  --foreground: oklch(0.96 0.006 80);    /* Warm off-white */
-
-  /* Cards - elevated warm surface */
-  --card: oklch(0.22 0.012 55);
-  --card-foreground: oklch(0.96 0.006 80);
-
-  /* Primary - brighter amber for dark mode */
-  --primary: oklch(0.75 0.15 68);
-  --primary-foreground: oklch(0.20 0.06 50);
-
-  /* Secondary */
-  --secondary: oklch(0.28 0.01 55);
-  --secondary-foreground: oklch(0.96 0.006 80);
-
-  /* Muted */
-  --muted: oklch(0.26 0.012 50);
-  --muted-foreground: oklch(0.68 0.02 60);
-
-  /* Accent - deeper peach for dark mode */
-  --accent: oklch(0.30 0.04 55);
-  --accent-foreground: oklch(0.96 0.006 80);
-
-  /* Borders - subtle warm */
-  --border: oklch(1 0 0 / 12%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.60 0.12 60);
-
-  /* Destructive - brighter for dark mode */
-  --destructive: oklch(0.70 0.20 25);
-  --destructive-foreground: oklch(0.98 0.01 90);
-}
-```
-
-### Color Psychology Rationale
-
-| Color Role | Why This Choice |
-|------------|-----------------|
-| **Amber primary** | Energetic, optimistic, warm. Promotes engagement without urgency. |
-| **Stone neutrals** | Warm undertones feel cozy vs cold grays. Grounds the amber. |
-| **Peach accent** | Soft, friendly, inviting. Modern 2025 trend (clementine/peach palettes). |
-| **Warm charcoal dark** | Avoids harsh pure black. Feels cozy for evening reading. |
-| **0.5rem radius** | Slightly rounded corners feel approachable, not sharp/corporate. |
-
-**Confidence:** HIGH (verified against 2025 design trend research and color psychology sources)
-
----
-
-## Configuration Updates
-
-### Tailwind Config (No Changes Needed)
-
-Your current `tailwind.config.js` is correctly configured:
-- `darkMode: ["class"]` enables class-based theme switching
-- CSS variables are mapped to semantic color names
-- Border radius uses CSS variables
-
-### components.json (Already Optimal)
-
-Your current config is ideal:
 ```json
 {
-  "style": "radix-vega",      // Modern 2025 style
-  "tailwind": {
-    "baseColor": "stone",     // Warm base (correct)
-    "cssVariables": true      // Required for theming
-  },
-  "iconLibrary": "lucide"     // Consistent with existing
+  "submitButton": "Enviar",
+  "cancel": "Cancelar",
+  "loading": "Carregando...",
+  "studyCards": "{{count}} cartão",
+  "studyCards_plural": "{{count}} cartões"
 }
 ```
 
-### index.css Updates
+---
 
-Your CSS is mostly correct. Recommended cleanup:
+## Vite-Specific Considerations
 
-1. **Remove duplicate `@layer base`** - You have two `@layer base` blocks
-2. **Ensure consistent OKLCH** - Line 32 has `210 40% 98%` (HSL) instead of OKLCH
-3. **Apply refined palette** - Replace current values with warm palette above
+### Build-Time vs Runtime Loading
+
+| Aspect | vite-plugin-i18next-loader | i18next-http-backend |
+|--------|---------------------------|----------------------|
+| **HTTP requests** | 0 (bundled) | 1+ per language load |
+| **Bundle size** | Larger JS (+30-50 kB) | Smaller initial JS |
+| **Performance** | Faster (no network latency) | Slower (network + parsing) |
+| **Updates** | Requires rebuild | Real-time CDN updates |
+| **Dev experience** | HMR-enabled | Manual reload |
+| **Recommendation** | Use this | CMS-driven apps only |
+
+**For Evoque:** Use `vite-plugin-i18next-loader` (build-time). Translations don't change at runtime; bundling reduces latency.
 
 ---
 
-## Installation Sequence
+## What NOT to Use (and Why)
 
-### Step 1: Install Components
+### Roll-Your-Own i18n
+**Why not:** Tempting to write simple `context.ts` + JSON loader. Avoids dependencies but:
+- No pluralization rules (Portuguese has complex rules)
+- No date/number formatting helpers
+- Harder to add features later (namespaces, fallbacks, detection)
+- i18next already does this perfectly
 
-```bash
-cd C:/Users/ADMIN/projects/evoque
-npx shadcn@latest add card tabs dropdown-menu badge tooltip scroll-area select checkbox switch -y
-```
+### react-intl (For This Project)
+**Why not:** Over-engineered for Evoque's needs.
+- ICU MessageFormat syntax is verbose for simple strings
+- Best suited for enterprise apps with strict TMS workflows
+- Smaller bundle (17.8 kB) not worth sacrificing DX
 
-### Step 2: Create Theme Provider
+### i18next-localstorage-backend
+**Why not:** Deprecated (GitHub repo marked deprecated).
+- Use `i18next-browser-languagedetector` instead (modern alternative)
+- Built into language detection flow
 
-Create `components/theme-provider.tsx` with code from Theme Implementation section.
+### Paraglide JS (Not Yet)
+**Why not:** Excellent library (compiler-based, tree-shakable, 70% smaller bundles) but:
+- Not production-ready for React 19 ecosystem yet
+- No language persistence built-in (you'd add it manually)
+- TypeScript support emerging (not mature like react-i18next)
+- Revisit in 2027 when patterns mature
 
-### Step 3: Create Mode Toggle
+### moment.js for Date Formatting
+**Why not:**
+- Massive bundle (66 kB minified)
+- Deprecated by maintainers
+- date-fns is modern, modular, zero dependencies
 
-Create `components/mode-toggle.tsx` with code from Theme Implementation section.
+---
 
-### Step 4: Update CSS Variables
+## React 19 Compatibility Notes
 
-Replace color values in `index.css` with the refined warm palette.
+### Verified Compatibility
 
-### Step 5: Wrap App
+- **react-i18next v16.5.3**: Full React 19 support
+- **Fix for element.ref access**: v15.5.2 and later (PR #1846)
+- **React Compiler wrapper**: v16.3.0+ (PR #1884)
+- **Trans component improvements**: v16.4.0+ (optional count inference)
 
-Add `<ThemeProvider>` to your root component.
+---
+
+## Implementation Checklist
+
+- [ ] Install `i18next`, `react-i18next`, `i18next-browser-languagedetector`
+- [ ] Install `vite-plugin-i18next-loader` as dev dependency
+- [ ] Add plugin to `vite.config.ts`
+- [ ] Create `src/lib/i18n.ts` initialization file
+- [ ] Create `public/locales/` folder structure (pt-BR, en)
+- [ ] Import i18n in `src/App.tsx` (at the top)
+- [ ] Create language toggle in Settings component
+- [ ] Convert hardcoded strings to `t()` calls
+- [ ] Test localStorage persistence (language survives reload)
+- [ ] Test date/number formatting with `Intl` API
+- [ ] Verify HMR works (edit translation, page updates automatically)
 
 ---
 
 ## Sources
 
-**HIGH Confidence (Official Documentation):**
-- [shadcn/ui Theming](https://ui.shadcn.com/docs/theming) - OKLCH variables, CSS patterns
-- [shadcn/ui Dark Mode - Vite](https://ui.shadcn.com/docs/dark-mode/vite) - Theme provider pattern
-- [shadcn/ui Card Component](https://ui.shadcn.com/docs/components/card) - Component structure
-- [shadcn/ui Tabs Component](https://ui.shadcn.com/docs/components/tabs) - Component structure
-- [shadcn/ui Themes](https://ui.shadcn.com/themes) - Theme picker, base colors
-- [shadcn/ui Changelog](https://ui.shadcn.com/docs/changelog) - Vega style, OKLCH migration
-
-**MEDIUM Confidence (Verified Community Sources):**
-- [tweakcn Theme Editor](https://tweakcn.com/) - OKLCH theme customization
-- [Shadcn Studio Theme Generator](https://shadcnstudio.com/theme-generator) - Visual theme tools
-
-**Color Psychology & Design Trends:**
-- [Figma - Amber Color](https://www.figma.com/colors/amber/) - Color psychology
-- [Figma - Terracotta Color](https://www.figma.com/colors/terracotta/) - Warm palette meanings
-- [Gelato - Trending Colors 2025](https://www.gelato.com/blog/trending-colors) - Clementine/peach trends
-- [IxDF - UI Color Palette 2025](https://www.interaction-design.org/literature/article/ui-color-palette) - Warm color best practices
-
----
-
-## Confidence Assessment
-
-| Area | Level | Reason |
-|------|-------|--------|
-| Component Installation | HIGH | Official shadcn CLI, verified commands |
-| Theme Provider Pattern | HIGH | Official Vite documentation from shadcn |
-| Color Palette Values | MEDIUM | Based on design research + your existing setup |
-| Dark Mode Implementation | HIGH | Official shadcn pattern for Vite apps |
-| Component Selection | HIGH | Based on your stated requirements |
-
----
-
-## Open Questions for Implementation
-
-1. **Sidebar styling** - Your CSS has sidebar variables. Will the redesign include a sidebar component?
-2. **Chart colors** - Current chart variables may need refinement to match warm palette
-3. **Progress bar animation** - Custom animation uses black/gray; may need warm colors
-4. **Font choice** - Inter is neutral; consider warmer alternatives like Nunito if desired
-
----
-
-## Summary Recommendation
-
-**Use this stack:**
-- Install 9 additional shadcn components via single CLI command
-- Implement custom ThemeProvider (not next-themes) for Vite SPA
-- Refine OKLCH colors with provided warm palette
-- Keep stone base, radix-vega style, lucide icons
-
-**Do NOT:**
-- Install next-themes (unnecessary for Vite SPA)
-- Change to a different shadcn style (radix-vega is current)
-- Use HSL colors (stick with OKLCH for consistency)
+- [Curated List of React i18n Libraries (Phrase Blog)](https://phrase.com/blog/posts/react-i18n-best-libraries/)
+- [Internationalization Guide 2026 (Glory Webs)](https://www.glorywebs.com/blog/internationalization-in-react)
+- [react-i18next Documentation](https://react.i18next.com/)
+- [i18next v25 (NPM)](https://www.npmjs.com/package/i18next)
+- [react-i18next v16.5.3 (NPM)](https://www.npmjs.com/package/react-i18next)
+- [react-i18next CHANGELOG (GitHub)](https://github.com/i18next/react-i18next/blob/master/CHANGELOG.md)
+- [React 19 Compatibility Issues (GitHub)](https://github.com/i18next/react-i18next/issues/1823)
+- [i18next TypeScript Documentation](https://www.i18next.com/overview/typescript)
+- [Vite + React i18n Setup Guide (Intlayer)](https://intlayer.org/doc/environment/vite-and-react)
+- [react-i18next vs react-intl Comparison (Locize Blog)](https://www.locize.com/blog/react-intl-vs-react-i18next/)
+- [Paraglide JS Library (inlang)](https://inlang.com/m/gerre34r/library-inlang-paraglideJs/)
+- [i18next-browser-languagedetector (GitHub)](https://github.com/i18next/i18next-browser-languageDetector)
+- [date-fns i18n Support (GitHub)](https://github.com/date-fns/date-fns/blob/main/docs/i18n.md)
+- [vite-plugin-i18next-loader (GitHub)](https://github.com/alienfast/vite-plugin-i18next-loader)
+- [React i18n Setup with TypeScript (Medium)](https://medium.com/@sundargautam2022/for-integrating-internationalization-i18n-in-a-react-vite-typescript-project-the-best-and-e240f444fdif)

@@ -1,512 +1,700 @@
-# Architecture Research: Theme System
+# Architecture Research: Internationalization (i18n)
 
-**Domain:** React Theme System (dark mode)
-**Researched:** 2026-01-19
-**Confidence:** HIGH
-
-## Executive Summary
-
-The recommended architecture uses **next-themes** as the theme provider with class-based switching for Tailwind CSS integration. This approach is the de facto standard for shadcn/ui projects and provides:
-
-- System preference detection via `prefers-color-scheme`
-- localStorage persistence with cross-tab synchronization
-- No flash on load (FOUC prevention)
-- Mobile OS theme change detection
-
-The project already has the CSS infrastructure in place (OKLCH variables in `:root` and `.dark`), making implementation straightforward.
+**Project:** Evoque (Kindle Highlights Manager)
+**Domain:** Multi-language support with React Context integration
+**Researched:** 2026-01-24
+**Mode:** Architecture dimension for i18n
+**Overall Confidence:** HIGH
 
 ---
 
-## Theme Provider Pattern
+## Executive Summary
 
-### Recommendation: next-themes
+i18n should be integrated into Evoque using **react-i18next** (built on i18next). This library is the ecosystem standard for React internationalization, offering:
 
-**Why next-themes over custom implementation:**
+- **Provider-based architecture**: Pairs naturally with existing Context providers (AuthContext, StoreContext)
+- **Namespace organization**: Split translations by feature (common, auth, highlights, study, settings)
+- **Lazy loading**: Load only needed translations (PT-BR is default, EN loads on demand)
+- **Localized formatting**: Handles dates, numbers, pluralization natively
+- **Minimal bundle impact**: Core library ~20KB gzipped, lazy-loaded namespaces
 
-| Aspect | next-themes | Custom Hook |
-|--------|-------------|-------------|
-| System preference | Built-in | Manual matchMedia |
-| Persistence | Built-in | Manual localStorage |
-| Cross-tab sync | Built-in | Manual storage events |
-| FOUC prevention | Inline script injection | Complex manual setup |
-| Hydration safety | Documented patterns | Must figure out |
-| Maintenance | Community maintained | Team maintained |
+**Key architectural decision**: I18nProvider sits below AuthProvider but above StoreProvider, establishing language before app data loads. This allows StoreContext to format dates/numbers correctly.
 
-**Installation:**
-```bash
-npm install next-themes
-```
+---
 
-### Provider Architecture
+## Provider Placement in Component Tree
+
+### Recommended Tree Structure
 
 ```
 App.tsx
   |
   +-- ErrorBoundary
         |
-        +-- AuthProvider
+        +-- ThemeProvider (existing)
               |
-              +-- ThemeProvider (NEW - wraps everything)
+              +-- AuthProvider (existing)
                     |
-                    +-- ProtectedApp
+                    +-- I18nProvider (NEW - wraps everything except auth)
                           |
-                          +-- HashRouter
+                          +-- ProtectedApp
                                 |
-                                +-- StoreProvider
+                                +-- HashRouter
                                       |
-                                      +-- AppLayout
+                                      +-- SidebarProvider (existing)
+                                            |
+                                            +-- StoreProvider (existing)
+                                                  |
+                                                  +-- AppLayout
+                                                        |
+                                                        +-- Routes
 ```
 
-**Key insight:** ThemeProvider must wrap the router and all UI components but can be inside AuthProvider since theme is independent of auth state.
+### Why This Placement
 
-### ThemeProvider Implementation
+**Above StoreProvider:**
+- Language decision must happen before StoreContext loads/formats dates
+- StoreContext can use `useTranslation()` for error messages, formatted dates
+- Consistent translations across all data operations
 
-Create `components/ThemeProvider.tsx`:
+**Below AuthProvider:**
+- AuthProvider runs faster (just checks session), doesn't depend on language
+- Language selection can be user-specific (stored in UserSettings table)
+- Non-authenticated Login page still gets theme + error messages
 
-```tsx
-import { createContext, useContext, useEffect, useState } from "react"
+**Below ThemeProvider:**
+- Both theme and language are "environmental" providers
+- Theme is independent of language, no dependency either way
+- Both persist to localStorage independently
 
-type Theme = "dark" | "light" | "system"
+**Not wrapping Router:**
+- Ensures language is set before routes render
+- Avoids race conditions on initial load
 
-type ThemeProviderProps = {
-  children: React.ReactNode
-  defaultTheme?: Theme
-  storageKey?: string
+### Initialization Flow
+
+```
+1. App mounts
+2. ErrorBoundary wraps everything
+3. ThemeProvider activates (loads theme from localStorage)
+4. AuthProvider checks session → sets user or shows login
+5. IF authenticated:
+   - I18nProvider loads default language (PT-BR) + user language preference from UserSettings
+   - ProtectedApp renders
+   - StoreProvider loads app data (books, highlights, etc.)
+   - Routes render with correct language
+
+6. IF not authenticated:
+   - I18nProvider loads default language (PT-BR)
+   - Login page renders with theme + i18n support
+```
+
+---
+
+## File Structure for Translations
+
+### Directory Layout
+
+```
+evoque/
+├── public/
+│   └── locales/
+│       ├── pt-BR/
+│       │   ├── common.json        # Shared UI (buttons, nav, etc.)
+│       │   ├── auth.json          # Login/signup strings
+│       │   ├── highlights.json     # Highlights page
+│       │   ├── study.json          # Study deck selection
+│       │   ├── session.json        # StudySession interface
+│       │   ├── settings.json       # Settings page
+│       │   ├── dashboard.json      # Dashboard/analytics
+│       │   ├── errors.json         # Error messages
+│       │   └── formats.json        # Date/number format strings
+│       │
+│       └── en/
+│           ├── common.json
+│           ├── auth.json
+│           ├── highlights.json
+│           ├── study.json
+│           ├── session.json
+│           ├── settings.json
+│           ├── dashboard.json
+│           ├── errors.json
+│           └── formats.json
+│
+└── src/
+    ├── i18n/
+    │   ├── config.ts               # i18next configuration
+    │   ├── index.ts                # i18next initialization
+    │   └── resources.ts            # TypeScript types for keys (optional)
+    │
+    ├── components/
+    │   └── I18nProvider.tsx        # React wrapper component
+    │
+    └── hooks/
+        └── useLanguage.ts          # Custom hook for language selection
+```
+
+### Namespace Organization Strategy
+
+**Split by feature, not by component.** Key principle: namespace = feature/page, not individual components.
+
+#### common.json (Shared UI)
+Buttons, form labels, navigation items used across multiple pages:
+```json
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "highlights": "Highlights",
+    "study": "Study",
+    "settings": "Configurações"
+  },
+  "buttons": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "delete": "Deletar",
+    "import": "Importar"
+  },
+  "loading": "Carregando...",
+  "error": "Erro"
 }
+```
 
-type ThemeProviderState = {
-  theme: Theme
-  setTheme: (theme: Theme) => void
-  resolvedTheme: "dark" | "light"
+#### auth.json
+Login, signup, password reset:
+```json
+{
+  "login": {
+    "title": "Entrar em Evoque",
+    "email": "Email",
+    "password": "Senha",
+    "submit": "Entrar",
+    "noAccount": "Não tem conta?",
+    "signup": "Criar conta"
+  },
+  "signup": {
+    "title": "Criar Conta",
+    "submit": "Cadastrar"
+  },
+  "errors": {
+    "invalidEmail": "Email inválido",
+    "passwordTooShort": "Senha deve ter no mínimo 6 caracteres"
+  }
 }
+```
 
-const ThemeProviderContext = createContext<ThemeProviderState | undefined>(undefined)
+#### highlights.json
+Highlights page, filters, tags:
+```json
+{
+  "page": {
+    "title": "Highlights",
+    "empty": "Nenhum highlight ainda"
+  },
+  "filters": {
+    "byBook": "Filtrar por livro",
+    "byTag": "Filtrar por tag",
+    "search": "Buscar highlights"
+  },
+  "actions": {
+    "addToStudy": "Adicionar ao estudo",
+    "removeFromStudy": "Remover do estudo",
+    "edit": "Editar",
+    "delete": "Deletar"
+  }
+}
+```
 
-export function ThemeProvider({
-  children,
-  defaultTheme = "system",
-  storageKey = "evoque-theme",
-  ...props
-}: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
-  )
+#### study.json
+Deck selection page:
+```json
+{
+  "page": {
+    "title": "Estude",
+    "noDecks": "Nenhum deck disponível"
+  },
+  "deck": {
+    "allBooks": "Todos os Livros",
+    "cardsNew": "{{count}} novo",
+    "cardsDue": "{{count}} para revisar"
+  }
+}
+```
 
-  // Resolve system theme
-  const [resolvedTheme, setResolvedTheme] = useState<"dark" | "light">("light")
+#### session.json
+Study session interface:
+```json
+{
+  "card": {
+    "front": "Highlight",
+    "back": "Nota"
+  },
+  "rating": {
+    "again": "Novamente",
+    "hard": "Difícil",
+    "good": "Bom",
+    "easy": "Fácil"
+  },
+  "progress": "{{current}} de {{total}}",
+  "sessionEnd": "Sessão concluída!"
+}
+```
 
-  useEffect(() => {
-    const root = window.document.documentElement
-    root.classList.remove("light", "dark")
+#### settings.json
+Settings page (tabs: Import, Library, Account, Preferences):
+```json
+{
+  "tabs": {
+    "import": "Importar",
+    "library": "Biblioteca",
+    "account": "Conta",
+    "preferences": "Preferências"
+  },
+  "language": {
+    "label": "Idioma",
+    "ptBr": "Português (Brasil)",
+    "en": "English"
+  },
+  "limits": {
+    "reviewsPerDay": "Máximo de revisões por dia",
+    "newCardsPerDay": "Novos cards por dia"
+  }
+}
+```
 
-    if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light"
-      root.classList.add(systemTheme)
-      setResolvedTheme(systemTheme)
-    } else {
-      root.classList.add(theme)
-      setResolvedTheme(theme)
-    }
-  }, [theme])
+#### dashboard.json
+Analytics page:
+```json
+{
+  "title": "Dashboard",
+  "stats": {
+    "totalBooks": "Livros",
+    "totalHighlights": "Highlights",
+    "cardsReviewed": "Cards revisados",
+    "todaysProgress": "Progresso de hoje"
+  }
+}
+```
 
-  // Listen for system preference changes
-  useEffect(() => {
-    if (theme !== "system") return
+#### errors.json
+Application-wide errors:
+```json
+{
+  "importFailed": "Falha ao importar. Tente novamente.",
+  "networkError": "Erro de rede. Verifique sua conexão.",
+  "unauthorized": "Acesso negado. Faça login novamente.",
+  "notFound": "Recurso não encontrado"
+}
+```
 
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
+#### formats.json
+Format strings for dates, pluralization:
+```json
+{
+  "date": {
+    "long": "YYYY-MM-DD",
+    "short": "DD/MM",
+    "locale": "pt-BR"
+  },
+  "plurals": {
+    "highlight_other": "{{count}} highlights",
+    "highlight_one": "{{count}} highlight",
+    "card_other": "{{count}} cards",
+    "card_one": "{{count}} card"
+  }
+}
+```
 
-    const handleChange = (e: MediaQueryListEvent) => {
-      const root = window.document.documentElement
-      root.classList.remove("light", "dark")
-      const newTheme = e.matches ? "dark" : "light"
-      root.classList.add(newTheme)
-      setResolvedTheme(newTheme)
-    }
+---
 
-    mediaQuery.addEventListener("change", handleChange)
-    return () => mediaQuery.removeEventListener("change", handleChange)
-  }, [theme])
+## Integration Points with Existing Architecture
 
-  const value = {
-    theme,
-    setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme)
-      setTheme(theme)
+### 1. AuthContext Integration
+
+**Current state:** AuthContext provides user session
+
+**New: Language preference from UserSettings**
+
+In `StoreContext.tsx`, after loading user settings:
+
+```typescript
+// After loading UserSettings from Supabase
+const { language = 'pt-BR' } = settings; // Default to PT-BR
+
+// In I18nProvider initialization
+useEffect(() => {
+  if (user && settings.language) {
+    i18n.changeLanguage(settings.language);
+  }
+}, [settings.language, user, i18n]);
+```
+
+### 2. StoreContext Integration
+
+**Current state:** StoreContext loads books, highlights, study cards
+
+**New: Format dates and numbers using i18n**
+
+In `StoreContext.getDeckStats()`:
+```typescript
+// Date formatting using i18n
+const reviewedToday = i18n.format(new Date(), 'date.short');
+
+// Number formatting with pluralization
+const cardsText = i18n.t('study:deck.cardsDue', { count: 5 });
+// Output: "5 para revisar" (PT-BR) or "5 to review" (EN)
+```
+
+### 3. Theme + Language Synchronization
+
+Both stored in localStorage independently:
+```
+localStorage.getItem('evoque-theme') → 'dark' | 'light' | 'system'
+localStorage.getItem('evoque-language') → 'pt-BR' | 'en'
+```
+
+Either can change without affecting the other.
+
+### 4. Sidebar Integration
+
+Language toggle in Sidebar (or SettingsModal):
+
+```typescript
+// components/LanguageToggle.tsx
+import { useTranslation } from 'react-i18next';
+
+export const LanguageToggle = () => {
+  const { i18n } = useTranslation();
+  const { updateSettings } = useStore();
+
+  const handleLanguageChange = async (lang: string) => {
+    await i18n.changeLanguage(lang);
+    await updateSettings({ language: lang }); // Persist to Supabase
+  };
+
+  return (
+    <select value={i18n.language} onChange={(e) => handleLanguageChange(e.target.value)}>
+      <option value="pt-BR">Português (Brasil)</option>
+      <option value="en">English</option>
+    </select>
+  );
+};
+```
+
+### 5. Error Handling
+
+Integrate i18n with ErrorBoundary:
+
+```typescript
+// In ErrorBoundary
+const { t } = useTranslation('errors');
+
+<p>{t('importFailed')}</p>  // Automatically translated
+```
+
+---
+
+## Lazy Loading Strategy
+
+### Default: Load PT-BR upfront, load EN on demand
+
+**Configuration in `i18n/config.ts`:**
+
+```typescript
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+
+i18n
+  .use(initReactI18next)
+  .init({
+    fallbackLng: 'pt-BR',
+    defaultNS: 'common',
+    ns: ['common', 'auth', 'highlights', 'study', 'session', 'settings', 'dashboard', 'errors'],
+
+    resources: {
+      'pt-BR': {
+        common: require('./../../public/locales/pt-BR/common.json'),
+        auth: require('./../../public/locales/pt-BR/auth.json'),
+        // ... other namespaces
+      },
+      // EN loaded lazily on demand
     },
-    resolvedTheme,
+
+    interpolation: {
+      escapeValue: false, // React handles XSS
+    },
+
+    react: {
+      useSuspense: false, // Avoid Suspense boundaries during translation load
+    },
+  });
+
+export default i18n;
+```
+
+### EN Lazy Loading
+
+When user switches to English, load EN translations asynchronously:
+
+```typescript
+const loadLanguage = async (lang: string) => {
+  if (lang === 'en') {
+    // Dynamically import EN translations
+    const enCommon = await import('./../../public/locales/en/common.json');
+    const enAuth = await import('./../../public/locales/en/auth.json');
+    // ... import all namespaces
+
+    i18n.addResourceBundle('en', 'common', enCommon);
+    i18n.addResourceBundle('en', 'auth', enAuth);
+    // ... add all bundles
   }
-
-  return (
-    <ThemeProviderContext.Provider {...props} value={value}>
-      {children}
-    </ThemeProviderContext.Provider>
-  )
-}
-
-export const useTheme = () => {
-  const context = useContext(ThemeProviderContext)
-  if (context === undefined)
-    throw new Error("useTheme must be used within a ThemeProvider")
-  return context
-}
-```
-
-### Alternative: Use next-themes Directly
-
-For simpler implementation, use next-themes directly:
-
-```tsx
-// components/ThemeProvider.tsx
-import { ThemeProvider as NextThemesProvider } from "next-themes"
-
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  return (
-    <NextThemesProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      storageKey="evoque-theme"
-      disableTransitionOnChange
-    >
-      {children}
-    </NextThemesProvider>
-  )
-}
-```
-
-**Recommendation:** Use next-themes directly. It handles edge cases that a custom implementation might miss.
-
----
-
-## Persistence Strategy
-
-### localStorage Pattern
-
-**Storage key:** `evoque-theme`
-**Possible values:** `"light"` | `"dark"` | `"system"`
-
-**Flow:**
-1. On initial load, check localStorage for saved preference
-2. If not found, default to `"system"`
-3. If `"system"`, use `matchMedia("(prefers-color-scheme: dark)")` to resolve
-4. Apply resolved theme as class on `<html>` element
-5. On theme change, update localStorage and class immediately
-
-### FOUC Prevention (Critical for Vite SPA)
-
-The Flash of Unstyled Content occurs when React hydrates after the page loads with wrong theme. For Vite SPAs without SSR, add this inline script to `index.html`:
-
-```html
-<!-- index.html -->
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Evoque</title>
-    <script>
-      // Prevent FOUC - runs before React
-      (function() {
-        const storageKey = 'evoque-theme';
-        const theme = localStorage.getItem(storageKey);
-
-        if (theme === 'dark' ||
-            (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches) ||
-            (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-          document.documentElement.classList.add('dark');
-        }
-      })();
-    </script>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
-  </body>
-</html>
-```
-
-**Why this works:** The inline script executes synchronously before React loads, applying the correct class immediately.
-
-### Cross-Tab Synchronization
-
-next-themes handles this automatically. For custom implementation:
-
-```tsx
-useEffect(() => {
-  const handleStorage = (e: StorageEvent) => {
-    if (e.key === storageKey && e.newValue) {
-      setTheme(e.newValue as Theme)
-    }
-  }
-  window.addEventListener("storage", handleStorage)
-  return () => window.removeEventListener("storage", handleStorage)
-}, [])
+  await i18n.changeLanguage(lang);
+};
 ```
 
 ---
 
-## Mobile OS Theme Detection
+## Component Usage Patterns
 
-### How It Works
+### Pattern 1: Simple String Translation
 
-Mobile browsers expose `prefers-color-scheme` based on OS settings:
+```typescript
+import { useTranslation } from 'react-i18next';
 
-| OS | Trigger |
-|----|---------|
-| iOS 13+ | Settings > Display & Brightness > Light/Dark |
-| Android 10+ | Settings > Display > Dark theme |
-| Scheduled modes | When user has auto-switch enabled |
+export const Dashboard = () => {
+  const { t } = useTranslation('dashboard');
 
-### Implementation
-
-The `matchMedia` API fires `change` events when OS theme changes:
-
-```tsx
-useEffect(() => {
-  const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
-
-  const handleChange = (e: MediaQueryListEvent) => {
-    // Only react if user has "system" preference
-    if (theme === "system") {
-      const newTheme = e.matches ? "dark" : "light"
-      document.documentElement.classList.remove("light", "dark")
-      document.documentElement.classList.add(newTheme)
-    }
-  }
-
-  mediaQuery.addEventListener("change", handleChange)
-  return () => mediaQuery.removeEventListener("change", handleChange)
-}, [theme])
+  return <h1>{t('title')}</h1>;
+};
 ```
 
-### Edge Cases
+### Pattern 2: Interpolation with Variables
 
-1. **User on "system" mode, OS changes theme mid-session:** Event listener catches this
-2. **User has explicit light/dark set, OS changes:** Should NOT change (user preference wins)
-3. **User switches from explicit to "system":** Should immediately reflect current OS setting
-4. **PWA in standalone mode:** `prefers-color-scheme` still works
+```typescript
+const { t } = useTranslation('study');
 
----
-
-## Component Organization
-
-### File Structure
-
-```
-components/
-  ThemeProvider.tsx       # Context provider (wraps app)
-  ThemeToggle.tsx         # UI toggle component
-  ui/
-    dropdown-menu.tsx     # Needed for theme dropdown (add via shadcn)
+<p>{t('deck.cardsDue', { count: 5 })}</p>
+// PT-BR: "5 para revisar"
+// EN: "5 to review"
 ```
 
-### Theme Toggle Component
+### Pattern 3: Multiple Namespaces
 
-For Settings page (Preferences tab):
+```typescript
+const { t: tCommon } = useTranslation('common');
+const { t: tHighlights } = useTranslation('highlights');
 
-```tsx
-// components/ThemeToggle.tsx
-import { useTheme } from "./ThemeProvider"
-import { Sun, Moon, Monitor } from "lucide-react"
-
-export function ThemeToggle() {
-  const { theme, setTheme } = useTheme()
-
-  return (
-    <div className="flex items-center gap-2">
-      <button
-        onClick={() => setTheme("light")}
-        className={`p-2 rounded ${theme === "light" ? "bg-zinc-200" : ""}`}
-        aria-label="Light mode"
-      >
-        <Sun className="w-4 h-4" />
-      </button>
-      <button
-        onClick={() => setTheme("dark")}
-        className={`p-2 rounded ${theme === "dark" ? "bg-zinc-200 dark:bg-zinc-700" : ""}`}
-        aria-label="Dark mode"
-      >
-        <Moon className="w-4 h-4" />
-      </button>
-      <button
-        onClick={() => setTheme("system")}
-        className={`p-2 rounded ${theme === "system" ? "bg-zinc-200 dark:bg-zinc-700" : ""}`}
-        aria-label="System preference"
-      >
-        <Monitor className="w-4 h-4" />
-      </button>
-    </div>
-  )
-}
+return (
+  <>
+    <button>{tCommon('buttons.save')}</button>
+    <h2>{tHighlights('page.title')}</h2>
+  </>
+);
 ```
 
-### For Sidebar/Header (Compact Toggle)
+### Pattern 4: Namespace-specific hook
 
-```tsx
-// Compact icon-only toggle
-import { useTheme } from "./ThemeProvider"
-import { Sun, Moon } from "lucide-react"
+```typescript
+import { useTranslation } from 'react-i18next';
 
-export function ThemeToggleCompact() {
-  const { resolvedTheme, setTheme, theme } = useTheme()
+export const useHighlightsTranslation = () => useTranslation('highlights');
 
-  const cycleTheme = () => {
-    // Cycle: light -> dark -> system -> light
-    if (theme === "light") setTheme("dark")
-    else if (theme === "dark") setTheme("system")
-    else setTheme("light")
-  }
-
-  return (
-    <button
-      onClick={cycleTheme}
-      className="p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800"
-      aria-label="Toggle theme"
-    >
-      {resolvedTheme === "dark" ? (
-        <Moon className="w-4 h-4" />
-      ) : (
-        <Sun className="w-4 h-4" />
-      )}
-    </button>
-  )
-}
+// In component:
+const { t } = useHighlightsTranslation();
 ```
 
----
+### Pattern 5: Date Formatting
 
-## Existing Infrastructure Analysis
+```typescript
+import { useTranslation } from 'react-i18next';
 
-### Current CSS Setup (index.css)
+const { i18n } = useTranslation();
 
-The project already has proper theme infrastructure:
-
-```css
-:root {
-  --background: oklch(1 0 0);           /* Light mode */
-  --foreground: oklch(0.147 0.004 49.25);
-  /* ... all variables defined */
-}
-
-.dark {
-  --background: oklch(0.147 0.004 49.25);  /* Dark mode */
-  --foreground: oklch(0.985 0.001 106.423);
-  /* ... all variables defined */
-}
+const formatDate = (date: Date) => {
+  return date.toLocaleDateString(i18n.language, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+};
 ```
-
-**Status:** Ready to use. No CSS changes needed.
-
-### Tailwind Config (tailwind.config.js)
-
-```js
-module.exports = {
-  darkMode: ["class"],  // Already configured correctly
-  // ...
-}
-```
-
-**Status:** Ready to use. No config changes needed.
-
-### Potential Issue: Hardcoded Colors in Components
-
-Found in `App.tsx`:
-```tsx
-<div className="min-h-screen bg-zinc-50 flex text-zinc-900 ...">
-```
-
-These should be updated to use CSS variables:
-```tsx
-<div className="min-h-screen bg-background flex text-foreground ...">
-```
-
-**Action required:** Audit components for hardcoded colors.
-
-### Tailwind Config Color Mapping Issue
-
-The Tailwind config uses `hsl()` wrapper but CSS variables are OKLCH:
-
-```js
-// tailwind.config.js
-colors: {
-  background: "hsl(var(--background))",  // WRONG - vars are oklch
-}
-```
-
-Should be:
-```js
-colors: {
-  background: "var(--background)",  // Direct reference
-}
-```
-
-**Action required:** Update tailwind.config.js color mappings.
-
----
-
-## Implementation Checklist
-
-### Phase 1: Infrastructure
-- [ ] Install next-themes
-- [ ] Create ThemeProvider component
-- [ ] Add FOUC prevention script to index.html
-- [ ] Wrap App with ThemeProvider
-
-### Phase 2: Toggle UI
-- [ ] Add dropdown-menu component from shadcn (if using dropdown)
-- [ ] Create ThemeToggle component
-- [ ] Add toggle to Sidebar
-- [ ] Add toggle options to Settings > Preferences
-
-### Phase 3: Component Audit
-- [ ] Fix tailwind.config.js hsl() wrapper issue
-- [ ] Replace hardcoded colors in App.tsx
-- [ ] Replace hardcoded colors in Settings.tsx
-- [ ] Audit other components for hardcoded zinc-* colors
-
-### Phase 4: Testing
-- [ ] Test light mode
-- [ ] Test dark mode
-- [ ] Test system preference detection
-- [ ] Test mobile OS theme switching
-- [ ] Test persistence across page refresh
-- [ ] Test cross-tab synchronization
 
 ---
 
 ## Anti-Patterns to Avoid
 
-### 1. Theme State in Component State Only
+### Anti-Pattern 1: Storing translations in component state
 **Wrong:**
-```tsx
-const [isDark, setIsDark] = useState(false) // Lost on refresh!
+```typescript
+const [labels, setLabels] = useState({ save: 'Save' });
 ```
-**Right:** Use localStorage + context
 
-### 2. Checking Theme Before Mount
+**Right:** Use `useTranslation()` hook, which handles re-renders on language change.
+
+### Anti-Pattern 2: Hardcoded strings in JSX
 **Wrong:**
-```tsx
-// Will cause hydration mismatch
-const theme = localStorage.getItem("theme")
-return <div className={theme === "dark" ? "dark" : ""}>
+```typescript
+<button>Save</button>
 ```
-**Right:** Apply class to `<html>` element, not React components
 
-### 3. Multiple Sources of Truth
-**Wrong:** CSS variables + inline styles + className conditionals
-**Right:** Single source: class on `<html>`, CSS variables do the rest
+**Right:**
+```typescript
+const { t } = useTranslation();
+<button>{t('buttons.save')}</button>
+```
 
-### 4. Ignoring System Preference Changes
-**Wrong:** Check system preference once at load
-**Right:** Subscribe to `matchMedia` changes
+### Anti-Pattern 3: One massive translation file
+**Wrong:** `locales/pt-BR.json` with 500+ keys
+
+**Right:** Split by namespace (common.json, auth.json, highlights.json, etc.)
+
+### Anti-Pattern 4: Lazy-loading ALL languages by default
+**Wrong:**
+```typescript
+resources: {
+  'pt-BR': { ... },
+  'en': { ... },  // 50KB loaded even if user never switches
+  'es': { ... },
+  'fr': { ... },
+}
+```
+
+**Right:** Load PT-BR upfront (default), EN on demand, don't add others until needed.
+
+### Anti-Pattern 5: Not handling missing translations
+**Wrong:** Silent failure, shows `missing key` placeholder
+
+**Right:** Set `saveMissing: true` in dev, `missingKeyHandler` for production:
+```typescript
+missingKeyHandler: (lngs, ns, key) => {
+  console.warn(`Missing translation: ${key}`);
+  return key; // Fallback to key itself
+};
+```
+
+---
+
+## Build & Performance Considerations
+
+### Bundle Size Impact
+
+| Item | Size | Notes |
+|------|------|-------|
+| i18next core | ~12KB | Framework-agnostic |
+| react-i18next | ~8KB | React integration |
+| PT-BR translations (all namespaces) | ~15KB | Loaded upfront |
+| EN translations | ~16KB | Lazy-loaded on demand |
+| **Total if EN not loaded** | ~35KB | Default experience |
+| **Total if EN loaded** | ~51KB | After language switch |
+
+**Gzip estimates (typical):**
+- PT-BR + i18next: ~13KB gzipped
+- EN loaded dynamically: +7KB (loaded only on demand)
+
+### Vite Configuration
+
+No special Vite config needed. Translations in `public/locales/` are served as static assets. Dynamic imports trigger code-splitting naturally.
+
+### Namespace Loading
+
+Recommend "namespace-first" loading: load common.json early, load page-specific namespaces when route renders.
+
+```typescript
+// In Highlights page
+useEffect(() => {
+  i18n.loadNamespace('highlights');
+}, []);
+```
+
+---
+
+## Timeline & Phases
+
+### Phase 1: Infrastructure (1-2 days)
+- [ ] Install react-i18next and i18next
+- [ ] Create `src/i18n/config.ts` with initial setup
+- [ ] Create `components/I18nProvider.tsx`
+- [ ] Add I18nProvider to App.tsx component tree
+- [ ] Create `public/locales/pt-BR/` directory structure
+
+### Phase 2: String Extraction (2-3 days)
+- [ ] Extract all UI strings to `common.json`
+- [ ] Extract auth strings to `auth.json`
+- [ ] Extract highlights strings to `highlights.json`
+- [ ] Extract study/session strings to `study.json`, `session.json`
+- [ ] Extract settings strings to `settings.json`
+- [ ] Extract dashboard strings to `dashboard.json`
+- [ ] Extract error messages to `errors.json`
+
+### Phase 3: Component Integration (2-3 days)
+- [ ] Add `useTranslation()` to all components
+- [ ] Replace hardcoded strings with `t()` calls
+- [ ] Test language switching in browser DevTools
+- [ ] Verify no console warnings about missing keys
+
+### Phase 4: English Translation & EN Directory (1-2 days)
+- [ ] Translate all PT-BR files to English
+- [ ] Create `public/locales/en/` directory with same structure
+- [ ] Test EN file loading (should be lazy)
+- [ ] Verify pluralization works in both languages
+
+### Phase 5: Date/Number Formatting (1 day)
+- [ ] Add i18n number/date formatters
+- [ ] Update StoreContext to use formatters for display dates
+- [ ] Add `formats.json` with locale-specific rules
+
+### Phase 6: Settings Integration (1 day)
+- [ ] Add language toggle to Settings page
+- [ ] Wire language selection to StoreContext (`updateSettings`)
+- [ ] Persist language preference to Supabase
+- [ ] Load user's language preference on app load
+
+---
+
+## Testing Checklist
+
+- [ ] PT-BR loads by default (no console errors)
+- [ ] Language toggle works (Settings page → select EN)
+- [ ] Page refreshes with correct language preserved
+- [ ] EN files load asynchronously (check Network tab in DevTools)
+- [ ] All text renders correctly (no missing keys)
+- [ ] Pluralization works (`cardsDue: "5 para revisar"`)
+- [ ] Date formatting respects language locale
+- [ ] No console warnings about missing translations
+- [ ] Language preference persists to database
+- [ ] Theme and language are independent (can switch either without affecting other)
 
 ---
 
 ## Sources
 
-- [next-themes GitHub](https://github.com/pacocoursey/next-themes) - Official documentation (HIGH confidence)
-- [shadcn/ui Dark Mode - Vite](https://ui.shadcn.com/docs/dark-mode/vite) - Official Vite guide (HIGH confidence)
-- [MDN prefers-color-scheme](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-color-scheme) - Media query reference (HIGH confidence)
-- [Fixing FOUC in React](https://notanumber.in/blog/fixing-react-dark-mode-flickering) - Pattern for flash prevention (MEDIUM confidence)
+**High Confidence (Official Documentation):**
+- [react-i18next Official Docs](https://react.i18next.com/)
+- [i18next Documentation](https://www.i18next.com/)
+- [i18next Namespaces Guide](https://www.i18next.com/principles/namespaces)
+
+**High Confidence (Community Best Practices):**
+- [react-i18next Multiple Translation Files](https://react.i18next.com/guides/multiple-translation-files)
+- [i18next vs Alternatives Comparison](https://www.i18next.com/overview/comparison-to-others)
+- [Phrase: React i18n Best Libraries](https://phrase.com/blog/posts/react-i18n-best-libraries/)
+
+**Medium Confidence (Examples & Guides):**
+- [Internationalization (i18n) in React: Complete Guide 2026](https://www.glorywebs.com/blog/internationalization-in-react)
+- [Contentful: React Localization with i18n](https://www.contentful.com/blog/react-localization-internationalization-i18n/)
+- [React Context Design Patterns 2026](https://www.nucamp.co/blog/state-management-in-2026-redux-context-api-and-modern-patterns)
+
+---
+
+## Key Decisions Summary
+
+| Decision | Rationale | Confidence |
+|----------|-----------|------------|
+| Use **react-i18next** | Industry standard, excellent TypeScript support, namespace-based organization, flexible | HIGH |
+| **PT-BR by default**, EN lazy-loaded | Reduces initial bundle, faster startup, user can opt into EN | HIGH |
+| **Provider placement** (below Auth, above Store) | Language is environment state like theme; must be ready before data operations | HIGH |
+| **Split by feature** (not component) | Easier to manage, matches page/feature structure, better for team collaboration | HIGH |
+| **No extraction tool initially** | Project is small enough for manual extraction; can add i18next-parser later if scaling | MEDIUM |
+| **Persist language to database** | User preference survives logout/login, better UX than localStorage-only | HIGH |
+
+---
+
+*Last updated: 2026-01-24*

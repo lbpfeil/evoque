@@ -1,583 +1,613 @@
-# Pitfalls Research: shadcn/ui Adoption and Theme Systems
+# Pitfalls Research: Adding i18n to Evoque
 
-**Domain:** React app redesign with shadcn/ui component library
-**Researched:** 2026-01-19
-**Confidence:** HIGH (verified against official docs and codebase analysis)
+**Domain:** React TypeScript application with existing hardcoded English strings
+**Focus:** Common mistakes when retrofitting internationalization (PT-BR + EN)
+**Researched:** 2026-01-24
+**Confidence:** HIGH (verified against official i18next docs and community patterns)
 
 ---
 
 ## Critical Pitfalls
 
-Mistakes that cause broken UI, rewrites, or major issues.
+Mistakes that will break the application or require significant rework.
 
-### Pitfall 1: HSL/OKLCH Color Function Mismatch
+### Pitfall 1: Incomplete String Extraction Leading to Language Toggle Failures
 
-**What goes wrong:** CSS variables use OKLCH format but Tailwind config wraps them in `hsl()`. Colors render incorrectly or opacity modifiers fail completely.
-
-**Current state in codebase:**
-```css
-/* index.css uses OKLCH */
---primary: oklch(0.67 0.16 58);
-
-/* tailwind.config.js wraps in hsl() */
-primary: {
-  DEFAULT: "hsl(var(--primary))",  /* BROKEN! */
-}
-```
+**What goes wrong:**
+You extract and translate 80% of strings, then flip to Portuguese. Users see a mix of English and Portuguese throughout the app. Casual testing reveals the problem only after partial deployment.
 
 **Why it happens:**
-- shadcn/ui transitioned from HSL to OKLCH in late 2024
-- Old Tailwind configs still use `hsl()` wrappers
-- `hsl(oklch(...))` is invalid CSS and silently fails
+- Hardcoded strings are scattered across 50+ components
+- Some strings live in:
+  - Component JSX (obvious)
+  - Error messages in handlers (easy to miss)
+  - aria-labels, placeholders, titles (often forgotten)
+  - Array data like `navItems = [{ name: 'Dashboard', ... }]` (missed in initial extraction)
+  - Nested ternary operators with text
+  - Inline strings in complex conditionals
+- Manual extraction is error-prone at scale
+- No automated detection of remaining English strings
 
 **Consequences:**
-- Colors appear as fallback/transparent
-- Opacity modifiers (`bg-primary/50`) don't work
-- Dark mode colors broken or invisible
+- App appears partially broken after language switch
+- Users trust the feature doesn't work
+- Late discovery means more refactoring needed
+- Difficult to debug which components have untranslated strings
 
 **Prevention:**
-1. Match color formats: If CSS uses OKLCH, remove `hsl()` wrappers from Tailwind config
-2. For Tailwind v3: Use raw values with `<alpha-value>` placeholder:
-   ```js
-   primary: "oklch(0.67 0.16 58 / <alpha-value>)"
+1. **Use automation tools first**: Run [i18nize-react](https://www.npmjs.com/package/i18nize-react) or [jscodeshift transforms](https://github.com/BartoszJarocki/jscodeshift-react-i18next) to detect and replace hardcoded strings automatically
+2. **Create a detection test**: Build a utility that warns if any string literal (not from i18n) appears in rendered output during PT-BR language mode
+3. **Systematic extraction**:
+   - First pass: Extract obvious JSX strings
+   - Second pass: Find strings in objects (navItems, error messages, default values)
+   - Third pass: Check aria-labels, titles, placeholders
+   - Fourth pass: Search for string concatenation with user data
+4. **Version control milestone**: Before moving to styling/Polish phase, commit fully extracted strings so you can diff and verify completion
+5. **Create i18n coverage report**: Generate stats showing % of keys translated for each locale
+
+**Detection:**
+- User sets language to PT-BR, sees English text (obvious)
+- Browser console warns about untranslated keys (if using i18next warn setting)
+- Manual audit of top 5-10 user flows shows mixed languages
+- QA checklist: "Every user-facing string comes from translation file, not JSX"
+
+---
+
+### Pitfall 2: Hardcoded Date/Time/Number Formatting Breaking When Locale Changes
+
+**What goes wrong:**
+Dates display as "2026-01-24" in English and Portuguese (same format). Numbers show "1000" everywhere. Localization library detects the language change, but text formatting is hardcoded, so users see incorrect locale-specific formats.
+
+**Why it happens:**
+- Dates currently formatted with JavaScript `.toLocaleDateString()` or formatted strings
+- Numbers displayed with comma separators or currency formats hardcoded
+- Study stats show "10 cards" but no `count` variable for pluralization
+- No separation between content translation and formatting rules
+
+**Consequences in Evoque context:**
+- Study review dates show wrong format (Portuguese dates expect "24 de janeiro de 2026")
+- Daily limits show as "10 cards" in both languages (should be "10 cartões" in PT)
+- Statistics with "1,234 reviews" show wrong thousands separator
+- Timestamps in review logs formatted incorrectly for locale
+- Pluralization edge cases: "1 card" vs "1 livro" vs "0 cards"
+
+**Prevention:**
+1. **Use Intl API for dates/numbers**: Configure i18next with built-in formatting (v21.3.0+) using Intl.DateTimeFormat and Intl.NumberFormat
+2. **Never hardcode date formatting**:
+   ```typescript
+   // WRONG - hardcoded format
+   const formatted = date.toLocaleDateString() // American or OS default
+
+   // RIGHT - uses locale from i18next
+   const formatted = i18n.t('dateFormat:full', { val: date })
    ```
-3. For Tailwind v4: Use `@theme inline` directive without wrappers
+3. **Separate pluralization from content**:
+   ```typescript
+   // WRONG - hardcoded plural logic
+   `${count} ${count === 1 ? 'card' : 'cards'}`
 
-**Detection:**
-- Colors look wrong or transparent
-- Browser DevTools shows `hsl(oklch(...))` in computed styles
-- Opacity classes have no effect
-
-**Which phase should address:** Phase 1 (Foundation) - Fix before any component work
-
----
-
-### Pitfall 2: Hardcoded Colors Bypassing Theme System
-
-**What goes wrong:** Components use Tailwind color classes (`bg-zinc-50`, `text-blue-600`) instead of semantic variables (`bg-background`, `text-primary`). Theme switching has no effect.
-
-**Current state in codebase:**
-```tsx
-// App.tsx - hardcoded colors
-<div className="min-h-screen bg-zinc-50 flex text-zinc-900">
-
-// Sidebar.tsx - hardcoded colors
-<aside className="bg-white border-r border-zinc-200 text-zinc-900">
-
-// Dashboard.tsx - hardcoded colors everywhere
-<div className="bg-white p-6 rounded-md border border-zinc-200">
-```
-
-**Why it happens:**
-- Components written before theme system setup
-- Partial adoption: some shadcn components, some legacy
-- Quick fixes using familiar Tailwind classes
-
-**Consequences:**
-- Dark mode toggle changes CSS variables but UI doesn't respond
-- "Partially themed" appearance (some elements switch, others don't)
-- Mobile theme switching appears completely broken
-
-**Prevention:**
-1. Audit all components before theme implementation
-2. Replace hardcoded colors with semantic variables:
-   - `bg-zinc-50` -> `bg-muted` or `bg-background`
-   - `text-zinc-900` -> `text-foreground`
-   - `border-zinc-200` -> `border-border`
-   - `bg-white` -> `bg-card` or `bg-background`
-3. Use ESLint rule or grep to catch hardcoded color classes
-
-**Detection:**
-- `grep -r "bg-zinc\|text-zinc\|bg-blue\|bg-white" components/`
-- Toggle theme and observe which elements don't change
-
-**Which phase should address:** Phase 2 (Component Migration) - Systematic conversion
-
----
-
-### Pitfall 3: Missing ThemeProvider Implementation
-
-**What goes wrong:** Theme CSS variables are defined but no JavaScript handles theme state, localStorage persistence, or system preference detection.
-
-**Current state in codebase:**
-- `index.css` has `:root` and `.dark` CSS variables (good)
-- `tailwind.config.js` has `darkMode: ["class"]` (good)
-- No ThemeProvider component exists (bad)
-- No mechanism to add `.dark` class to `<html>` (bad)
-
-**Why it happens:**
-- CSS-only approach seems sufficient initially
-- Assumption that `darkMode: ["class"]` is enough
-- Missing the JavaScript orchestration layer
-
-**Consequences:**
-- Dark mode literally cannot be activated
-- System preference not respected
-- No persistence across sessions
-
-**Prevention:**
-1. Implement ThemeProvider with three concerns:
-   - State management (light/dark/system)
-   - localStorage persistence
-   - System preference detection via `matchMedia`
-2. Wrap app root with provider
-3. Add mode toggle component
-
-**Detection:**
-- Check for ThemeProvider in component tree
-- Verify `<html>` element receives `class="dark"` when toggled
-
-**Which phase should address:** Phase 1 (Foundation) - Required for all theme work
-
----
-
-### Pitfall 4: Duplicate `@layer base` Blocks
-
-**What goes wrong:** Multiple `@layer base` blocks with conflicting styles. Later declarations may not override earlier ones as expected.
-
-**Current state in codebase:**
-```css
-/* index.css has TWO @layer base blocks */
-@layer base {
-  :root { ... }
-  .dark { ... }
-  .theme { --font-sans: 'Inter Variable', sans-serif; }
-  * { @apply border-border outline-ring/50; }
-  body { @apply font-sans bg-background text-foreground; }
-}
-
-@layer base {  /* DUPLICATE! */
-  * { @apply border-border; }
-  body { @apply bg-background text-foreground; }
-}
-```
-
-**Why it happens:**
-- Multiple shadcn component additions over time
-- Manual CSS edits without consolidation
-- Copy-paste from documentation
-
-**Consequences:**
-- Unexpected style specificity
-- Styles may not apply as intended
-- Harder to debug and maintain
-
-**Prevention:**
-1. Consolidate all `@layer base` content into single block
-2. Remove duplicate rules
-3. Review CSS file structure after each shadcn component addition
-
-**Detection:**
-- Search for multiple `@layer base` in CSS files
-- Check for duplicate selectors
-
-**Which phase should address:** Phase 1 (Foundation) - CSS cleanup
-
----
-
-## Theme System Pitfalls
-
-### Pitfall 5: Theme Flash on Page Load (FOUC)
-
-**What goes wrong:** Page loads with light theme, then flashes to dark theme after React hydrates and reads localStorage.
-
-**Why it happens:**
-- ThemeProvider runs after initial render
-- localStorage read happens in useEffect
-- Server/static HTML has no theme class
-
-**Consequences:**
-- Jarring visual experience
-- Especially noticeable on slow connections
-- Users with dark preference see bright flash
-
-**Prevention:**
-1. Add blocking inline script to `index.html` BEFORE React:
-   ```html
-   <script>
-     (function() {
-       const theme = localStorage.getItem('theme');
-       if (theme === 'dark' ||
-           (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-         document.documentElement.classList.add('dark');
-       }
-     })();
-   </script>
+   // RIGHT - i18next handles plural rules
+   t('cards_count', { count }) // Works with Arabic (6 forms), Polish (3 forms), etc.
    ```
-2. Script must be synchronous (no defer/async)
-3. Place in `<head>` before any stylesheets if possible
+4. **Create translation key for count variable**: Every `count`-based string needs a translation key
+5. **Test with multiple locales**: Verify date/number/plural formatting switches correctly when language changes at runtime
+6. **Define format options in i18n config**:
+   - Date formats (short: "01/24", long: "24 de janeiro de 2026")
+   - Number formats (decimal separator, thousands separator)
+   - Plural rules (define `_zero`, `_one`, `_other` for each key)
 
 **Detection:**
-- Load page with dark theme preference
-- Watch for brief white flash
-
-**Which phase should address:** Phase 1 (Foundation) - Alongside ThemeProvider
+- Change to PT-BR and look at any date/timestamp (Study page, review logs)
+- Check statistics display (should show Portuguese number formats)
+- Test card limits: 1 card vs 2 cards (plural should work)
+- Look for "millions" style formatting (should use locale's conventions)
 
 ---
 
-### Pitfall 6: System Theme Not Triggering
+### Pitfall 3: Namespace/Key Structure Decisions Made Hastily, Causes Refactoring Later
 
-**What goes wrong:** User has "system" theme selected, but changing OS preference doesn't update the app.
-
-**Why it happens:**
-- Missing `matchMedia` event listener
-- Only checking preference on initial load
-- Using `darkMode: 'media'` in Tailwind config when class-based approach is needed
-
-**Consequences:**
-- "System" option appears broken
-- User must manually toggle when OS changes
-
-**Prevention:**
-1. Add event listener for system preference changes:
-   ```tsx
-   useEffect(() => {
-     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-     const handler = () => {
-       if (theme === 'system') {
-         updateTheme();
-       }
-     };
-     mediaQuery.addEventListener('change', handler);
-     return () => mediaQuery.removeEventListener('change', handler);
-   }, [theme]);
-   ```
-2. Ensure Tailwind config uses `darkMode: ["class"]` not `darkMode: 'media'`
-
-**Detection:**
-- Select "System" theme
-- Change OS preference
-- Observe if app updates
-
-**Which phase should address:** Phase 1 (Foundation) - ThemeProvider implementation
-
----
-
-### Pitfall 7: Inconsistent Foreground Color Pairing
-
-**What goes wrong:** Text becomes unreadable because background changes but foreground doesn't, or vice versa.
+**What goes wrong:**
+You create a flat structure `en.json` with 500+ keys (no organization). 6 months later, adding features becomes chaotic:
+- Keys are hard to find: Is it `dashboard_cards_due` or `stats_due_cards` or `deck_due_count`?
+- Developer A creates `highlight_delete_modal_title`, Dev B creates `modal_title_highlight_delete` (same feature, different key)
+- Translators don't know context, translate same word differently in different keys
+- Moving a feature to a different component requires renaming all keys
 
 **Why it happens:**
-- Using `bg-primary` without `text-primary-foreground`
-- Mixing semantic and hardcoded colors
-- Not understanding the `-foreground` convention
+- No agreed-upon key naming convention before extraction begins
+- Namespace structure not defined (flat file vs. hierarchical)
+- No documentation of "key conventions" document for team
+- Keys named based on where they appear in code, not by semantic feature
 
 **Consequences:**
-- Light text on light background (invisible)
-- Dark text on dark background (invisible)
-- Poor contrast ratios, accessibility failures
+- Large translation files are unmaintainable
+- Duplicate translations (same word, different keys)
+- Difficult to deprecate old keys
+- Features spread across many keys instead of grouped
+- Developer experience: hard to find the right translation key
+- Translation management tools can't group related strings
+- Risk of missed translations when feature moves
 
 **Prevention:**
-1. Always pair background with matching foreground:
-   - `bg-primary text-primary-foreground`
-   - `bg-card text-card-foreground`
-   - `bg-muted text-muted-foreground`
-2. shadcn components do this correctly - don't override
-3. For custom components, follow the same pattern
-
-**Detection:**
-- Toggle themes and look for unreadable text
-- Check contrast with browser DevTools
-
-**Which phase should address:** Phase 2 (Component Migration) - Component styling
-
----
-
-## shadcn Adoption Pitfalls
-
-### Pitfall 8: Relative Import Paths in shadcn Components
-
-**What goes wrong:** shadcn components use relative paths that break when file structure changes.
-
-**Current state in codebase:**
-```tsx
-// button.tsx uses relative import
-import { cn } from "../../lib/utils"
-
-// Should use alias
-import { cn } from "@/lib/utils"
-```
-
-**Why it happens:**
-- Manual component addition without proper alias setup
-- VSCode auto-import suggestions
-- Copying code without updating paths
-
-**Consequences:**
-- Breaks when files move
-- Inconsistent import styles across codebase
-- Harder to maintain
-
-**Prevention:**
-1. Verify `tsconfig.json` has correct path aliases:
+1. **Design namespace structure FIRST** (before extraction):
    ```json
+   // Hierarchical structure (recommended for Evoque)
    {
-     "compilerOptions": {
-       "paths": {
-         "@/*": ["./*"]
-       }
+     "common": { "save": "Save", "cancel": "Cancel" },
+     "study": {
+       "deck": { "title": "Study All Books", "empty": "No cards due today" },
+       "session": { "rating": { "again": "Again", "hard": "Hard" } },
+       "stats": { "new": "New", "learning": "Learning" }
+     },
+     "highlights": {
+       "table": { "title": "Highlights", "columns": { "date": "Date" } },
+       "edit": { "title": "Edit Highlight", "save": "Save Changes" }
      }
    }
    ```
-2. Verify `vite.config.ts` has matching resolve aliases
-3. Use alias imports consistently: `@/lib/utils`, `@/components/ui/button`
-
-**Detection:**
-- Grep for `../` in component imports
-- Check for mixed import styles
-
-**Which phase should address:** Phase 1 (Foundation) - Alias configuration
-
----
-
-### Pitfall 9: Not Owning Your Components
-
-**What goes wrong:** Treating shadcn components as immutable library code. When bugs appear, waiting for "upstream fix" that won't come.
-
-**Why it happens:**
-- Mindset from traditional component libraries (MUI, Chakra)
-- shadcn components added via CLI feel like dependencies
-- Fear of modifying "library" code
-
-**Consequences:**
-- Bugs persist indefinitely
-- Workarounds accumulate
-- Miss the entire point of shadcn/ui
-
-**Prevention:**
-1. Understand: Once added, shadcn components are YOUR code
-2. Modify freely to fix bugs or add features
-3. Don't expect CLI updates to fix your specific issues
-4. Document customizations in component files
-
-**Detection:**
-- Check for workarounds wrapping shadcn components
-- Look for comments like "shadcn bug" without fixes
-
-**Which phase should address:** All phases - Mindset shift
-
----
-
-### Pitfall 10: Component Dependency Version Conflicts
-
-**What goes wrong:** Radix UI or cmdk updates break shadcn components.
-
-**Why it happens:**
-- shadcn components depend on specific Radix versions
-- npm update pulls incompatible versions
-- No lockfile discipline
-
-**Consequences:**
-- Components throw runtime errors
-- Components render incorrectly
-- Combobox/Command particularly vulnerable
-
-**Prevention:**
-1. Pin Radix versions in package.json
-2. Test after any Radix/cmdk updates
-3. Check shadcn/ui GitHub issues before updating
-4. Use lockfile (package-lock.json) consistently
-
-**Detection:**
-- Components that worked stop working after npm install
-- Console errors mentioning Radix internals
-
-**Which phase should address:** Phase 1 (Foundation) - Dependency audit
-
----
-
-## Migration Pitfalls
-
-### Pitfall 11: All-or-Nothing Migration Approach
-
-**What goes wrong:** Attempting to convert all components to shadcn at once. Project becomes unstable, progress hard to measure.
-
-**Why it happens:**
-- Enthusiasm for new system
-- Underestimating scope
-- Not having incremental strategy
-
-**Consequences:**
-- Broken UI for extended period
-- Lost context on what changed
-- Difficult to debug regressions
-
-**Prevention:**
-1. Migrate component-by-component
-2. Each component migration should be atomic:
-   - Convert
-   - Test
-   - Commit
-3. Keep both systems working during transition
-4. Prioritize by visibility/usage
-
-**Detection:**
-- Large uncommitted changes spanning multiple components
-- Multiple broken features simultaneously
-
-**Which phase should address:** Phase 2-3 - Use incremental approach
-
----
-
-### Pitfall 12: Losing Custom Functionality During Conversion
-
-**What goes wrong:** Custom component behavior lost when replacing with shadcn equivalent.
-
-**Why it happens:**
-- Assuming shadcn component is drop-in replacement
-- Not auditing existing component functionality
-- Focus on visual parity only
-
-**Consequences:**
-- Features silently disappear
-- User workflows break
-- Regression bugs discovered late
-
-**Prevention:**
-1. Document existing component behavior before migration
-2. List all props, callbacks, edge cases
-3. Verify each behavior in shadcn version
-4. Add missing functionality to shadcn component
-
-**Detection:**
-- Feature works before migration, not after
-- User bug reports after "styling update"
-
-**Which phase should address:** Phase 2 (Component Migration) - Audit first
-
----
-
-## Mobile-Specific Pitfalls
-
-### Pitfall 13: Mobile Browser Theme-Color Meta Tag
-
-**What goes wrong:** Browser chrome (address bar) doesn't match app theme on mobile.
-
-**Why it happens:**
-- Missing `<meta name="theme-color">` tag
-- Static theme-color not updated when theme changes
-- Only desktop testing
-
-**Consequences:**
-- Jarring contrast between browser chrome and app
-- Unprofessional appearance on mobile
-- iOS Safari especially affected
-
-**Prevention:**
-1. Add theme-color meta tag to index.html:
-   ```html
-   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-   <meta name="theme-color" content="#171717" media="(prefers-color-scheme: dark)">
+2. **Create "Key Naming Convention" document**:
+   - Semantic naming: Name keys by feature, not location
+   - Hierarchy: `domain.feature.element.state`
+   - Avoid abbreviations and acronyms
+   - Never name keys after variable names (`cardCount` is bad, use `study.stats.card_count`)
+3. **Use namespaced i18n loading**: Load only relevant namespaces per route
+   ```typescript
+   const { t } = useTranslation(['common', 'study'])
    ```
-2. Or update dynamically when theme changes:
-   ```tsx
-   document.querySelector('meta[name="theme-color"]')
-     ?.setAttribute('content', isDark ? '#171717' : '#ffffff');
-   ```
+4. **Create shared key registry document**: List all standard keys and their usage
+5. **Automated namespace validation**: Warn if same translation appears in multiple keys
+6. **Review process**: Before extracting many strings, review key structure with team
 
 **Detection:**
-- Test on actual mobile device
-- Check browser chrome color vs app background
-
-**Which phase should address:** Phase 3 (Polish) - Mobile optimization
+- Look at `en.json` in week 2: Is structure clear or chaotic?
+- Run analysis: Count duplicated translations across keys
+- Ask developer: "Without looking at the file, can you name the key for 'Study All Books'?"
+- Review translation memory: Are translators confused about context?
 
 ---
 
-### Pitfall 14: Touch Target Size on Mobile
+### Pitfall 4: State Management + Translation Context Integration Issues
 
-**What goes wrong:** shadcn components optimized for desktop have small touch targets on mobile.
+**What goes wrong:**
+StoreContext (Evoque's 1280-line state manager) has computed values like:
+```typescript
+getCardStatus() => count === 1 ? 'card' : 'cards'
+```
+
+When you add i18n, these computed values don't re-render when language changes because they're not connected to i18next's language change listener. User switches to PT-BR, but `getCardStatus()` still returns English.
 
 **Why it happens:**
-- Default shadcn sizing for desktop
-- Not testing with actual fingers
-- Icon-only buttons particularly affected
+- StoreContext is massive and changes frequently
+- Translation context not integrated with existing state management
+- i18next language change event doesn't trigger StoreContext updates
+- No unified signal for "language changed, recompute values"
 
-**Consequences:**
-- Frustrating mobile UX
-- Accessibility failures
-- Misclicks on adjacent elements
+**Consequences in Evoque:**
+- Study session shows "cards" when user switches to PT-BR, not "cartões"
+- Any computed string value in StoreContext breaks on language switch
+- User has to refresh page to see translations (defeats purpose of dynamic switching)
+- Difficult to test language switching without full page reload
 
 **Prevention:**
-1. Minimum 44x44px touch targets (WCAG)
-2. Use larger size variants on mobile:
-   ```tsx
-   <Button size="lg" className="md:size-default">
+1. **Subscribe StoreContext to i18next language changes**:
+   ```typescript
+   useEffect(() => {
+     i18n.on('languageChanged', () => {
+       // Trigger recompute of all translated values in store
+       // Update any values that depend on i18n
+     });
+   }, [])
    ```
-3. Add padding to icon buttons
-4. Test on real mobile devices
+2. **Never compute strings in StoreContext**:
+   ```typescript
+   // WRONG - hardcoded pluralization in store
+   cardStatus: () => count === 1 ? 'card' : 'cards'
+
+   // RIGHT - return count, let component translate
+   cardCount: () => count // Component uses t('cards', { count })
+   ```
+3. **Move string computation to components**:
+   - StoreContext returns data (numbers, dates, objects)
+   - Components handle translation and formatting
+4. **Create test for language switching**:
+   ```typescript
+   test('store values recompute when language changes', async () => {
+     i18n.changeLanguage('pt')
+     // Verify store-dependent UI updates
+   })
+   ```
+5. **Document integration point**: Add comment in StoreContext showing i18next integration
 
 **Detection:**
-- Mobile testing with actual touch
-- Accessibility audit tools
-
-**Which phase should address:** Phase 3 (Polish) - Mobile optimization
+- Switch language at runtime, check Study page for untranslated strings
+- Look for string methods on store values (if returning strings, that's wrong)
+- Review StoreContext methods returning hardcoded text
 
 ---
 
-### Pitfall 15: Sheet/Drawer Gesture Conflicts
+### Pitfall 5: User-Supplied Content (Notes, Highlights) Not Translatable
 
-**What goes wrong:** Mobile sheet/drawer components conflict with browser back gesture or scroll behavior.
+**What goes wrong:**
+Users enter highlights in English from Kindle books. When you add i18n, the UI translates but user content (notes, highlight text) doesn't. This is correct behavior, but it confuses features:
+- User note in English displayed on PT-BR interface
+- Mixed-language experience feels broken
+- Some developers try to auto-translate user content (wrong, and unsupported by i18n libraries)
 
 **Why it happens:**
-- Radix Sheet not optimized for mobile gestures
-- Swipe areas overlap browser gestures
-- No explicit gesture handling
+- Unclear distinction between app UI strings (should translate) and user data (should not)
+- Internationalization libraries focus on UI, not data
+- No documentation of which content is translatable
 
 **Consequences:**
-- Accidentally navigating back instead of closing sheet
-- Scroll lock issues on iOS
-- Inconsistent behavior across browsers
+- User confusion: "Why is my note still in English?"
+- Feature requests for auto-translation (out of scope)
+- Localization tests fail because user data isn't translated
+- UX feels inconsistent
 
 **Prevention:**
-1. Consider mobile-first drawer library (Vaul) for mobile sheets
-2. Test swipe gestures thoroughly
-3. Add explicit close buttons, don't rely on gestures alone
-4. Handle iOS scroll position restoration
+1. **Explicitly document policy in CODE**:
+   ```typescript
+   // TRANSLATABLE: App UI, buttons, labels, error messages
+   // UNTRANSLATABLE: User-supplied highlights, notes, book titles
+   // This is correct. User data belongs to user's original language.
+   ```
+2. **Create section in design guidelines**: Make clear what is/isn't translated
+3. **In tests, use realistic data**: Include notes in English even when testing PT-BR
+4. **Clarify with users early**: "Your highlights stay in their original language, app UI adapts to your preference"
+5. **Never attempt user data translation** (Google Translate API, etc.):
+   - Libraries don't handle this
+   - Creates confusion about source language
+   - Expensive and unreliable
+   - Out of scope for i18n
 
 **Detection:**
-- Test sheet/drawer on iOS and Android
-- Try swiping from edge while sheet is open
-
-**Which phase should address:** Phase 3 (Polish) - After basic mobile works
+- QA asks: "Why isn't my note translated?"
+- Test with pt-BR: See English notes in Portuguese UI (this is OK, but needs documentation)
+- Review Highlights page: Ensure app labels translated but user content is not
 
 ---
 
-## Phase-Specific Warnings Summary
+## Moderate Pitfalls
+
+Mistakes that cause friction, technical debt, or delayed completion.
+
+### Pitfall 6: Forgetting to Translate Error Messages and Validation Text
+
+**What goes wrong:**
+Error messages live in async handlers and validation functions, scattered across components. When language changes, these still show in English:
+```typescript
+if (!email) throw new Error('Email is required')
+// Doesn't translate
+```
+
+Users see English errors in PT-BR UI, making the app feel partially done.
+
+**Why it happens:**
+- Error messages are "code strings", not UI strings
+- Many live in backend validators or service functions
+- Not in JSX, so less obvious they need translation
+- Error handling code written early, not reviewed for i18n
+
+**Consequences:**
+- Validation errors always in English (bad UX in PT-BR)
+- Toast/alert messages untranslated
+- API error responses shown in English
+- Looks like incomplete localization
+
+**Prevention:**
+1. **Audit all `throw new Error()` and error messaging**:
+   ```typescript
+   // WRONG
+   throw new Error('Email is required')
+
+   // RIGHT - create error key
+   throw new Error(t('validation.emailRequired'))
+   ```
+2. **Create validation i18n pattern**:
+   ```typescript
+   const validateEmail = (email: string, t: TranslationFunction) => {
+     if (!email) return t('validation.emailRequired')
+     return null
+   }
+   ```
+3. **Include error translations in extraction checklist**
+4. **Review try-catch blocks**: Every error message should be i18n key
+
+**Detection:**
+- Trigger validation errors in PT-BR mode (should see Portuguese)
+- Check console for untranslated error keys
+- Network error handling in Study/Import pages
+
+---
+
+### Pitfall 7: RTL Language Support Assumed But CSS Not Prepared
+
+**What goes wrong:**
+You add Arabic or Hebrew support (future-proofing). CSS uses `margin-left`, `text-left`, `right: 0` everywhere. Text flips but layout is still LTR, creating broken UI.
+
+**Why it happens:**
+- RTL usually comes later, not in initial i18n phase
+- CSS written without logical properties
+- Testing only with LTR languages (EN, PT)
+- No automated RTL detection in build
+
+**Consequences:**
+- Unplanned work when RTL language is added
+- CSS refactor needed (200+ directional properties)
+- Layout breaks for RTL: buttons on wrong side, alignment off
+- Brand suffers if RTL support launches broken
+
+**Prevention:**
+1. **Use logical CSS properties from the start**:
+   ```css
+   /* WRONG - will break in RTL */
+   .button { margin-left: 8px; }
+
+   /* RIGHT - adapts to text direction */
+   .button { margin-inline-start: 8px; }
+   ```
+2. **Set dir attribute dynamically**:
+   ```typescript
+   useEffect(() => {
+     document.documentElement.dir = i18n.language === 'ar' ? 'rtl' : 'ltr'
+   }, [i18n.language])
+   ```
+3. **Use PostCSS plugin** [postcss-rtlcss](https://github.com/elchininet/postcss-rtlcss) to automatically generate RTL versions
+4. **RTL testing checklist** (save for when RTL language is added):
+   - Text direction correct
+   - Flexbox layout reverses
+   - Icons and images stay in correct position
+   - Input fields and controls align correctly
+
+**Detection:**
+- For future-proofing: Check Tailwind usage, prefer `start/end` over `left/right`
+- If adding Arabic: Test with `dir="rtl"` on html element
+- Visual regression: Compare LTR and RTL layouts side-by-side
+
+---
+
+### Pitfall 8: Translation Keys Not Type-Safe, Leads to Runtime Errors
+
+**What goes wrong:**
+```typescript
+t('study.deck.title') // Typo: should be 'study.session.title'
+// No error at build time, app crashes at runtime with undefined translation
+```
+
+Developer refactors a key from `highlights.edit` to `highlights.update`, misses one component, app shows `[highlights.edit]` text to users.
+
+**Why it happens:**
+- i18next allows any string as key
+- No TypeScript checking if key exists
+- Key renames not caught by IDE refactoring
+- Manual testing doesn't catch all uses
+
+**Consequences:**
+- Late discovery of untranslated keys (in production)
+- `[missing translation key]` appears to users
+- Refactoring features breaks other components
+- Fragile codebase
+
+**Prevention:**
+1. **Enable type-safe translation keys with TypeScript**:
+   - Use [typesafe-i18n](https://github.com/ivanhofer/typesafe-i18n) or
+   - Configure i18next with type augmentation
+2. **Generate TypeScript definitions from translation files**:
+   ```typescript
+   // Auto-generated from en.json
+   type TranslationKey = 'study.deck.title' | 'study.deck.empty' | ...
+
+   // TypeScript error if key doesn't exist
+   t('study.deck.invalid') // ❌ Type error
+   ```
+3. **Use LSP support**: IDE warns if key doesn't exist
+4. **Add lint rule**: Disallow `t()` calls with dynamic strings (use constants)
+5. **Add test**: Check that all keys in translation files are used
+
+**Detection:**
+- Build with strict mode enabled
+- IDE should highlight invalid keys
+- Run audit: `npm run i18n:validate-keys` (custom script)
+
+---
+
+### Pitfall 9: Namespace Loading Causes Waterfalls and Performance Issues
+
+**What goes wrong:**
+i18next configured to lazy-load translation files per route:
+```
+/study → load study.json (100KB)
+/highlights → load highlights.json (150KB)
+```
+
+User navigates, translation file loads asynchronously, UI shows fallback text briefly, then translates. Looks like a glitch. If multiple namespaces needed at once, waterfalls cause delays.
+
+**Why it happens:**
+- Initial bundle size concern, try to lazy-load all namespaces
+- No preloading strategy for common namespaces
+- Async loading not coordinated with component rendering
+
+**Consequences:**
+- UI flicker when navigating to new route
+- Delays in displaying translated content
+- Bad perceived performance
+- User sees loading state
+
+**Prevention:**
+1. **Keep common namespaces eagerly loaded**:
+   - `common` (buttons, labels used everywhere) - bundled
+   - `validation` (error messages) - bundled
+   - Route-specific namespaces - lazy load
+2. **Preload on route entrance**:
+   ```typescript
+   useEffect(() => {
+     i18n.loadNamespace(['study']).then(() => setReady(true))
+   }, [])
+   ```
+3. **Use Suspense + lazy loading boundary**:
+   ```typescript
+   <Suspense fallback={<LoadingState />}>
+     <StudyPage /> {/* Wrapped with Suspense, waits for translations */}
+   </Suspense>
+   ```
+4. **Bundle most-used namespaces**:
+   ```typescript
+   i18next.init({
+     ns: ['common', 'validation'], // Always bundled
+     defaultNS: 'common',
+     // ... rest of config
+   })
+   ```
+5. **Test performance**: Measure time to first translated render
+
+**Detection:**
+- Navigate to Study page, observe if UI translations appear immediately
+- Network tab: Check if translation files load on demand
+- Lighthouse: Verify no layout shifts from translation loading
+
+---
+
+### Pitfall 10: Translation Management Becomes Bottleneck Without Process
+
+**What goes wrong:**
+6 months in, adding new feature with 20 new strings. Developer adds English strings to `en.json`, but no process for translating to PT-BR. Feature ships with mixed languages. Translator doesn't know feature exists. String management becomes chaotic.
+
+**Why it happens:**
+- No translation workflow documented
+- No owner of translation maintenance
+- No CI check to ensure keys are translated
+- Translation files treated like code, not content
+
+**Consequences:**
+- Features ship partially translated
+- Translator burden grows (100 keys waiting to be translated)
+- Developer frustration: "How do I add new strings?"
+- Inconsistent translation quality
+
+**Prevention:**
+1. **Document translation workflow**:
+   ```
+   1. Dev: Add English key to en.json
+   2. Dev: Use key in code with t()
+   3. CI: Validate key exists in en.json
+   4. Dev: Open PR with mention @translator
+   5. Translator: Review PR, add PT-BR translation to pt.json
+   6. Translator: Approve PR
+   7. Merge: Both en.json and pt.json updated
+   ```
+2. **Add CI check**: PR fails if key in en.json but missing from pt.json
+3. **Use translation management tool** (optional but recommended):
+   - [Locize](https://locize.com) - cloud-based
+   - [Crowdin](https://crowdin.com) - collaboration platform
+   - Simplest: Spreadsheet + script to generate JSON
+4. **Create translation checklist**: New feature PR must include:
+   - English strings in en.json
+   - Portuguese translations in pt.json
+   - Links to translation keys in code
+5. **Regular audits**: Monthly check for missing translations
+
+**Detection:**
+- In PR review: Ask "Are all strings translated?"
+- Run CI check: `npm run i18n:validate-complete`
+- Developer experience: Easy to add new strings and see them work
+
+---
+
+## Minor Pitfalls
+
+Issues that cause annoyance but are fixable without major rework.
+
+### Pitfall 11: Placeholder and aria-label Text Not Translated
+
+**What goes wrong:**
+Input placeholders show "Enter book title" even in PT-BR mode. aria-labels for screen readers are in English. Accessibility features partially broken for non-English users.
+
+**Why it happens:**
+- Placeholders and aria attributes treated as "not important"
+- Less obvious they're user-facing than JSX text
+- Easily missed in extraction pass
+
+**Prevention:**
+- Extract ALL text attributes: placeholder, aria-label, title, alt, aria-describedby
+- Include in component checklist
+
+---
+
+### Pitfall 12: Console Warnings About Missing Translations Ignored
+
+**What goes wrong:**
+i18next warns about undefined keys in console, developers ignore warnings. Accumulates over time, becomes noise.
+
+**Prevention:**
+- Enable strict mode: `returnEmptyString: false` to make warnings visible
+- Add ESLint rule to treat i18n warnings as errors in dev
+
+---
+
+### Pitfall 13: Date Formatting Libraries Not Localized
+
+**What goes wrong:**
+Using moment.js or date-fns without configuring locale. Dates always format in English despite changing i18n language.
+
+**Prevention:**
+- Use Intl API (modern, no dependencies)
+- Or explicitly set locale on date library: `moment.locale(i18n.language)`
+
+---
+
+## Phase-Specific Warnings
 
 | Phase | Likely Pitfall | Mitigation |
-|-------|---------------|------------|
-| Phase 1: Foundation | HSL/OKLCH mismatch (#1), Missing ThemeProvider (#3), Duplicate @layer base (#4) | Fix color system and provider first |
-| Phase 2: Component Migration | Hardcoded colors (#2), Relative imports (#8), Lost functionality (#12) | Audit before converting |
-| Phase 3: Polish | Theme flash (#5), Mobile theme-color (#13), Touch targets (#14) | Mobile-specific testing |
-| All Phases | Not owning components (#9), All-or-nothing migration (#11) | Incremental, owned approach |
+|-------|----------------|------------|
+| **Setup** | Namespace structure too hastily decided | Review key hierarchy with team before extraction begins |
+| **Extraction** | 80% of strings extracted, rest forgotten | Use automation tools, then audit systematically |
+| **Translation** | Keys untranslated because process undefined | Create translation workflow, add CI validation |
+| **Integration** | StoreContext not listening to language changes | Subscribe to i18next language event, trigger re-renders |
+| **Testing** | Only tested with one locale | Test switching languages at runtime, not just on page load |
+| **Polish** | Date/number formatting not localized | Replace hardcoded formatting with Intl API or i18next formatters |
+| **Future** | RTL support impossible due to CSS architecture | Use logical CSS properties from start (not urgent, but prevents pain later) |
 
 ---
 
-## Verification Checklist
+## Critical Actions Before Phase Completion
 
-Before considering theme system complete:
+### Before "Extract Strings" Phase Ships
+- [ ] Automation tool run against codebase (i18nize-react or jscodeshift)
+- [ ] Manual audit of 50 random strings (should all be from en.json)
+- [ ] Namespace structure documented and approved
+- [ ] Key naming convention written and reviewed
 
-- [ ] `hsl()` wrappers match CSS variable format (both HSL or both removed)
-- [ ] Zero hardcoded color classes in components (`bg-zinc-*`, `text-blue-*`)
-- [ ] ThemeProvider wraps app root
-- [ ] Theme persists across refresh (localStorage)
-- [ ] System preference respected and updates live
-- [ ] No flash on page load (blocking script)
-- [ ] Mobile theme-color meta updates
-- [ ] All components readable in both themes
-- [ ] Path aliases work consistently
+### Before "Translate" Phase Ships
+- [ ] All strings extracted and in en.json (100% coverage)
+- [ ] All strings translated to pt.json
+- [ ] CI validation: PR fails if en.json key missing from pt.json
+- [ ] Language switching tested in main user flows (Study, Highlights, Settings)
+
+### Before "Integration" Phase Ships
+- [ ] StoreContext integrated with i18next language change listener
+- [ ] No hardcoded plurals or date formats in StoreContext
+- [ ] Date/time/number formatting uses Intl API or i18next formatters
+- [ ] Error messages and validation text all translated
+- [ ] RTL CSS properties planned (mark as future work if not implementing)
+
+### Before Release
+- [ ] Full flow test in PT-BR: Login → Study → Highlights → Settings
+- [ ] User can switch language and see UI update without reload
+- [ ] No `[missing translation key]` text visible
+- [ ] Performance: Navigation doesn't show loading states for translations
+- [ ] Translation management process documented
 
 ---
 
 ## Sources
 
-- [shadcn/ui Theming Documentation](https://ui.shadcn.com/docs/theming)
-- [shadcn/ui Dark Mode for Vite](https://ui.shadcn.com/docs/dark-mode/vite)
-- [Tailwind CSS v4 OKLCH Migration](https://tailwindcss.com/blog/tailwindcss-v4)
-- [OKLCH Opacity Issues - GitHub #14499](https://github.com/tailwindlabs/tailwindcss/issues/14499)
-- [Dark Mode Not Working - GitHub #278](https://github.com/shadcn-ui/ui/issues/278)
-- [System Theme Not Triggered - GitHub #2387](https://github.com/shadcn-ui/ui/issues/2387)
-- [@layer base Issues - GitHub #313](https://github.com/shadcn-ui/ui/issues/313)
-- [What I DON'T Like About shadcn/ui](https://leonardomontini.dev/shadcn-ui-use-with-caution/)
-- [Prevent Theme Flash in React](https://dev.to/gaisdav/how-to-prevent-theme-flash-in-a-react-instant-dark-mode-switching-o20)
-- [Tailwind v4 Theme Variables](https://tailwindcss.com/docs/theme)
+- [Common Mistakes When Implementing i18n in React Apps](https://infinitejs.com/posts/common-mistakes-i18n-react)
+- [How to Add Internationalization (i18n) to a React App Using i18next - 2025 Edition](https://dev.to/anilparmar/how-to-add-internationalization-i18n-to-a-react-app-using-i18next-2025-edition-3hkk)
+- [react-i18next Documentation](https://react.i18next.com/)
+- [Avoiding Common Internationalization Mistakes in Mattermost](https://mattermost.com/blog/avoiding-common-internationalization-mistakes/)
+- [Pluralization in Software Localization - Localazy](https://localazy.com/blog/pluralization-in-software-localization-beginners-guide)
+- [i18next: Formatting Dates and Numbers](https://www.i18next.com/translation-function/formatting)
+- [Right to Left (RTL) in React: The Developer's Guide](https://leancode.co/blog/right-to-left-in-react)
+- [Supercharge Your TypeScript App: Mastering i18next for Type-Safe Translations](https://dev.to/adrai/supercharge-your-typescript-app-mastering-i18next-for-type-safe-translations-2idp)
+- [Lazy Loading Localization with React-i18next](https://pranavpandey1998official.medium.com/lazy-loading-localization-with-react-i18next-3ebb5383fabe)
+- [Database Internationalization Design Patterns](https://medium.com/walkin/database-internationalization-i18n-localization-l10n-design-patterns-94ff372375c6)
