@@ -1,36 +1,65 @@
 {
   "_meta": "Study page strings (decks, cards overview, review stats)",
-  "decks": {
-    "title": "Estudar",
-    "all_books": "Todos os livros",
-    "select_deck": "Selecione um baralho para estudar",
-    "no_decks": "Nenhum baralho disponivel"
+  "title": "Estudar",
+  "subtitle": "Inicie sua sessao de estudo diaria com todos os livros, ou escolha um livro especifico abaixo.",
+  "loading": "Carregando...",
+  "allBooks": {
+    "title": "Estudar Todos os Livros",
+    "subtitle": "Revise cartoes de toda sua biblioteca"
   },
-  "cards": {
-    "due": "Para revisar",
-    "due_count": "{{count}} cartoes",
-    "due_count_one": "{{count}} cartao",
+  "byBook": {
+    "title": "Estudar por Livro"
+  },
+  "stats": {
+    "due": "Pendentes",
     "new": "Novos",
     "learning": "Aprendendo",
     "review": "Revisao",
-    "total": "Total de cartoes"
+    "total": "Total"
   },
-  "stats": {
-    "today": "Hoje",
-    "reviews_done": "Revisoes feitas",
-    "streak": "Sequencia",
-    "days": "dias",
-    "accuracy": "Acuracia"
+  "table": {
+    "deck": "Baralho",
+    "new": "Novos",
+    "learning": "Aprendendo",
+    "review": "Revisao",
+    "total": "Total"
   },
-  "empty_states": {
-    "no_cards": "Nenhum cartao para revisar",
-    "all_done": "Parabens! Voce terminou as revisoes de hoje.",
-    "import_prompt": "Importe destaques para criar cartoes de estudo"
+  "emptyState": {
+    "noBooks": "Nenhum livro importado ainda",
+    "importPrompt": "Importe seus destaques do Kindle para comecar a estudar"
   },
-  "actions": {
-    "start": "Comecar estudo",
-    "continue": "Continuar",
-    "reset_progress": "Resetar progresso"
+  "emptyDeck": {
+    "title": "Nenhum cartao disponivel",
+    "message": "Todas as revisoes deste baralho foram concluidas hoje. Volte amanha!"
   },
-  "test": "Study namespace funcionando!"
+  "heatmap": {
+    "title": "Atividade de Revisao",
+    "currentStreak": "Sequencia atual",
+    "longestStreak": "Maior sequencia",
+    "reviews": "{{count}} revisao",
+    "reviews_other": "{{count}} revisoes",
+    "months": {
+      "jan": "Jan",
+      "feb": "Fev",
+      "mar": "Mar",
+      "apr": "Abr",
+      "may": "Mai",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Ago",
+      "sep": "Set",
+      "oct": "Out",
+      "nov": "Nov",
+      "dec": "Dez"
+    },
+    "days": {
+      "sun": "D",
+      "mon": "S",
+      "tue": "T",
+      "wed": "Q",
+      "thu": "Q",
+      "fri": "S",
+      "sat": "S"
+    }
+  }
 }
