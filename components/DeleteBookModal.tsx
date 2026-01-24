@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AlertTriangle } from 'lucide-react';
 import { useStore } from './StoreContext';
 import {
@@ -20,6 +21,7 @@ interface DeleteBookModalProps {
 }
 
 export const DeleteBookModal: React.FC<DeleteBookModalProps> = ({ bookId, onConfirm, onCancel }) => {
+  const { t } = useTranslation('settings');
   const { getBook, highlights, studyCards, currentSession } = useStore();
   const [confirmed, setConfirmed] = useState(false);
 
@@ -57,21 +59,21 @@ export const DeleteBookModal: React.FC<DeleteBookModalProps> = ({ bookId, onConf
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
             <AlertTriangle className="w-5 h-5 text-destructive" />
-            Delete "{bookData.book.title}"?
+            {t('deleteBook.title', { title: bookData.book.title })}
           </AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className="space-y-2">
-              <p>This action will permanently delete:</p>
+              <p>{t('deleteBook.warning')}</p>
               <ul className="list-disc list-inside ml-2 space-y-1">
-                <li>{bookData.highlightCount} highlight{bookData.highlightCount !== 1 ? 's' : ''}</li>
-                <li>{bookData.cardCount} study card{bookData.cardCount !== 1 ? 's' : ''}</li>
-                <li>All review history for this book</li>
-                <li>All chapter tags associated with this book</li>
+                <li>{t('deleteBook.highlights', { count: bookData.highlightCount })}</li>
+                <li>{t('deleteBook.studyCards', { count: bookData.cardCount })}</li>
+                <li>{t('deleteBook.reviewHistory')}</li>
+                <li>{t('deleteBook.chapterTags')}</li>
               </ul>
               {bookData.isInActiveSession && (
                 <p className="text-destructive font-medium mt-3 flex items-center gap-1">
                   <AlertTriangle className="w-3 h-3" />
-                  This book is in your active study session
+                  {t('deleteBook.activeSession')}
                 </p>
               )}
             </div>
@@ -85,18 +87,18 @@ export const DeleteBookModal: React.FC<DeleteBookModalProps> = ({ bookId, onConf
             onCheckedChange={(checked) => setConfirmed(!!checked)}
           />
           <label htmlFor="confirm-delete" className="text-sm text-muted-foreground cursor-pointer">
-            I understand this action cannot be undone
+            {t('deleteBook.confirm')}
           </label>
         </div>
 
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>{t('common:buttons.cancel')}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             disabled={!confirmed}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50"
           >
-            Delete Book
+            {t('deleteBook.button')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

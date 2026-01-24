@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useStore } from '../components/StoreContext';
 import { useAuth } from '../components/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -10,6 +11,7 @@ import { resizeImage } from '../lib/imageUtils';
 type TabId = 'import' | 'library' | 'account' | 'preferences';
 
 const Settings = () => {
+  const { t } = useTranslation('settings');
   const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
   const { books, highlights, studyCards, importData, settings, updateSettings, deleteBook, updateBookSettings, resetAllBooksToDefaults, updateBookCover } = useStore();
@@ -43,10 +45,10 @@ const Settings = () => {
   }, [activeTab, setSearchParams]);
 
   const tabs = [
-    { id: 'import' as TabId, name: 'Import', icon: Upload },
-    { id: 'library' as TabId, name: 'Library', icon: Library },
-    { id: 'account' as TabId, name: 'Account', icon: User },
-    { id: 'preferences' as TabId, name: 'Preferences', icon: Sliders },
+    { id: 'import' as TabId, name: t('tabs.import'), icon: Upload },
+    { id: 'library' as TabId, name: t('tabs.library'), icon: Library },
+    { id: 'account' as TabId, name: t('tabs.account'), icon: User },
+    { id: 'preferences' as TabId, name: t('tabs.preferences'), icon: Sliders },
   ];
 
   // Import handlers
@@ -280,9 +282,9 @@ const Settings = () => {
     <div className="p-6">
       {/* Header */}
       <header className="mb-3">
-        <h1 className="text-base font-semibold text-foreground">Settings</h1>
+        <h1 className="text-base font-semibold text-foreground">{t('title')}</h1>
         <p className="text-xs text-muted-foreground mt-1">
-          Manage your library, import highlights, and preferences.
+          {t('subtitle')}
         </p>
       </header>
 
@@ -312,8 +314,8 @@ const Settings = () => {
         {activeTab === 'import' && (
           <div className="space-y-3">
             <div>
-              <h2 className="text-xs font-semibold text-muted-foreground">Import Highlights</h2>
-              <p className="text-[10px] text-muted-foreground mt-0.5">Upload 'My Clippings.txt', Kindle PDF export, or Anki TSV file</p>
+              <h2 className="text-xs font-semibold text-muted-foreground">{t('import.title')}</h2>
+              <p className="text-[10px] text-muted-foreground mt-0.5">{t('import.subtitle')}</p>
             </div>
 
             {/* Success Notification */}
@@ -322,14 +324,14 @@ const Settings = () => {
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400 shrink-0" />
                   <span className="text-xs text-green-600 dark:text-green-400">
-                    Imported {importResult.newBooks} books, {importResult.newHighlights} highlights
+                    {t('import.success', { books: importResult.newBooks, highlights: importResult.newHighlights })}
                   </span>
                 </div>
                 <button
                   onClick={() => setActiveTab('library')}
                   className="text-xs text-green-600 dark:text-green-400 hover:underline shrink-0"
                 >
-                  View Library →
+                  {t('import.viewLibrary')}
                 </button>
               </div>
             )}
@@ -337,7 +339,7 @@ const Settings = () => {
             {/* Error Notification */}
             {importError && (
               <div className="bg-destructive/10 border border-destructive/30 text-destructive px-3 py-2 rounded text-xs">
-                <strong className="font-semibold">Error: </strong>
+                <strong className="font-semibold">{t('import.error')}</strong>
                 <span>{importError}</span>
               </div>
             )}
@@ -373,17 +375,17 @@ const Settings = () => {
 
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-foreground">
-                    {isProcessing ? 'Processing highlights...' : 'Drag & drop file here'}
+                    {isProcessing ? t('import.processing') : t('import.dragDrop')}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    or <label htmlFor="file-upload" className="text-foreground hover:underline cursor-pointer font-medium">browse to upload</label>
+                    {t('import.browseUploadPrefix')} <label htmlFor="file-upload" className="text-foreground hover:underline cursor-pointer font-medium">{t('import.browseUpload')}</label>
                   </p>
                 </div>
 
                 {!isProcessing && (
                   <div className="flex items-center text-[10px] text-muted-foreground bg-muted px-2 py-1 rounded border border-border">
                     <FileText className="w-3 h-3 mr-1.5" />
-                    .txt, .pdf, or .tsv
+                    {t('import.fileTypes')}
                   </div>
                 )}
               </div>
@@ -393,32 +395,32 @@ const Settings = () => {
             <div className="bg-muted border border-border rounded p-3 flex gap-2 items-start">
               <AlertCircle className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-0.5" />
               <div className="text-xs text-muted-foreground space-y-1">
-                <p className="font-semibold text-foreground">Instructions</p>
+                <p className="font-semibold text-foreground">{t('import.instructions.title')}</p>
                 <div className="space-y-2 text-[11px] leading-relaxed">
                   <div>
-                    <p className="font-medium text-foreground">Option 1: My Clippings.txt</p>
+                    <p className="font-medium text-foreground">{t('import.instructions.option1Title')}</p>
                     <ol className="list-decimal list-inside space-y-0.5 ml-2">
-                      <li>Connect your Kindle to your computer via USB</li>
-                      <li>Open the "Kindle" drive in your file explorer</li>
-                      <li>Find the "documents" folder</li>
-                      <li>Locate "My Clippings.txt" and upload it here</li>
+                      <li>{t('import.instructions.option1Step1')}</li>
+                      <li>{t('import.instructions.option1Step2')}</li>
+                      <li>{t('import.instructions.option1Step3')}</li>
+                      <li>{t('import.instructions.option1Step4')}</li>
                     </ol>
                   </div>
                   <div>
-                    <p className="font-medium text-foreground">Option 2: PDF Export</p>
+                    <p className="font-medium text-foreground">{t('import.instructions.option2Title')}</p>
                     <ol className="list-decimal list-inside space-y-0.5 ml-2">
-                      <li>On your Kindle, select a book and view highlights</li>
-                      <li>Choose "Email highlights" to send them to your email</li>
-                      <li>Download the PDF attachment from the email</li>
-                      <li>Upload the PDF file here</li>
+                      <li>{t('import.instructions.option2Step1')}</li>
+                      <li>{t('import.instructions.option2Step2')}</li>
+                      <li>{t('import.instructions.option2Step3')}</li>
+                      <li>{t('import.instructions.option2Step4')}</li>
                     </ol>
                   </div>
                   <div>
-                    <p className="font-medium text-foreground">Option 3: Anki TSV</p>
+                    <p className="font-medium text-foreground">{t('import.instructions.option3Title')}</p>
                     <ol className="list-decimal list-inside space-y-0.5 ml-2">
-                      <li>Export your Anki deck as TSV (tab-separated values)</li>
-                      <li>Format: [highlight] TAB [note] TAB [book title] TAB [author]</li>
-                      <li>Upload the .tsv file here</li>
+                      <li>{t('import.instructions.option3Step1')}</li>
+                      <li>{t('import.instructions.option3Step2')}</li>
+                      <li>{t('import.instructions.option3Step3')}</li>
                     </ol>
                   </div>
                 </div>
@@ -431,22 +433,22 @@ const Settings = () => {
         {activeTab === 'library' && (
           <div className="space-y-3">
             <div>
-              <h2 className="text-xs font-semibold text-muted-foreground">Book Library</h2>
-              <p className="text-[10px] text-muted-foreground mt-0.5">{books.length} books in your collection</p>
+              <h2 className="text-xs font-semibold text-muted-foreground">{t('library.title')}</h2>
+              <p className="text-[10px] text-muted-foreground mt-0.5">{t('library.bookCount', { count: books.length })}</p>
             </div>
 
             {/* Books List */}
             {filteredBooks.length === 0 ? (
               <div className="text-center py-12 bg-muted rounded border border-dashed border-border">
                 <p className="text-xs text-muted-foreground">
-                  No books in library. Import highlights to get started.
+                  {t('library.empty')}
                 </p>
                 {books.length === 0 && (
                   <button
                     onClick={() => setActiveTab('import')}
                     className="mt-2 text-xs text-foreground hover:underline"
                   >
-                    Go to Import Tab →
+                    {t('library.goToImport')}
                   </button>
                 )}
               </div>
@@ -461,7 +463,7 @@ const Settings = () => {
                         setBookToDelete(book.id);
                       }}
                       className="absolute top-2 right-2 p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded transition-colors z-10"
-                      title="Delete book"
+                      title={t('library.deleteBook')}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -502,9 +504,9 @@ const Settings = () => {
                         <h3 className="text-sm font-semibold text-card-foreground truncate">
                           {book.title.length > 100 ? `${book.title.substring(0, 100)}...` : book.title}
                         </h3>
-                        <p className="text-xs text-muted-foreground truncate">{book.author} • {book.highlightCount} highlights</p>
+                        <p className="text-xs text-muted-foreground truncate">{book.author} • {t('library.highlightsCount', { count: book.highlightCount })}</p>
                         <p className="text-[10px] text-muted-foreground mt-0.5">
-                          Last: {formatDate(book.lastImported)}
+                          {t('library.lastImport', { date: formatDate(book.lastImported) })}
                         </p>
                       </div>
                     </div>
@@ -526,7 +528,7 @@ const Settings = () => {
                         className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
                       >
                         <SettingsIcon className="w-3 h-3" />
-                        <span>Book Settings</span>
+                        <span>{t('library.bookSettings')}</span>
                         {expandedBooks.has(book.id) ? (
                           <ChevronUp className="w-3 h-3" />
                         ) : (
@@ -538,7 +540,7 @@ const Settings = () => {
                         <div className="mt-2 bg-muted rounded p-2 space-y-2">
                           {/* Daily Review Limit */}
                           <div className="flex items-center justify-between">
-                            <label className="text-xs text-foreground">Daily Review Limit:</label>
+                            <label className="text-xs text-foreground">{t('library.dailyLimit')}</label>
                             <div className="flex items-center gap-1.5">
                               <input
                                 type="number"
@@ -552,13 +554,13 @@ const Settings = () => {
                                 }}
                                 className="h-6 w-16 px-1.5 text-xs border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring bg-background text-foreground"
                               />
-                              <span className="text-[10px] text-muted-foreground">cards/day</span>
+                              <span className="text-[10px] text-muted-foreground">{t('library.cardsPerDay')}</span>
                             </div>
                           </div>
 
                           {/* Initial Ease Factor */}
                           <div className="flex items-center justify-between">
-                            <label className="text-xs text-foreground">Initial Ease Factor:</label>
+                            <label className="text-xs text-foreground">{t('library.easeFactor')}</label>
                             <div className="flex items-center gap-1.5">
                               <input
                                 type="number"
@@ -573,12 +575,12 @@ const Settings = () => {
                                 }}
                                 className="h-6 w-16 px-1.5 text-xs border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring bg-background text-foreground"
                               />
-                              <span className="text-[10px] text-muted-foreground">(new cards)</span>
+                              <span className="text-[10px] text-muted-foreground">{t('library.newCards')}</span>
                             </div>
                           </div>
 
                           <p className="text-[9px] text-muted-foreground italic">
-                            Leave empty to use global defaults
+                            {t('library.useDefaults')}
                           </p>
                         </div>
                       )}
@@ -594,13 +596,13 @@ const Settings = () => {
         {activeTab === 'account' && (
           <div className="space-y-4">
             <div>
-              <h2 className="text-xs font-semibold text-muted-foreground">Account Settings</h2>
-              <p className="text-[10px] text-muted-foreground mt-0.5">Manage your account and profile</p>
+              <h2 className="text-xs font-semibold text-muted-foreground">{t('account.title')}</h2>
+              <p className="text-[10px] text-muted-foreground mt-0.5">{t('account.subtitle')}</p>
             </div>
 
             {/* Profile Photo */}
             <div>
-              <h3 className="text-xs font-semibold text-card-foreground mb-1.5">Profile Photo</h3>
+              <h3 className="text-xs font-semibold text-card-foreground mb-1.5">{t('account.photo.title')}</h3>
               <div className="bg-muted border border-border rounded p-3 flex items-center gap-3">
                 {/* Avatar Preview */}
                 <div className="relative">
@@ -632,10 +634,10 @@ const Settings = () => {
                     className="inline-flex items-center gap-1.5 h-7 px-3 text-xs bg-secondary hover:bg-accent text-secondary-foreground rounded transition-colors cursor-pointer"
                   >
                     <Camera className="w-3 h-3" />
-                    Change Photo
+                    {t('account.photo.change')}
                   </label>
                   <p className="text-[10px] text-muted-foreground mt-1">
-                    JPG, PNG or GIF. Max 2MB.
+                    {t('account.photo.hint')}
                   </p>
                 </div>
               </div>
@@ -643,53 +645,53 @@ const Settings = () => {
 
             {/* Profile Information */}
             <div>
-              <h3 className="text-xs font-semibold text-card-foreground mb-1.5">Profile Information</h3>
+              <h3 className="text-xs font-semibold text-card-foreground mb-1.5">{t('account.profile.title')}</h3>
               <div className="bg-muted border border-border rounded p-3 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">Name:</span>
+                  <span className="text-xs text-muted-foreground">{t('account.profile.name')}</span>
                   <input
                     type="text"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     onBlur={handleSaveFullName}
-                    placeholder="Your full name"
+                    placeholder={t('account.profile.namePlaceholder')}
                     className="h-6 px-2 text-xs border border-input rounded w-48 focus:outline-none focus:ring-1 focus:ring-ring bg-background text-foreground"
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">Email:</span>
+                  <span className="text-xs text-muted-foreground">{t('account.profile.email')}</span>
                   <span className="text-xs font-medium text-foreground">{user?.email}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">Plan:</span>
-                  <span className="text-xs font-medium text-foreground">Free</span>
+                  <span className="text-xs text-muted-foreground">{t('account.profile.plan')}</span>
+                  <span className="text-xs font-medium text-foreground">{t('account.profile.freePlan')}</span>
                 </div>
               </div>
             </div>
 
             {/* Statistics */}
             <div>
-              <h3 className="text-xs font-semibold text-card-foreground mb-1.5">Statistics</h3>
+              <h3 className="text-xs font-semibold text-card-foreground mb-1.5">{t('account.stats.title')}</h3>
               <div className="bg-muted border border-border rounded p-3">
                 <p className="text-xs text-muted-foreground">
-                  <span className="font-semibold text-foreground">{books.length}</span> Books •{' '}
-                  <span className="font-semibold text-foreground">{highlights.length}</span> Highlights •{' '}
-                  <span className="font-semibold text-foreground">{studyCards.length}</span> Study Cards
+                  <span className="font-semibold text-foreground">{books.length}</span> {t('account.stats.books')} •{' '}
+                  <span className="font-semibold text-foreground">{highlights.length}</span> {t('account.stats.highlights')} •{' '}
+                  <span className="font-semibold text-foreground">{studyCards.length}</span> {t('account.stats.studyCards')}
                 </p>
               </div>
             </div>
 
             {/* Danger Zone */}
             <div>
-              <h3 className="text-xs font-semibold text-destructive mb-1.5">Danger Zone</h3>
+              <h3 className="text-xs font-semibold text-destructive mb-1.5">{t('account.danger.title')}</h3>
               <div className="flex gap-2">
                 <button className="flex-1 h-7 px-3 text-xs bg-secondary hover:bg-accent text-secondary-foreground rounded transition-colors border border-border flex items-center justify-center gap-1.5">
                   <Download className="w-3 h-3" />
-                  Export Data
+                  {t('account.danger.export')}
                 </button>
                 <button className="flex-1 h-7 px-3 text-xs bg-secondary hover:bg-destructive/10 text-destructive rounded transition-colors border border-destructive/30 flex items-center justify-center gap-1.5">
                   <Trash2 className="w-3 h-3" />
-                  Delete Account
+                  {t('account.danger.delete')}
                 </button>
               </div>
             </div>
@@ -700,16 +702,16 @@ const Settings = () => {
         {activeTab === 'preferences' && (
           <div className="space-y-4">
             <div>
-              <h2 className="text-xs font-semibold text-muted-foreground">Study Preferences</h2>
-              <p className="text-[10px] text-muted-foreground mt-0.5">Customize spaced repetition and study behavior</p>
+              <h2 className="text-xs font-semibold text-muted-foreground">{t('preferences.title')}</h2>
+              <p className="text-[10px] text-muted-foreground mt-0.5">{t('preferences.subtitle')}</p>
             </div>
 
             {/* Study Options */}
             <div>
-              <h3 className="text-xs font-semibold text-card-foreground mb-1.5">Study Options</h3>
+              <h3 className="text-xs font-semibold text-card-foreground mb-1.5">{t('preferences.study.title')}</h3>
               <div className="bg-muted border border-border rounded p-3 space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs text-foreground">Default Daily Review Limit</label>
+                  <label className="text-xs text-foreground">{t('preferences.study.dailyLimit')}</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="number"
@@ -719,12 +721,12 @@ const Settings = () => {
                       onChange={(e) => updateSettings({ maxReviewsPerDay: Number(e.target.value) })}
                       className="h-6 w-16 px-1.5 text-xs border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring bg-background text-foreground"
                     />
-                    <span className="text-[10px] text-muted-foreground">cards/book/day</span>
+                    <span className="text-[10px] text-muted-foreground">{t('preferences.study.cardsPerBookDay')}</span>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <label className="text-xs text-foreground">Default Initial Ease Factor</label>
+                  <label className="text-xs text-foreground">{t('preferences.study.easeFactor')}</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="number"
@@ -735,24 +737,24 @@ const Settings = () => {
                       onChange={(e) => updateSettings({ defaultInitialEaseFactor: Number(e.target.value) })}
                       className="h-6 w-16 px-1.5 text-xs border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring bg-background text-foreground"
                     />
-                    <span className="text-[10px] text-muted-foreground">(new cards)</span>
+                    <span className="text-[10px] text-muted-foreground">{t('preferences.study.newCards')}</span>
                   </div>
                 </div>
 
                 <div className="pt-2 border-t border-border">
                   <button
                     onClick={async () => {
-                      if (confirm('Apply current global settings to all books?\n\nThis will remove custom settings from all books and use the global defaults above.')) {
+                      if (confirm(t('preferences.study.applyGlobalConfirm'))) {
                         await resetAllBooksToDefaults();
                       }
                     }}
                     className="w-full h-7 px-3 text-xs bg-secondary hover:bg-accent text-secondary-foreground rounded transition-colors flex items-center justify-center gap-1.5"
                   >
                     <SettingsIcon className="w-3 h-3" />
-                    Apply Global Settings to All Books
+                    {t('preferences.study.applyGlobal')}
                   </button>
                   <p className="text-[9px] text-muted-foreground mt-1 text-center">
-                    Removes custom daily limits and ease factors from all books
+                    {t('preferences.study.applyGlobalHint')}
                   </p>
                 </div>
               </div>
@@ -760,18 +762,18 @@ const Settings = () => {
 
             {/* Display & Interface */}
             <div>
-              <h3 className="text-xs font-semibold text-card-foreground mb-1.5">Display & Interface</h3>
+              <h3 className="text-xs font-semibold text-card-foreground mb-1.5">{t('preferences.display.title')}</h3>
               <div className="bg-muted border border-border rounded p-3 space-y-2">
                 <label className="flex items-center gap-2 text-xs text-foreground cursor-pointer">
                   <input type="checkbox" className="w-3.5 h-3.5 rounded border-border" />
-                  Show keyboard shortcuts hints
+                  {t('preferences.display.keyboardHints')}
                 </label>
                 <label className="flex items-center gap-2 text-xs text-foreground cursor-pointer">
                   <input type="checkbox" defaultChecked className="w-3.5 h-3.5 rounded border-border" />
-                  Auto-reveal answer after 3 seconds
+                  {t('preferences.display.autoReveal')}
                 </label>
                 <p className="text-xs text-muted-foreground italic mt-2">
-                  Note: These settings are not yet functional
+                  {t('preferences.display.notFunctional')}
                 </p>
               </div>
             </div>

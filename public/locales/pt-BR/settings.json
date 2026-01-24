@@ -1,55 +1,118 @@
 {
   "_meta": "Settings page strings (tabs, form labels, preferences)",
+  "title": "Configurações",
+  "subtitle": "Gerencie sua biblioteca, importe destaques e configure preferências.",
   "tabs": {
     "import": "Importar",
     "library": "Biblioteca",
     "account": "Conta",
-    "preferences": "Preferencias"
+    "preferences": "Preferências"
   },
   "import": {
-    "title": "Importar destaques",
-    "kindle_txt": "MyClippings.txt (Kindle)",
-    "kindle_pdf": "PDF do Kindle",
-    "anki": "Arquivo Anki (TSV)",
-    "drag_drop": "Arraste um arquivo aqui ou clique para selecionar",
-    "processing": "Processando...",
-    "success": "{{count}} destaques importados com sucesso",
-    "success_one": "{{count}} destaque importado com sucesso",
-    "duplicates_skipped": "{{count}} duplicados ignorados"
+    "title": "Importar Destaques",
+    "subtitle": "Envie 'My Clippings.txt', PDF do Kindle ou arquivo TSV do Anki",
+    "success": "Importado com sucesso: {{books}} livros, {{highlights}} destaques",
+    "viewLibrary": "Ver Biblioteca →",
+    "error": "Erro: ",
+    "processing": "Processando destaques...",
+    "dragDrop": "Arraste e solte o arquivo aqui",
+    "browseUploadPrefix": "ou",
+    "browseUpload": "clique para selecionar",
+    "fileTypes": ".txt, .pdf ou .tsv",
+    "instructions": {
+      "title": "Instruções",
+      "option1Title": "Opção 1: My Clippings.txt",
+      "option1Step1": "Conecte seu Kindle ao computador via USB",
+      "option1Step2": "Abra a unidade \"Kindle\" no explorador de arquivos",
+      "option1Step3": "Encontre a pasta \"documents\"",
+      "option1Step4": "Localize \"My Clippings.txt\" e envie aqui",
+      "option2Title": "Opção 2: PDF do Kindle",
+      "option2Step1": "No seu Kindle, selecione um livro e veja os destaques",
+      "option2Step2": "Escolha \"Enviar destaques por email\"",
+      "option2Step3": "Baixe o anexo PDF do email",
+      "option2Step4": "Envie o arquivo PDF aqui",
+      "option3Title": "Opção 3: Anki TSV",
+      "option3Step1": "Exporte seu deck do Anki como TSV (valores separados por tab)",
+      "option3Step2": "Formato: [destaque] TAB [nota] TAB [título do livro] TAB [autor]",
+      "option3Step3": "Envie o arquivo .tsv aqui"
+    }
   },
   "library": {
-    "title": "Gerenciar biblioteca",
-    "books": "Livros",
-    "book_count": "{{count}} livros",
-    "book_count_one": "{{count}} livro",
-    "delete_book": "Excluir livro",
-    "delete_book_confirm": "Tem certeza? Todos os destaques deste livro serao excluidos.",
-    "edit_book": "Editar livro",
-    "daily_limit": "Limite diario",
-    "ease_factor": "Fator de facilidade"
+    "title": "Biblioteca de Livros",
+    "bookCount": "{{count}} livros na sua coleção",
+    "bookCount_one": "{{count}} livro na sua coleção",
+    "empty": "Nenhum livro na biblioteca. Importe destaques para começar.",
+    "goToImport": "Ir para Importar →",
+    "deleteBook": "Excluir livro",
+    "highlightsCount": "{{count}} destaques",
+    "highlightsCount_one": "{{count}} destaque",
+    "lastImport": "Último: {{date}}",
+    "bookSettings": "Configurações do Livro",
+    "dailyLimit": "Limite Diário de Revisão:",
+    "cardsPerDay": "cartões/dia",
+    "easeFactor": "Fator de Facilidade Inicial:",
+    "newCards": "(cartões novos)",
+    "useDefaults": "Deixe vazio para usar padrões globais"
   },
   "account": {
-    "title": "Minha conta",
-    "profile": "Perfil",
-    "name": "Nome",
-    "email": "Email",
-    "avatar": "Foto de perfil",
-    "change_avatar": "Alterar foto",
-    "remove_avatar": "Remover foto",
-    "change_password": "Alterar senha",
-    "delete_account": "Excluir conta"
+    "title": "Configurações da Conta",
+    "subtitle": "Gerencie sua conta e perfil",
+    "photo": {
+      "title": "Foto de Perfil",
+      "change": "Alterar Foto",
+      "hint": "JPG, PNG ou GIF. Máx 2MB."
+    },
+    "profile": {
+      "title": "Informações do Perfil",
+      "name": "Nome:",
+      "namePlaceholder": "Seu nome completo",
+      "email": "Email:",
+      "plan": "Plano:",
+      "freePlan": "Gratuito"
+    },
+    "stats": {
+      "title": "Estatísticas",
+      "books": "Livros",
+      "highlights": "Destaques",
+      "studyCards": "Cartões de Estudo"
+    },
+    "danger": {
+      "title": "Zona de Perigo",
+      "export": "Exportar Dados",
+      "delete": "Excluir Conta"
+    }
   },
   "preferences": {
-    "title": "Preferencias",
-    "language": "Idioma",
-    "theme": "Tema",
-    "theme_light": "Claro",
-    "theme_dark": "Escuro",
-    "theme_system": "Sistema",
-    "daily_limit": "Limite diario de revisoes",
-    "default_ease": "Fator de facilidade padrao",
-    "notifications": "Notificacoes",
-    "sound": "Som"
+    "title": "Preferências de Estudo",
+    "subtitle": "Personalize a repetição espaçada e o comportamento do estudo",
+    "study": {
+      "title": "Opções de Estudo",
+      "dailyLimit": "Limite Diário de Revisão Padrão",
+      "cardsPerBookDay": "cartões/livro/dia",
+      "easeFactor": "Fator de Facilidade Inicial Padrão",
+      "newCards": "(cartões novos)",
+      "applyGlobal": "Aplicar Configurações Globais a Todos os Livros",
+      "applyGlobalHint": "Remove limites diários e fatores de facilidade personalizados de todos os livros",
+      "applyGlobalConfirm": "Aplicar configurações globais atuais a todos os livros?\n\nIsso removerá configurações personalizadas de todos os livros e usará os padrões globais acima."
+    },
+    "display": {
+      "title": "Interface e Exibição",
+      "keyboardHints": "Mostrar dicas de atalhos de teclado",
+      "autoReveal": "Revelar resposta automaticamente após 3 segundos",
+      "notFunctional": "Nota: Essas configurações ainda não estão funcionais"
+    }
   },
-  "test": "Settings namespace funcionando!"
+  "deleteBook": {
+    "title": "Excluir \"{{title}}\"?",
+    "warning": "Esta ação excluirá permanentemente:",
+    "highlights": "{{count}} destaques",
+    "highlights_one": "{{count}} destaque",
+    "studyCards": "{{count}} cartões de estudo",
+    "studyCards_one": "{{count}} cartão de estudo",
+    "reviewHistory": "Todo o histórico de revisão deste livro",
+    "chapterTags": "Todas as tags de capítulo associadas a este livro",
+    "activeSession": "Este livro está na sua sessão de estudo ativa",
+    "confirm": "Eu entendo que esta ação não pode ser desfeita",
+    "button": "Excluir Livro"
+  }
 }
