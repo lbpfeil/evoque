@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../components/AuthContext';
 import { BookOpen, Loader2, AlertCircle } from 'lucide-react';
 
 const Login = () => {
+    const { t } = useTranslation('auth');
     const { signIn, signUp } = useAuth();
     const [isSignUp, setIsSignUp] = useState(false);
     const [email, setEmail] = useState('');
@@ -18,12 +20,12 @@ const Login = () => {
         try {
             if (isSignUp) {
                 await signUp(email, password);
-                setError('Verifique seu email para confirmar o cadastro!');
+                setError(t('signup.verifyEmail'));
             } else {
                 await signIn(email, password);
             }
         } catch (err: any) {
-            setError(err.message || 'Erro ao autenticar');
+            setError(err.message || t('errors.generic'));
         } finally {
             setLoading(false);
         }
@@ -43,7 +45,7 @@ const Login = () => {
                 {/* Card */}
                 <div className="bg-card rounded-2xl shadow-xl border border-border p-6 sm:p-8">
                     <h2 className="text-xl font-semibold text-card-foreground mb-4 sm:mb-6">
-                        {isSignUp ? 'Criar Conta' : 'Entrar'}
+                        {isSignUp ? t('signup.title') : t('login.title')}
                     </h2>
 
                     {error && (
@@ -56,21 +58,21 @@ const Login = () => {
                     <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-foreground mb-1.5">
-                                Email
+                                {t('login.email')}
                             </label>
                             <input
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 className="w-full px-3 py-2.5 sm:py-2 border border-input bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
-                                placeholder="seu@email.com"
+                                placeholder={t('login.emailPlaceholder')}
                                 required
                             />
                         </div>
 
                         <div>
                             <label className="block text-sm font-medium text-foreground mb-1.5">
-                                Senha
+                                {t('login.password')}
                             </label>
                             <input
                                 type="password"
@@ -89,7 +91,7 @@ const Login = () => {
                             className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-3 sm:py-2.5 min-h-[44px] rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         >
                             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                            {isSignUp ? 'Criar Conta' : 'Entrar'}
+                            {isSignUp ? t('signup.submit') : t('login.submit')}
                         </button>
                     </form>
 
@@ -101,13 +103,13 @@ const Login = () => {
                             }}
                             className="text-sm text-primary hover:text-primary/80 font-medium transition-colors duration-200"
                         >
-                            {isSignUp ? 'Já tem uma conta? Entrar' : 'Não tem conta? Criar agora'}
+                            {isSignUp ? t('signup.hasAccount') : t('login.noAccount')}
                         </button>
                     </div>
                 </div>
 
                 <p className="text-center text-xs text-muted-foreground mt-6">
-                    Seus dados são protegidos e criptografados
+                    {t('login.dataProtected')}
                 </p>
             </div>
         </div>
