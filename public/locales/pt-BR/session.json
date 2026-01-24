@@ -32,6 +32,7 @@
     "numbers": "1-4 para avaliar"
   },
   "progress": {
+    "cardOf": "Cartão {{current}} / {{total}}",
     "card_of": "Cartão {{current}} de {{total}}",
     "remaining": "{{count}} restantes",
     "done": "Concluído"
@@ -39,10 +40,30 @@
   "actions": {
     "revealAnswer": "Revelar Resposta",
     "backToDecks": "Voltar aos Decks",
+    "manageTags": "Gerenciar Tags",
+    "copyToClipboard": "Copiar para área de transferência",
+    "copied": "Copiado!",
+    "deleteCard": "Excluir Cartão",
     "undo": "Desfazer",
     "skip": "Pular",
     "edit": "Editar cartão",
     "finish": "Finalizar sessão"
+  },
+  "edit": {
+    "highlightLabel": "Editar Destaque",
+    "noteLabel": "Editar Nota",
+    "saveHint": "Pressione ESC ou clique fora para salvar",
+    "notePlaceholder": "Adicione sua nota aqui..."
+  },
+  "note": {
+    "empty": "Nenhuma nota anexada",
+    "add": "Adicionar nota",
+    "edit": "Editar Nota",
+    "editHint": "Editar Nota (E)"
+  },
+  "error": {
+    "title": "Erro no Cartão",
+    "message": "Os dados do cartão atual estão faltando ou corrompidos."
   },
   "noCards": {
     "title": "Nenhum cartão disponível",
