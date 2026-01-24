@@ -1,21 +1,11 @@
 {
   "_meta": "Highlights page strings (list, filters, actions)",
-  "list": {
-    "title": "Destaques",
-    "count": "{{count}} destaques",
-    "count_one": "{{count}} destaque",
-    "empty": "Nenhum destaque encontrado"
-  },
-  "filters": {
-    "all_books": "Todos os livros",
-    "search_placeholder": "Buscar destaques...",
-    "tags": "Tags",
-    "no_tags": "Sem tags",
-    "sort_by": "Ordenar por",
-    "sort_date": "Data",
-    "sort_book": "Livro"
+  "title": "Destaques",
+  "stats": {
+    "summary": "{{highlightCount}} destaques de {{bookCount}} livros, último destaque em {{lastDate}}."
   },
   "actions": {
+    "manageTags": "Gerenciar Tags",
     "add_note": "Adicionar nota",
     "edit_note": "Editar nota",
     "delete": "Excluir destaque",
@@ -23,15 +13,53 @@
     "copy": "Copiar texto",
     "copied": "Copiado!"
   },
+  "filters": {
+    "searchPlaceholder": "Buscar destaques...",
+    "allBooks": "Todos os Livros",
+    "allTags": "Todas as Tags",
+    "allStatus": "Todos os Status",
+    "inStudy": "Em Estudo",
+    "notInStudy": "Fora de Estudo",
+    "sortDate": "Data",
+    "searchBooks": "Buscar livros...",
+    "searchTags": "Buscar tags...",
+    "noBookFound": "Nenhum livro encontrado.",
+    "noTagFound": "Nenhuma tag encontrada."
+  },
+  "table": {
+    "bookAuthor": "Livro / Autor",
+    "highlight": "Destaque",
+    "note": "Nota",
+    "tags": "Tags",
+    "date": "Data",
+    "status": "Status"
+  },
+  "bulk": {
+    "selected": "{{count}} selecionados",
+    "selected_one": "{{count}} selecionado",
+    "tag": "Tag",
+    "delete": "Excluir",
+    "assignTo": "Atribuir a {{count}} itens",
+    "noTags": "Nenhuma tag disponível",
+    "deleteConfirm": "Tem certeza que deseja excluir {{count}} destaques?"
+  },
+  "emptyState": {
+    "noResults": "Nenhum destaque corresponde aos filtros.",
+    "no_highlights": "Você ainda não tem destaques",
+    "import_prompt": "Importe seus destaques do Kindle para começar"
+  },
+  "pagination": {
+    "page": "Página {{current}} de {{total}}",
+    "previous": "Anterior",
+    "next": "Próximo"
+  },
+  "dates": {
+    "never": "nunca"
+  },
   "tags": {
     "add": "Adicionar tag",
     "create": "Criar nova tag",
     "remove": "Remover tag"
-  },
-  "empty_states": {
-    "no_highlights": "Voce ainda nao tem destaques",
-    "no_results": "Nenhum resultado para esta busca",
-    "import_prompt": "Importe seus destaques do Kindle para comecar"
   },
   "test": "Highlights namespace funcionando!"
 }
