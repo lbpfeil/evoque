@@ -3,7 +3,7 @@
 **Last updated:** 2026-01-24
 **Milestone:** v1.1 Internationalization
 **Phase:** 5 - String Extraction (in progress)
-**Plan:** 05-07 Complete
+**Plan:** 05-07a Complete
 **Status:** Executing
 
 ## Project Reference
@@ -21,7 +21,7 @@
 **Phase:** 5 - String Extraction (IN PROGRESS)
 - **Goal:** All UI strings translated to PT-BR
 - **Requirements:** TRANS-01 through TRANS-09
-- **Status:** 9 plans complete, 2 remaining
+- **Status:** 10 plans complete, 2 remaining
 
 **Plans:**
 | Wave | Plan | Focus | Status |
@@ -33,7 +33,8 @@
 | 3 | 05-05 | Highlights | Complete |
 | 3 | 05-05a | TagManager | Complete |
 | 4 | 05-06 | StudySession | Complete |
-| 5 | 05-07 | Settings | Complete |
+| 5 | 05-07 | Settings Import/Library | Complete |
+| 5 | 05-07a | Settings Account/Preferences | Complete |
 | 6 | 05-08 | Modals | Pending |
 | 6 | 05-09 | Errors | Pending |
 | 7 | 05-10 | Validation | Pending |
@@ -41,7 +42,7 @@
 **Progress:**
 ```
 Milestone v1.1: [██░░░░░░░░] 25% (1/4 phases)
-Phase 5:       [████████░░] 82% (9/11 plans)
+Phase 5:       [█████████░] 83% (10/12 plans)
 ```
 
 ## Performance Metrics
@@ -57,8 +58,8 @@ Phase 5:       [████████░░] 82% (9/11 plans)
 - Started: 2026-01-24
 - Phases planned: 4
 - Requirements: 21
-- Plans executed: 11 (Phase 4: 2, Phase 5: 9)
-- Plans planned: 11 (Phase 5)
+- Plans executed: 12 (Phase 4: 2, Phase 5: 10)
+- Plans planned: 12 (Phase 5)
 - Commits: 25
 
 **Velocity:** 4.5 min/plan (Phase 4 baseline)
@@ -87,7 +88,7 @@ Phase 5:       [████████░░] 82% (9/11 plans)
 - [x] Execute Plan 04-01: i18n dependencies and translation files
 - [x] Execute Plan 04-02: i18n configuration
 - [x] Plan Phase 5: String Extraction
-- [ ] Execute Phase 5 plans (9/11 complete)
+- [ ] Execute Phase 5 plans (10/12 complete)
 - [ ] Plan Phase 6: Language Switching
 - [ ] Execute Phase 6 plans
 - [ ] Plan Phase 7: Localization
@@ -116,9 +117,9 @@ None currently.
 - Phase 4 (Foundation) complete
 - Completed Phase 5 research (05-RESEARCH.md)
 - Created 10 plans for Phase 5 (05-01 through 05-10)
-- Executed 05-01 through 05-07
+- Executed 05-01 through 05-07a
 
-**Last activity:** 2026-01-24 - Completed 05-07-PLAN.md (Settings Import/Library)
+**Last activity:** 2026-01-24 - Completed 05-07a-PLAN.md (Settings Account/Preferences)
 **Resume file:** None
 
 **Next steps:**
