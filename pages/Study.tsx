@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useStore } from '../components/StoreContext';
 import { DeckTable } from '../components/DeckTable';
 import { EmptyDeckPopover } from '../components/EmptyDeckPopover';
@@ -7,13 +8,14 @@ import { StudyHeatmap } from '../components/StudyHeatmap';
 
 const Study = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('study');
   const { books, getDeckStats, isLoaded, reviewLogs } = useStore();
   const [showEmptyPopover, setShowEmptyPopover] = useState(false);
 
   if (!isLoaded) {
     return (
       <div className="flex items-center justify-center h-full text-muted-foreground">
-        Loading...
+        {t('loading')}
       </div>
     );
   }
@@ -41,9 +43,9 @@ const Study = () => {
     <div className="p-4 sm:p-6">
       {/* Header */}
       <header className="mb-3">
-        <h1 className="text-base font-semibold text-foreground">Study</h1>
+        <h1 className="text-base font-semibold text-foreground">{t('title')}</h1>
         <p className="text-xs text-muted-foreground mt-1">
-          Start your daily study session with all books, or choose a specific book below for focused practice.
+          {t('subtitle')}
         </p>
       </header>
 
@@ -64,15 +66,15 @@ const Study = () => {
             </svg>
           </div>
           <div className="text-left">
-            <div className="text-sm font-semibold">Study All Books</div>
-            <div className="text-xs text-background/70 hidden sm:block">Review cards from your entire library</div>
+            <div className="text-sm font-semibold">{t('allBooks.title')}</div>
+            <div className="text-xs text-background/70 hidden sm:block">{t('allBooks.subtitle')}</div>
           </div>
         </div>
 
         {/* Stats - Mobile: only show total */}
         <div className="sm:hidden text-right">
           <div className="text-lg font-bold">{totalStats.total}</div>
-          <div className="text-background/50 text-[10px]">Due</div>
+          <div className="text-background/50 text-[10px]">{t('stats.due')}</div>
         </div>
 
         {/* Stats - Desktop: show all */}
@@ -80,35 +82,35 @@ const Study = () => {
           <div className="flex items-center gap-3">
             <div className="text-center">
               <div className="text-blue-300 dark:text-blue-700 font-semibold">{totalStats.new}</div>
-              <div className="text-background/50 text-[10px]">New</div>
+              <div className="text-background/50 text-[10px]">{t('stats.new')}</div>
             </div>
             <div className="text-center">
               <div className="text-amber-300 dark:text-amber-700 font-semibold">{totalStats.learning}</div>
-              <div className="text-background/50 text-[10px]">Learning</div>
+              <div className="text-background/50 text-[10px]">{t('stats.learning')}</div>
             </div>
             <div className="text-center">
               <div className="text-green-300 dark:text-green-700 font-semibold">{totalStats.review}</div>
-              <div className="text-background/50 text-[10px]">Review</div>
+              <div className="text-background/50 text-[10px]">{t('stats.review')}</div>
             </div>
           </div>
           <div className="text-right ml-4">
             <div className="text-lg font-bold">{totalStats.total}</div>
-            <div className="text-background/50 text-[10px]">Total</div>
+            <div className="text-background/50 text-[10px]">{t('stats.total')}</div>
           </div>
         </div>
       </button>
 
       {/* Individual Books Section */}
       <div className="mb-2">
-        <h2 className="text-xs font-semibold text-muted-foreground">Study by Book</h2>
+        <h2 className="text-xs font-semibold text-muted-foreground">{t('byBook.title')}</h2>
       </div>
 
       {/* Deck Table (without All Books row) */}
       {books.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-muted-foreground text-sm mb-2">No books imported yet</p>
+          <p className="text-muted-foreground text-sm mb-2">{t('emptyState.noBooks')}</p>
           <p className="text-muted-foreground text-xs">
-            Import your Kindle highlights to start studying
+            {t('emptyState.importPrompt')}
           </p>
         </div>
       ) : (
