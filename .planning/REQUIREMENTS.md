@@ -76,33 +76,33 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INFRA-01 | TBD | Pending |
-| INFRA-02 | TBD | Pending |
-| INFRA-03 | TBD | Pending |
-| INFRA-04 | TBD | Pending |
-| TRANS-01 | TBD | Pending |
-| TRANS-02 | TBD | Pending |
-| TRANS-03 | TBD | Pending |
-| TRANS-04 | TBD | Pending |
-| TRANS-05 | TBD | Pending |
-| TRANS-06 | TBD | Pending |
-| TRANS-07 | TBD | Pending |
-| TRANS-08 | TBD | Pending |
-| TRANS-09 | TBD | Pending |
-| FMT-01 | TBD | Pending |
-| FMT-02 | TBD | Pending |
-| FMT-03 | TBD | Pending |
-| LANG-01 | TBD | Pending |
-| LANG-02 | TBD | Pending |
-| LANG-03 | TBD | Pending |
-| EN-01 | TBD | Pending |
-| EN-02 | TBD | Pending |
+| INFRA-01 | Phase 4 | Pending |
+| INFRA-02 | Phase 4 | Pending |
+| INFRA-03 | Phase 4 | Pending |
+| INFRA-04 | Phase 4 | Pending |
+| TRANS-01 | Phase 5 | Pending |
+| TRANS-02 | Phase 5 | Pending |
+| TRANS-03 | Phase 5 | Pending |
+| TRANS-04 | Phase 5 | Pending |
+| TRANS-05 | Phase 5 | Pending |
+| TRANS-06 | Phase 5 | Pending |
+| TRANS-07 | Phase 5 | Pending |
+| TRANS-08 | Phase 5 | Pending |
+| TRANS-09 | Phase 5 | Pending |
+| FMT-01 | Phase 7 | Pending |
+| FMT-02 | Phase 7 | Pending |
+| FMT-03 | Phase 7 | Pending |
+| LANG-01 | Phase 6 | Pending |
+| LANG-02 | Phase 6 | Pending |
+| LANG-03 | Phase 6 | Pending |
+| EN-01 | Phase 6 | Pending |
+| EN-02 | Phase 6 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 21 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 21
+- Mapped to phases: 21/21 ✓
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-01-24*
-*Last updated: 2026-01-24 after initial definition*
+*Last updated: 2026-01-24 after roadmap creation*
