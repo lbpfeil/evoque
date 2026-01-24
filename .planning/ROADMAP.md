@@ -37,6 +37,12 @@
 
 **Research Flags:** None (patterns well-documented)
 
+**Plans:** 2 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — Install i18n dependencies and create PT-BR translation file structure
+- [ ] 04-02-PLAN.md — Configure i18next, create I18nProvider, integrate into App.tsx
+
 ---
 
 ### Phase 5: String Extraction
@@ -65,6 +71,11 @@
 
 **Research Flags:** Medium (automation tools for detection)
 
+**Plans:** (created by /gsd:plan-phase)
+
+Plans:
+- [ ] TBD — awaiting planning
+
 ---
 
 ### Phase 6: Language Switching
@@ -89,6 +100,11 @@
 
 **Research Flags:** None (standard patterns)
 
+**Plans:** (created by /gsd:plan-phase)
+
+Plans:
+- [ ] TBD — awaiting planning
+
 ---
 
 ### Phase 7: Localization
@@ -111,25 +127,30 @@
 
 **Research Flags:** None (Intl API patterns established)
 
+**Plans:** (created by /gsd:plan-phase)
+
+Plans:
+- [ ] TBD — awaiting planning
+
 ---
 
 ## Coverage Validation
 
 All v1.1 requirements mapped:
 
-- Infrastructure: 4/4 ✓ (Phase 4)
-- Translation: 9/9 ✓ (Phase 5)
-- Formatting: 3/3 ✓ (Phase 7)
-- Language Selection: 3/3 ✓ (Phase 6)
-- English Support: 2/2 ✓ (Phase 6)
+- Infrastructure: 4/4 (Phase 4)
+- Translation: 9/9 (Phase 5)
+- Formatting: 3/3 (Phase 7)
+- Language Selection: 3/3 (Phase 6)
+- English Support: 2/2 (Phase 6)
 
-**Total: 21/21 ✓**
+**Total: 21/21**
 
 ## Progress
 
 | Phase | Status | Plans | Completed |
 |-------|--------|-------|-----------|
-| 4 - Foundation | Pending | 0/0 | 0% |
+| 4 - Foundation | Planned | 0/2 | 0% |
 | 5 - String Extraction | Pending | 0/0 | 0% |
 | 6 - Language Switching | Pending | 0/0 | 0% |
 | 7 - Localization | Pending | 0/0 | 0% |
@@ -139,4 +160,5 @@ All v1.1 requirements mapped:
 ---
 
 *Roadmap created: 2026-01-24*
-*Next: `/gsd:plan-phase 4`*
+*Phase 4 planned: 2026-01-24*
+*Next: `/gsd:execute-phase 4`*
