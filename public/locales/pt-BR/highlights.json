@@ -32,7 +32,9 @@
     "note": "Nota",
     "tags": "Tags",
     "date": "Data",
-    "status": "Status"
+    "status": "Status",
+    "unknownBook": "Livro desconhecido",
+    "addNote": "Adicionar nota..."
   },
   "bulk": {
     "selected": "{{count}} selecionados",
@@ -60,6 +62,29 @@
     "add": "Adicionar tag",
     "create": "Criar nova tag",
     "remove": "Remover tag"
+  },
+  "tagManager": {
+    "title": "Gerenciar Tags",
+    "description": "Organize suas tags hierarquicamente. Tags globais e tags específicas por livro são exibidas separadamente abaixo.",
+    "globalTags": "Tags Globais",
+    "bookTags": "Tags por Livro",
+    "booksCount": "{{count}} livros",
+    "booksCount_one": "{{count}} livro",
+    "newRootTag": "Nome da nova tag raiz...",
+    "newChildTag": "Nome da nova sub-tag...",
+    "newChapterTag": "Nova tag de capítulo...",
+    "addingChildTo": "Adicionando sub-tag em: {{name}}",
+    "addChildTag": "Adicionar sub-tag",
+    "deleteConfirm": "Tem certeza que deseja excluir esta tag?",
+    "deleteConfirmCascade": "Isso excluirá esta tag e TODAS as suas sub-tags. Tem certeza?"
+  },
+  "tagSelector": {
+    "searchPlaceholder": "Buscar tags...",
+    "noTagsFound": "Nenhuma tag encontrada.",
+    "createGlobal": "Criar Global \"{{name}}\"",
+    "createChapter": "Criar Capítulo \"{{name}}\"",
+    "tagsLabel": "Tags",
+    "addTags": "Adicionar tags..."
   },
   "test": "Highlights namespace funcionando!"
 }
