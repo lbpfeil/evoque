@@ -11,7 +11,7 @@ import { resizeImage } from '../lib/imageUtils';
 type TabId = 'import' | 'library' | 'account' | 'preferences';
 
 const Settings = () => {
-  const { t } = useTranslation('settings');
+  const { t } = useTranslation(['settings', 'errors']);
   const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
   const { books, highlights, studyCards, importData, settings, updateSettings, deleteBook, updateBookSettings, resetAllBooksToDefaults, updateBookCover } = useStore();
@@ -64,7 +64,7 @@ const Settings = () => {
 
   const processFile = async (file: File) => {
     if (!user) {
-      setImportError('You must be logged in to import files');
+      setImportError(t('errors:import.notLoggedIn'));
       return;
     }
 
@@ -73,7 +73,7 @@ const Settings = () => {
     const isTSV = file.name.endsWith('.tsv');
 
     if (!isPDF && !isTXT && !isTSV) {
-      alert('Please upload a .txt, .pdf, or .tsv file');
+      alert(t('errors:import.invalidFileType'));
       return;
     }
 
@@ -103,7 +103,7 @@ const Settings = () => {
             setImportResult(res);
           } catch (err: any) {
             console.error(err);
-            setImportError(err.message || "Failed to import Anki highlights. Please check the TSV format.");
+            setImportError(t('errors:import.parseError'));
           } finally {
             setIsProcessing(false);
           }
@@ -123,7 +123,7 @@ const Settings = () => {
             setImportResult(res);
           } catch (err: any) {
             console.error(err);
-            setImportError(err.message || "Failed to import highlights. Please check the file format.");
+            setImportError(t('errors:import.parseError'));
           } finally {
             setIsProcessing(false);
           }
@@ -132,7 +132,7 @@ const Settings = () => {
       }
     } catch (err: any) {
       console.error(err);
-      setImportError(err.message || "Failed to import highlights. Please check the file format.");
+      setImportError(t('errors:import.parseError'));
       setIsProcessing(false);
     }
   };
@@ -163,11 +163,11 @@ const Settings = () => {
 
     // Validation
     if (!file.type.startsWith('image/')) {
-      alert('Please upload an image file');
+      alert(t('errors:validation.imageRequired'));
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
-      alert('File size must be less than 2MB');
+      alert(t('errors:validation.fileTooLarge2MB'));
       return;
     }
 
@@ -205,7 +205,7 @@ const Settings = () => {
       console.log('Avatar URL saved successfully');
     } catch (error: any) {
       console.error('Upload failed:', error);
-      alert(`Failed to upload avatar: ${error.message}`);
+      alert(t('errors:upload.avatarFailed', { message: error.message }));
     } finally {
       setIsUploading(false);
     }
@@ -218,11 +218,11 @@ const Settings = () => {
 
     // Validation
     if (!file.type.startsWith('image/')) {
-      alert('Please upload an image file');
+      alert(t('errors:validation.imageRequired'));
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      alert('File size must be less than 5MB');
+      alert(t('errors:validation.fileTooLarge5MB'));
       return;
     }
 
@@ -256,7 +256,7 @@ const Settings = () => {
       console.log('Book cover uploaded successfully');
     } catch (error: any) {
       console.error('Cover upload failed:', error);
-      alert(`Failed to upload cover: ${error.message}`);
+      alert(t('errors:upload.coverFailed', { message: error.message }));
     } finally {
       setUploadingCoverId(null);
       e.target.value = '';

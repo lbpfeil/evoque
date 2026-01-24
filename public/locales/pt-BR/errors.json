@@ -1,36 +1,52 @@
 {
   "_meta": "Error messages (validation, network, generic)",
   "validation": {
-    "required": "Este campo e obrigatorio",
-    "email_invalid": "Email invalido",
-    "password_short": "A senha deve ter pelo menos {{min}} caracteres",
-    "password_mismatch": "As senhas nao coincidem",
-    "file_too_large": "Arquivo muito grande (maximo {{max}}MB)",
-    "file_invalid": "Tipo de arquivo invalido",
-    "name_required": "Nome e obrigatorio"
+    "required": "Este campo é obrigatório",
+    "emailInvalid": "Email inválido",
+    "passwordShort": "A senha deve ter pelo menos {{min}} caracteres",
+    "passwordMismatch": "As senhas não coincidem",
+    "fileTooLarge": "O arquivo deve ter menos de {{max}}MB",
+    "fileInvalid": "Tipo de arquivo inválido",
+    "nameRequired": "Nome é obrigatório",
+    "imageRequired": "Por favor, envie um arquivo de imagem",
+    "fileTooLarge2MB": "O arquivo deve ter menos de 2MB",
+    "fileTooLarge5MB": "O arquivo deve ter menos de 5MB"
   },
   "network": {
-    "offline": "Voce esta offline",
-    "timeout": "A requisicao expirou",
-    "server_error": "Erro no servidor",
-    "connection_failed": "Falha na conexao",
+    "offline": "Você está offline",
+    "timeout": "A requisição expirou",
+    "serverError": "Erro no servidor",
+    "connectionFailed": "Falha na conexão",
     "retry": "Tentar novamente"
   },
   "auth": {
-    "invalid_credentials": "Email ou senha incorretos",
-    "email_taken": "Este email ja esta em uso",
-    "session_expired": "Sua sessao expirou",
-    "unauthorized": "Acesso nao autorizado"
+    "invalidCredentials": "Email ou senha incorretos",
+    "emailTaken": "Este email já está em uso",
+    "sessionExpired": "Sua sessão expirou",
+    "unauthorized": "Acesso não autorizado",
+    "generic": "Erro ao autenticar"
   },
   "import": {
-    "parse_error": "Erro ao processar arquivo",
-    "no_highlights": "Nenhum destaque encontrado no arquivo",
-    "unsupported_format": "Formato de arquivo nao suportado"
+    "parseError": "Erro ao processar arquivo",
+    "noHighlights": "Nenhum destaque encontrado no arquivo",
+    "unsupportedFormat": "Formato de arquivo não suportado",
+    "notLoggedIn": "Você precisa estar logado para importar arquivos",
+    "invalidFileType": "Por favor, envie um arquivo .txt, .pdf ou .tsv"
+  },
+  "upload": {
+    "avatarFailed": "Falha ao enviar avatar: {{message}}",
+    "coverFailed": "Falha ao enviar capa: {{message}}"
+  },
+  "tag": {
+    "cascadeDelete": "Isso excluirá esta tag e TODAS as suas sub-tags. Tem certeza?",
+    "confirmDelete": "Tem certeza que deseja excluir esta tag?"
+  },
+  "book": {
+    "applyGlobalConfirm": "Aplicar configurações globais a todos os livros?\n\nIsso removerá configurações personalizadas de todos os livros."
   },
   "generic": {
     "unknown": "Ocorreu um erro inesperado",
-    "try_again": "Por favor, tente novamente",
-    "contact_support": "Se o problema persistir, entre em contato"
-  },
-  "test": "Errors namespace funcionando!"
+    "tryAgain": "Por favor, tente novamente",
+    "contactSupport": "Se o problema persistir, entre em contato"
+  }
 }
