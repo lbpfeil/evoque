@@ -9,10 +9,10 @@ Requirements for internationalization milestone. Each maps to roadmap phases.
 
 ### Infrastructure
 
-- [ ] **INFRA-01**: Sistema i18n configurado com react-i18next
-- [ ] **INFRA-02**: Arquivos de tradução organizados por namespace (common, study, highlights, settings, etc.)
-- [ ] **INFRA-03**: I18nProvider integrado na árvore de componentes
-- [ ] **INFRA-04**: Idioma padrão configurado como PT-BR
+- [x] **INFRA-01**: Sistema i18n configurado com react-i18next
+- [x] **INFRA-02**: Arquivos de tradução organizados por namespace (common, study, highlights, settings, etc.)
+- [x] **INFRA-03**: I18nProvider integrado na árvore de componentes
+- [x] **INFRA-04**: Idioma padrão configurado como PT-BR
 
 ### Translation
 
@@ -76,10 +76,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INFRA-01 | Phase 4 | Pending |
-| INFRA-02 | Phase 4 | Pending |
-| INFRA-03 | Phase 4 | Pending |
-| INFRA-04 | Phase 4 | Pending |
+| INFRA-01 | Phase 4 | Complete |
+| INFRA-02 | Phase 4 | Complete |
+| INFRA-03 | Phase 4 | Complete |
+| INFRA-04 | Phase 4 | Complete |
 | TRANS-01 | Phase 5 | Pending |
 | TRANS-02 | Phase 5 | Pending |
 | TRANS-03 | Phase 5 | Pending |
@@ -105,4 +105,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-24*
-*Last updated: 2026-01-24 after roadmap creation*
+*Last updated: 2026-01-24 after Phase 4 completion*

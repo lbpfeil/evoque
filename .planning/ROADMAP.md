@@ -40,8 +40,8 @@
 **Plans:** 2 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — Install i18n dependencies and create PT-BR translation file structure
-- [ ] 04-02-PLAN.md — Configure i18next, create I18nProvider, integrate into App.tsx
+- [x] 04-01-PLAN.md — Install i18n dependencies and create PT-BR translation file structure
+- [x] 04-02-PLAN.md — Configure i18next, create I18nProvider, integrate into App.tsx
 
 ---
 
@@ -150,15 +150,16 @@ All v1.1 requirements mapped:
 
 | Phase | Status | Plans | Completed |
 |-------|--------|-------|-----------|
-| 4 - Foundation | Planned | 0/2 | 0% |
+| 4 - Foundation | ✓ Complete | 2/2 | 100% |
 | 5 - String Extraction | Pending | 0/0 | 0% |
 | 6 - Language Switching | Pending | 0/0 | 0% |
 | 7 - Localization | Pending | 0/0 | 0% |
 
-**Overall:** 0/4 phases complete (0%)
+**Overall:** 1/4 phases complete (25%)
 
 ---
 
 *Roadmap created: 2026-01-24*
 *Phase 4 planned: 2026-01-24*
-*Next: `/gsd:execute-phase 4`*
+*Phase 4 complete: 2026-01-24*
+*Next: `/gsd:plan-phase 5`*
