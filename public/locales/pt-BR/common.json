@@ -38,5 +38,11 @@
     "total": "Total"
   },
   "loading": "Carregando...",
+  "status": {
+    "new": "Novo",
+    "learning": "Aprendendo",
+    "review": "Revisão",
+    "notStarted": "Não Iniciado"
+  },
   "test": "Tradução funcionando!"
 }

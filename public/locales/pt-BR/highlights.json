@@ -86,5 +86,31 @@
     "tagsLabel": "Tags",
     "addTags": "Adicionar tags..."
   },
+  "editModal": {
+    "highlight": "Destaque",
+    "note": "Nota",
+    "notePlaceholder": "Adicione uma nota...",
+    "learningStats": "Estatísticas de Aprendizado",
+    "reps": "Reps",
+    "ease": "Facilidade",
+    "interval": "Intervalo",
+    "next": "Próximo"
+  },
+  "historyModal": {
+    "title": "Curva de Aprendizado",
+    "noHistory": "Nenhum histórico de revisão ainda.",
+    "repetitions": "Repetições",
+    "easeFactor": "Fator de Facilidade",
+    "nextReview": "Próxima Revisão",
+    "intervalDays": "Intervalo (dias)"
+  },
+  "bookModal": {
+    "imported": "Importado em {{date}}",
+    "highlights": "{{count}} destaques",
+    "highlights_one": "{{count}} destaque",
+    "noHighlights": "Nenhum destaque encontrado para este livro.",
+    "myNote": "Minha Nota",
+    "location": "Posição: {{location}}"
+  },
   "test": "Highlights namespace funcionando!"
 }

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useStore } from './StoreContext';
 import { BookOpen, Calendar, Hash } from 'lucide-react';
 import {
@@ -14,6 +15,7 @@ interface BookContextModalProps {
 }
 
 const BookContextModal: React.FC<BookContextModalProps> = ({ bookId, onClose }) => {
+  const { t } = useTranslation('highlights');
   const { getBook, getBookHighlights } = useStore();
 
   if (!bookId) return null;
@@ -55,11 +57,11 @@ const BookContextModal: React.FC<BookContextModalProps> = ({ bookId, onClose }) 
               <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
                 <div className="flex items-center gap-1.5">
                   <Calendar className="w-3.5 h-3.5" />
-                  <span>Imported {formatDate(book.lastImported)}</span>
+                  <span>{t('bookModal.imported', { date: formatDate(book.lastImported) })}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Hash className="w-3.5 h-3.5" />
-                  <span>{bookHighlights.length} highlights</span>
+                  <span>{t('bookModal.highlights', { count: bookHighlights.length })}</span>
                 </div>
               </div>
             </div>
@@ -71,7 +73,7 @@ const BookContextModal: React.FC<BookContextModalProps> = ({ bookId, onClose }) 
           {bookHighlights.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-50" />
-              <p>No highlights found for this book.</p>
+              <p>{t('bookModal.noHighlights')}</p>
             </div>
           ) : (
             bookHighlights.map((highlight, index) => (
@@ -87,12 +89,12 @@ const BookContextModal: React.FC<BookContextModalProps> = ({ bookId, onClose }) 
                     </p>
                     {highlight.note && (
                       <div className="bg-card border-l-2 border-foreground p-3 rounded-sm">
-                        <span className="text-[10px] uppercase font-semibold text-muted-foreground block mb-1">My Note</span>
+                        <span className="text-[10px] uppercase font-semibold text-muted-foreground block mb-1">{t('bookModal.myNote')}</span>
                         <p className="text-xs text-muted-foreground italic">{highlight.note}</p>
                       </div>
                     )}
                     <div className="flex items-center gap-3 mt-2 text-[10px] text-muted-foreground">
-                      {highlight.location && <span>Location: {highlight.location}</span>}
+                      {highlight.location && <span>{t('bookModal.location', { location: highlight.location })}</span>}
                       {highlight.dateAdded && <span>* {formatDate(highlight.dateAdded)}</span>}
                     </div>
                   </div>
@@ -108,7 +110,7 @@ const BookContextModal: React.FC<BookContextModalProps> = ({ bookId, onClose }) 
             onClick={onClose}
             className="px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors duration-200 text-sm font-medium"
           >
-            Close
+            {t('common:buttons.close')}
           </button>
         </div>
       </DialogContent>

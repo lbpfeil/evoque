@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { TrendingUp } from 'lucide-react';
 import { useStore } from './StoreContext';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -15,6 +16,7 @@ interface HighlightHistoryModalProps {
 }
 
 const HighlightHistoryModal: React.FC<HighlightHistoryModalProps> = ({ highlightId, onClose }) => {
+  const { t } = useTranslation('highlights');
   const { highlights, studyCards, reviewLogs } = useStore();
 
   if (!highlightId) return null;
@@ -37,7 +39,7 @@ const HighlightHistoryModal: React.FC<HighlightHistoryModalProps> = ({ highlight
   // Add current state if available
   if (card && logs.length > 0) {
     data.push({
-      date: 'Next',
+      date: t('editModal.next'),
       interval: card.interval,
       easeFactor: card.easeFactor
     });
@@ -49,7 +51,7 @@ const HighlightHistoryModal: React.FC<HighlightHistoryModalProps> = ({ highlight
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-primary" />
-            Learning Curve
+            {t('historyModal.title')}
           </DialogTitle>
         </DialogHeader>
 
@@ -75,7 +77,7 @@ const HighlightHistoryModal: React.FC<HighlightHistoryModalProps> = ({ highlight
                     className="text-muted-foreground"
                     tick={{ fill: 'currentColor', fontSize: 12 }}
                     stroke="currentColor"
-                    label={{ value: 'Interval (days)', angle: -90, position: 'insideLeft', fill: 'currentColor' }}
+                    label={{ value: t('historyModal.intervalDays'), angle: -90, position: 'insideLeft', fill: 'currentColor' }}
                   />
                   <Tooltip
                     contentStyle={{
@@ -99,22 +101,22 @@ const HighlightHistoryModal: React.FC<HighlightHistoryModalProps> = ({ highlight
               </ResponsiveContainer>
             ) : (
               <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-                No review history yet.
+                {t('historyModal.noHistory')}
               </div>
             )}
           </div>
 
           <div className="grid grid-cols-3 gap-4">
             <div className="bg-muted p-3 rounded-md text-center">
-              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Repetitions</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">{t('historyModal.repetitions')}</p>
               <p className="text-xl font-bold">{card?.repetitions || 0}</p>
             </div>
             <div className="bg-muted p-3 rounded-md text-center">
-              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Ease Factor</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">{t('historyModal.easeFactor')}</p>
               <p className="text-xl font-bold">{card?.easeFactor?.toFixed(2) || '-'}</p>
             </div>
             <div className="bg-muted p-3 rounded-md text-center">
-              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Next Review</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">{t('historyModal.nextReview')}</p>
               <p className="text-xl font-bold">
                 {card ? new Date(card.nextReviewDate).toLocaleDateString() : '-'}
               </p>

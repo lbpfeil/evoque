@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useStore } from './StoreContext';
 import { BookOpen, Calendar, TrendingUp, ChevronDown, ChevronUp } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -15,6 +16,7 @@ interface HighlightEditModalProps {
 }
 
 const HighlightEditModal: React.FC<HighlightEditModalProps> = ({ highlightId, onClose }) => {
+  const { t } = useTranslation('highlights');
   const { highlights, books, studyCards, reviewLogs, updateHighlight } = useStore();
 
   const [showStats, setShowStats] = useState(false);
@@ -80,7 +82,7 @@ const HighlightEditModal: React.FC<HighlightEditModalProps> = ({ highlightId, on
 
   if (card && logs.length > 0) {
     statsData.push({
-      date: 'Next',
+      date: t('editModal.next'),
       interval: card.interval,
       easeFactor: card.easeFactor
     });
@@ -118,7 +120,7 @@ const HighlightEditModal: React.FC<HighlightEditModalProps> = ({ highlightId, on
         <div className="flex-1 overflow-y-auto p-3 space-y-2">
           {/* Highlight text area */}
           <div className="bg-muted border border-border rounded p-2">
-            <label className="text-[9px] uppercase text-muted-foreground font-semibold mb-1 block">Highlight</label>
+            <label className="text-[9px] uppercase text-muted-foreground font-semibold mb-1 block">{t('editModal.highlight')}</label>
             <textarea
               value={editForm.text}
               onChange={(e) => handleChange('text', e.target.value)}
@@ -129,13 +131,13 @@ const HighlightEditModal: React.FC<HighlightEditModalProps> = ({ highlightId, on
 
           {/* Note text area */}
           <div className="bg-muted border border-border rounded p-2">
-            <label className="text-[9px] uppercase text-muted-foreground font-semibold mb-1 block">Note</label>
+            <label className="text-[9px] uppercase text-muted-foreground font-semibold mb-1 block">{t('editModal.note')}</label>
             <textarea
               value={editForm.note}
               onChange={(e) => handleChange('note', e.target.value)}
               className="w-full bg-transparent border-0 px-0 py-0 text-xs text-foreground resize-none focus:outline-none placeholder:text-muted-foreground"
               rows={5}
-              placeholder="Add a note..."
+              placeholder={t('editModal.notePlaceholder')}
             />
           </div>
 
@@ -147,7 +149,7 @@ const HighlightEditModal: React.FC<HighlightEditModalProps> = ({ highlightId, on
             >
               <span className="flex items-center gap-2 text-muted-foreground font-medium">
                 <TrendingUp className="w-3 h-3" />
-                Learning Stats
+                {t('editModal.learningStats')}
               </span>
               {showStats ? <ChevronUp className="w-3 h-3 text-muted-foreground" /> : <ChevronDown className="w-3 h-3 text-muted-foreground" />}
             </button>
@@ -198,15 +200,15 @@ const HighlightEditModal: React.FC<HighlightEditModalProps> = ({ highlightId, on
               {/* Stats grid */}
               <div className="grid grid-cols-3 gap-2">
                 <div className="bg-muted p-2 rounded text-center">
-                  <p className="text-[9px] text-muted-foreground uppercase font-semibold">Reps</p>
+                  <p className="text-[9px] text-muted-foreground uppercase font-semibold">{t('editModal.reps')}</p>
                   <p className="text-sm font-bold">{card.repetitions}</p>
                 </div>
                 <div className="bg-muted p-2 rounded text-center">
-                  <p className="text-[9px] text-muted-foreground uppercase font-semibold">Ease</p>
+                  <p className="text-[9px] text-muted-foreground uppercase font-semibold">{t('editModal.ease')}</p>
                   <p className="text-sm font-bold">{card.easeFactor.toFixed(2)}</p>
                 </div>
                 <div className="bg-muted p-2 rounded text-center">
-                  <p className="text-[9px] text-muted-foreground uppercase font-semibold">Interval</p>
+                  <p className="text-[9px] text-muted-foreground uppercase font-semibold">{t('editModal.interval')}</p>
                   <p className="text-sm font-bold">{card.interval}d</p>
                 </div>
               </div>
