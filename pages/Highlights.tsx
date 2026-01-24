@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useStore } from '../components/StoreContext';
 import { Search, Tag as TagIcon, ChevronUp, ChevronDown, ChevronsUpDown, Book, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import { SortOption, Highlight } from '../types';
@@ -11,6 +12,7 @@ import { cn } from '../lib/utils';
 import { HighlightTableRow } from '../components/HighlightTableRow';
 
 export const Highlights = () => {
+  const { t } = useTranslation('highlights');
   const {
     highlights,
     books,
@@ -89,7 +91,7 @@ export const Highlights = () => {
   }, [books]);
 
   const formatDate = (date: Date | null) => {
-    if (!date) return 'nunca';
+    if (!date) return t('dates.never');
     return date.toLocaleDateString('pt-BR', {
       day: 'numeric',
       month: 'long',
@@ -194,7 +196,7 @@ export const Highlights = () => {
   };
 
   const handleBulkDelete = async () => {
-    if (window.confirm(`Are you sure you want to delete ${selectedIds.size} highlights?`)) {
+    if (window.confirm(t('bulk.deleteConfirm', { count: selectedIds.size }))) {
       await bulkDeleteHighlights(Array.from(selectedIds));
       setSelectedIds(new Set());
     }
@@ -222,9 +224,9 @@ export const Highlights = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 pt-6 pb-2">
         <div>
-          <h1 className="text-3xl font-bold text-foreground tracking-tight">Highlights</h1>
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">{t('title')}</h1>
           <p className="text-muted-foreground mt-1.5 font-light text-sm">
-            {highlights.length} {highlights.length === 1 ? 'destaque' : 'destaques'} de {stats.uniqueBooks} {stats.uniqueBooks === 1 ? 'livro' : 'livros'}, último destaque em {formatDate(stats.lastHighlight)}.
+            {t('stats.summary', { highlightCount: highlights.length, bookCount: stats.uniqueBooks, lastDate: formatDate(stats.lastHighlight) })}
           </p>
         </div>
         <button
@@ -232,7 +234,7 @@ export const Highlights = () => {
           className="self-start flex items-center gap-2 px-3 py-1.5 bg-muted hover:bg-accent text-foreground rounded-full text-xs font-medium transition-colors duration-200 border border-transparent hover:border-primary/30"
         >
           <TagIcon className="w-3.5 h-3.5" />
-          Manage Tags
+          {t('actions.manageTags')}
         </button>
       </div>
 
@@ -243,29 +245,29 @@ export const Highlights = () => {
           {/* Bulk Actions (Conditional) */}
           {selectedIds.size > 0 && (
             <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2 duration-200 mr-2 bg-foreground text-background px-3 py-1.5 rounded-lg shadow-md">
-              <span className="text-xs font-semibold whitespace-nowrap">{selectedIds.size} selected</span>
+              <span className="text-xs font-semibold whitespace-nowrap">{t('bulk.selected', { count: selectedIds.size })}</span>
               <div className="h-4 w-[1px] bg-background/20 mx-1" />
 
               {/* Bulk Tag Trigger */}
               <Popover>
                 <PopoverTrigger asChild>
                   <button className="flex items-center gap-1 text-[10px] hover:text-background/60 transition-colors duration-200 uppercase tracking-wider font-bold">
-                    <TagIcon className="w-3 h-3" /> Tag
+                    <TagIcon className="w-3 h-3" /> {t('bulk.tag')}
                   </button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[200px] p-0" align="start">
                   <div className="max-h-[300px] overflow-y-auto p-1">
                     <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground border-b border-border mb-1">
-                      Assign to {selectedIds.size} items
+                      {t('bulk.assignTo', { count: selectedIds.size })}
                     </div>
                     {(() => {
                       const availableTagsForBulk = selectedBookId === 'all'
-                        ? tags.filter(t => !t.bookId)
-                        : tags.filter(t => !t.bookId || t.bookId === selectedBookId);
+                        ? tags.filter(tg => !tg.bookId)
+                        : tags.filter(tg => !tg.bookId || tg.bookId === selectedBookId);
 
                       const sortedBulkTags = availableTagsForBulk.sort((a, b) => a.name.localeCompare(b.name));
 
-                      if (sortedBulkTags.length === 0) return <div className="px-2 text-xs italic text-muted-foreground">No tags available</div>;
+                      if (sortedBulkTags.length === 0) return <div className="px-2 text-xs italic text-muted-foreground">{t('bulk.noTags')}</div>;
 
                       return sortedBulkTags.map(tag => (
                         <div key={tag.id} onClick={() => bulkAssignTag(Array.from(selectedIds), tag.id)} className="cursor-pointer hover:bg-accent px-2 py-1.5 rounded text-xs flex items-center gap-2 transition-colors duration-200">
@@ -281,7 +283,7 @@ export const Highlights = () => {
               <div className="h-4 w-[1px] bg-background/20 mx-1" />
 
               <button onClick={handleBulkDelete} className="flex items-center gap-1 text-[10px] hover:text-destructive transition-colors duration-200 uppercase tracking-wider font-bold">
-                Delete
+                {t('bulk.delete')}
               </button>
             </div>
           )}
@@ -291,7 +293,7 @@ export const Highlights = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               type="text"
-              placeholder="Search highlights..."
+              placeholder={t('filters.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-9 pr-3 py-2 bg-background border border-input rounded-lg text-sm transition-all focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
@@ -303,16 +305,16 @@ export const Highlights = () => {
             <PopoverTrigger asChild>
               <button role="combobox" className="w-full sm:w-auto min-w-[160px] max-w-[240px] px-3 py-2 bg-background border border-input rounded-lg text-sm text-left flex items-center justify-between hover:bg-accent transition-colors duration-200">
                 <span className="truncate font-medium text-foreground">
-                  {selectedBookId === 'all' ? "All Books" : books.find(b => b.id === selectedBookId)?.title}
+                  {selectedBookId === 'all' ? t('filters.allBooks') : books.find(b => b.id === selectedBookId)?.title}
                 </span>
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-[300px] p-0">
               <Command>
-                <CommandInput placeholder="Search books..." className="h-9" />
+                <CommandInput placeholder={t('filters.searchBooks')} className="h-9" />
                 <CommandList>
-                  <CommandEmpty>No book found.</CommandEmpty>
+                  <CommandEmpty>{t('filters.noBookFound')}</CommandEmpty>
                   <CommandGroup>
                     <CommandItem
                       value="all"
@@ -320,7 +322,7 @@ export const Highlights = () => {
                       className="data-[disabled]:opacity-100 data-[disabled]:pointer-events-auto cursor-pointer"
                     >
                       <Check className={cn("mr-2 h-4 w-4", selectedBookId === 'all' ? "opacity-100" : "opacity-0")} />
-                      All Books
+                      {t('filters.allBooks')}
                     </CommandItem>
                     {sortedBooks.map(book => (
                       <CommandItem
@@ -344,16 +346,16 @@ export const Highlights = () => {
             <PopoverTrigger asChild>
               <button role="combobox" className="w-full sm:w-auto min-w-[140px] px-3 py-2 bg-background border border-input rounded-lg text-sm text-left flex items-center justify-between hover:bg-accent transition-colors duration-200">
                 <span className="truncate font-medium text-foreground">
-                  {selectedTagId === 'all' ? "All Tags" : tags.find(t => t.id === selectedTagId)?.name}
+                  {selectedTagId === 'all' ? t('filters.allTags') : tags.find(tg => tg.id === selectedTagId)?.name}
                 </span>
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-[200px] p-0">
               <Command>
-                <CommandInput placeholder="Search tags..." className="h-9" />
+                <CommandInput placeholder={t('filters.searchTags')} className="h-9" />
                 <CommandList>
-                  <CommandEmpty>No tag found.</CommandEmpty>
+                  <CommandEmpty>{t('filters.noTagFound')}</CommandEmpty>
                   <CommandGroup>
                     <CommandItem
                       value="all"
@@ -361,12 +363,12 @@ export const Highlights = () => {
                       className="data-[disabled]:opacity-100 data-[disabled]:pointer-events-auto cursor-pointer"
                     >
                       <Check className={cn("mr-2 h-4 w-4", selectedTagId === 'all' ? "opacity-100" : "opacity-0")} />
-                      All Tags
+                      {t('filters.allTags')}
                     </CommandItem>
                     {/* Simple Tag List for Filter (Flattened or Recursive - simplified here for brevity, usually recursive) */}
                     {(() => {
                       // Reuse the recursive render logic or similar flattening
-                      const visibleTags = tags.filter(t => selectedBookId === 'all' ? !t.bookId : (!t.bookId || t.bookId === selectedBookId));
+                      const visibleTags = tags.filter(tg => selectedBookId === 'all' ? !tg.bookId : (!tg.bookId || tg.bookId === selectedBookId));
                       return visibleTags.sort((a, b) => a.name.localeCompare(b.name)).map(tag => (
                         <CommandItem
                           key={tag.id}
@@ -391,7 +393,7 @@ export const Highlights = () => {
             <PopoverTrigger asChild>
               <button role="combobox" className="w-full sm:w-auto min-w-[120px] px-3 py-2 bg-background border border-input rounded-lg text-sm text-left flex items-center justify-between hover:bg-accent transition-colors duration-200">
                 <span className="truncate font-medium text-foreground">
-                  {studyFilter === 'all' ? "All Status" : studyFilter === 'in-study' ? "In Study" : "Not in Study"}
+                  {studyFilter === 'all' ? t('filters.allStatus') : studyFilter === 'in-study' ? t('filters.inStudy') : t('filters.notInStudy')}
                 </span>
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </button>
@@ -405,21 +407,21 @@ export const Highlights = () => {
                       onSelect={() => setStudyFilter('all')}
                       className="data-[disabled]:opacity-100 data-[disabled]:pointer-events-auto cursor-pointer"
                     >
-                      <Check className={cn("mr-2 h-4 w-4", studyFilter === 'all' ? "opacity-100" : "opacity-0")} /> All Status
+                      <Check className={cn("mr-2 h-4 w-4", studyFilter === 'all' ? "opacity-100" : "opacity-0")} /> {t('filters.allStatus')}
                     </CommandItem>
                     <CommandItem
                       value="in-study"
                       onSelect={() => setStudyFilter('in-study')}
                       className="data-[disabled]:opacity-100 data-[disabled]:pointer-events-auto cursor-pointer"
                     >
-                      <Check className={cn("mr-2 h-4 w-4", studyFilter === 'in-study' ? "opacity-100" : "opacity-0")} /> In Study
+                      <Check className={cn("mr-2 h-4 w-4", studyFilter === 'in-study' ? "opacity-100" : "opacity-0")} /> {t('filters.inStudy')}
                     </CommandItem>
                     <CommandItem
                       value="not-in-study"
                       onSelect={() => setStudyFilter('not-in-study')}
                       className="data-[disabled]:opacity-100 data-[disabled]:pointer-events-auto cursor-pointer"
                     >
-                      <Check className={cn("mr-2 h-4 w-4", studyFilter === 'not-in-study' ? "opacity-100" : "opacity-0")} /> Not in Study
+                      <Check className={cn("mr-2 h-4 w-4", studyFilter === 'not-in-study' ? "opacity-100" : "opacity-0")} /> {t('filters.notInStudy')}
                     </CommandItem>
                   </CommandGroup>
                 </CommandList>
@@ -432,7 +434,7 @@ export const Highlights = () => {
             onClick={() => handleSort('date')}
             className="px-3 py-2 bg-background border border-input rounded-lg text-sm font-medium text-foreground hover:bg-accent transition-colors duration-200 flex items-center gap-1"
           >
-            Date {getSortIcon('date') || <ChevronDown className="w-3 h-3 ml-1 opacity-30" />}
+            {t('filters.sortDate')} {getSortIcon('date') || <ChevronDown className="w-3 h-3 ml-1 opacity-30" />}
           </button>
         </div>
       </div>
@@ -458,7 +460,7 @@ export const Highlights = () => {
                   onClick={() => handleSort('book')}
                   className="flex items-center gap-1 hover:text-foreground transition-colors duration-200"
                 >
-                  Livro / Autor
+                  {t('table.bookAuthor')}
                   {getSortIcon('book')}
                 </button>
               </th>
@@ -467,7 +469,7 @@ export const Highlights = () => {
                   onClick={() => handleSort('highlight')}
                   className="flex items-center gap-1 hover:text-foreground transition-colors duration-200"
                 >
-                  Destaque
+                  {t('table.highlight')}
                   {getSortIcon('highlight')}
                 </button>
               </th>
@@ -476,21 +478,21 @@ export const Highlights = () => {
                   onClick={() => handleSort('note')}
                   className="flex items-center gap-1 hover:text-foreground transition-colors duration-200"
                 >
-                  Nota
+                  {t('table.note')}
                   {getSortIcon('note')}
                 </button>
               </th>
-              <th className="px-4 py-3 w-[140px]">Tags</th>
+              <th className="px-4 py-3 w-[140px]">{t('table.tags')}</th>
               <th className="px-4 py-3 w-[80px]">
                 <button
                   onClick={() => handleSort('date')}
                   className="flex items-center gap-1 hover:text-foreground transition-colors duration-200"
                 >
-                  Data
+                  {t('table.date')}
                   {getSortIcon('date')}
                 </button>
               </th>
-              <th className="px-4 py-3 w-[90px]">Status</th>
+              <th className="px-4 py-3 w-[90px]">{t('table.status')}</th>
             </tr>
           </thead>
           <tbody
@@ -500,7 +502,7 @@ export const Highlights = () => {
             {currentItems.length === 0 ? (
               <tr>
                 <td colSpan={7} className="px-4 py-12 text-center text-muted-foreground italic">
-                  No highlights match your filters.
+                  {t('emptyState.noResults')}
                 </td>
               </tr>
             ) : (
@@ -524,7 +526,7 @@ export const Highlights = () => {
       {filteredAndSortedHighlights.length > 0 && (
         <div className="py-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-border">
           <div className="text-sm text-muted-foreground">
-            Page <span className="font-medium text-foreground">{currentPage}</span> of <span className="font-medium text-foreground">{totalPages}</span>
+            {t('pagination.page', { current: currentPage, total: totalPages })}
           </div>
 
           <div className="flex items-center gap-2">
@@ -533,14 +535,14 @@ export const Highlights = () => {
               disabled={currentPage === 1}
               className="flex items-center gap-1 px-3 py-1.5 rounded-md border border-border text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent transition-colors duration-200"
             >
-              <ChevronLeft className="w-4 h-4" /> Previous
+              <ChevronLeft className="w-4 h-4" /> {t('pagination.previous')}
             </button>
             <button
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
               className="flex items-center gap-1 px-3 py-1.5 rounded-md border border-border text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent transition-colors duration-200"
             >
-              Next <ChevronRight className="w-4 h-4" />
+              {t('pagination.next')} <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         </div>
