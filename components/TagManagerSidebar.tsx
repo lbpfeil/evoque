@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { X, Plus, Trash2, Edit2, ChevronRight, ChevronDown, Folder, Tag as TagIcon, Book } from 'lucide-react';
 import { useStore } from './StoreContext';
 import { Tag } from '../types';
@@ -19,6 +20,7 @@ interface TagManagerSidebarProps {
 }
 
 export function TagManagerSidebar({ open, onOpenChange }: TagManagerSidebarProps) {
+    const { t } = useTranslation('highlights');
     const { tags, addTag, updateTag, deleteTag, getBook } = useStore();
     const [editingTagId, setEditingTagId] = useState<string | null>(null);
     const [editName, setEditName] = useState('');
@@ -138,7 +140,7 @@ export function TagManagerSidebar({ open, onOpenChange }: TagManagerSidebarProps
                                             setSelectedParentId(tag.id);
                                             setNewTagName('');
                                         }}
-                                        title="Add child tag"
+                                        title={t('tagManager.addChildTag')}
                                     >
                                         <Plus className="w-2.5 h-2.5" />
                                     </Button>
@@ -233,10 +235,10 @@ export function TagManagerSidebar({ open, onOpenChange }: TagManagerSidebarProps
     };
 
     const handleDelete = (id: string) => {
-        const hasChildren = tags.some(t => t.parentId === id);
+        const hasChildren = tags.some(tag => tag.parentId === id);
         const msg = hasChildren
-            ? "This will delete this tag and ALL its sub-tags (Cascade Delete). Are you sure?"
-            : "Are you sure you want to delete this tag?";
+            ? t('tagManager.deleteConfirmCascade')
+            : t('tagManager.deleteConfirm');
 
         if (window.confirm(msg)) {
             deleteTag(id);
@@ -257,10 +259,9 @@ export function TagManagerSidebar({ open, onOpenChange }: TagManagerSidebarProps
         <Sheet open={open} onOpenChange={onOpenChange}>
             <SheetContent className="w-[400px] sm:w-[540px] flex flex-col h-full">
                 <SheetHeader className="mb-2">
-                    <SheetTitle className="text-base">Manage Tags</SheetTitle>
+                    <SheetTitle className="text-base">{t('tagManager.title')}</SheetTitle>
                     <SheetDescription className="text-xs">
-                        Organize your tags hierarchically.
-                        Global tags and book-specific tags are shown separately below.
+                        {t('tagManager.description')}
                     </SheetDescription>
                 </SheetHeader>
 
@@ -269,7 +270,7 @@ export function TagManagerSidebar({ open, onOpenChange }: TagManagerSidebarProps
                     <div className="mb-3">
                         <div className="flex items-center gap-1.5 px-1.5 py-1 mb-1">
                             <Folder className="w-3.5 h-3.5 text-primary" />
-                            <span className="text-xs font-semibold text-foreground">Global Tags</span>
+                            <span className="text-xs font-semibold text-foreground">{t('tagManager.globalTags')}</span>
                             <span className="text-[9px] text-muted-foreground">({globalTags.length})</span>
                         </div>
                         {renderTagTree(undefined)}
@@ -284,8 +285,8 @@ export function TagManagerSidebar({ open, onOpenChange }: TagManagerSidebarProps
                             >
                                 <div className="flex items-center gap-1.5">
                                     <Book className="w-3.5 h-3.5 text-amber-600" />
-                                    <span className="text-xs font-semibold text-foreground">Book-Specific Tags</span>
-                                    <span className="text-[9px] text-muted-foreground">({booksWithTags.length} books)</span>
+                                    <span className="text-xs font-semibold text-foreground">{t('tagManager.bookTags')}</span>
+                                    <span className="text-[9px] text-muted-foreground">({t('tagManager.booksCount', { count: booksWithTags.length })})</span>
                                 </div>
                                 {showBookTags ? (
                                     <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
@@ -334,7 +335,7 @@ export function TagManagerSidebar({ open, onOpenChange }: TagManagerSidebarProps
                                                         {/* Add new chapter tag input */}
                                                         <div className="flex items-center gap-1 px-1.5 py-0.5 mt-1">
                                                             <Input
-                                                                placeholder="New chapter tag..."
+                                                                placeholder={t('tagManager.newChapterTag')}
                                                                 value={newChapterTagName[bookId] || ''}
                                                                 onChange={(e) => setNewChapterTagName(prev => ({
                                                                     ...prev,
@@ -369,7 +370,7 @@ export function TagManagerSidebar({ open, onOpenChange }: TagManagerSidebarProps
                     <div className="flex flex-col gap-1">
                         {selectedParentId && (
                             <div className="flex items-center justify-between text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-                                <span>Adding child to: <strong>{tags.find(t => t.id === selectedParentId)?.name}</strong></span>
+                                <span>{t('tagManager.addingChildTo', { name: tags.find(tag => tag.id === selectedParentId)?.name })}</span>
                                 <button onClick={() => setSelectedParentId(undefined)} className="hover:text-foreground transition-colors duration-200">
                                     <X className="w-3 h-3" />
                                 </button>
@@ -377,13 +378,13 @@ export function TagManagerSidebar({ open, onOpenChange }: TagManagerSidebarProps
                         )}
                         <div className="flex gap-1">
                             <Input
-                                placeholder={selectedParentId ? "New child tag name..." : "New root tag name..."}
+                                placeholder={selectedParentId ? t('tagManager.newChildTag') : t('tagManager.newRootTag')}
                                 value={newTagName}
                                 onChange={(e) => setNewTagName(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleCreateTag()}
                                 className="h-7 text-xs"
                             />
-                            <Button onClick={handleCreateTag} className="h-7 text-xs px-3">Add</Button>
+                            <Button onClick={handleCreateTag} className="h-7 text-xs px-3">{t('common:buttons.add')}</Button>
                         </div>
                     </div>
                 </div>
