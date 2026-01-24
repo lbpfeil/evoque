@@ -1,0 +1,43 @@
+{
+  "_meta": "Study session strings (rating buttons, progress, flip)",
+  "card": {
+    "flip": "Virar cartao",
+    "show_answer": "Mostrar resposta",
+    "front": "Frente",
+    "back": "Verso"
+  },
+  "rating": {
+    "again": "Denovo",
+    "hard": "Dificil",
+    "good": "Bom",
+    "easy": "Facil",
+    "hint_again": "< 1 min",
+    "hint_hard": "~10 min",
+    "hint_good": "1 dia",
+    "hint_easy": "4 dias"
+  },
+  "progress": {
+    "card_of": "Cartao {{current}} de {{total}}",
+    "remaining": "{{count}} restantes",
+    "done": "Concluido"
+  },
+  "actions": {
+    "undo": "Desfazer",
+    "skip": "Pular",
+    "edit": "Editar cartao",
+    "finish": "Finalizar sessao"
+  },
+  "keyboard": {
+    "space": "Espaco para virar",
+    "numbers": "1-4 para avaliar"
+  },
+  "summary": {
+    "title": "Sessao concluida",
+    "cards_reviewed": "Cartoes revisados",
+    "time_spent": "Tempo gasto",
+    "accuracy": "Acuracia",
+    "continue": "Continuar estudando",
+    "finish": "Finalizar"
+  },
+  "test": "Session namespace funcionando!"
+}

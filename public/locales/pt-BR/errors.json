@@ -1,0 +1,36 @@
+{
+  "_meta": "Error messages (validation, network, generic)",
+  "validation": {
+    "required": "Este campo e obrigatorio",
+    "email_invalid": "Email invalido",
+    "password_short": "A senha deve ter pelo menos {{min}} caracteres",
+    "password_mismatch": "As senhas nao coincidem",
+    "file_too_large": "Arquivo muito grande (maximo {{max}}MB)",
+    "file_invalid": "Tipo de arquivo invalido",
+    "name_required": "Nome e obrigatorio"
+  },
+  "network": {
+    "offline": "Voce esta offline",
+    "timeout": "A requisicao expirou",
+    "server_error": "Erro no servidor",
+    "connection_failed": "Falha na conexao",
+    "retry": "Tentar novamente"
+  },
+  "auth": {
+    "invalid_credentials": "Email ou senha incorretos",
+    "email_taken": "Este email ja esta em uso",
+    "session_expired": "Sua sessao expirou",
+    "unauthorized": "Acesso nao autorizado"
+  },
+  "import": {
+    "parse_error": "Erro ao processar arquivo",
+    "no_highlights": "Nenhum destaque encontrado no arquivo",
+    "unsupported_format": "Formato de arquivo nao suportado"
+  },
+  "generic": {
+    "unknown": "Ocorreu um erro inesperado",
+    "try_again": "Por favor, tente novamente",
+    "contact_support": "Se o problema persistir, entre em contato"
+  },
+  "test": "Errors namespace funcionando!"
+}

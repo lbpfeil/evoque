@@ -1,0 +1,34 @@
+{
+  "_meta": "Shared UI elements (buttons, nav, common labels)",
+  "buttons": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "close": "Fechar",
+    "confirm": "Confirmar",
+    "back": "Voltar",
+    "add": "Adicionar",
+    "remove": "Remover",
+    "search": "Buscar",
+    "clear": "Limpar",
+    "apply": "Aplicar",
+    "reset": "Redefinir"
+  },
+  "nav": {
+    "highlights": "Destaques",
+    "study": "Estudar",
+    "dashboard": "Dashboard",
+    "settings": "Configuracoes"
+  },
+  "labels": {
+    "all": "Todos",
+    "none": "Nenhum",
+    "select": "Selecionar",
+    "selected": "Selecionado",
+    "items": "itens",
+    "total": "Total"
+  },
+  "loading": "Carregando...",
+  "test": "Traducao funcionando!"
+}

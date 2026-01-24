@@ -1,0 +1,37 @@
+{
+  "_meta": "Highlights page strings (list, filters, actions)",
+  "list": {
+    "title": "Destaques",
+    "count": "{{count}} destaques",
+    "count_one": "{{count}} destaque",
+    "empty": "Nenhum destaque encontrado"
+  },
+  "filters": {
+    "all_books": "Todos os livros",
+    "search_placeholder": "Buscar destaques...",
+    "tags": "Tags",
+    "no_tags": "Sem tags",
+    "sort_by": "Ordenar por",
+    "sort_date": "Data",
+    "sort_book": "Livro"
+  },
+  "actions": {
+    "add_note": "Adicionar nota",
+    "edit_note": "Editar nota",
+    "delete": "Excluir destaque",
+    "delete_confirm": "Tem certeza que deseja excluir este destaque?",
+    "copy": "Copiar texto",
+    "copied": "Copiado!"
+  },
+  "tags": {
+    "add": "Adicionar tag",
+    "create": "Criar nova tag",
+    "remove": "Remover tag"
+  },
+  "empty_states": {
+    "no_highlights": "Voce ainda nao tem destaques",
+    "no_results": "Nenhum resultado para esta busca",
+    "import_prompt": "Importe seus destaques do Kindle para comecar"
+  },
+  "test": "Highlights namespace funcionando!"
+}

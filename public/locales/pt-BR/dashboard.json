@@ -1,0 +1,37 @@
+{
+  "_meta": "Dashboard page strings (stats, charts, welcome)",
+  "welcome": {
+    "greeting": "Ola, {{name}}!",
+    "greeting_anonymous": "Bem-vindo!",
+    "subtitle": "Aqui esta seu progresso de estudos"
+  },
+  "stats": {
+    "total_highlights": "Total de destaques",
+    "total_books": "Livros",
+    "cards_due": "Cartoes para hoje",
+    "reviews_today": "Revisoes hoje",
+    "streak": "Sequencia atual",
+    "streak_days": "{{count}} dias",
+    "streak_days_one": "{{count}} dia"
+  },
+  "charts": {
+    "activity": "Atividade",
+    "reviews_over_time": "Revisoes ao longo do tempo",
+    "accuracy_trend": "Tendencia de acuracia",
+    "by_book": "Por livro",
+    "no_data": "Dados insuficientes para exibir"
+  },
+  "recent": {
+    "title": "Atividade recente",
+    "no_activity": "Nenhuma atividade recente",
+    "reviewed": "Revisou {{count}} cartoes",
+    "imported": "Importou {{count}} destaques"
+  },
+  "goals": {
+    "title": "Metas",
+    "daily_goal": "Meta diaria",
+    "progress": "{{current}} de {{goal}}",
+    "completed": "Meta concluida!"
+  },
+  "test": "Dashboard namespace funcionando!"
+}

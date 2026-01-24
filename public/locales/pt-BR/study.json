@@ -1,0 +1,36 @@
+{
+  "_meta": "Study page strings (decks, cards overview, review stats)",
+  "decks": {
+    "title": "Estudar",
+    "all_books": "Todos os livros",
+    "select_deck": "Selecione um baralho para estudar",
+    "no_decks": "Nenhum baralho disponivel"
+  },
+  "cards": {
+    "due": "Para revisar",
+    "due_count": "{{count}} cartoes",
+    "due_count_one": "{{count}} cartao",
+    "new": "Novos",
+    "learning": "Aprendendo",
+    "review": "Revisao",
+    "total": "Total de cartoes"
+  },
+  "stats": {
+    "today": "Hoje",
+    "reviews_done": "Revisoes feitas",
+    "streak": "Sequencia",
+    "days": "dias",
+    "accuracy": "Acuracia"
+  },
+  "empty_states": {
+    "no_cards": "Nenhum cartao para revisar",
+    "all_done": "Parabens! Voce terminou as revisoes de hoje.",
+    "import_prompt": "Importe destaques para criar cartoes de estudo"
+  },
+  "actions": {
+    "start": "Comecar estudo",
+    "continue": "Continuar",
+    "reset_progress": "Resetar progresso"
+  },
+  "test": "Study namespace funcionando!"
+}

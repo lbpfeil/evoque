@@ -1,0 +1,55 @@
+{
+  "_meta": "Settings page strings (tabs, form labels, preferences)",
+  "tabs": {
+    "import": "Importar",
+    "library": "Biblioteca",
+    "account": "Conta",
+    "preferences": "Preferencias"
+  },
+  "import": {
+    "title": "Importar destaques",
+    "kindle_txt": "MyClippings.txt (Kindle)",
+    "kindle_pdf": "PDF do Kindle",
+    "anki": "Arquivo Anki (TSV)",
+    "drag_drop": "Arraste um arquivo aqui ou clique para selecionar",
+    "processing": "Processando...",
+    "success": "{{count}} destaques importados com sucesso",
+    "success_one": "{{count}} destaque importado com sucesso",
+    "duplicates_skipped": "{{count}} duplicados ignorados"
+  },
+  "library": {
+    "title": "Gerenciar biblioteca",
+    "books": "Livros",
+    "book_count": "{{count}} livros",
+    "book_count_one": "{{count}} livro",
+    "delete_book": "Excluir livro",
+    "delete_book_confirm": "Tem certeza? Todos os destaques deste livro serao excluidos.",
+    "edit_book": "Editar livro",
+    "daily_limit": "Limite diario",
+    "ease_factor": "Fator de facilidade"
+  },
+  "account": {
+    "title": "Minha conta",
+    "profile": "Perfil",
+    "name": "Nome",
+    "email": "Email",
+    "avatar": "Foto de perfil",
+    "change_avatar": "Alterar foto",
+    "remove_avatar": "Remover foto",
+    "change_password": "Alterar senha",
+    "delete_account": "Excluir conta"
+  },
+  "preferences": {
+    "title": "Preferencias",
+    "language": "Idioma",
+    "theme": "Tema",
+    "theme_light": "Claro",
+    "theme_dark": "Escuro",
+    "theme_system": "Sistema",
+    "daily_limit": "Limite diario de revisoes",
+    "default_ease": "Fator de facilidade padrao",
+    "notifications": "Notificacoes",
+    "sound": "Som"
+  },
+  "test": "Settings namespace funcionando!"
+}
