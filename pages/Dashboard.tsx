@@ -1,4 +1,5 @@
 import React, { Suspense, lazy } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useStore } from '../components/StoreContext';
 import { Book, Highlighter, Brain, Clock, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
@@ -27,6 +28,7 @@ const StatCard = ({ title, value, icon: Icon }: StatCardProps) => (
 );
 
 const Dashboard = () => {
+  const { t } = useTranslation('dashboard');
   const { books, highlights, getCardsDue } = useStore();
   const dueCards = getCardsDue().length;
 
@@ -43,31 +45,31 @@ const Dashboard = () => {
   return (
     <div className="space-y-12">
       <div>
-        <h1 className="text-3xl font-bold text-foreground tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground mt-2 font-light">Overview of your reading and learning progress.</p>
+        <h1 className="text-3xl font-bold text-foreground tracking-tight">{t('title')}</h1>
+        <p className="text-muted-foreground mt-2 font-light">{t('subtitle')}</p>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard 
-          title="Books" 
-          value={books.length} 
-          icon={Book} 
+        <StatCard
+          title={t('stats.books')}
+          value={books.length}
+          icon={Book}
         />
-        <StatCard 
-          title="Highlights" 
-          value={highlights.length} 
-          icon={Highlighter} 
+        <StatCard
+          title={t('stats.highlights')}
+          value={highlights.length}
+          icon={Highlighter}
         />
-        <StatCard 
-          title="To Review" 
-          value={dueCards} 
-          icon={Brain} 
+        <StatCard
+          title={t('stats.toReview')}
+          value={dueCards}
+          icon={Brain}
         />
-        <StatCard 
-          title="Streak" 
-          value="3 Days" 
-          icon={Clock} 
+        <StatCard
+          title={t('stats.streak')}
+          value={t('stats.streakValue', { count: 3 })}
+          icon={Clock}
         />
       </div>
 
@@ -83,7 +85,7 @@ const Dashboard = () => {
       {/* Recent Books */}
       <div>
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-bold text-foreground">Recent Books</h3>
+          <h3 className="text-lg font-bold text-foreground">{t('recentBooks.title')}</h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {books.slice(0, 3).map(book => (
@@ -95,7 +97,7 @@ const Dashboard = () => {
                  <h4 className="font-semibold text-card-foreground line-clamp-2 leading-tight mb-1">{book.title}</h4>
                  <p className="text-sm text-muted-foreground mb-3">{book.author}</p>
                  <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-sm border border-border w-fit font-medium">
-                   {book.highlightCount} highlights
+                   {t('recentBooks.highlightsCount', { count: book.highlightCount })}
                  </span>
                </div>
             </div>
