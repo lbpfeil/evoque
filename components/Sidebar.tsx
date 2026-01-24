@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, Target, Settings, BookOpen, Highlighter, LogOut, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from './AuthContext';
 import { useStore } from './StoreContext';
 import { useSidebarContext } from './SidebarContext';
 import { ThemeToggle } from './ThemeToggle';
 
 const Sidebar = () => {
+  const { t } = useTranslation('common');
   const { user, signOut } = useAuth();
   const { settings } = useStore();
   const { isExpanded, toggleCollapsed, handleMouseEnter, handleMouseLeave } = useSidebarContext();
@@ -25,10 +27,10 @@ const Sidebar = () => {
   };
 
   const navItems = [
-    { name: 'Dashboard', icon: LayoutDashboard, path: '/' },
-    { name: 'Highlights', icon: Highlighter, path: '/highlights' },
-    { name: 'Study', icon: Target, path: '/study' },
-    { name: 'Settings', icon: Settings, path: '/settings' },
+    { name: t('nav.dashboard'), icon: LayoutDashboard, path: '/' },
+    { name: t('nav.highlights'), icon: Highlighter, path: '/highlights' },
+    { name: t('nav.study'), icon: Target, path: '/study' },
+    { name: t('nav.settings'), icon: Settings, path: '/settings' },
   ];
 
   return (
@@ -57,8 +59,8 @@ const Sidebar = () => {
         <button
           onClick={toggleCollapsed}
           className={`p-1.5 mr-3 hover:bg-sidebar-accent rounded transition-opacity duration-200 shrink-0 ${isExpanded ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-          aria-label={isExpanded ? "Recolher sidebar" : "Expandir sidebar"}
-          title={isExpanded ? "Recolher sidebar" : "Expandir sidebar"}
+          aria-label={isExpanded ? t('sidebar.collapse') : t('sidebar.expand')}
+          title={isExpanded ? t('sidebar.collapse') : t('sidebar.expand')}
         >
           <ChevronLeft className="w-3.5 h-3.5 text-muted-foreground" />
         </button>
@@ -108,7 +110,7 @@ const Sidebar = () => {
               className="w-full flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded transition-colors"
             >
               <LogOut className="w-3 h-3" />
-              Sair
+              {t('sidebar.logout')}
             </button>
           </div>
         </div>
@@ -133,9 +135,9 @@ const Sidebar = () => {
               className={`flex-1 min-w-0 ml-3 transition-opacity duration-200 ${isExpanded ? 'opacity-100 delay-75' : 'opacity-0 w-0 overflow-hidden pointer-events-none'}`}
             >
               <p className="text-xs font-medium text-sidebar-foreground truncate whitespace-nowrap">
-                {settings.fullName || user?.email || 'User'}
+                {settings.fullName || user?.email || t('sidebar.defaultUser')}
               </p>
-              <p className="text-[10px] text-muted-foreground whitespace-nowrap">Free Plan</p>
+              <p className="text-[10px] text-muted-foreground whitespace-nowrap">{t('sidebar.freePlan')}</p>
             </div>
 
             {/* ChevronUp - fade com opacity */}
