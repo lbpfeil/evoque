@@ -1,700 +1,560 @@
-# Architecture Research: Internationalization (i18n)
+# Architecture: Design System Standardization
 
-**Project:** Evoque (Kindle Highlights Manager)
-**Domain:** Multi-language support with React Context integration
-**Researched:** 2026-01-24
-**Mode:** Architecture dimension for i18n
-**Overall Confidence:** HIGH
+**Domain:** Design system organization in React 19 + Tailwind CSS 3 + shadcn/ui
+**Researched:** 2026-01-27
+**Confidence:** HIGH (based on codebase audit + current ecosystem best practices)
 
 ---
 
 ## Executive Summary
 
-i18n should be integrated into Evoque using **react-i18next** (built on i18next). This library is the ecosystem standard for React internationalization, offering:
+Evoque's v1.0 milestone successfully established a working theme system with OKLCH color tokens, semantic CSS variables, and shadcn/ui component primitives. However, the codebase lacks a **governing design system** -- there is no single authority dictating how typography, spacing, and components should be used across pages. The result is measurable inconsistency: page titles range from `text-base` to `text-3xl`, button heights mix `h-7` and `h-10`, and the existing design guidelines document (`lbp_diretrizes/compact-ui-design-guidelines.md`) is partially outdated and contradicts actual usage in several places.
 
-- **Provider-based architecture**: Pairs naturally with existing Context providers (AuthContext, StoreContext)
-- **Namespace organization**: Split translations by feature (common, auth, highlights, study, settings)
-- **Lazy loading**: Load only needed translations (PT-BR is default, EN loads on demand)
-- **Localized formatting**: Handles dates, numbers, pluralization natively
-- **Minimal bundle impact**: Core library ~20KB gzipped, lazy-loaded namespaces
-
-**Key architectural decision**: I18nProvider sits below AuthProvider but above StoreProvider, establishing language before app data loads. This allows StoreContext to format dates/numbers correctly.
+The architecture recommended here is **pragmatic, not aspirational**. Evoque is a single-developer project on Tailwind CSS v3 (not v4). The right approach is: formalize what exists, eliminate drift, and create enforceable standards -- not build a Style Dictionary pipeline or a Figma-to-code token system.
 
 ---
 
-## Provider Placement in Component Tree
+## Current State: What Exists
 
-### Recommended Tree Structure
+### Token Layer (Working)
 
-```
-App.tsx
-  |
-  +-- ErrorBoundary
-        |
-        +-- ThemeProvider (existing)
-              |
-              +-- AuthProvider (existing)
-                    |
-                    +-- I18nProvider (NEW - wraps everything except auth)
-                          |
-                          +-- ProtectedApp
-                                |
-                                +-- HashRouter
-                                      |
-                                      +-- SidebarProvider (existing)
-                                            |
-                                            +-- StoreProvider (existing)
-                                                  |
-                                                  +-- AppLayout
-                                                        |
-                                                        +-- Routes
-```
-
-### Why This Placement
-
-**Above StoreProvider:**
-- Language decision must happen before StoreContext loads/formats dates
-- StoreContext can use `useTranslation()` for error messages, formatted dates
-- Consistent translations across all data operations
-
-**Below AuthProvider:**
-- AuthProvider runs faster (just checks session), doesn't depend on language
-- Language selection can be user-specific (stored in UserSettings table)
-- Non-authenticated Login page still gets theme + error messages
-
-**Below ThemeProvider:**
-- Both theme and language are "environmental" providers
-- Theme is independent of language, no dependency either way
-- Both persist to localStorage independently
-
-**Not wrapping Router:**
-- Ensures language is set before routes render
-- Avoids race conditions on initial load
-
-### Initialization Flow
+The color token system is solid and already in production:
 
 ```
-1. App mounts
-2. ErrorBoundary wraps everything
-3. ThemeProvider activates (loads theme from localStorage)
-4. AuthProvider checks session → sets user or shows login
-5. IF authenticated:
-   - I18nProvider loads default language (PT-BR) + user language preference from UserSettings
-   - ProtectedApp renders
-   - StoreProvider loads app data (books, highlights, etc.)
-   - Routes render with correct language
-
-6. IF not authenticated:
-   - I18nProvider loads default language (PT-BR)
-   - Login page renders with theme + i18n support
+index.css (:root / .dark)     -->  tailwind.config.js (colors: {...})  -->  Components (bg-background, text-foreground, etc.)
+   CSS Variables (OKLCH)              Tailwind bindings                       Semantic utility classes
 ```
+
+**Files involved:**
+- `index.css` -- CSS variables in `:root` and `.dark` (OKLCH values)
+- `tailwind.config.js` -- Maps CSS variables to Tailwind utility classes
+- `lib/utils.ts` -- `cn()` utility (clsx + tailwind-merge)
+
+**What works well:**
+- Color tokens are semantic (`--background`, `--foreground`, `--primary`, etc.)
+- Dark mode is fully functional via `.dark` class
+- Components use semantic classes (`bg-background`, `text-muted-foreground`)
+- Only 2 instances of hardcoded `text-zinc-*` remain in the entire codebase (in `StudyHeatmap.tsx`)
+
+**What is missing:**
+- No typography tokens (font sizes, weights, line heights are ad-hoc)
+- No spacing tokens (padding, gaps, margins are chosen per-component)
+- No component usage tokens (button sizes, input heights are inconsistent)
+- No radius tokens beyond the single `--radius` variable
+
+### Component Layer (Mixed Generations)
+
+The `components/ui/` directory contains 16 shadcn components installed at **two different times**, resulting in two architectural patterns coexisting:
+
+**Generation 1 (v1.0 Phase 1, older shadcn CLI):**
+- `button.tsx`, `input.tsx`, `dialog.tsx`, `popover.tsx`, `command.tsx`, `sheet.tsx`, `alert-dialog.tsx`, `checkbox.tsx`
+- Use `React.forwardRef` pattern
+- Import via relative path: `from "../../lib/utils"`
+- Import from individual Radix packages: `@radix-ui/react-dialog`
+
+**Generation 2 (v1.0 Phase 2+, newer shadcn CLI):**
+- `card.tsx`, `badge.tsx`, `tabs.tsx`, `select.tsx`, `switch.tsx`, `tooltip.tsx`, `dropdown-menu.tsx`, `scroll-area.tsx`
+- Use function component pattern (no forwardRef)
+- Import via alias: `from "@/lib/utils"`
+- Import from unified `radix-ui` package
+- Use `data-slot` attributes for CSS targeting
+
+This is not a bug, but it creates maintenance confusion. Both patterns work, but the codebase looks like two different developers wrote it.
+
+### Typography (Inconsistent)
+
+Actual usage found across pages:
+
+| Context | Dashboard | Highlights | Study | Settings | Login |
+|---------|-----------|------------|-------|----------|-------|
+| Page title | `text-3xl font-bold` | `text-3xl font-bold` | `text-base font-semibold` | `text-base font-semibold` | `text-2xl font-bold` |
+| Page subtitle | `text-base font-light` | `text-sm font-light` | `text-xs` | `text-xs` | -- |
+| Section heading | `text-lg font-bold` | -- | `text-xs font-semibold` | -- | -- |
+| Card stat value | `text-3xl font-bold` | -- | `text-lg font-bold` | -- | -- |
+
+**The problem:** Two style families exist in the codebase simultaneously:
+1. **"Magazine" style** (Dashboard, Highlights, Login): `text-3xl` titles, generous spacing, `font-bold`
+2. **"Compact" style** (Study, Settings): `text-base` titles, tight spacing, `font-semibold`
+
+The existing design guidelines doc (`compact-ui-design-guidelines.md`) prescribes the compact style, but Dashboard and Highlights were modernized in v1.0 Phase 2 with a different visual approach.
+
+### Spacing (Inconsistent)
+
+| Context | Dashboard | Highlights | Study | Settings |
+|---------|-----------|------------|-------|----------|
+| Page padding | `space-y-12` | `px-4 sm:px-6` | `p-4 sm:p-6` | `p-4 sm:p-6` |
+| Header margin | `mb-6` (implicit) | `gap-4 pt-6 pb-2` | `mb-3` | `mb-2` |
+| Section gap | `gap-4` to `gap-6` | `gap-2` | `mb-4` | `gap-3` |
+
+### Component Defaults vs. Overrides
+
+The shadcn `button.tsx` defines default size as `h-10 px-4 py-2`, but the design guidelines prescribe `h-7 px-3 text-sm`. In practice, almost every button usage in the codebase overrides the default with custom className. The same is true for `input.tsx` (default `h-10`, actually used as `h-7`).
+
+This means the component defaults are wrong for this project. Every usage pays the cost of overriding.
 
 ---
 
-## File Structure for Translations
+## Recommended Architecture
 
-### Directory Layout
+### Principle: Tokens in CSS, Consumed via Tailwind, Applied in Components
+
+The architecture follows the established shadcn/ui pattern, extended with typography and spacing:
 
 ```
-evoque/
-├── public/
-│   └── locales/
-│       ├── pt-BR/
-│       │   ├── common.json        # Shared UI (buttons, nav, etc.)
-│       │   ├── auth.json          # Login/signup strings
-│       │   ├── highlights.json     # Highlights page
-│       │   ├── study.json          # Study deck selection
-│       │   ├── session.json        # StudySession interface
-│       │   ├── settings.json       # Settings page
-│       │   ├── dashboard.json      # Dashboard/analytics
-│       │   ├── errors.json         # Error messages
-│       │   └── formats.json        # Date/number format strings
-│       │
-│       └── en/
-│           ├── common.json
-│           ├── auth.json
-│           ├── highlights.json
-│           ├── study.json
-│           ├── session.json
-│           ├── settings.json
-│           ├── dashboard.json
-│           ├── errors.json
-│           └── formats.json
-│
-└── src/
-    ├── i18n/
-    │   ├── config.ts               # i18next configuration
-    │   ├── index.ts                # i18next initialization
-    │   └── resources.ts            # TypeScript types for keys (optional)
-    │
-    ├── components/
-    │   └── I18nProvider.tsx        # React wrapper component
-    │
-    └── hooks/
-        └── useLanguage.ts          # Custom hook for language selection
+                                DESIGN SYSTEM LAYERS
+
+Layer 1: CSS Variables          index.css (:root / .dark)
+         (Tokens)               Colors, radius, font-family
+                                    |
+                                    v
+Layer 2: Tailwind Config        tailwind.config.js (theme.extend)
+         (Bindings)             Maps CSS vars to utility classes
+                                Adds typography scale, spacing scale
+                                    |
+                                    v
+Layer 3: shadcn Components      components/ui/*.tsx
+         (Primitives)           button, input, dialog, card, etc.
+                                Defaults match our design system
+                                    |
+                                    v
+Layer 4: App Components         components/*.tsx, pages/*.tsx
+         (Compositions)         Use primitives with cn() overrides
+                                Follow documented patterns
+                                    |
+                                    v
+Layer 5: Documentation          .planning/design-system/
+         (Governance)           Canonical reference for all decisions
 ```
 
-### Namespace Organization Strategy
+### Where Tokens Should Live
 
-**Split by feature, not by component.** Key principle: namespace = feature/page, not individual components.
+#### Color Tokens: CSS Variables (index.css) -- KEEP AS-IS
 
-#### common.json (Shared UI)
-Buttons, form labels, navigation items used across multiple pages:
-```json
-{
-  "nav": {
-    "dashboard": "Dashboard",
-    "highlights": "Highlights",
-    "study": "Study",
-    "settings": "Configurações"
-  },
-  "buttons": {
-    "save": "Salvar",
-    "cancel": "Cancelar",
-    "delete": "Deletar",
-    "import": "Importar"
-  },
-  "loading": "Carregando...",
-  "error": "Erro"
+Color tokens are already correctly placed. No changes needed.
+
+```css
+/* index.css -- already correct */
+:root {
+    --background: oklch(0.97 0.015 85);
+    --foreground: oklch(0.18 0.01 50);
+    --primary: oklch(0.67 0.16 58);
+    /* ... */
+}
+.dark {
+    --background: oklch(0.14 0.012 55);
+    /* ... */
 }
 ```
 
-#### auth.json
-Login, signup, password reset:
-```json
-{
-  "login": {
-    "title": "Entrar em Evoque",
-    "email": "Email",
-    "password": "Senha",
-    "submit": "Entrar",
-    "noAccount": "Não tem conta?",
-    "signup": "Criar conta"
-  },
-  "signup": {
-    "title": "Criar Conta",
-    "submit": "Cadastrar"
-  },
-  "errors": {
-    "invalidEmail": "Email inválido",
-    "passwordTooShort": "Senha deve ter no mínimo 6 caracteres"
-  }
+#### Typography Tokens: Tailwind Config (tailwind.config.js) -- ADD
+
+Typography should NOT be CSS variables. It should be Tailwind theme extensions, because:
+1. Typography does not change between light/dark mode
+2. Tailwind's `text-*` utilities are the consumption mechanism
+3. Custom font sizes map directly to Tailwind's type scale
+
+**Recommended addition to `tailwind.config.js`:**
+
+```js
+theme: {
+    extend: {
+        fontSize: {
+            // Design system type scale
+            'page-title': ['1.125rem', { lineHeight: '1.3', fontWeight: '600' }],  // 18px - text-lg equiv
+            'section-title': ['0.875rem', { lineHeight: '1.5', fontWeight: '600' }],  // 14px
+            'body': ['0.875rem', { lineHeight: '1.5' }],  // 14px - text-sm equiv
+            'caption': ['0.75rem', { lineHeight: '1.4' }],  // 12px - text-xs equiv
+            'micro': ['0.625rem', { lineHeight: '1.2' }],  // 10px
+        },
+    }
 }
 ```
 
-#### highlights.json
-Highlights page, filters, tags:
-```json
-{
-  "page": {
-    "title": "Highlights",
-    "empty": "Nenhum highlight ainda"
-  },
-  "filters": {
-    "byBook": "Filtrar por livro",
-    "byTag": "Filtrar por tag",
-    "search": "Buscar highlights"
-  },
-  "actions": {
-    "addToStudy": "Adicionar ao estudo",
-    "removeFromStudy": "Remover do estudo",
-    "edit": "Editar",
-    "delete": "Deletar"
-  }
+**Why custom names instead of Tailwind defaults:** Using `text-page-title` makes intent explicit. A developer cannot accidentally use `text-3xl` when the design system says page titles are `text-page-title`. The standard Tailwind classes (`text-sm`, `text-lg`) remain available for edge cases but are not the primary API.
+
+**Alternative (simpler, recommended for this project):** Do NOT add custom fontSize tokens. Instead, document the mapping between contexts and standard Tailwind classes, and enforce via code review / audit. This avoids adding complexity to a working system.
+
+**Recommendation: Use the simpler approach.** Document `text-lg font-semibold` as the page title standard. Do not create custom font-size tokens. Evoque is a single-developer project; the documentation IS the enforcement mechanism.
+
+#### Spacing Tokens: Documentation Only -- NO NEW INFRASTRUCTURE
+
+Spacing tokens (page padding, section gaps, etc.) should NOT be added to tailwind.config.js. The standard Tailwind spacing scale (4px base) is sufficient. What is missing is a documented **spatial convention**, not new utility classes.
+
+**Document these conventions:**
+
+| Context | Value | Tailwind Class |
+|---------|-------|----------------|
+| Page outer padding | 16px mobile, 24px desktop | `p-4 sm:p-6` |
+| Page header bottom margin | 12px | `mb-3` |
+| Section gap | 16px | `space-y-4` or `gap-4` |
+| Card internal padding | 16px | `p-4` |
+| List item gap | 4px | `gap-1` |
+| Button height (standard) | 28px | `h-7` |
+| Input height (standard) | 28px | `h-7` |
+
+#### Border Radius: CSS Variable (index.css) -- KEEP AS-IS
+
+The existing `--radius: 0.75rem` with Tailwind's `lg`, `md`, `sm` derivatives is correct.
+
+### Component Standardization Strategy
+
+#### Fix Defaults, Don't Create Wrappers
+
+The key architectural decision: **modify shadcn component defaults to match the design system**, rather than creating wrapper components.
+
+**Before (current):**
+```tsx
+// button.tsx default: h-10 px-4 py-2
+// Every usage overrides:
+<Button className="h-7 px-3 text-xs">Save</Button>
+<Button className="h-7 text-sm px-3">Add</Button>
+```
+
+**After (recommended):**
+```tsx
+// button.tsx default changed to: h-7 px-3 text-sm
+// Usage is clean:
+<Button>Save</Button>
+<Button size="lg">Larger Action</Button>
+```
+
+**Components to update defaults:**
+
+| Component | Current Default | New Default | Rationale |
+|-----------|----------------|-------------|-----------|
+| `button.tsx` | `h-10 px-4 py-2` | `h-8 px-3 text-sm` | Match compact guidelines, h-8 for accessible touch target |
+| `button.tsx` size="sm" | `h-9 px-3` | `h-7 px-2.5 text-xs` | Compact variant |
+| `button.tsx` size="icon" | `h-10 w-10` | `h-8 w-8` | Match default height |
+| `input.tsx` | `h-10 px-3 py-2` | `h-8 px-2.5 text-sm` | Match compact guidelines |
+
+**Why h-8 (32px) not h-7 (28px):** The design guidelines prescribe h-7, but 28px is below WCAG recommended 44px touch target. h-8 (32px) is a pragmatic compromise -- compact enough for the density goals, but more forgiving for touch interaction. For truly compact contexts (inline edits, tag managers), use h-7 explicitly.
+
+#### Unify Component Generations
+
+Normalize all components to a consistent pattern. Do NOT rewrite working components just for consistency -- instead, normalize import paths:
+
+**Action:** Update all Generation 1 components to use `@/lib/utils` import alias instead of `../../lib/utils`. This is a mechanical find-and-replace that makes the codebase consistent without changing behavior.
+
+**Do NOT** rewrite forwardRef components to function components. Both patterns work. The shadcn CLI changed its output format, but both are valid React 19 patterns. The cost of rewriting exceeds the benefit.
+
+### Component Organization
+
+#### Current Structure (Keep)
+
+```
+components/
+    ui/                         # shadcn primitives (DO NOT add app logic here)
+        button.tsx
+        input.tsx
+        dialog.tsx
+        card.tsx
+        ... (16 components)
+    AuthContext.tsx              # Auth state
+    StoreContext.tsx             # App state
+    ThemeProvider.tsx            # Theme state
+    SidebarContext.tsx           # Sidebar state
+    Sidebar.tsx                 # Navigation
+    BottomNav.tsx               # Mobile navigation
+    TagManagerSidebar.tsx       # Tag management panel
+    TagSelector.tsx             # Tag picker
+    DeckTable.tsx               # Study deck list
+    StudyHeatmap.tsx            # Review activity heatmap
+    StudyStatusBadge.tsx        # Card status indicator
+    DashboardCharts.tsx         # Dashboard chart section
+    HighlightTableRow.tsx       # Highlights table row
+    HighlightEditModal.tsx      # Highlight editing
+    HighlightHistoryModal.tsx   # Review history modal
+    BookContextModal.tsx        # Book details modal
+    DeleteBookModal.tsx         # Book deletion confirmation
+    DeleteCardPopover.tsx       # Card deletion confirmation
+    EmptyDeckPopover.tsx        # Empty deck notification
+    ErrorBoundary.tsx           # Error handling
+    Portal.tsx                  # Portal wrapper
+    ThemeToggle.tsx             # Theme switcher
+pages/
+    Dashboard.tsx
+    Highlights.tsx
+    Study.tsx
+    StudySession.tsx
+    Settings.tsx
+    Login.tsx
+```
+
+**Do NOT restructure into feature folders.** The current flat structure is appropriate for a 6-page app with ~20 components. Feature folders add navigation overhead without meaningful benefit at this scale.
+
+#### What to Add
+
+```
+components/
+    ui/
+        page-header.tsx         # NEW: Standardized page header (title + subtitle + optional action)
+```
+
+One new component: `PageHeader`. This is the highest-leverage standardization because every page has a header and they are all different. A single component enforces consistency:
+
+```tsx
+// components/ui/page-header.tsx
+interface PageHeaderProps {
+    title: string;
+    subtitle?: string;
+    action?: React.ReactNode;
+}
+
+export function PageHeader({ title, subtitle, action }: PageHeaderProps) {
+    return (
+        <header className="mb-3">
+            <div className="flex items-start justify-between gap-4">
+                <div>
+                    <h1 className="text-lg font-semibold text-foreground">{title}</h1>
+                    {subtitle && (
+                        <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
+                    )}
+                </div>
+                {action && <div className="flex-shrink-0">{action}</div>}
+            </div>
+        </header>
+    );
 }
 ```
 
-#### study.json
-Deck selection page:
-```json
-{
-  "page": {
-    "title": "Estude",
-    "noDecks": "Nenhum deck disponível"
-  },
-  "deck": {
-    "allBooks": "Todos os Livros",
-    "cardsNew": "{{count}} novo",
-    "cardsDue": "{{count}} para revisar"
-  }
-}
+**Why only one new component?** The project mandate is "obsessive consistency," not "new component library." Every other UI element (buttons, inputs, cards, tables, modals) already has a shadcn primitive. The problem is inconsistent usage, not missing primitives.
+
+### Documentation Architecture
+
+#### Retire the Old Guide
+
+`lbp_diretrizes/compact-ui-design-guidelines.md` is 725 lines, written in Portuguese, last updated 2025-12-30, and contradicts actual v1.0 implementation in several places (e.g., prescribes `text-zinc-900` for titles, but v1.0 uses `text-foreground`; prescribes `rounded` but modals use `rounded-lg`; prescribes `h-7` buttons but defaults are `h-10`).
+
+**Action:** Do not delete the old guide (it has useful reference patterns). Create a new canonical guide that supersedes it.
+
+#### New Documentation Structure
+
+```
+.planning/
+    design-system/
+        TOKENS.md               # Canonical color, typography, spacing reference
+        COMPONENTS.md           # How to use each shadcn component (with examples)
+        PATTERNS.md             # Page layout patterns, modal patterns, table patterns
+        AUDIT-CHECKLIST.md      # Checklist for auditing a page against the system
 ```
 
-#### session.json
-Study session interface:
-```json
-{
-  "card": {
-    "front": "Highlight",
-    "back": "Nota"
-  },
-  "rating": {
-    "again": "Novamente",
-    "hard": "Difícil",
-    "good": "Bom",
-    "easy": "Fácil"
-  },
-  "progress": "{{current}} de {{total}}",
-  "sessionEnd": "Sessão concluída!"
-}
-```
-
-#### settings.json
-Settings page (tabs: Import, Library, Account, Preferences):
-```json
-{
-  "tabs": {
-    "import": "Importar",
-    "library": "Biblioteca",
-    "account": "Conta",
-    "preferences": "Preferências"
-  },
-  "language": {
-    "label": "Idioma",
-    "ptBr": "Português (Brasil)",
-    "en": "English"
-  },
-  "limits": {
-    "reviewsPerDay": "Máximo de revisões por dia",
-    "newCardsPerDay": "Novos cards por dia"
-  }
-}
-```
-
-#### dashboard.json
-Analytics page:
-```json
-{
-  "title": "Dashboard",
-  "stats": {
-    "totalBooks": "Livros",
-    "totalHighlights": "Highlights",
-    "cardsReviewed": "Cards revisados",
-    "todaysProgress": "Progresso de hoje"
-  }
-}
-```
-
-#### errors.json
-Application-wide errors:
-```json
-{
-  "importFailed": "Falha ao importar. Tente novamente.",
-  "networkError": "Erro de rede. Verifique sua conexão.",
-  "unauthorized": "Acesso negado. Faça login novamente.",
-  "notFound": "Recurso não encontrado"
-}
-```
-
-#### formats.json
-Format strings for dates, pluralization:
-```json
-{
-  "date": {
-    "long": "YYYY-MM-DD",
-    "short": "DD/MM",
-    "locale": "pt-BR"
-  },
-  "plurals": {
-    "highlight_other": "{{count}} highlights",
-    "highlight_one": "{{count}} highlight",
-    "card_other": "{{count}} cards",
-    "card_one": "{{count}} card"
-  }
-}
-```
+**Why `.planning/design-system/` not `lbp_diretrizes/`?** The `.planning/` directory is the established project governance location. Placing the design system here makes it part of the project planning workflow, not a legacy reference folder.
 
 ---
 
-## Integration Points with Existing Architecture
+## Inconsistency Audit: What Must Be Fixed
 
-### 1. AuthContext Integration
+### Typography Standardization
 
-**Current state:** AuthContext provides user session
+**Decision needed:** Which style family wins -- "Magazine" (Dashboard/Highlights) or "Compact" (Study/Settings)?
 
-**New: Language preference from UserSettings**
+**Recommendation: Compact wins.** Rationale:
+1. The project explicitly values "obsessive consistency" and "compact density"
+2. Study and Settings pages were most recently designed with user approval
+3. The existing guidelines doc prescribes compact
+4. Dashboard and Highlights adopted the "Magazine" style from shadcn defaults during v1.0 Phase 2, not from intentional design
 
-In `StoreContext.tsx`, after loading user settings:
+**Canonical type scale:**
 
-```typescript
-// After loading UserSettings from Supabase
-const { language = 'pt-BR' } = settings; // Default to PT-BR
+| Context | Class | Size | Weight |
+|---------|-------|------|--------|
+| Page title | `text-lg font-semibold` | 18px | 600 |
+| Page subtitle | `text-xs text-muted-foreground` | 12px | 400 |
+| Section heading | `text-sm font-semibold` | 14px | 600 |
+| Body text | `text-sm` | 14px | 400 |
+| Metadata / captions | `text-xs text-muted-foreground` | 12px | 400 |
+| Stat values (large) | `text-lg font-bold` | 18px | 700 |
+| Micro labels | `text-[10px]` | 10px | 400-500 |
 
-// In I18nProvider initialization
-useEffect(() => {
-  if (user && settings.language) {
-    i18n.changeLanguage(settings.language);
-  }
-}, [settings.language, user, i18n]);
+**Files requiring title demotion:**
+- `Dashboard.tsx`: `text-3xl font-bold` -> `text-lg font-semibold`
+- `Highlights.tsx`: `text-3xl font-bold` -> `text-lg font-semibold`
+- `Login.tsx`: `text-2xl font-bold` -> keep (login is a special case, standalone page)
+- `Dashboard.tsx` stat values: `text-3xl font-bold` -> `text-lg font-bold`
+- `Dashboard.tsx` "Recent Books" heading: `text-lg font-bold` -> `text-sm font-semibold`
+
+### Spacing Standardization
+
+**Canonical page layout:**
+
+```tsx
+// Every page follows this pattern:
+<div className="p-4 sm:p-6">
+    <PageHeader title="..." subtitle="..." />
+    {/* Page content with consistent gaps */}
+    <div className="space-y-4">
+        {/* Sections */}
+    </div>
+</div>
 ```
 
-### 2. StoreContext Integration
+**Files requiring spacing fixes:**
+- `Dashboard.tsx`: `space-y-12` -> `space-y-4` (excessively loose)
+- `Highlights.tsx`: `space-y-4 px-4 sm:px-6` (add outer padding wrapper)
+- `Dashboard.tsx`: `mb-6` between sections -> `mb-4`
 
-**Current state:** StoreContext loads books, highlights, study cards
+### Component Usage Standardization
 
-**New: Format dates and numbers using i18n**
-
-In `StoreContext.getDeckStats()`:
-```typescript
-// Date formatting using i18n
-const reviewedToday = i18n.format(new Date(), 'date.short');
-
-// Number formatting with pluralization
-const cardsText = i18n.t('study:deck.cardsDue', { count: 5 });
-// Output: "5 para revisar" (PT-BR) or "5 to review" (EN)
-```
-
-### 3. Theme + Language Synchronization
-
-Both stored in localStorage independently:
-```
-localStorage.getItem('evoque-theme') → 'dark' | 'light' | 'system'
-localStorage.getItem('evoque-language') → 'pt-BR' | 'en'
-```
-
-Either can change without affecting the other.
-
-### 4. Sidebar Integration
-
-Language toggle in Sidebar (or SettingsModal):
-
-```typescript
-// components/LanguageToggle.tsx
-import { useTranslation } from 'react-i18next';
-
-export const LanguageToggle = () => {
-  const { i18n } = useTranslation();
-  const { updateSettings } = useStore();
-
-  const handleLanguageChange = async (lang: string) => {
-    await i18n.changeLanguage(lang);
-    await updateSettings({ language: lang }); // Persist to Supabase
-  };
-
-  return (
-    <select value={i18n.language} onChange={(e) => handleLanguageChange(e.target.value)}>
-      <option value="pt-BR">Português (Brasil)</option>
-      <option value="en">English</option>
-    </select>
-  );
-};
-```
-
-### 5. Error Handling
-
-Integrate i18n with ErrorBoundary:
-
-```typescript
-// In ErrorBoundary
-const { t } = useTranslation('errors');
-
-<p>{t('importFailed')}</p>  // Automatically translated
-```
+| Component | Current Usage | Canonical Usage |
+|-----------|---------------|-----------------|
+| Button (default) | Mixed h-7, h-10, custom | `<Button>` (after defaults are fixed to h-8) |
+| Button (compact) | `className="h-7 text-xs px-3"` | `<Button size="sm">` (after sm is fixed to h-7) |
+| Input | Mixed h-7, h-10, h-8 | `<Input>` (after default fixed to h-8) |
+| Card (shadcn) | Only in Dashboard | Use for all boxed content sections |
+| Dialog | Consistent (shadcn) | Keep as-is |
+| Page headers | 5 different patterns | `<PageHeader>` component |
 
 ---
 
-## Lazy Loading Strategy
+## Suggested Build Order
 
-### Default: Load PT-BR upfront, load EN on demand
+The dependency chain for design system standardization:
 
-**Configuration in `i18n/config.ts`:**
-
-```typescript
-import i18n from 'i18next';
-import { initReactI18next } from 'react-i18next';
-
-i18n
-  .use(initReactI18next)
-  .init({
-    fallbackLng: 'pt-BR',
-    defaultNS: 'common',
-    ns: ['common', 'auth', 'highlights', 'study', 'session', 'settings', 'dashboard', 'errors'],
-
-    resources: {
-      'pt-BR': {
-        common: require('./../../public/locales/pt-BR/common.json'),
-        auth: require('./../../public/locales/pt-BR/auth.json'),
-        // ... other namespaces
-      },
-      // EN loaded lazily on demand
-    },
-
-    interpolation: {
-      escapeValue: false, // React handles XSS
-    },
-
-    react: {
-      useSuspense: false, // Avoid Suspense boundaries during translation load
-    },
-  });
-
-export default i18n;
+```
+Phase 1: Define Tokens + Fix Defaults          (Foundation - no visual changes yet)
+    |
+    |-- 1a. Write TOKENS.md (canonical reference)
+    |-- 1b. Fix button.tsx defaults (h-10 -> h-8, sm: h-9 -> h-7)
+    |-- 1c. Fix input.tsx defaults (h-10 -> h-8)
+    |-- 1d. Normalize import paths (../../ -> @/)
+    |-- 1e. Create PageHeader component
+    |
+    v
+Phase 2: Audit + Fix Pages                     (Visual consistency enforcement)
+    |
+    |-- 2a. Audit Dashboard.tsx (biggest inconsistency)
+    |-- 2b. Audit Highlights.tsx (second biggest)
+    |-- 2c. Audit Settings.tsx
+    |-- 2d. Audit Study.tsx (should be close already)
+    |-- 2e. Audit StudySession.tsx (preserve serif, minimal changes)
+    |-- 2f. Audit Login.tsx (standalone, may keep distinct style)
+    |
+    v
+Phase 3: Audit + Fix Components                (Supporting elements)
+    |
+    |-- 3a. Audit modals (BookContextModal, HighlightEditModal, HighlightHistoryModal)
+    |-- 3b. Audit popovers (DeleteCardPopover, EmptyDeckPopover)
+    |-- 3c. Audit complex components (TagManagerSidebar, TagSelector, DeckTable)
+    |-- 3d. Audit Sidebar and BottomNav
+    |
+    v
+Phase 4: Documentation + Governance            (Prevent future drift)
+    |
+    |-- 4a. Write COMPONENTS.md (usage guide for each shadcn component)
+    |-- 4b. Write PATTERNS.md (page layouts, modals, tables)
+    |-- 4c. Write AUDIT-CHECKLIST.md (checklist for future pages)
+    |-- 4d. Mark old guide as superseded
 ```
 
-### EN Lazy Loading
-
-When user switches to English, load EN translations asynchronously:
-
-```typescript
-const loadLanguage = async (lang: string) => {
-  if (lang === 'en') {
-    // Dynamically import EN translations
-    const enCommon = await import('./../../public/locales/en/common.json');
-    const enAuth = await import('./../../public/locales/en/auth.json');
-    // ... import all namespaces
-
-    i18n.addResourceBundle('en', 'common', enCommon);
-    i18n.addResourceBundle('en', 'auth', enAuth);
-    // ... add all bundles
-  }
-  await i18n.changeLanguage(lang);
-};
-```
+**Why this order:**
+1. Phase 1 must come first because it establishes the reference standard. You cannot audit pages against rules that do not yet exist.
+2. Phase 2 before Phase 3 because pages are the user-facing surface. Components inside pages inherit from page-level decisions.
+3. Phase 4 last because documentation should describe what IS, not what WILL BE. Writing docs before implementation creates drift.
 
 ---
 
-## Component Usage Patterns
+## How to Audit Existing Pages Systematically
 
-### Pattern 1: Simple String Translation
+### Per-Page Audit Protocol
 
-```typescript
-import { useTranslation } from 'react-i18next';
+For each page, check these dimensions in order:
 
-export const Dashboard = () => {
-  const { t } = useTranslation('dashboard');
+**1. Structure**
+- [ ] Uses `<div className="p-4 sm:p-6">` as outer wrapper
+- [ ] Uses `<PageHeader>` component for title/subtitle
+- [ ] Content sections use `space-y-4` or equivalent consistent gaps
 
-  return <h1>{t('title')}</h1>;
-};
-```
+**2. Typography**
+- [ ] Page title: `text-lg font-semibold text-foreground`
+- [ ] Page subtitle: `text-xs text-muted-foreground`
+- [ ] Section headings: `text-sm font-semibold text-muted-foreground` (or `text-foreground` if primary)
+- [ ] Body text: `text-sm`
+- [ ] Metadata: `text-xs text-muted-foreground`
+- [ ] No `text-3xl`, `text-2xl`, `text-xl` (except StudySession special case)
+- [ ] No `font-light` (only `font-medium`, `font-semibold`, `font-bold`)
 
-### Pattern 2: Interpolation with Variables
+**3. Colors**
+- [ ] No hardcoded `zinc-*`, `gray-*`, `slate-*` colors
+- [ ] Uses `text-foreground`, `text-muted-foreground`, `bg-background`, `bg-card`, `bg-muted`, `bg-accent`
+- [ ] SRS status colors allowed: `text-blue-600`, `text-amber-600`, `text-green-600`, `text-red-600` (these are semantic)
+- [ ] Chart colors use `--chart-*` variables
 
-```typescript
-const { t } = useTranslation('study');
+**4. Components**
+- [ ] Buttons use `<Button>` with standard sizes (not custom height overrides after defaults are fixed)
+- [ ] Inputs use `<Input>` (not raw `<input>`)
+- [ ] Cards use shadcn `<Card>` where appropriate
+- [ ] Modals use shadcn `<Dialog>` or `<AlertDialog>`
+- [ ] No inline `<button>` with complex className (extract to `<Button>` variant)
 
-<p>{t('deck.cardsDue', { count: 5 })}</p>
-// PT-BR: "5 para revisar"
-// EN: "5 to review"
-```
+**5. Spacing**
+- [ ] Consistent with canonical page layout pattern
+- [ ] No `space-y-12` or `gap-6` (too loose for compact density)
+- [ ] Padding follows 4px base (0.5, 1, 1.5, 2, 3, 4)
 
-### Pattern 3: Multiple Namespaces
-
-```typescript
-const { t: tCommon } = useTranslation('common');
-const { t: tHighlights } = useTranslation('highlights');
-
-return (
-  <>
-    <button>{tCommon('buttons.save')}</button>
-    <h2>{tHighlights('page.title')}</h2>
-  </>
-);
-```
-
-### Pattern 4: Namespace-specific hook
-
-```typescript
-import { useTranslation } from 'react-i18next';
-
-export const useHighlightsTranslation = () => useTranslation('highlights');
-
-// In component:
-const { t } = useHighlightsTranslation();
-```
-
-### Pattern 5: Date Formatting
-
-```typescript
-import { useTranslation } from 'react-i18next';
-
-const { i18n } = useTranslation();
-
-const formatDate = (date: Date) => {
-  return date.toLocaleDateString(i18n.language, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-};
-```
+**6. Responsiveness**
+- [ ] Mobile-first (base classes for mobile, sm:/md: for larger)
+- [ ] No fixed pixel widths without responsive alternative
+- [ ] Touch targets minimum 32px (h-8) for buttons, 28px (h-7) for compact
 
 ---
 
 ## Anti-Patterns to Avoid
 
-### Anti-Pattern 1: Storing translations in component state
-**Wrong:**
-```typescript
-const [labels, setLabels] = useState({ save: 'Save' });
-```
+### 1. Don't Create a Component Library Layer
 
-**Right:** Use `useTranslation()` hook, which handles re-renders on language change.
+**Bad:** Creating `components/design-system/DSButton.tsx` that wraps `components/ui/button.tsx`
+**Good:** Fixing `components/ui/button.tsx` defaults directly
 
-### Anti-Pattern 2: Hardcoded strings in JSX
-**Wrong:**
-```typescript
-<button>Save</button>
-```
+Wrappers add indirection. shadcn components are YOUR code -- modify them directly.
 
-**Right:**
-```typescript
-const { t } = useTranslation();
-<button>{t('buttons.save')}</button>
-```
+### 2. Don't Add CSS Variable Tokens for Everything
 
-### Anti-Pattern 3: One massive translation file
-**Wrong:** `locales/pt-BR.json` with 500+ keys
+**Bad:** `--font-size-page-title: 1.125rem` in index.css
+**Good:** Documenting that page titles use `text-lg font-semibold`
 
-**Right:** Split by namespace (common.json, auth.json, highlights.json, etc.)
+CSS variables are for values that CHANGE (light/dark mode colors). Typography and spacing do not change between themes. Use Tailwind utility classes and document the convention.
 
-### Anti-Pattern 4: Lazy-loading ALL languages by default
-**Wrong:**
-```typescript
-resources: {
-  'pt-BR': { ... },
-  'en': { ... },  // 50KB loaded even if user never switches
-  'es': { ... },
-  'fr': { ... },
-}
-```
+### 3. Don't Migrate to Tailwind v4 During This Milestone
 
-**Right:** Load PT-BR upfront (default), EN on demand, don't add others until needed.
+Tailwind v4 has a CSS-first `@theme` directive that is architecturally superior. However, migrating from v3 to v4 during a standardization milestone is scope creep. The v3 architecture is sufficient for the goals. Consider Tailwind v4 migration as a separate future milestone.
 
-### Anti-Pattern 5: Not handling missing translations
-**Wrong:** Silent failure, shows `missing key` placeholder
+### 4. Don't Enforce with Runtime Checks
 
-**Right:** Set `saveMissing: true` in dev, `missingKeyHandler` for production:
-```typescript
-missingKeyHandler: (lngs, ns, key) => {
-  console.warn(`Missing translation: ${key}`);
-  return key; // Fallback to key itself
-};
-```
+**Bad:** A React hook that validates component props at runtime
+**Good:** Documentation + audit checklist + systematic page-by-page review
+
+At single-developer scale, governance is documentation-driven, not tooling-driven.
+
+### 5. Don't Over-Componentize
+
+**Bad:** Creating `<SectionHeading>`, `<BodyText>`, `<Caption>` wrapper components
+**Good:** Using `text-sm font-semibold text-muted-foreground` directly with documented patterns
+
+Typography wrappers add indirection without value in a small codebase. The `PageHeader` component is the exception because it genuinely varies structurally (flex layout, optional action slot), not just stylistically.
 
 ---
 
-## Build & Performance Considerations
+## Scalability Considerations
 
-### Bundle Size Impact
+| Concern | At Current Scale | If Evoque Grows |
+|---------|-----------------|-----------------|
+| Token management | index.css + tailwind.config.js | Consider Style Dictionary if multi-platform |
+| Component consistency | Documentation + audit | Consider Storybook for visual testing |
+| Design governance | CLAUDE.md + .planning/ docs | Consider eslint-plugin-tailwindcss rules |
+| Typography drift | Manual audit | Consider custom ESLint rule banning text-3xl etc. |
+| Dark mode testing | Manual toggle | Consider Chromatic or similar for automated visual testing |
 
-| Item | Size | Notes |
-|------|------|-------|
-| i18next core | ~12KB | Framework-agnostic |
-| react-i18next | ~8KB | React integration |
-| PT-BR translations (all namespaces) | ~15KB | Loaded upfront |
-| EN translations | ~16KB | Lazy-loaded on demand |
-| **Total if EN not loaded** | ~35KB | Default experience |
-| **Total if EN loaded** | ~51KB | After language switch |
-
-**Gzip estimates (typical):**
-- PT-BR + i18next: ~13KB gzipped
-- EN loaded dynamically: +7KB (loaded only on demand)
-
-### Vite Configuration
-
-No special Vite config needed. Translations in `public/locales/` are served as static assets. Dynamic imports trigger code-splitting naturally.
-
-### Namespace Loading
-
-Recommend "namespace-first" loading: load common.json early, load page-specific namespaces when route renders.
-
-```typescript
-// In Highlights page
-useEffect(() => {
-  i18n.loadNamespace('highlights');
-}, []);
-```
-
----
-
-## Timeline & Phases
-
-### Phase 1: Infrastructure (1-2 days)
-- [ ] Install react-i18next and i18next
-- [ ] Create `src/i18n/config.ts` with initial setup
-- [ ] Create `components/I18nProvider.tsx`
-- [ ] Add I18nProvider to App.tsx component tree
-- [ ] Create `public/locales/pt-BR/` directory structure
-
-### Phase 2: String Extraction (2-3 days)
-- [ ] Extract all UI strings to `common.json`
-- [ ] Extract auth strings to `auth.json`
-- [ ] Extract highlights strings to `highlights.json`
-- [ ] Extract study/session strings to `study.json`, `session.json`
-- [ ] Extract settings strings to `settings.json`
-- [ ] Extract dashboard strings to `dashboard.json`
-- [ ] Extract error messages to `errors.json`
-
-### Phase 3: Component Integration (2-3 days)
-- [ ] Add `useTranslation()` to all components
-- [ ] Replace hardcoded strings with `t()` calls
-- [ ] Test language switching in browser DevTools
-- [ ] Verify no console warnings about missing keys
-
-### Phase 4: English Translation & EN Directory (1-2 days)
-- [ ] Translate all PT-BR files to English
-- [ ] Create `public/locales/en/` directory with same structure
-- [ ] Test EN file loading (should be lazy)
-- [ ] Verify pluralization works in both languages
-
-### Phase 5: Date/Number Formatting (1 day)
-- [ ] Add i18n number/date formatters
-- [ ] Update StoreContext to use formatters for display dates
-- [ ] Add `formats.json` with locale-specific rules
-
-### Phase 6: Settings Integration (1 day)
-- [ ] Add language toggle to Settings page
-- [ ] Wire language selection to StoreContext (`updateSettings`)
-- [ ] Persist language preference to Supabase
-- [ ] Load user's language preference on app load
-
----
-
-## Testing Checklist
-
-- [ ] PT-BR loads by default (no console errors)
-- [ ] Language toggle works (Settings page → select EN)
-- [ ] Page refreshes with correct language preserved
-- [ ] EN files load asynchronously (check Network tab in DevTools)
-- [ ] All text renders correctly (no missing keys)
-- [ ] Pluralization works (`cardsDue: "5 para revisar"`)
-- [ ] Date formatting respects language locale
-- [ ] No console warnings about missing translations
-- [ ] Language preference persists to database
-- [ ] Theme and language are independent (can switch either without affecting other)
+None of the "If Evoque Grows" column items are needed now. They are noted for awareness.
 
 ---
 
 ## Sources
 
-**High Confidence (Official Documentation):**
-- [react-i18next Official Docs](https://react.i18next.com/)
-- [i18next Documentation](https://www.i18next.com/)
-- [i18next Namespaces Guide](https://www.i18next.com/principles/namespaces)
-
-**High Confidence (Community Best Practices):**
-- [react-i18next Multiple Translation Files](https://react.i18next.com/guides/multiple-translation-files)
-- [i18next vs Alternatives Comparison](https://www.i18next.com/overview/comparison-to-others)
-- [Phrase: React i18n Best Libraries](https://phrase.com/blog/posts/react-i18n-best-libraries/)
-
-**Medium Confidence (Examples & Guides):**
-- [Internationalization (i18n) in React: Complete Guide 2026](https://www.glorywebs.com/blog/internationalization-in-react)
-- [Contentful: React Localization with i18n](https://www.contentful.com/blog/react-localization-internationalization-i18n/)
-- [React Context Design Patterns 2026](https://www.nucamp.co/blog/state-management-in-2026-redux-context-api-and-modern-patterns)
-
----
-
-## Key Decisions Summary
-
-| Decision | Rationale | Confidence |
-|----------|-----------|------------|
-| Use **react-i18next** | Industry standard, excellent TypeScript support, namespace-based organization, flexible | HIGH |
-| **PT-BR by default**, EN lazy-loaded | Reduces initial bundle, faster startup, user can opt into EN | HIGH |
-| **Provider placement** (below Auth, above Store) | Language is environment state like theme; must be ready before data operations | HIGH |
-| **Split by feature** (not component) | Easier to manage, matches page/feature structure, better for team collaboration | HIGH |
-| **No extraction tool initially** | Project is small enough for manual extraction; can add i18next-parser later if scaling | MEDIUM |
-| **Persist language to database** | User preference survives logout/login, better UX than localStorage-only | HIGH |
-
----
-
-*Last updated: 2026-01-24*
+- [Tailwind CSS Official Theme Docs](https://tailwindcss.com/docs/theme) -- Token architecture (HIGH confidence)
+- [Building Scalable UI Systems with Tailwind CSS v4 and shadcn/UI](https://www.shoaibsid.dev/blog/building-scalable-ui-systems-with-tailwind-css-v4-and-shadcn-ui) -- Layered architecture pattern (MEDIUM confidence, v4-focused but principles apply)
+- [shadcn/ui Theming](https://ui.shadcn.com/docs/theming) -- Official theming approach (HIGH confidence)
+- [FrontendTools -- Tailwind Best Practices 2025](https://www.frontendtools.tech/blog/tailwind-css-best-practices-design-system-patterns) -- Token organization patterns (MEDIUM confidence)
+- [Building a Scalable Design System with shadcn/UI, Tailwind CSS, and Design Tokens](https://shadisbaih.medium.com/building-a-scalable-design-system-with-shadcn-ui-tailwind-css-and-design-tokens-031474b03690) -- Token-to-component flow (MEDIUM confidence)
+- [The Anatomy of shadcn/ui](https://manupa.dev/blog/anatomy-of-shadcn-ui) -- Three-layer architecture (HIGH confidence)
+- Codebase audit of `C:\Users\ADMIN\Projects\evoque` (HIGH confidence -- direct observation)
+- Existing guidelines: `lbp_diretrizes/compact-ui-design-guidelines.md` v1.1 (MEDIUM confidence -- partially outdated)

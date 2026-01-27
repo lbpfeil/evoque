@@ -1,613 +1,432 @@
-# Pitfalls Research: Adding i18n to Evoque
+# Pitfalls Research: Design System Standardization
 
-**Domain:** React TypeScript application with existing hardcoded English strings
-**Focus:** Common mistakes when retrofitting internationalization (PT-BR + EN)
-**Researched:** 2026-01-24
-**Confidence:** HIGH (verified against official i18next docs and community patterns)
+**Domain:** Enforcing consistency in an existing React/Tailwind/shadcn app
+**Researched:** 2026-01-27
+**Confidence:** HIGH (verified against codebase analysis + community sources)
+**Context:** v2.0 milestone -- Evoque already shipped v1.0 (theme system, semantic tokens). Now standardizing typography, spacing, component usage, and layout patterns across 7 pages and ~30 components.
 
 ---
 
 ## Critical Pitfalls
 
-Mistakes that will break the application or require significant rework.
+Mistakes that cause regressions, wasted effort, or undermine the entire standardization goal.
 
-### Pitfall 1: Incomplete String Extraction Leading to Language Toggle Failures
+### Pitfall 1: The Guide-Reality Divergence (Already Present)
 
-**What goes wrong:**
-You extract and translate 80% of strings, then flip to Portuguese. Users see a mix of English and Portuguese throughout the app. Casual testing reveals the problem only after partial deployment.
+**What goes wrong:** The existing design guide (compact-ui-design-guidelines.md, 726 lines) specifies rules that the codebase already violates. New work follows the guide while old code follows its own patterns, creating TWO sources of inconsistency instead of one.
 
-**Why it happens:**
-- Hardcoded strings are scattered across 50+ components
-- Some strings live in:
-  - Component JSX (obvious)
-  - Error messages in handlers (easy to miss)
-  - aria-labels, placeholders, titles (often forgotten)
-  - Array data like `navItems = [{ name: 'Dashboard', ... }]` (missed in initial extraction)
-  - Nested ternary operators with text
-  - Inline strings in complex conditionals
-- Manual extraction is error-prone at scale
-- No automated detection of remaining English strings
+**Evidence from codebase (verified):**
 
-**Consequences:**
-- App appears partially broken after language switch
-- Users trust the feature doesn't work
-- Late discovery means more refactoring needed
-- Difficult to debug which components have untranslated strings
+| Guide says | Codebase actually does | Files |
+|------------|----------------------|-------|
+| Page titles: `text-lg font-semibold` | Dashboard: `text-3xl font-bold`, Highlights: `text-3xl font-bold`, Study: `text-base font-semibold`, Settings: `text-base font-semibold` | Dashboard.tsx:46, Highlights.tsx:225, Study.tsx:44, Settings.tsx:283 |
+| Buttons: `h-7 px-3 text-xs` | Button.tsx defaults to `h-10 px-4 py-2` | components/ui/button.tsx:23 |
+| Inputs: `h-7 text-sm` | Input.tsx defaults to `h-10 px-3 py-2 text-sm` | components/ui/input.tsx:14 |
+| Border radius: `rounded` (4px) | Login: `rounded-2xl`, `rounded-lg`; Card.tsx: `rounded-xl`; Highlights: `rounded-xl`, `rounded-lg` | Login.tsx:44, card.tsx:14, Highlights.tsx:241 |
+| Icons: `w-3 h-3` (12px) | Many places use `w-4 h-4`, `w-3.5 h-3.5` | Various |
 
-**Prevention:**
-1. **Use automation tools first**: Run [i18nize-react](https://www.npmjs.com/package/i18nize-react) or [jscodeshift transforms](https://github.com/BartoszJarocki/jscodeshift-react-i18next) to detect and replace hardcoded strings automatically
-2. **Create a detection test**: Build a utility that warns if any string literal (not from i18n) appears in rendered output during PT-BR language mode
-3. **Systematic extraction**:
-   - First pass: Extract obvious JSX strings
-   - Second pass: Find strings in objects (navItems, error messages, default values)
-   - Third pass: Check aria-labels, titles, placeholders
-   - Fourth pass: Search for string concatenation with user data
-4. **Version control milestone**: Before moving to styling/Polish phase, commit fully extracted strings so you can diff and verify completion
-5. **Create i18n coverage report**: Generate stats showing % of keys translated for each locale
-
-**Detection:**
-- User sets language to PT-BR, sees English text (obvious)
-- Browser console warns about untranslated keys (if using i18next warn setting)
-- Manual audit of top 5-10 user flows shows mixed languages
-- QA checklist: "Every user-facing string comes from translation file, not JSX"
-
----
-
-### Pitfall 2: Hardcoded Date/Time/Number Formatting Breaking When Locale Changes
-
-**What goes wrong:**
-Dates display as "2026-01-24" in English and Portuguese (same format). Numbers show "1000" everywhere. Localization library detects the language change, but text formatting is hardcoded, so users see incorrect locale-specific formats.
-
-**Why it happens:**
-- Dates currently formatted with JavaScript `.toLocaleDateString()` or formatted strings
-- Numbers displayed with comma separators or currency formats hardcoded
-- Study stats show "10 cards" but no `count` variable for pluralization
-- No separation between content translation and formatting rules
-
-**Consequences in Evoque context:**
-- Study review dates show wrong format (Portuguese dates expect "24 de janeiro de 2026")
-- Daily limits show as "10 cards" in both languages (should be "10 cartões" in PT)
-- Statistics with "1,234 reviews" show wrong thousands separator
-- Timestamps in review logs formatted incorrectly for locale
-- Pluralization edge cases: "1 card" vs "1 livro" vs "0 cards"
-
-**Prevention:**
-1. **Use Intl API for dates/numbers**: Configure i18next with built-in formatting (v21.3.0+) using Intl.DateTimeFormat and Intl.NumberFormat
-2. **Never hardcode date formatting**:
-   ```typescript
-   // WRONG - hardcoded format
-   const formatted = date.toLocaleDateString() // American or OS default
-
-   // RIGHT - uses locale from i18next
-   const formatted = i18n.t('dateFormat:full', { val: date })
-   ```
-3. **Separate pluralization from content**:
-   ```typescript
-   // WRONG - hardcoded plural logic
-   `${count} ${count === 1 ? 'card' : 'cards'}`
-
-   // RIGHT - i18next handles plural rules
-   t('cards_count', { count }) // Works with Arabic (6 forms), Polish (3 forms), etc.
-   ```
-4. **Create translation key for count variable**: Every `count`-based string needs a translation key
-5. **Test with multiple locales**: Verify date/number/plural formatting switches correctly when language changes at runtime
-6. **Define format options in i18n config**:
-   - Date formats (short: "01/24", long: "24 de janeiro de 2026")
-   - Number formats (decimal separator, thousands separator)
-   - Plural rules (define `_zero`, `_one`, `_other` for each key)
-
-**Detection:**
-- Change to PT-BR and look at any date/timestamp (Study page, review logs)
-- Check statistics display (should show Portuguese number formats)
-- Test card limits: 1 card vs 2 cards (plural should work)
-- Look for "millions" style formatting (should use locale's conventions)
-
----
-
-### Pitfall 3: Namespace/Key Structure Decisions Made Hastily, Causes Refactoring Later
-
-**What goes wrong:**
-You create a flat structure `en.json` with 500+ keys (no organization). 6 months later, adding features becomes chaotic:
-- Keys are hard to find: Is it `dashboard_cards_due` or `stats_due_cards` or `deck_due_count`?
-- Developer A creates `highlight_delete_modal_title`, Dev B creates `modal_title_highlight_delete` (same feature, different key)
-- Translators don't know context, translate same word differently in different keys
-- Moving a feature to a different component requires renaming all keys
-
-**Why it happens:**
-- No agreed-upon key naming convention before extraction begins
-- Namespace structure not defined (flat file vs. hierarchical)
-- No documentation of "key conventions" document for team
-- Keys named based on where they appear in code, not by semantic feature
+**Why it happens:** The guide was written from TagManagerSidebar and Study page (two compact components), then generalized as the standard. But Dashboard, Highlights, and Login were designed with completely different spacing philosophy (generous, modern). Nobody reconciled the two.
 
 **Consequences:**
-- Large translation files are unmaintainable
-- Duplicate translations (same word, different keys)
-- Difficult to deprecate old keys
-- Features spread across many keys instead of grouped
-- Developer experience: hard to find the right translation key
-- Translation management tools can't group related strings
-- Risk of missed translations when feature moves
+- Developers see both patterns and pick whichever feels right
+- Any AI agent given the guide will produce code that clashes with existing pages
+- The guide becomes "aspirational" rather than "descriptive"
 
 **Prevention:**
-1. **Design namespace structure FIRST** (before extraction):
-   ```json
-   // Hierarchical structure (recommended for Evoque)
-   {
-     "common": { "save": "Save", "cancel": "Cancel" },
-     "study": {
-       "deck": { "title": "Study All Books", "empty": "No cards due today" },
-       "session": { "rating": { "again": "Again", "hard": "Hard" } },
-       "stats": { "new": "New", "learning": "Learning" }
-     },
-     "highlights": {
-       "table": { "title": "Highlights", "columns": { "date": "Date" } },
-       "edit": { "title": "Edit Highlight", "save": "Save Changes" }
-     }
-   }
-   ```
-2. **Create "Key Naming Convention" document**:
-   - Semantic naming: Name keys by feature, not location
-   - Hierarchy: `domain.feature.element.state`
-   - Avoid abbreviations and acronyms
-   - Never name keys after variable names (`cardCount` is bad, use `study.stats.card_count`)
-3. **Use namespaced i18n loading**: Load only relevant namespaces per route
-   ```typescript
-   const { t } = useTranslation(['common', 'study'])
-   ```
-4. **Create shared key registry document**: List all standard keys and their usage
-5. **Automated namespace validation**: Warn if same translation appears in multiple keys
-6. **Review process**: Before extracting many strings, review key structure with team
+1. BEFORE writing any code: decide whether the guide should change to match the codebase, or the codebase should change to match the guide. Do not proceed without this decision.
+2. Update the guide FIRST to reflect the ACTUAL target state
+3. For any value where "compact guide" and "current pages" disagree, make an explicit decision and document it
 
-**Detection:**
-- Look at `en.json` in week 2: Is structure clear or chaotic?
-- Run analysis: Count duplicated translations across keys
-- Ask developer: "Without looking at the file, can you name the key for 'Study All Books'?"
-- Review translation memory: Are translators confused about context?
+**Detection:** Run a comparison audit: for each rule in the guide, grep for violations. If more than 50% of instances violate the rule, the rule is wrong, not the code.
+
+**Which phase should address:** Phase 0 / Pre-work -- this must be resolved before any execution starts
 
 ---
 
-### Pitfall 4: State Management + Translation Context Integration Issues
+### Pitfall 2: Breaking Working UI to Achieve Consistency
 
-**What goes wrong:**
-StoreContext (Evoque's 1280-line state manager) has computed values like:
-```typescript
-getCardStatus() => count === 1 ? 'card' : 'cards'
-```
+**What goes wrong:** Standardizing spacing/typography on a page that already looks and works well, introducing visual regressions that users notice. The app gets WORSE during a "polish" milestone.
 
-When you add i18n, these computed values don't re-render when language changes because they're not connected to i18next's language change listener. User switches to PT-BR, but `getCardStatus()` still returns English.
-
-**Why it happens:**
-- StoreContext is massive and changes frequently
-- Translation context not integrated with existing state management
-- i18next language change event doesn't trigger StoreContext updates
-- No unified signal for "language changed, recompute values"
-
-**Consequences in Evoque:**
-- Study session shows "cards" when user switches to PT-BR, not "cartões"
-- Any computed string value in StoreContext breaks on language switch
-- User has to refresh page to see translations (defeats purpose of dynamic switching)
-- Difficult to test language switching without full page reload
-
-**Prevention:**
-1. **Subscribe StoreContext to i18next language changes**:
-   ```typescript
-   useEffect(() => {
-     i18n.on('languageChanged', () => {
-       // Trigger recompute of all translated values in store
-       // Update any values that depend on i18n
-     });
-   }, [])
-   ```
-2. **Never compute strings in StoreContext**:
-   ```typescript
-   // WRONG - hardcoded pluralization in store
-   cardStatus: () => count === 1 ? 'card' : 'cards'
-
-   // RIGHT - return count, let component translate
-   cardCount: () => count // Component uses t('cards', { count })
-   ```
-3. **Move string computation to components**:
-   - StoreContext returns data (numbers, dates, objects)
-   - Components handle translation and formatting
-4. **Create test for language switching**:
-   ```typescript
-   test('store values recompute when language changes', async () => {
-     i18n.changeLanguage('pt')
-     // Verify store-dependent UI updates
-   })
-   ```
-5. **Document integration point**: Add comment in StoreContext showing i18next integration
-
-**Detection:**
-- Switch language at runtime, check Study page for untranslated strings
-- Look for string methods on store values (if returning strings, that's wrong)
-- Review StoreContext methods returning hardcoded text
-
----
-
-### Pitfall 5: User-Supplied Content (Notes, Highlights) Not Translatable
-
-**What goes wrong:**
-Users enter highlights in English from Kindle books. When you add i18n, the UI translates but user content (notes, highlight text) doesn't. This is correct behavior, but it confuses features:
-- User note in English displayed on PT-BR interface
-- Mixed-language experience feels broken
-- Some developers try to auto-translate user content (wrong, and unsupported by i18n libraries)
+**Evidence from codebase (verified):**
+- Highlights.tsx has a polished toolbar with `rounded-xl`, `shadow-sm`, hover effects, animation -- it works beautifully as-is
+- StudySession.tsx has 710 lines of carefully tuned layout with user-approved sizing for touch targets (`min-h-[48px]`), SRS color coding, and font-serif preservation
+- Dashboard.tsx uses `text-3xl` headers with `space-y-12` -- generous and readable
+- All these were USER APPROVED in v1.0 phases (documented in verification reports)
 
 **Why it happens:**
-- Unclear distinction between app UI strings (should translate) and user data (should not)
-- Internationalization libraries focus on UI, not data
-- No documentation of which content is translatable
+- Obsessive consistency treats "uniformity" as the goal, not "quality"
+- Mechanical find-and-replace changes without visual review
+- The developer cannot see the page while making CSS changes in an agent workflow
 
 **Consequences:**
-- User confusion: "Why is my note still in English?"
-- Feature requests for auto-translation (out of scope)
-- Localization tests fail because user data isn't translated
-- UX feels inconsistent
+- User says "it looked better before" -- now you need to revert and re-do
+- Touch targets shrink below usable size (h-7 = 28px, but WCAG recommends 44px minimum for mobile)
+- Study session card display loses its carefully balanced typography
+- Time spent making things worse, then fixing them back
 
 **Prevention:**
-1. **Explicitly document policy in CODE**:
-   ```typescript
-   // TRANSLATABLE: App UI, buttons, labels, error messages
-   // UNTRANSLATABLE: User-supplied highlights, notes, book titles
-   // This is correct. User data belongs to user's original language.
-   ```
-2. **Create section in design guidelines**: Make clear what is/isn't translated
-3. **In tests, use realistic data**: Include notes in English even when testing PT-BR
-4. **Clarify with users early**: "Your highlights stay in their original language, app UI adapts to your preference"
-5. **Never attempt user data translation** (Google Translate API, etc.):
-   - Libraries don't handle this
-   - Creates confusion about source language
-   - Expensive and unreliable
-   - Out of scope for i18n
+1. "If it ain't broke, don't fix it" as a gating principle -- for each page, ask: is the current state actually bad?
+2. Take visual screenshots BEFORE any changes (or require the user to confirm the target)
+3. Never change more than one page per plan without user review
+4. Preserve intentional deviations: StudySession touch targets, SRS colors, font-serif on cards
+5. Make a "DO NOT TOUCH" list for elements that were explicitly user-approved
 
-**Detection:**
-- QA asks: "Why isn't my note translated?"
-- Test with pt-BR: See English notes in Portuguese UI (this is OK, but needs documentation)
-- Review Highlights page: Ensure app labels translated but user content is not
+**Detection:** After any change, the user should visually verify before proceeding to the next page. Any "batch apply" approach without verification is a red flag.
+
+**Which phase should address:** Every phase -- verification after each plan
+
+---
+
+### Pitfall 3: Modifying shadcn Base Components Without Understanding Cascade
+
+**What goes wrong:** Changing `button.tsx` defaults from `h-10` to `h-7` to match the design guide, which breaks every existing Button usage that relies on the default size.
+
+**Evidence from codebase (verified):**
+- `button.tsx` default size: `h-10 px-4 py-2` (shadcn standard)
+- `input.tsx` default height: `h-10` (shadcn standard)
+- Card.tsx uses `rounded-xl`, `gap-6`, `py-6` (shadcn v2 standard)
+- These defaults are used by: BookContextModal, HighlightEditModal, HighlightHistoryModal, DeleteBookModal, ErrorBoundary, Login, and others
+- Some components (Settings, TagManagerSidebar) override with `h-7` via className
+
+**Why it happens:**
+- Guide says "buttons are h-7" so developer changes the base component
+- Seems efficient: change once, fix everywhere
+- No automated tests to catch visual regressions
+
+**Consequences:**
+- Login page buttons shrink to tiny size
+- Modal action buttons become cramped
+- ErrorBoundary "Refresh Page" button becomes hard to click
+- Every place that relied on default sizing breaks at once
+
+**Prevention:**
+1. NEVER modify shadcn base component defaults to match the "compact" guide
+2. Instead, add new size variants: `xs: "h-7 px-3 text-xs"` in button.tsx
+3. Apply the compact variant per-use-site, not globally
+4. Or: create wrapper components like `<CompactButton>` that apply the compact classes
+5. Audit all usages of a component BEFORE changing its defaults
+
+**Detection:** Before modifying any ui/ component, grep for all imports and usages. Count them. If more than 3 files import it, modifying defaults is high-risk.
+
+**Which phase should address:** Phase addressing component standardization -- add variants, do not change defaults
+
+---
+
+### Pitfall 4: Over-Engineering a Token System for 7 Pages
+
+**What goes wrong:** Spending weeks building a sophisticated design token pipeline, Tailwind plugin, CSS custom property hierarchy, or component variant matrix for an app with 7 pages and one developer.
+
+**Evidence of risk:**
+- The existing `compact-ui-design-guidelines.md` is already 726 lines for a 7-page app
+- The tailwind.config.js already has semantic color tokens, font families, and animation definitions
+- CSS custom properties already handle theming (v1.0 shipped this)
+- The app has ~30 components, not 300
+
+**Why it happens:**
+- Design system literature is written for large teams (10+ developers) and large apps (50+ pages)
+- "Best practices" from IBM Carbon, Material Design, or Atlassian don't scale DOWN
+- Over-engineering feels productive: you're building infrastructure instead of fixing inconsistencies
+- AI agents will happily build elaborate abstractions if not constrained
+
+**Consequences:**
+- Weeks of work that doesn't visually change anything
+- Abstraction layers that only one person uses
+- More code to maintain, not less
+- The actual inconsistencies (title sizes, spacing) remain unfixed
+
+**Prevention:**
+1. Set a strict budget: the entire v2.0 should take LESS time than v1.0 (which was 66 minutes total)
+2. Prefer direct CSS changes over new abstractions
+3. No new Tailwind plugins, no new CSS custom property layers, no Storybook setup
+4. The test: "Can I fix this with a className change?" If yes, do that. Don't create infrastructure.
+5. Only build abstractions when you find yourself fixing the SAME inconsistency in 5+ places
+
+**Detection:** If a plan involves creating new files (utilities, helpers, config extensions) rather than editing existing components, question whether it's necessary.
+
+**Which phase should address:** Roadmap design -- keep phases focused on direct fixes, not infrastructure
 
 ---
 
 ## Moderate Pitfalls
 
-Mistakes that cause friction, technical debt, or delayed completion.
+Mistakes that cause delays, confusion, or accumulated technical debt.
 
-### Pitfall 6: Forgetting to Translate Error Messages and Validation Text
+### Pitfall 5: Two Title Systems Coexisting Without Resolution
 
-**What goes wrong:**
-Error messages live in async handlers and validation functions, scattered across components. When language changes, these still show in English:
-```typescript
-if (!email) throw new Error('Email is required')
-// Doesn't translate
+**What goes wrong:** Some pages use "compact" titles (text-base, Study/Settings) and some use "generous" titles (text-3xl, Dashboard/Highlights). Standardization picks one but doesn't convert all, leaving a permanent split.
+
+**Evidence from codebase (verified):**
+```
+Dashboard.tsx:46   text-3xl font-bold tracking-tight
+Highlights.tsx:225 text-3xl font-bold tracking-tight
+Study.tsx:44       text-base font-semibold
+Settings.tsx:283   text-base font-semibold
+Login.tsx:40       text-2xl font-bold tracking-tight (brand, different context)
 ```
 
-Users see English errors in PT-BR UI, making the app feel partially done.
+Two distinct camps: "generous" pages (Dashboard, Highlights) and "compact" pages (Study, Settings). Both look intentional. The existing guide says `text-lg font-semibold` -- which matches NEITHER camp.
 
 **Why it happens:**
-- Error messages are "code strings", not UI strings
-- Many live in backend validators or service functions
-- Not in JSX, so less obvious they need translation
-- Error handling code written early, not reviewed for i18n
+- Dashboard and Highlights were redesigned with modern generous spacing
+- Study and Settings follow the compact sidebar aesthetic
+- The guide was written from the compact components
+- Nobody reconciled after Dashboard/Highlights got their redesign
 
 **Consequences:**
-- Validation errors always in English (bad UX in PT-BR)
-- Toast/alert messages untranslated
-- API error responses shown in English
-- Looks like incomplete localization
+- Navigating from Dashboard (text-3xl) to Study (text-base) feels jarring
+- New pages: which pattern to follow?
+- Guide is useless as reference because neither camp follows it
 
 **Prevention:**
-1. **Audit all `throw new Error()` and error messaging**:
-   ```typescript
-   // WRONG
-   throw new Error('Email is required')
+1. Pick ONE title scale for ALL pages. Recommend: `text-xl font-semibold` as a compromise, or `text-2xl font-bold` if the generous style is preferred
+2. Apply it to all 5 non-login pages in a single plan
+3. Update the guide to match the decision
+4. Login is exempt (brand page, different context)
 
-   // RIGHT - create error key
-   throw new Error(t('validation.emailRequired'))
-   ```
-2. **Create validation i18n pattern**:
-   ```typescript
-   const validateEmail = (email: string, t: TranslationFunction) => {
-     if (!email) return t('validation.emailRequired')
-     return null
-   }
-   ```
-3. **Include error translations in extraction checklist**
-4. **Review try-catch blocks**: Every error message should be i18n key
+**Detection:** Grep `<h1` in pages/ -- all results should show the same pattern.
 
-**Detection:**
-- Trigger validation errors in PT-BR mode (should see Portuguese)
-- Check console for untranslated error keys
-- Network error handling in Study/Import pages
+**Which phase should address:** Early phase -- this is the single most visible inconsistency
 
 ---
 
-### Pitfall 7: RTL Language Support Assumed But CSS Not Prepared
+### Pitfall 6: Inconsistent Border Radius Creating Visual Noise
 
-**What goes wrong:**
-You add Arabic or Hebrew support (future-proofing). CSS uses `margin-left`, `text-left`, `right: 0` everywhere. Text flips but layout is still LTR, creating broken UI.
+**What goes wrong:** Adjacent elements use different border radii, creating subtle visual discord. The eye notices shapes that don't match.
+
+**Evidence from codebase (verified):**
+```
+Login.tsx:        rounded-2xl (card), rounded-lg (inputs, buttons, error box)
+Card.tsx:         rounded-xl (base component)
+Highlights.tsx:   rounded-xl (toolbar, table container), rounded-lg (search, dropdowns)
+StudySession.tsx: rounded-md (buttons, edit containers), rounded-sm (book cover)
+Settings.tsx:     rounded (buttons), rounded-full (avatar)
+Dashboard.tsx:    rounded-md (book cards, charts)
+```
+
+At least 5 different border radius values used: `rounded` (4px), `rounded-md` (6px), `rounded-lg` (8px), `rounded-xl` (12px), `rounded-2xl` (16px). The guide says `rounded` (4px) only.
 
 **Why it happens:**
-- RTL usually comes later, not in initial i18n phase
-- CSS written without logical properties
-- Testing only with LTR languages (EN, PT)
-- No automated RTL detection in build
+- shadcn components bring their own radius preferences (card.tsx uses rounded-xl)
+- Different radius feels "right" for different element sizes
+- Login page uses generous radius for the auth card (intentional warmth)
+- No enforcement mechanism
 
 **Consequences:**
-- Unplanned work when RTL language is added
-- CSS refactor needed (200+ directional properties)
-- Layout breaks for RTL: buttons on wrong side, alignment off
-- Brand suffers if RTL support launches broken
+- Subtle but real visual inconsistency
+- "Something feels off" but hard to pinpoint
+- Every new component requires a radius decision
 
 **Prevention:**
-1. **Use logical CSS properties from the start**:
-   ```css
-   /* WRONG - will break in RTL */
-   .button { margin-left: 8px; }
+1. Define 2-3 allowed radii with semantic meaning:
+   - `rounded-md` for small elements (buttons, inputs, badges)
+   - `rounded-lg` or `rounded-xl` for containers (cards, panels, modals)
+   - `rounded-full` for avatars/pills only
+2. Do NOT force everything to `rounded` (4px) -- it works for compact items but looks cheap on large containers
+3. Update the guide with the actual policy
 
-   /* RIGHT - adapts to text direction */
-   .button { margin-inline-start: 8px; }
-   ```
-2. **Set dir attribute dynamically**:
-   ```typescript
-   useEffect(() => {
-     document.documentElement.dir = i18n.language === 'ar' ? 'rtl' : 'ltr'
-   }, [i18n.language])
-   ```
-3. **Use PostCSS plugin** [postcss-rtlcss](https://github.com/elchininet/postcss-rtlcss) to automatically generate RTL versions
-4. **RTL testing checklist** (save for when RTL language is added):
-   - Text direction correct
-   - Flexbox layout reverses
-   - Icons and images stay in correct position
-   - Input fields and controls align correctly
+**Detection:** Grep `rounded-` across all page files. Group by file and check for consistency within each page, then across pages.
 
-**Detection:**
-- For future-proofing: Check Tailwind usage, prefer `start/end` over `left/right`
-- If adding Arabic: Test with `dir="rtl"` on html element
-- Visual regression: Compare LTR and RTL layouts side-by-side
+**Which phase should address:** Mid-phase -- after title/spacing decisions are made
 
 ---
 
-### Pitfall 8: Translation Keys Not Type-Safe, Leads to Runtime Errors
+### Pitfall 7: Updating the Guide Without Updating the Code (or Vice Versa)
 
-**What goes wrong:**
-```typescript
-t('study.deck.title') // Typo: should be 'study.session.title'
-// No error at build time, app crashes at runtime with undefined translation
-```
+**What goes wrong:** The guide gets rewritten to reflect the new standards, but nobody applies those standards to the actual code. Or: code gets fixed but the guide still shows old patterns.
 
-Developer refactors a key from `highlights.edit` to `highlights.update`, misses one component, app shows `[highlights.edit]` text to users.
+**Evidence of risk:**
+- The existing guide (v1.1, updated 2025-12-30) already doesn't match the codebase (see Pitfall 1)
+- The guide's "Examples of Reference" section mentions TagManagerSidebar and Study page only
+- No automated validation between guide and code exists
 
 **Why it happens:**
-- i18next allows any string as key
-- No TypeScript checking if key exists
-- Key renames not caught by IDE refactoring
-- Manual testing doesn't catch all uses
+- Documentation and implementation are different tasks, often done by different agents/sessions
+- "We'll update the guide later" -- later never comes
+- The guide is a markdown file with no connection to the codebase
 
 **Consequences:**
-- Late discovery of untranslated keys (in production)
-- `[missing translation key]` appears to users
-- Refactoring features breaks other components
-- Fragile codebase
+- Guide becomes stale within one milestone
+- New features/pages built to wrong spec
+- AI agents given the guide produce inconsistent code
+- Trust in documentation erodes
 
 **Prevention:**
-1. **Enable type-safe translation keys with TypeScript**:
-   - Use [typesafe-i18n](https://github.com/ivanhofer/typesafe-i18n) or
-   - Configure i18next with type augmentation
-2. **Generate TypeScript definitions from translation files**:
-   ```typescript
-   // Auto-generated from en.json
-   type TranslationKey = 'study.deck.title' | 'study.deck.empty' | ...
+1. Update guide AND code in the SAME plan -- never separately
+2. Keep the guide short and machine-verifiable where possible (e.g., "H1: text-xl font-semibold" not prose)
+3. Add a "last verified against codebase" date to the guide header
+4. At milestone end: run a verification pass comparing guide rules to actual code
+5. Consider: should the guide shrink rather than grow? A 200-line guide that's accurate beats a 726-line guide that's aspirational
 
-   // TypeScript error if key doesn't exist
-   t('study.deck.invalid') // ❌ Type error
-   ```
-3. **Use LSP support**: IDE warns if key doesn't exist
-4. **Add lint rule**: Disallow `t()` calls with dynamic strings (use constants)
-5. **Add test**: Check that all keys in translation files are used
+**Detection:** At the end of each phase, spot-check 3 rules from the guide against the code. If any are wrong, the guide needs updating.
 
-**Detection:**
-- Build with strict mode enabled
-- IDE should highlight invalid keys
-- Run audit: `npm run i18n:validate-keys` (custom script)
+**Which phase should address:** Final phase -- guide update as part of milestone completion
 
 ---
 
-### Pitfall 9: Namespace Loading Causes Waterfalls and Performance Issues
+### Pitfall 8: Ignoring That Compact Design Has Accessibility Costs
 
-**What goes wrong:**
-i18next configured to lazy-load translation files per route:
-```
-/study → load study.json (100KB)
-/highlights → load highlights.json (150KB)
-```
+**What goes wrong:** Aggressively compact spacing creates accessibility failures, especially on mobile where the app is a PWA.
 
-User navigates, translation file loads asynchronously, UI shows fallback text briefly, then translates. Looks like a glitch. If multiple namespaces needed at once, waterfalls cause delays.
-
-**Why it happens:**
-- Initial bundle size concern, try to lazy-load all namespaces
-- No preloading strategy for common namespaces
-- Async loading not coordinated with component rendering
-
-**Consequences:**
-- UI flicker when navigating to new route
-- Delays in displaying translated content
-- Bad perceived performance
-- User sees loading state
-
-**Prevention:**
-1. **Keep common namespaces eagerly loaded**:
-   - `common` (buttons, labels used everywhere) - bundled
-   - `validation` (error messages) - bundled
-   - Route-specific namespaces - lazy load
-2. **Preload on route entrance**:
-   ```typescript
-   useEffect(() => {
-     i18n.loadNamespace(['study']).then(() => setReady(true))
-   }, [])
-   ```
-3. **Use Suspense + lazy loading boundary**:
-   ```typescript
-   <Suspense fallback={<LoadingState />}>
-     <StudyPage /> {/* Wrapped with Suspense, waits for translations */}
-   </Suspense>
-   ```
-4. **Bundle most-used namespaces**:
-   ```typescript
-   i18next.init({
-     ns: ['common', 'validation'], // Always bundled
-     defaultNS: 'common',
-     // ... rest of config
-   })
-   ```
-5. **Test performance**: Measure time to first translated render
-
-**Detection:**
-- Navigate to Study page, observe if UI translations appear immediately
-- Network tab: Check if translation files load on demand
-- Lighthouse: Verify no layout shifts from translation loading
-
----
-
-### Pitfall 10: Translation Management Becomes Bottleneck Without Process
-
-**What goes wrong:**
-6 months in, adding new feature with 20 new strings. Developer adds English strings to `en.json`, but no process for translating to PT-BR. Feature ships with mixed languages. Translator doesn't know feature exists. String management becomes chaotic.
+**Evidence from codebase (verified):**
+- Design guide specifies `h-5 w-5` (20px) for icon buttons -- below WCAG 44px minimum
+- Guide specifies `text-xs` (12px) for metadata -- at the edge of readability
+- Guide specifies `py-0.5 px-1.5` (2px/6px) for list items -- extremely tight
+- StudySession already deviates with `min-h-[48px]` on response buttons (correct for mobile)
 
 **Why it happens:**
-- No translation workflow documented
-- No owner of translation maintenance
-- No CI check to ensure keys are translated
-- Translation files treated like code, not content
+- Compact density is the aesthetic goal ("Linear, Notion" inspiration)
+- Desktop-first thinking: compact works fine with a mouse
+- The app is a PWA used on phones for study sessions
+- Guide was written for desktop density, not mobile PWA
 
 **Consequences:**
-- Features ship partially translated
-- Translator burden grows (100 keys waiting to be translated)
-- Developer frustration: "How do I add new strings?"
-- Inconsistent translation quality
+- Mobile users struggle to tap buttons
+- Small text hard to read on phone screens
+- Violates WCAG 2.1 Success Criterion 2.5.5 (target size)
+- User frustration during study sessions (the primary use case)
 
 **Prevention:**
-1. **Document translation workflow**:
-   ```
-   1. Dev: Add English key to en.json
-   2. Dev: Use key in code with t()
-   3. CI: Validate key exists in en.json
-   4. Dev: Open PR with mention @translator
-   5. Translator: Review PR, add PT-BR translation to pt.json
-   6. Translator: Approve PR
-   7. Merge: Both en.json and pt.json updated
-   ```
-2. **Add CI check**: PR fails if key in en.json but missing from pt.json
-3. **Use translation management tool** (optional but recommended):
-   - [Locize](https://locize.com) - cloud-based
-   - [Crowdin](https://crowdin.com) - collaboration platform
-   - Simplest: Spreadsheet + script to generate JSON
-4. **Create translation checklist**: New feature PR must include:
-   - English strings in en.json
-   - Portuguese translations in pt.json
-   - Links to translation keys in code
-5. **Regular audits**: Monthly check for missing translations
+1. Any compact sizing applied to interactive elements must include mobile overrides
+2. Pattern: `h-7 sm:h-7` for desktop, but `min-h-[44px] sm:min-h-0` for mobile
+3. Never reduce StudySession touch targets -- they were sized intentionally
+4. Keep `text-xs` (12px) as the absolute minimum, not the default
+5. Test on actual phone, not just browser resize
 
-**Detection:**
-- In PR review: Ask "Are all strings translated?"
-- Run CI check: `npm run i18n:validate-complete`
-- Developer experience: Easy to add new strings and see them work
+**Detection:** Grep for `h-5 w-5` or `h-6 w-6` on interactive elements. Check if mobile overrides exist.
+
+**Which phase should address:** Any phase that changes sizing -- include mobile check in verification
 
 ---
 
 ## Minor Pitfalls
 
-Issues that cause annoyance but are fixable without major rework.
+Mistakes that cause annoyance or minor inconsistency but are easily fixable.
 
-### Pitfall 11: Placeholder and aria-label Text Not Translated
+### Pitfall 9: Inconsistent Spacing Between Page Header and Content
 
-**What goes wrong:**
-Input placeholders show "Enter book title" even in PT-BR mode. aria-labels for screen readers are in English. Accessibility features partially broken for non-English users.
+**What goes wrong:** Each page uses different spacing between the page title and the first content section.
+
+**Evidence from codebase (verified):**
+```
+Dashboard.tsx:   space-y-12 (48px gap between all sections)
+Highlights.tsx:  space-y-4 (16px gap between sections)
+Study.tsx:       mb-4 on "All Books" button, then inline spacing
+Settings.tsx:    mb-3 after tab bar, then per-section
+StudySession.tsx: p-4/p-6 on container, inline spacing
+```
+
+**Prevention:** Define one `space-y` value for page-level section spacing and apply it to all page containers.
+
+**Which phase should address:** Same phase as title standardization
+
+---
+
+### Pitfall 10: Raw HTML Buttons vs. shadcn Button Component
+
+**What goes wrong:** Some interactive elements use `<button className="...">` with hand-crafted classes, while others use `<Button>` from shadcn. Both exist in the same page.
+
+**Evidence from codebase (verified):**
+- Settings.tsx: uses raw `<button>` elements with `h-7 px-3 text-xs bg-secondary` classes (lines 686, 690, 749)
+- Settings.tsx also uses `<Button>` component in TagManagerSidebar
+- Highlights.tsx: raw `<button>` for toolbar actions, filter buttons, pagination
+- Study.tsx: raw `<button>` for the "All Books" CTA
+- Login.tsx: raw `<button>` for sign-in
 
 **Why it happens:**
-- Placeholders and aria attributes treated as "not important"
-- Less obvious they're user-facing than JSX text
-- Easily missed in extraction pass
+- shadcn Button defaults (h-10) don't match desired compact size
+- Easier to write raw button with exact classes than configure variants
+- Some buttons need very custom styling (SRS response buttons)
+
+**Consequences:**
+- No central place to change button styling
+- Inconsistent hover/focus/disabled states
+- Harder to enforce consistency
 
 **Prevention:**
-- Extract ALL text attributes: placeholder, aria-label, title, alt, aria-describedby
-- Include in component checklist
+1. Add compact variants to Button component (`size="xs"` = `h-7 px-3 text-xs`)
+2. Gradually migrate raw buttons to use `<Button>` with appropriate variant
+3. Accept that some buttons (SRS response buttons, CTAs) are intentionally custom
+4. Don't try to force 100% adoption -- aim for 80%
+
+**Which phase should address:** Early phase -- add variants first, then migrate incrementally
 
 ---
 
-### Pitfall 12: Console Warnings About Missing Translations Ignored
+### Pitfall 11: Changing font-weight Conventions Without Checking All Headings
 
-**What goes wrong:**
-i18next warns about undefined keys in console, developers ignore warnings. Accumulates over time, becomes noise.
+**What goes wrong:** Deciding "all headings should be font-semibold" but some are font-bold and the difference matters visually.
 
-**Prevention:**
-- Enable strict mode: `returnEmptyString: false` to make warnings visible
-- Add ESLint rule to treat i18n warnings as errors in dev
+**Evidence from codebase (verified):**
+```
+font-bold:     Dashboard h1, Highlights h1, Login h1/h2, BookContextModal title,
+               StudySession "Session Complete", stat numbers
+font-semibold: Study h1, Settings h1, Dialog/Sheet titles, section headings
+font-medium:   Card title (card.tsx), StudySession loading/error messages
+```
 
----
+Three different font weights used for titles/headings. Changing them all to one value would either make bold pages feel weak or semibold pages feel heavy.
 
-### Pitfall 13: Date Formatting Libraries Not Localized
+**Prevention:** Map font-weight to semantic role: page titles (bold), section headings (semibold), component titles (medium). Don't flatten to one value.
 
-**What goes wrong:**
-Using moment.js or date-fns without configuring locale. Dates always format in English despite changing i18n language.
-
-**Prevention:**
-- Use Intl API (modern, no dependencies)
-- Or explicitly set locale on date library: `moment.locale(i18n.language)`
+**Which phase should address:** Same phase as title size standardization
 
 ---
 
 ## Phase-Specific Warnings
 
-| Phase | Likely Pitfall | Mitigation |
-|-------|----------------|------------|
-| **Setup** | Namespace structure too hastily decided | Review key hierarchy with team before extraction begins |
-| **Extraction** | 80% of strings extracted, rest forgotten | Use automation tools, then audit systematically |
-| **Translation** | Keys untranslated because process undefined | Create translation workflow, add CI validation |
-| **Integration** | StoreContext not listening to language changes | Subscribe to i18next language event, trigger re-renders |
-| **Testing** | Only tested with one locale | Test switching languages at runtime, not just on page load |
-| **Polish** | Date/number formatting not localized | Replace hardcoded formatting with Intl API or i18next formatters |
-| **Future** | RTL support impossible due to CSS architecture | Use logical CSS properties from start (not urgent, but prevents pain later) |
+| Phase Topic | Likely Pitfall | Mitigation |
+|-------------|---------------|------------|
+| Guide update / pre-work | Guide-reality divergence (#1) | Audit and reconcile guide BEFORE any code changes |
+| Page header standardization | Two title systems (#5), font-weight confusion (#11) | Pick one scale, apply to all pages in one pass, user review |
+| Component variant addition | Breaking base components (#3) | Add variants, never modify defaults |
+| Spacing standardization | Breaking working UI (#2), accessibility costs (#8) | Per-page review, preserve mobile touch targets |
+| Border radius cleanup | Visual noise (#6) | Define 2-3 semantic radius values, not one |
+| Button migration | Raw vs. shadcn (#10) | Add xs variant first, migrate incrementally |
+| Guide finalization | Stale documentation (#7) | Update guide and code in same plan |
+| Infrastructure | Over-engineering (#4) | No new abstractions unless needed 5+ places |
 
 ---
 
-## Critical Actions Before Phase Completion
+## Anti-Pattern Summary
 
-### Before "Extract Strings" Phase Ships
-- [ ] Automation tool run against codebase (i18nize-react or jscodeshift)
-- [ ] Manual audit of 50 random strings (should all be from en.json)
-- [ ] Namespace structure documented and approved
-- [ ] Key naming convention written and reviewed
+| Anti-Pattern | Do This Instead |
+|--------------|----------------|
+| Change shadcn defaults to match guide | Add new variants; apply per-use-site |
+| Apply compact sizing globally | Apply per-page with mobile overrides |
+| Rewrite the guide first, code later | Update guide and code in the same plan |
+| Build token infrastructure | Make direct className fixes |
+| Batch-apply changes without review | One page per plan, user verifies each |
+| Force everything to one border radius | Define 2-3 semantic radius levels |
+| Treat the guide as immutable truth | Reconcile guide with reality first |
 
-### Before "Translate" Phase Ships
-- [ ] All strings extracted and in en.json (100% coverage)
-- [ ] All strings translated to pt.json
-- [ ] CI validation: PR fails if en.json key missing from pt.json
-- [ ] Language switching tested in main user flows (Study, Highlights, Settings)
+---
 
-### Before "Integration" Phase Ships
-- [ ] StoreContext integrated with i18next language change listener
-- [ ] No hardcoded plurals or date formats in StoreContext
-- [ ] Date/time/number formatting uses Intl API or i18next formatters
-- [ ] Error messages and validation text all translated
-- [ ] RTL CSS properties planned (mark as future work if not implementing)
+## Key Insight: The Real Problem is Not What It Seems
 
-### Before Release
-- [ ] Full flow test in PT-BR: Login → Study → Highlights → Settings
-- [ ] User can switch language and see UI update without reload
-- [ ] No `[missing translation key]` text visible
-- [ ] Performance: Navigation doesn't show loading states for translations
-- [ ] Translation management process documented
+The project description says "inconsistent title sizes, different table styles, irregular spacing." But the codebase analysis reveals something more nuanced:
+
+**There are actually TWO coherent design languages coexisting:**
+
+1. **"Compact" language** (Study, Settings, TagManagerSidebar): text-base titles, h-7 buttons, gap-1 spacing, rounded corners. Dense, tool-like, Linear-inspired.
+
+2. **"Generous" language** (Dashboard, Highlights, Login): text-3xl titles, rounded-xl containers, space-y-12 sections, shadow effects. Spacious, modern, Apple-inspired.
+
+The existing design guide documents language #1 but the user seems to WANT language #2 ("Apple-level consistency"). The real decision is: which language wins? Or can they be reconciled into a coherent hybrid?
+
+This decision must happen BEFORE any code changes. Otherwise, every plan will be guessing.
 
 ---
 
 ## Sources
 
-- [Common Mistakes When Implementing i18n in React Apps](https://infinitejs.com/posts/common-mistakes-i18n-react)
-- [How to Add Internationalization (i18n) to a React App Using i18next - 2025 Edition](https://dev.to/anilparmar/how-to-add-internationalization-i18n-to-a-react-app-using-i18next-2025-edition-3hkk)
-- [react-i18next Documentation](https://react.i18next.com/)
-- [Avoiding Common Internationalization Mistakes in Mattermost](https://mattermost.com/blog/avoiding-common-internationalization-mistakes/)
-- [Pluralization in Software Localization - Localazy](https://localazy.com/blog/pluralization-in-software-localization-beginners-guide)
-- [i18next: Formatting Dates and Numbers](https://www.i18next.com/translation-function/formatting)
-- [Right to Left (RTL) in React: The Developer's Guide](https://leancode.co/blog/right-to-left-in-react)
-- [Supercharge Your TypeScript App: Mastering i18next for Type-Safe Translations](https://dev.to/adrai/supercharge-your-typescript-app-mastering-i18next-for-type-safe-translations-2idp)
-- [Lazy Loading Localization with React-i18next](https://pranavpandey1998official.medium.com/lazy-loading-localization-with-react-i18next-3ebb5383fabe)
-- [Database Internationalization Design Patterns](https://medium.com/walkin/database-internationalization-i18n-localization-l10n-design-patterns-94ff372375c6)
+- Codebase analysis: direct grep/read of all components and pages in Evoque repository
+- [Building a Scalable Design System with Shadcn/UI](https://shadisbaih.medium.com/building-a-scalable-design-system-with-shadcn-ui-tailwind-css-and-design-tokens-031474b03690) -- token architecture patterns
+- [Adopting Design Systems (EightShapes)](https://medium.com/eightshapes-llc/adopting-design-systems-71e599ff660a) -- incremental adoption strategy
+- [Design System Documentation Best Practices (Backlight)](https://backlight.dev/blog/design-system-documentation-best-practices) -- preventing stale documentation
+- [Design Systems Pitfalls (Jeff Pelletier)](https://medium.com/@withinsight1/design-systems-pitfalls-6b3113fa0898) -- general design system mistakes
+- [Design System in React with Tailwind, Shadcn/ui and Storybook](https://dev.to/shaikathaque/design-system-in-react-with-tailwind-shadcnui-and-storybook-17f) -- shadcn standardization patterns
+- [Don't use Tailwind for your Design System (sancho.dev)](https://sancho.dev/blog/tailwind-and-design-systems) -- Tailwind abstraction tradeoffs
+- [Tailwind CSS Best Practices 2025-2026](https://www.frontendtools.tech/blog/tailwind-css-best-practices-design-system-patterns) -- token centralization patterns
+- [Maintaining Design Systems (Brad Frost)](https://atomicdesign.bradfrost.com/chapter-5/) -- long-term maintenance
+- [Design System Maintenance Checklist (UXPin)](https://www.uxpin.com/studio/blog/design-system-maintenance-checklist/) -- audit and review cycles
+- [Tips for design system documentation (LogRocket)](https://blog.logrocket.com/ux-design/design-system-documentation/) -- preventing documentation rot

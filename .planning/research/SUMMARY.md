@@ -1,556 +1,183 @@
-# Research Synthesis: Internationalization (i18n) for Evoque
+# Project Research Summary
 
-**Project:** Evoque (Kindle Highlights Manager)
-**Research Period:** January 24, 2026
-**Synthesis Date:** January 24, 2026
-**Overall Confidence:** HIGH
-
----
+**Project:** Evoque v2.0 -- Design System Overhaul
+**Domain:** Design system standardization for a React/Tailwind/shadcn app
+**Researched:** 2026-01-27
+**Confidence:** HIGH
 
 ## Executive Summary
 
-Adding internationalization (i18n) to Evoque requires implementing dynamic language switching between Portuguese (PT-BR, default) and English with persistent user preferences. The recommended approach uses **react-i18next** (built on i18next framework) paired with a namespace-based translation file structure. This library is the ecosystem standard for React apps, offering native support for language detection, localStorage persistence, pluralization, and date/number formatting.
+Evoque v1.0 shipped a working theme system (OKLCH colors, semantic CSS variables, shadcn/ui primitives) but no governing design system. The result is two coherent design languages coexisting accidentally: a "Compact" language (Study, Settings -- `text-base` titles, `h-7` buttons, tight spacing) and a "Generous" language (Dashboard, Highlights -- `text-3xl` titles, `rounded-xl` containers, `space-y-12` sections). The existing design guide documents Compact but the codebase drifted Generous on the most visible pages. This is the central problem: not missing infrastructure, but an unresolved identity split. The first action must be picking a winner.
 
-The implementation is **low-risk** because: (1) i18next is mature (11+ years, 40k+ GitHub stars, React 19 compatible), (2) the feature has clear dependencies that form a linear implementation path, (3) Evoque's existing context-based architecture integrates naturally with i18next's provider pattern, and (4) the i18n library handles edge cases (Portuguese pluralization, locale-aware number formatting) that would be error-prone to build in-house.
+The recommended approach is direct, low-infrastructure standardization. The existing Tailwind v3 + CVA + shadcn/ui stack already has enforcement mechanisms -- what is missing is configuration tightening (restrict Tailwind's theme to exact scales), ESLint enforcement (ban arbitrary values), and systematic page-by-page migration. No new runtime dependencies are needed. The only new dev dependency is `eslint-plugin-tailwindcss` for automated enforcement. No Storybook, no W3C Design Tokens, no Tailwind v4 migration, no component library package.
 
-However, **retrofitting i18n into existing hardcoded strings is high-friction**. The critical path involves: namespace structure design → systematic string extraction (all hardcoded strings, not just JSX) → translation file management → state management integration (StoreContext must react to language changes) → date/number formatting updates. Incomplete extraction is the #1 risk; users will see mixed languages if ~20% of strings are missed.
-
----
+The key risk is breaking working, user-approved UI in pursuit of uniformity. Dashboard, Highlights, and StudySession were all approved during v1.0. Aggressive mechanical find-and-replace could regress these pages. Every page change needs visual verification. The second risk is over-engineering: spending weeks on token pipelines and abstractions when the actual fix is 59 arbitrary font-size values and 56 arbitrary spacing values that need to map to named tokens, plus 5 page headers that need the same component.
 
 ## Key Findings
 
-### From STACK.md: Recommended Technology Stack
+### Recommended Stack
+*Full detail: `.planning/research/STACK.md`*
 
-| Technology | Version | Purpose | Rationale |
-|-----------|---------|---------|-----------|
-| **i18next** | 25.7.4 | Core i18n engine | Language-agnostic, industry standard (11 years), 40k GitHub stars, zero learning curve for team |
-| **react-i18next** | 16.5.3+ | React integration + hooks | 6.4M weekly downloads, React 19 compatible (v15.5.2+), hooks-first API, excellent TypeScript support |
-| **i18next-browser-languagedetector** | 8.0.0+ | Auto language detection | Handles cascade: URL params → localStorage → browser language → fallback. Built-in persistence. |
-| **date-fns** | 4.x | Date manipulation | Modular, ~15 locales built-in, zero external dependencies, works seamlessly with i18next |
-| **Intl API** | native | Number/currency formatting | Built-in to JavaScript (97%+ browser support). Use `Intl.NumberFormat`, `Intl.DateTimeFormat` directly. |
-| **vite-plugin-i18next-loader** | 2.2.0+ | Translation bundling | Zero HTTP requests, translations bundled in JS, HMR support, tree-shakable. Recommended over runtime loading. |
+No new runtime dependencies. The fix is configuration, not libraries.
 
-**Why NOT react-intl or LinguiJS:**
-- **react-intl** (1.3M weekly downloads): Over-engineered for Evoque. ICU MessageFormat is verbose for simple strings. Best for enterprise TMS workflows.
-- **LinguiJS** (306K weekly downloads): Smaller bundle (10.4 kB) but less flexible. Macro-based approach limits dynamic language switching.
+**Three enforcement layers:**
+- **Tailwind config restriction:** Override `theme.fontSize` and `theme.fontWeight` to expose ONLY the allowed design tokens. This eliminates wrong choices from IntelliSense and reduces generated CSS.
+- **ESLint enforcement:** `eslint-plugin-tailwindcss` with `no-arbitrary-value` rule bans all `text-[10px]`, `w-[400px]` bracket syntax, forcing migration to named tokens.
+- **tailwind-merge extension:** Extend `cn()` to recognize custom font-size classes (`text-2xs`, `text-sm-caption`) so class conflict resolution works correctly.
 
-**Why NOT roll-your-own i18n:**
-- Seems simple initially (Context + JSON loader), but misses: pluralization rules (Portuguese has 2 forms), date/number formatting, namespace management, language persistence, browser detection, fallback chains.
+**Critical configuration changes:**
+- `tailwind.config.js`: Override `theme.fontSize` (9 named sizes replacing Tailwind's 13 defaults), `theme.fontWeight` (4 values), `theme.zIndex` (7 semantic layers)
+- `lib/utils.ts`: Extend `tailwind-merge` with custom font-size class group
+- `eslint.config.js`: New file, flat config with Tailwind rules
+- `package.json`: Add `lint` and `lint:fix` scripts
 
----
+**What NOT to do:** Do not upgrade to Tailwind v4, do not adopt W3C Design Tokens, do not add Storybook, do not add `@tailwindcss/typography`.
 
-### From FEATURES.md: Table Stakes vs. Differentiators
+### Expected Features
+*Full detail: `.planning/research/FEATURES.md`*
 
-#### Table Stakes (Must-Have)
-All 7 must be present for the feature to feel complete. Missing any = "broken" UX.
+**Must have (table stakes):**
+1. Typography scale -- 6 named sizes with strict context rules (display, title, heading, body, caption, overline)
+2. Spacing scale -- 8 semantic tokens on a 4px grid
+3. Color usage rules -- ban raw `text-zinc-*`, enforce semantic-only usage
+4. Border radius scale -- collapse 5+ values to exactly 3 (sm/md/lg)
+5. Shadow scale -- exactly 3 elevations
+6. Icon size scale -- exactly 3 sizes (sm=14px, md=16px, lg=20px)
+7. CVA component contracts -- Button, Input, Badge, Card with tightened variants
+8. Z-index layer system -- 7 semantic layers
 
-1. **String Translation** — All hardcoded strings moved to translation files (JSON/YAML)
-2. **Dynamic Language Switching** — User changes language → entire UI updates within 200ms (no refresh)
-3. **Language Persistence** — Selected language remembered across sessions (localStorage + database)
-4. **Browser Language Detection** — First visit uses system language preference (if available)
-5. **Translation File Management** — Organized by feature/namespace (common, auth, study, settings, etc.)
-6. **Fallback Language** — Missing translations show EN instead of key placeholder
-7. **Number/Date Formatting** — Dates (24/01/2026 vs 01/24/2026), numbers (1.234,56 vs 1,234.56) formatted per locale
+**Should have (differentiators):**
+9. PageHeader component -- single canonical page layout template
+10. Motion tokens -- 3 durations + 3 easings as CSS custom properties
+11. Interactive state matrix -- all states defined for every interactive element
+12. Empty state pattern -- single canonical template
+13. Data table pattern -- single reusable table structure
 
-#### Differentiators (Nice-to-Have)
-Set the product apart but can land in v1.1+.
+**Defer (post-milestone):**
+- Density context system (document the 2 exceptions instead)
+- Storybook (unnecessary for solo developer)
+- Token pipeline automation (manual is fine)
+- Responsive typography with `clamp()` (fixed sizes appropriate for data-dense app)
 
-1. **Pluralization Rules** — "1 cartão" vs "5 cartões" (language-specific rules)
-2. **Variable Interpolation** — "You studied {{count}} highlights today"
-3. **RTL Layout Support** — Future-proofing for Arabic/Hebrew (not needed for PT/EN)
-4. **Namespace Code Splitting** — Lazy-load translations per route (reduces bundle)
-5. **Language Switcher UI** — Dropdown/radio buttons in Settings showing available languages
-6. **Translation Management System Integration** — Connect to Crowdin/Lokalise for professional workflows
+### Architecture Approach
+*Full detail: `.planning/research/ARCHITECTURE.md`*
 
-#### Implementation Complexity
-- **Core setup** (libraries, provider, translation files): 1-2 days
-- **String extraction** (move all hardcoded strings): 3-5 days (highest friction)
-- **Language switcher UI**: 1 day
-- **Date/time formatting**: 1 day
-- **Number formatting**: 0.5 days
-- **Testing**: 2-3 days
-- **Total**: ~1 week
+Five-layer architecture: CSS Variables (colors in `index.css`) -> Tailwind Config (bindings) -> shadcn Components (primitives with correct defaults) -> App Components (compositions) -> Documentation (governance). Colors stay as CSS variables because they change between themes. Typography and spacing go in Tailwind config because they do not change between themes.
 
----
+**Major components:**
+1. **Token layer** (`index.css` + `tailwind.config.js`) -- restricted theme with only allowed values
+2. **Component layer** (`components/ui/*.tsx`) -- shadcn primitives with defaults matching the design system (h-8 buttons, h-8 inputs)
+3. **Composition layer** (`PageHeader` + page patterns) -- one new component, documented layout conventions
+4. **Governance layer** (`.planning/design-system/`) -- TOKENS.md, COMPONENTS.md, PATTERNS.md, AUDIT-CHECKLIST.md
 
-### From ARCHITECTURE.md: Provider Placement & Integration
+### Critical Pitfalls
 
-#### Recommended Component Tree
-
-```
-App.tsx
-  ├─ ErrorBoundary
-  │  └─ ThemeProvider
-  │     └─ AuthProvider
-  │        └─ I18nProvider (NEW)
-  │           └─ ProtectedApp
-  │              └─ HashRouter
-  │                 └─ SidebarProvider
-  │                    └─ StoreProvider
-  │                       └─ AppLayout
-  │                          └─ Routes
-```
-
-**Key Placement Decision:**
-- **I18nProvider above StoreProvider** — Language must be set before StoreContext loads/formats dates
-- **I18nProvider below AuthProvider** — AuthProvider checks session (fast), language is user-specific
-- **Language from UserSettings table** — After user authenticates, load language preference from Supabase
-
-#### File Structure for Translations
-
-```
-evoque/
-├── public/locales/
-│   ├── pt-BR/
-│   │   ├── common.json       # Shared UI (buttons, nav)
-│   │   ├── auth.json         # Login/signup
-│   │   ├── highlights.json   # Highlights page
-│   │   ├── study.json        # Deck selection
-│   │   ├── session.json      # Study session interface
-│   │   ├── settings.json     # Settings tabs
-│   │   ├── dashboard.json    # Analytics
-│   │   ├── errors.json       # Error messages
-│   │   └── formats.json      # Date/number/plural formats
-│   └── en/
-│       ├── common.json
-│       ├── auth.json
-│       ├── highlights.json
-│       ├── study.json
-│       ├── session.json
-│       ├── settings.json
-│       ├── dashboard.json
-│       ├── errors.json
-│       └── formats.json
-├── src/i18n/
-│   ├── config.ts             # i18next configuration
-│   ├── index.ts              # Initialization
-│   └── resources.ts          # TypeScript types (optional)
-├── src/components/
-│   └── I18nProvider.tsx      # React wrapper
-└── src/hooks/
-    └── useLanguage.ts        # Custom hook for language selection
-```
-
-#### Integration Points
-
-1. **AuthContext → Language Loading**
-   - After user authenticates, retrieve language preference from UserSettings
-   - Initialize i18next with user's language
-
-2. **StoreContext → String Re-rendering**
-   - Subscribe to i18next `languageChanged` event
-   - Trigger re-render of any computed strings
-   - CRITICAL: Never compute strings in StoreContext; return data, let components translate
-
-3. **Theme & Language Independence**
-   - Both stored in localStorage independently
-   - Either can change without affecting the other
-   - `localStorage.getItem('evoque-language')` → 'pt-BR' | 'en'
-
-4. **Settings Integration**
-   - Language toggle in Settings page
-   - Selection persists to UserSettings table in Supabase
-   - Auto-save (no "Save" button needed)
-
-#### Bundle Size Impact
-
-| Item | Size | Notes |
-|------|------|-------|
-| i18next core | 12 KB | Framework-agnostic |
-| react-i18next | 8 KB | React integration |
-| PT-BR all namespaces | 15 KB | Loaded upfront |
-| EN all namespaces | 16 KB | Lazy-loaded on demand |
-| **Total (PT-BR only)** | 35 KB | Default experience (gzipped: ~13 KB) |
-| **Total (with EN loaded)** | 51 KB | After language switch (gzipped: +7 KB) |
-
-**Recommendation:** Bundle PT-BR upfront, lazy-load EN on user switch. Reduces initial payload by ~7 KB.
-
----
-
-### From PITFALLS.md: Critical Risks & Mitigation
-
-#### Critical Pitfalls
-
-**Pitfall 1: Incomplete String Extraction (Highest Risk)**
-- **What happens:** Extract 80% of strings, deploy, users see mix of English + Portuguese. Missed strings are in error handlers, aria-labels, array data, conditionals.
-- **Prevention:** Use automation tools (i18nize-react, jscodeshift) to detect hardcoded strings automatically. Manual extraction is error-prone. Create detection test that warns if non-i18n strings render.
-- **Timeline impact:** Can add 1-2 days to extraction phase if found late.
-
-**Pitfall 2: Hardcoded Date/Time/Number Formatting**
-- **What happens:** Dates display identically in EN and PT (e.g., "2026-01-24" both languages). Plurals hardcoded as `count === 1 ? 'card' : 'cards'` breaks in Portuguese.
-- **Prevention:** Use Intl API for all formatting. Never hardcode date/number formats. Let i18next handle pluralization rules per language.
-- **Example:** `i18n.t('cards_count', { count })` automatically outputs "1 cartão" (PT) or "1 card" (EN).
-
-**Pitfall 3: Namespace/Key Structure Decisions Made Hastily**
-- **What happens:** Flat `en.json` with 500+ keys becomes unmaintainable. Developers use different naming conventions (inconsistent). Moving features requires renaming all keys.
-- **Prevention:** Design namespace structure FIRST (before extraction). Document key naming convention (semantic naming, hierarchy). Review with team. Example: `study.session.rating.again` (not `rating_again_button`).
-
-**Pitfall 4: StoreContext Not Listening to Language Changes**
-- **What happens:** User switches to PT-BR in Settings, but StoreContext computed values don't re-render. Strings remain in English.
-- **Prevention:** Subscribe StoreContext to i18next `languageChanged` event. Never compute strings in StoreContext; return raw data, let components translate. Create test for language switching without page reload.
-
-**Pitfall 5: User-Supplied Content (Notes, Highlights) Confusion**
-- **What happens:** UI translates to Portuguese but user's highlight text (from Kindle) stays in English. Users confused: "Why isn't my note translated?"
-- **Prevention:** Explicitly document policy: UI strings translate, user data doesn't. Include notes in testing to normalize mixed-language experience. Never attempt auto-translation (out of scope).
-
-#### Moderate Pitfalls
-
-**Pitfall 6: Forgotten Error Messages & Validation Text**
-- **What happens:** Validation errors always show in English because they're in handler functions, not JSX. Users see English errors in PT-BR UI.
-- **Prevention:** Audit all `throw new Error()` calls. Create validation pattern that uses i18n keys. Include error messages in extraction checklist.
-
-**Pitfall 7: RTL CSS Not Prepared (Future-Proofing)**
-- **What happens:** If adding Arabic/Hebrew later, CSS with `margin-left`, `text-left` breaks because layout still LTR. Requires CSS refactor.
-- **Prevention:** Use logical CSS properties (`margin-inline-start` instead of `margin-left`). Set `document.dir` dynamically based on language. Not urgent for PT/EN but prevents pain later.
-
-**Pitfall 8: Translation Keys Not Type-Safe**
-- **What happens:** Typo in key (`t('study.deck.invalid')`) shows `[missing translation key]` at runtime. Refactoring breaks other components silently.
-- **Prevention:** Use TypeScript generation from translation files or typesafe-i18n library. Add ESLint rule disallowing dynamic strings in `t()` calls.
-
-**Pitfall 9: Namespace Loading Causes Waterfalls**
-- **What happens:** Lazy-loading all namespaces per route causes UI flicker when navigating. Translations appear delayed.
-- **Prevention:** Bundle common namespaces (`common`, `validation`) upfront. Lazy-load only route-specific namespaces. Preload on route entrance.
-
-**Pitfall 10: Translation Management Becomes Bottleneck**
-- **What happens:** 6 months in, new feature adds 20 strings to EN but PT-BR translations missing. No process defined. Feature ships partially translated.
-- **Prevention:** Document translation workflow (developer adds EN → CI validates → translator adds PT → PR merged). Use CI check: fail if EN key missing from PT. Optionally use Locize/Crowdin for professional workflows.
-
----
+1. **Guide-Reality Divergence** -- The existing guide contradicts the codebase in 5+ dimensions. Must reconcile BEFORE writing any code. Audit every rule against actual usage.
+2. **Breaking Working UI** -- Dashboard and StudySession were user-approved. Visual verification after every page change. Maintain a "DO NOT TOUCH" list for intentional deviations.
+3. **Cascading Base Component Changes** -- Changing `button.tsx` default from `h-10` to `h-8` affects every Button usage. Audit all usages before changing any base component.
+4. **Over-Engineering** -- Building token infrastructure for 7 pages instead of making direct CSS fixes. Prefer `className` changes over new abstractions.
+5. **Two Title Systems** -- `text-3xl` (Dashboard/Highlights) vs `text-base` (Study/Settings). Must pick one before any execution starts.
 
 ## Implications for Roadmap
 
-### Suggested Phase Structure
+### Phase 0: Design Decision Resolution
+**Rationale:** The single biggest risk is starting execution without resolving the Compact-vs-Generous split. This is a design DECISION, not a code change.
+**Delivers:** Updated design guide with explicit decisions on title size, spacing convention, border radius policy, and a "DO NOT TOUCH" list.
+**Addresses:** Pitfall 1 (Guide-Reality Divergence), Pitfall 5 (Two Title Systems)
+**Avoids:** Building on an unresolved foundation
 
-#### Phase 1: Foundation (Days 1-2)
-**Goal:** Set up provider infrastructure and decide namespace structure
+### Phase 1: Token Foundation + Tooling
+**Rationale:** All enforcement depends on a restricted Tailwind config and ESLint setup. No page migration can be validated until the tooling exists.
+**Delivers:** Restricted `tailwind.config.js`, `eslint.config.js`, extended `tailwind-merge`, `lib/design-tokens.ts`.
+**Addresses:** Features 1-6 (token scales), Stack Layer 1 + Layer 2
+**Avoids:** Pitfall 4 (Over-Engineering) -- only 3 dev dependencies added, zero runtime additions
 
-**What it delivers:**
-- i18next + react-i18next installed and configured
-- I18nProvider added to component tree (below AuthProvider)
-- Translation file directory structure created
-- Key naming convention documented
+### Phase 2: Component Defaults + PageHeader
+**Rationale:** Component defaults must be fixed before page migration, otherwise every page change fights incorrect defaults.
+**Delivers:** Updated `button.tsx`, `input.tsx`, new `page-header.tsx`, normalized import paths.
+**Addresses:** Feature 7 (CVA contracts), Feature 9 (PageHeader)
+**Avoids:** Pitfall 3 (Cascading Changes) -- audit all usages before changing each component
 
-**Features included:**
-- Language detection (browser + localStorage fallback)
-- Provider infrastructure
-- Initial PT-BR resource bundling
+### Phase 3: Page Migration (Core Pages)
+**Rationale:** Pages are the user-facing surface. With tokens defined and components fixed, pages can be migrated systematically.
+**Delivers:** Dashboard, Highlights, Study, Settings using canonical typography, spacing, PageHeader, semantic colors. All 59 arbitrary font-sizes replaced.
+**Addresses:** Feature 9 (Page Layout Template), arbitrary value elimination
+**Avoids:** Pitfall 2 (Breaking Working UI) -- one page per plan, visual verification after each
 
-**Pitfalls to avoid:**
-- Decide namespace hierarchy with team BEFORE extraction starts
-- Document key naming convention (semantic, hierarchical)
+### Phase 4: Page Migration (Special Pages) + Component Audit
+**Rationale:** StudySession and Login have intentional deviations. Modals and complex components depend on page decisions being final.
+**Delivers:** StudySession (minimal, preserve touch targets), Login (may keep branding), all modals/popovers aligned.
+**Addresses:** Feature 11 (Interactive State Matrix), Feature 13 (Empty State Pattern)
+**Avoids:** Pitfall 2 (Breaking Working UI), Pitfall 8 (Accessibility Costs)
 
-**Definition of done:**
-- I18nProvider renders without errors
-- No hardcoded English strings in translation files yet (just structure)
+### Phase 5: Polish + Documentation + Governance
+**Rationale:** Documentation must describe reality, not aspiration. Writing docs last ensures accuracy.
+**Delivers:** Motion tokens, TOKENS.md, COMPONENTS.md, PATTERNS.md, AUDIT-CHECKLIST.md. ESLint `no-arbitrary-value` upgraded to `error`.
+**Addresses:** Feature 10 (Motion Tokens), Feature 14 (Data Table Pattern)
+**Avoids:** Pitfall 7 (Stale Documentation)
 
-**Research needed:** NONE (patterns well-documented)
+### Phase Ordering Rationale
 
----
+- Phase 0 before everything: the Compact-vs-Generous decision gates all subsequent work
+- Phase 1 before Phase 2: token definitions must exist before components reference them
+- Phase 2 before Phase 3: component defaults must be correct before pages consume them
+- Phase 3 before Phase 4: core pages establish the pattern; special pages adapt
+- Phase 5 last: documentation describes what IS, not what WILL BE
+- Grouping follows FEATURES dependency chain: primitive tokens -> component contracts -> page compositions -> governance
 
-#### Phase 2: String Extraction (Days 3-7)
-**Goal:** Move ALL hardcoded strings to translation files
+### Research Flags
 
-**What it delivers:**
-- All UI strings in PT-BR translation files
-- Error messages and validation text translated
-- No remaining hardcoded English strings in components
+Phases likely needing deeper research during planning:
+- **Phase 2 (Component Defaults):** Needs full cascade audit of every `button.tsx`, `input.tsx`, and `card.tsx` usage before changing defaults
+- **Phase 3 (Dashboard Migration):** Chart components and stat cards with custom layouts may need research into standardization approach
 
-**Features included:**
-- String translation (table stake #1)
-- Fallback language system
-
-**Pitfalls to avoid:**
-- CRITICAL: Use automation tools (i18nize-react or jscodeshift) to detect missed strings
-- Create detection test: warn if non-i18n strings render in PT-BR mode
-- Systematic extraction: JSX strings → error messages → aria-labels/placeholders → array data
-- Don't skip: error handlers, validation functions, default values, ternary operators
-
-**Definition of done:**
-- All UI strings extracted to `common.json`, `auth.json`, `highlights.json`, etc.
-- No console warnings about untranslated keys
-- Manual audit: 50+ random strings verified to be from translation files
-- Namespace structure review passed with team
-
-**Research needed:** MEDIUM (string detection automation patterns)
-
----
-
-#### Phase 3: Language Switching UI (Days 8-9)
-**Goal:** Implement language selection in Settings page
-
-**What it delivers:**
-- Language toggle/dropdown in Settings
-- Dynamic language switching (entire UI updates without reload)
-- Language preference persisted to Supabase UserSettings
-
-**Features included:**
-- Dynamic language switching (table stake #2)
-- Language persistence (table stake #3)
-- Language switcher UI (differentiator)
-
-**Pitfalls to avoid:**
-- Ensure language toggle triggers re-render of StoreContext computed values
-- Add i18n.on('languageChanged') listener if StoreContext has language-dependent values
-
-**Definition of done:**
-- Settings page has language selection (radio buttons or dropdown)
-- User can switch between PT-BR and EN
-- UI updates immediately (no page refresh)
-- Selection persists to database
-- No untranslated text appears
-
-**Research needed:** NONE (straightforward integration)
-
----
-
-#### Phase 4: English Translation & Lazy Loading (Days 10-11)
-**Goal:** Add English translation files and implement lazy loading
-
-**What it delivers:**
-- All strings translated to English
-- EN files lazy-load on demand (not bundled upfront)
-- Language can be switched to EN without page reload
-
-**Features included:**
-- Lazy loading strategy (reduces initial bundle)
-- Fallback language system tested
-
-**Pitfalls to avoid:**
-- Verify EN files load asynchronously (check Network tab in DevTools)
-- Confirm no console warnings with EN selected
-
-**Definition of done:**
-- `public/locales/en/` populated with all namespaces
-- EN loads asynchronously when user switches language
-- All text renders correctly in EN
-- No "missing translation" placeholders
-
-**Research needed:** NONE (vite-plugin-i18next-loader patterns known)
-
----
-
-#### Phase 5: Date/Number Formatting & Localization (Days 12-13)
-**Goal:** Implement locale-aware formatting for dates, numbers, and pluralization
-
-**What it delivers:**
-- Dates format per locale (24/01/2026 for PT, 01/24/2026 for EN)
-- Numbers format per locale (1.234,56 vs 1,234.56)
-- Pluralization rules per language
-- Study session dates and review logs formatted correctly
-
-**Features included:**
-- Number/date formatting (table stake #7)
-- Pluralization rules (differentiator)
-- Variable interpolation (differentiator)
-
-**Pitfalls to avoid:**
-- Never hardcode date formatting; use Intl API or i18next formatters
-- Define plural forms in translation files (`_one`, `_other` keys)
-- Test pluralization edge cases (0, 1, 2+ cards)
-
-**Definition of done:**
-- Study session displays dates in correct locale format
-- Daily review limits show correct plural form ("1 cartão" vs "5 cartões")
-- Statistics display numbers with correct thousands separator
-- Date formatting respects i18next language changes
-
-**Research needed:** NONE (Intl API + i18next formatting patterns known)
-
----
-
-#### Phase 6: Error Handling & Validation (Days 14-15)
-**Goal:** Ensure all error messages and validation text are translated
-
-**What it delivers:**
-- Import errors translated
-- Validation errors (email, password, etc.) translated
-- API error responses handled with i18n
-- Network error messages translated
-
-**Features included:**
-- Error message translation (moderate pitfall prevention)
-
-**Pitfalls to avoid:**
-- Audit all `throw new Error()` calls
-- Create validation pattern that uses i18n keys
-- Test with validation failures (invalid email, password too short)
-
-**Definition of done:**
-- Trigger import failure, see Portuguese error message
-- Trigger validation errors, see Portuguese text
-- No English error messages in PT-BR mode
-
-**Research needed:** NONE (straightforward implementation)
-
----
-
-#### Phase 7: Integration Testing & Polish (Days 16-17)
-**Goal:** End-to-end testing, performance verification, documentation
-
-**What it delivers:**
-- Full workflow tested in both languages
-- Performance benchmarks (bundle size, namespace loading time)
-- Translation management process documented
-- Developer guide for adding new strings
-
-**Pitfalls to avoid:**
-- Test complete user flows (Login → Study → Highlights → Settings) in both languages
-- Verify StoreContext values update on language change
-- Check that theme and language are independent
-- Performance: Measure time to first translated render
-
-**Definition of done:**
-- User can login in PT-BR, study cards, switch to EN mid-session, settings persist
-- No layout shifts or flicker when switching languages
-- Bundle size acceptable (gzipped: ~13 KB for PT-BR, +7 KB for EN)
-- Translation management workflow documented
-- Dev guide: "How to add new strings" written
-- All pitfalls mitigated
-
-**Research needed:** NONE (standard testing practices)
-
----
-
-### Phase Summary Table
-
-| Phase | Duration | Key Deliverable | Risk Level | Research Needed |
-|-------|----------|-----------------|------------|-----------------|
-| **Phase 1: Foundation** | 2 days | Provider infrastructure | LOW | NO |
-| **Phase 2: String Extraction** | 5 days | All strings in translation files | HIGH | MEDIUM (automation tools) |
-| **Phase 3: Language UI** | 2 days | Settings language switcher | LOW | NO |
-| **Phase 4: EN Translation** | 2 days | English translations + lazy loading | LOW | NO |
-| **Phase 5: Formatting** | 2 days | Locale-aware dates/numbers/plurals | LOW | NO |
-| **Phase 6: Error Handling** | 2 days | Translated error messages | LOW | NO |
-| **Phase 7: Testing & Polish** | 2 days | Full integration + documentation | MEDIUM | NO |
-| **TOTAL** | **17 days** | Production-ready i18n | **MEDIUM** | — |
-
----
-
-## Research Flags
-
-### Needs Research
-- **Phase 2 (String Extraction):** Evaluate i18nize-react vs jscodeshift transforms for automating hardcoded string detection. Recommend PoC with one component to verify detection accuracy.
-- **Phase 7 (Testing):** Benchmark bundle size impact with real data (all namespaces). Verify gzipped size under 50 KB total.
-
-### Standard Patterns (No Research Needed)
-- **Phase 1:** Provider placement + namespace structure (documented in ARCHITECTURE.md)
-- **Phase 3:** Language switcher UI (standard pattern confirmed across major apps)
-- **Phase 4:** Lazy loading (vite-plugin-i18next-loader patterns mature)
-- **Phase 5:** Date/number formatting (Intl API patterns established)
-- **Phase 6:** Error message translation (standard i18n pattern)
-- **Phase 7:** Testing (standard QA checklist)
-
----
+Phases with standard patterns (skip research-phase):
+- **Phase 0 (Design Decisions):** Pure decision-making, no technical research needed
+- **Phase 1 (Token Foundation):** STACK research provides exact config code; mechanical implementation
+- **Phase 5 (Documentation):** Standard markdown authoring, no technical complexity
 
 ## Confidence Assessment
 
-| Area | Confidence | Evidence |
-|------|------------|----------|
-| **Stack Choice** | HIGH | 11+ years established, 40k GitHub stars, React 19 verified compatible, 6.4M weekly downloads |
-| **Architecture** | HIGH | Provider placement aligns with existing context pattern, integration points clear and tested |
-| **Feature Set** | HIGH | 7 table stakes well-defined, 6 differentiators optional, anti-features documented |
-| **Pitfalls** | HIGH | 10+ critical/moderate pitfalls identified with prevention strategies, sourced from official docs + community patterns |
-| **Complexity Estimates** | MEDIUM | Based on typical implementations; actual timeline varies by team size and string volume |
-| **String Extraction** | MEDIUM | Automation tools available but need verification for Evoque's codebase size (50+ components) |
-| **Performance** | MEDIUM | Bundle size estimates based on typical namespaces; actual size depends on translation volume |
+| Area | Confidence | Notes |
+|------|------------|-------|
+| Stack | HIGH | All recommendations verified against official Tailwind v3 docs, eslint-plugin-tailwindcss GitHub, tailwind-merge npm |
+| Features | HIGH | Cross-referenced Apple HIG, Carbon, Polaris, Material Design; grounded in codebase audit |
+| Architecture | HIGH | Based on direct file-by-file codebase audit; conservative recommendations |
+| Pitfalls | HIGH | Every pitfall backed by specific file:line evidence from codebase |
 
-### Known Gaps
+**Overall confidence:** HIGH
 
-1. **String Volume Unknown** — Total number of hardcoded strings not measured. Extraction phase duration (3-5 days) is estimate; could be longer for larger codebase.
-2. **StoreContext Integration Details** — How exactly to subscribe StoreContext to language changes needs implementation exploration (is it a custom hook, effect, or provider pattern?).
-3. **Translation Memory Tool** — Locize/Crowdin integration optional; cost/benefit analysis deferred to future phase if scaling.
-4. **Type Safety Tooling** — typesafe-i18n or similar may require setup; recommendation is to start without it, add later if needed.
+### Gaps to Address
 
----
-
-## Recommendations for Roadmap Planner
-
-### Go/No-Go Criteria
-
-**Proceed if:**
-- Client/product team confirms PT-BR + EN is priority
-- Estimate of 17 days total is acceptable
-- String extraction automation is available (i18nize-react works with codebase)
-
-**Defer if:**
-- Competing priorities (critical bugs, feature releases)
-- String volume in codebase is much larger than estimated (>2000 strings)
-- Performance constraints demand bundle size < 30 KB
-
-### Success Metrics
-
-1. **Phase completion:** All 7 phases complete within 17 days
-2. **No mixed languages:** 100% of UI strings translated in both languages
-3. **User experience:** Language toggle in Settings works seamlessly; UI updates without reload
-4. **Performance:** Bundle size gzipped < 50 KB
-5. **Reliability:** No console warnings about untranslated keys
-6. **Process:** Translation management workflow documented and followed
-
-### Future Considerations (v1.1+)
-
-1. **Translation Management System** — Locize/Crowdin integration for professional workflows
-2. **RTL Support** — If adding Arabic/Hebrew, refactor CSS to use logical properties
-3. **Additional Languages** — Framework supports unlimited languages; add more when user base grows
-4. **Type Safety** — Implement typesafe-i18n if developer errors with translation keys become issue
-5. **Pseudo-Translation Testing** — Add automated tests for text expansion edge cases
-
----
+- **Which title size wins:** ARCHITECTURE recommends `text-lg font-semibold`. FEATURES recommends 18px. PITFALLS suggests `text-xl` or `text-2xl` as compromise. Must resolve in Phase 0 with user input.
+- **Button default height:** STACK says `h-7`, ARCHITECTURE says `h-8` (better touch targets), PITFALLS warns against changing defaults at all. Recommendation: `h-8` with full usage audit first.
+- **Config restriction vs documentation:** STACK recommends overriding `theme.fontSize` (restrictive). ARCHITECTURE recommends documentation-only (simpler). Recommendation: go with STACK's restrictive approach -- more durable, zero runtime cost.
+- **shadcn generation mismatch:** Two component generations use different patterns (forwardRef vs function, relative vs alias imports). Low-priority cleanup, normalize imports opportunistically.
 
 ## Sources
 
-### Stack Research (STACK.md)
-- i18next v25 (NPM documentation)
-- react-i18next v16.5.3 (GitHub + official docs)
-- Phrase Blog: Curated List of React i18n Libraries
-- Locize: react-i18next vs react-intl comparison
-- React i18n Setup Guides (2026 editions)
+### Primary (HIGH confidence)
+- [Tailwind CSS v3 Theme Configuration](https://v3.tailwindcss.com/docs/theme)
+- [Tailwind CSS v3 Font Size](https://v3.tailwindcss.com/docs/font-size)
+- [eslint-plugin-tailwindcss](https://github.com/francoismassart/eslint-plugin-tailwindcss)
+- [CVA Official Docs](https://cva.style/docs)
+- [shadcn/ui Theming](https://ui.shadcn.com/docs/theming)
+- [tailwind-merge npm](https://www.npmjs.com/package/tailwind-merge)
+- [Apple Human Interface Guidelines](https://developer.apple.com/design/human-interface-guidelines/)
+- Evoque codebase audit (direct file reads, all pages and components)
 
-### Features Research (FEATURES.md)
-- Internationalization in React: Complete Guide 2026 (Glory Webs)
-- GitHub: react-i18next documentation
-- Shopify Engineering: i18n Best Practices
-- InfiniteJS: Common Mistakes in React i18n
+### Secondary (MEDIUM confidence)
+- [Typography in Design Systems (EightShapes)](https://medium.com/eightshapes-llc/typography-in-design-systems-6ed771432f1e)
+- [Building Scalable Design System with shadcn/ui](https://shadisbaih.medium.com/building-a-scalable-design-system-with-shadcn-ui-tailwind-css-and-design-tokens-031474b03690)
+- [Tailwind CSS Best Practices 2025](https://www.frontendtools.tech/blog/tailwind-css-best-practices-design-system-patterns)
+- [Carbon Design System Motion](https://carbondesignsystem.com/elements/motion/overview/)
+- [Adopting Design Systems (EightShapes)](https://medium.com/eightshapes-llc/adopting-design-systems-71e599ff660a)
+- Existing guide: `lbp_diretrizes/compact-ui-design-guidelines.md` v1.1
 
-### Architecture Research (ARCHITECTURE.md)
-- react-i18next Official Documentation
-- i18next Namespaces Guide
-- Phrase: React Localization Best Practices
-- Contentful: React i18n Architecture Patterns
-
-### Pitfalls Research (PITFALLS.md)
-- Official i18next Documentation
-- Community Patterns (infinitejs, dev.to)
-- Mattermost Blog: Avoiding Internationalization Mistakes
-- Localazy: Pluralization in Software Localization
-- LeanCode: RTL in React Guide
-- Medium: Database i18n Design Patterns
+### Tertiary (LOW confidence)
+- [W3C Design Tokens Specification](https://www.w3.org/community/design-tokens/) -- referenced for why NOT to adopt
+- Storybook vs Ladle comparison -- opinion-based, project-size dependent
 
 ---
-
-## Next Steps
-
-1. **Validate with Product Team**
-   - Confirm PT-BR + EN language priority
-   - Review 17-day timeline
-   - Assign translator (if not in-house)
-
-2. **Prepare Phase 1 Kickoff**
-   - Create branch: `feature/i18n-foundation`
-   - Schedule team review of namespace structure
-   - Prepare translation file directory
-
-3. **PoC String Detection** (Pre-Phase 2)
-   - Test i18nize-react or jscodeshift on 5-10 components
-   - Verify detection accuracy
-   - Measure automation coverage
-
-4. **Coordinate with DevOps**
-   - Ensure CI/CD supports new translation files
-   - Plan deployment (translation files in public/ are static assets)
-   - Set up translation validation in CI (EN key exists in PT)
-
----
-
-**Synthesis completed:** January 24, 2026
-**Quality:** HIGH confidence across all dimensions
-**Ready for:** Roadmap creation and phase planning
+*Research completed: 2026-01-27*
+*Ready for roadmap: yes*
