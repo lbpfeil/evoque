@@ -1,23 +1,12 @@
-# Evoque
+# Evoque Design System
 
 ## What This Is
 
-Evoque é um app de flashcards para revisão de highlights de leitura usando repetição espaçada (SM-2). Importa highlights do Kindle e permite estudo organizado por livro ou deck geral.
+Um app de flashcards para revisão de highlights de leitura (React 19 + TypeScript + Tailwind + shadcn/ui + Supabase). Após o v1.0 (tema light/dark funcional), o foco agora é padronização obsessiva — um design system rígido que garanta consistência visual absoluta em todas as páginas e componentes.
 
 ## Core Value
 
-**Experiência de estudo fluida e sem fricção** — o usuário deve conseguir revisar seus highlights de forma rápida e agradável.
-
-## Current Milestone: v1.1 Internationalization
-
-**Goal:** Sistema multi-idioma com PT-BR como padrão e inglês disponível.
-
-**Target features:**
-- Sistema i18n completo (react-i18next ou similar)
-- Tradução de toda a UI para PT-BR
-- Formatação localizada (datas, números, pluralização)
-- Toggle de idioma nas configurações
-- Inglês mantido como opção
+**Consistência obsessiva** — cada elemento visual deve ser idêntico ao seu equivalente em qualquer página. Zero surpresas visuais. Vocabulário visual enxuto usado com rigor.
 
 ## Requirements
 
@@ -37,67 +26,71 @@ Evoque é um app de flashcards para revisão de highlights de leitura usando rep
 
 ### Active
 
-- [ ] Sistema i18n configurado e funcionando
-- [ ] Todas as strings da UI extraídas para arquivos de tradução
-- [ ] Tradução completa para PT-BR
-- [ ] Formatação localizada de datas e números
-- [ ] Toggle de idioma nas configurações
-- [ ] Persistência da preferência de idioma
+- [ ] Design tokens rígidos: escala tipográfica, escala de espaçamento, regras de cor
+- [ ] Auditoria de componentes: identificar duplicatas, desnecessários, e ausentes
+- [ ] Padronização de componentes shadcn: cada componente com UM jeito de ser usado
+- [ ] Auditoria completa de todas as páginas: corrigir toda inconsistência visual
+- [ ] Guia de design vivo: documento que dita exatamente como construir uma página nova
+- [ ] Consistência tipográfica: mesmos tamanhos/pesos para mesmos contextos em todas as páginas
+- [ ] Consistência de espaçamento: mesmos paddings/gaps/margins para contextos equivalentes
+- [ ] Consistência de componentes: mesma tabela, mesmo card, mesmo modal em todo lugar
 
 ### Out of Scope
 
 - Parsers de importação (My Clippings, PDF, Anki) — já funcionam, não mexer
 - Lógica do SM-2 (algoritmo de repetição espaçada) — já funciona
-- Backend/Supabase — não é escopo deste milestone
-- Tradução de conteúdo do usuário (highlights, notas) — apenas UI
+- Backend/Supabase — não é escopo deste projeto
+- Novas features funcionais — foco é padronização visual, não funcionalidades
+- Redesign da estética — warm/friendly já está definido pelo v1.0, agora é consistência
 
 ## Context
 
 **Stack atual:**
 - React 19 + TypeScript
 - Tailwind CSS com CSS variables (OKLCH)
-- shadcn/ui parcialmente instalado (button, dialog, input, popover, command, sheet)
+- shadcn/ui instalado (button, dialog, input, popover, command, sheet, card, tabs, dropdown-menu, badge, tooltip, scroll-area, select, checkbox, switch)
 - Supabase para backend/auth
 - Recharts para gráficos
 - Lucide React para ícones
+- Fonte: Outfit Variable (sans), serif stack para study cards
 
-**Estado do tema:**
-- `darkMode: ["class"]` configurado no Tailwind
-- CSS variables definidas para light/dark em index.css
-- Sem toggle na UI
-- Sem persistência localStorage
-- Sem detecção de preferência do sistema
-- Componentes usam zinc-50, zinc-100, etc. hardcoded
+**Estado pós-v1.0:**
+- Tema light/dark funcional com paleta warm (OKLCH)
+- ThemeProvider com toggle, localStorage, anti-FOUC
+- Tokens semânticos em uso (bg-background, text-foreground, etc.)
+- Componentes shadcn migrados
+- MAS: sem design system rígido governando tipografia, espaçamento, e uso de componentes
+- MAS: inconsistências visuais entre páginas (tamanhos de título, estilos de tabela, espaçamentos)
 
 **Páginas:**
 - Dashboard.tsx — stats, gráficos, livros recentes
 - Highlights.tsx — browse, search, filter, tag highlights
-- Study.tsx — seleção de deck (CRÍTICO)
-- StudySession.tsx — sessão de estudo (CRÍTICO, preservar fonte serif)
+- Study.tsx — seleção de deck
+- StudySession.tsx — sessão de estudo (fonte serif preservada)
 - BookDetails.tsx — highlights de um livro específico
 - Settings.tsx — importação, preferências
 - Login.tsx — autenticação
 
-**Componentes principais:**
-- Sidebar.tsx — navegação (adicionar theme toggle)
-- DeckTable.tsx — tabela de livros com contagem de cards
-- TagSelector.tsx, TagManagerSidebar.tsx — gestão de tags
-- Diversos modals e popovers
+**Documento existente:**
+- `lbp_diretrizes/compact-ui-design-guidelines.md` (550 linhas) — status desconhecido, pode estar desatualizado
 
 ## Constraints
 
-- **Preservar:** Fonte serif nos cards de StudySession, estética warm/friendly
+- **Preservar:** Fonte serif nos cards de StudySession
+- **Preservar:** Estética warm/friendly do v1.0
 - **Não tocar:** Parsers de importação, lógica SM-2, backend
-- **i18n:** PT-BR como idioma padrão, EN disponível
-- **Performance:** Bundle size deve permanecer razoável (lazy load translations)
+- **Base:** shadcn/ui como base de componentes (auditar e padronizar, não substituir)
+- **Padrão:** Consistência obsessiva — Apple-level visual uniformity
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Usar shadcn/ui como base | Já parcialmente instalado, consistente, acessível | — Pending |
-| Priorizar tema antes de componentes | Tema funcional é o core value | — Pending |
-| Study/StudySession por último | São críticos, usuário quer participar | — Pending |
+| Usar shadcn/ui como base | Já parcialmente instalado, consistente, acessível | ✓ Good |
+| Priorizar tema antes de componentes | Tema funcional é o core value do v1.0 | ✓ Good |
+| Study/StudySession por último no v1.0 | São críticos, usuário quer participar | ✓ Good |
+| Auditar e padronizar shadcn (não criar camada) | Manter simplicidade, evitar abstração desnecessária | — Pending |
+| Consistência obsessiva como core value v2.0 | Padrão Apple — zero surpresas visuais | — Pending |
 
 ---
-*Last updated: 2026-01-24 after v1.1 milestone start*
+*Last updated: 2026-01-27 after v2.0 milestone start*
