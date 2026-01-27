@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-27)
 ## Current Position
 
 Phase: 4 of 7 (Token Foundation)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-01-27 -- v2.0 roadmap created
+Plan: 1 of TBD in current phase
+Status: In progress
+Last activity: 2026-01-27 -- Completed 04-01-PLAN.md (Token vocabulary established)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█░░░░░░░░░] ~10%
 
 ## Performance Metrics
 
@@ -27,10 +27,10 @@ Progress: [░░░░░░░░░░] 0%
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| 04-token-foundation | 1 | 1.7min | 1.7min |
 
 **Recent Trend:**
-- Carrying forward v1.0 velocity baseline: ~3min/plan
+- Phase 4 starting strong: 1.7min/plan (faster than v1.0 baseline)
 
 *Updated after each plan completion*
 
@@ -45,6 +45,10 @@ Recent decisions affecting current work:
 - [v2.0 Init]: No ESLint enforcement in v1 scope (deferred to v2 requirements)
 - [v2.0 Init]: Single concise design guide (not multiple docs)
 - [v2.0 Init]: All 7 pages migrated (no exceptions)
+- [04-01]: Typography scale matches existing Tailwind sizes (text-heading=text-lg, text-body=text-sm)
+- [04-01]: Named spacing utilities without prefix (p-md, gap-lg) - no conflicts with breakpoints
+- [04-01]: Icon sizes as fixed rem values (not CSS vars) - theme-invariant
+- [04-01]: Shadow tokens theme-agnostic for now (dark variants deferred)
 
 ### Pending Todos
 
@@ -56,6 +60,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-01-27
-Stopped at: Roadmap created, ready to plan Phase 4
+Last session: 2026-01-27T23:49:39Z
+Stopped at: Completed 04-01-PLAN.md (Token Foundation established)
 Resume file: None
