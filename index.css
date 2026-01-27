@@ -27,6 +27,47 @@
     --ring: oklch(0.67 0.16 58);
     --radius: 0.75rem;
 
+    /* Typography Scale (TOKENS-01) - 6 named sizes */
+    --text-display: 2rem;        /* 32px - Hero text, rare */
+    --text-title: 1.875rem;      /* 30px - Page titles (text-3xl equivalent) */
+    --text-heading: 1.125rem;    /* 18px - Section headings (text-lg equivalent) */
+    --text-body: 0.875rem;       /* 14px - Default body text (text-sm equivalent) */
+    --text-caption: 0.75rem;     /* 12px - Metadata, labels (text-xs equivalent) */
+    --text-overline: 0.625rem;   /* 10px - Tiny labels, uppercase (text-[10px] equivalent) */
+
+    /* Spacing Scale (TOKENS-02) - 8 semantic tokens on 4px grid */
+    --space-xxs: 0.25rem;   /* 4px */
+    --space-xs: 0.5rem;     /* 8px */
+    --space-sm: 0.75rem;    /* 12px */
+    --space-md: 1rem;       /* 16px */
+    --space-lg: 1.5rem;     /* 24px */
+    --space-xl: 2rem;       /* 32px */
+    --space-2xl: 3rem;      /* 48px */
+    --space-3xl: 4rem;      /* 64px */
+
+    /* Shadow Scale (TOKENS-04) - 3 elevations */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+    /* Motion Tokens (TOKENS-05) - 3 durations + 3 easings */
+    --duration-fast: 150ms;
+    --duration-base: 200ms;
+    --duration-slow: 300ms;
+    --ease-in: cubic-bezier(0.4, 0, 1, 1);
+    --ease-out: cubic-bezier(0, 0, 0.2, 1);
+    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Z-Index Layers (TOKENS-07) - 7 semantic layers */
+    --z-base: 0;
+    --z-dropdown: 1000;
+    --z-sticky: 1020;
+    --z-fixed: 1030;
+    --z-modal-backdrop: 1040;
+    --z-modal: 1050;
+    --z-popover: 1060;
+    --z-tooltip: 1070;
+
     /* Font family */
     --font-sans: "Outfit Variable", "Outfit", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 
