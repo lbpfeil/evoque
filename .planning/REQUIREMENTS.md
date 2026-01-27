@@ -1,108 +1,104 @@
-# Requirements: Evoque v1.1 Internationalization
+# Requirements: Evoque v2.0 Design System Overhaul
 
-**Defined:** 2026-01-24
-**Core Value:** Experiência de estudo fluida e sem fricção
+**Defined:** 2026-01-27
+**Core Value:** Consistência obsessiva — cada elemento visual idêntico ao equivalente em qualquer página. Zero surpresas visuais.
+**Design Language:** Generous (Dashboard/Highlights style — títulos grandes, espaçamento generoso, containers arredondados)
 
-## v1.1 Requirements
+## v1 Requirements
 
-Requirements for internationalization milestone. Each maps to roadmap phases.
+### Design Tokens (TOKENS)
 
-### Infrastructure
+- [ ] **TOKENS-01**: Escala tipográfica com 6 tamanhos nomeados e regras estritas por contexto (display, title, heading, body, caption, overline)
+- [ ] **TOKENS-02**: Escala de espaçamento com 8 tokens semânticos em grid de 4px
+- [ ] **TOKENS-03**: Escala de border-radius com exatamente 3 valores (sm, md, lg)
+- [ ] **TOKENS-04**: Escala de shadows com exatamente 3 elevações
+- [ ] **TOKENS-05**: Motion tokens — 3 durações + 3 easings como CSS custom properties
+- [ ] **TOKENS-06**: Escala de ícones com exatamente 3 tamanhos (14px, 16px, 20px)
+- [ ] **TOKENS-07**: Sistema de z-index com 7 camadas semânticas
+- [ ] **TOKENS-08**: Regras de uso de cor — banir classes raw (text-zinc-*), forçar uso semântico (text-foreground, text-muted-foreground)
 
-- [x] **INFRA-01**: Sistema i18n configurado com react-i18next
-- [x] **INFRA-02**: Arquivos de tradução organizados por namespace (common, study, highlights, settings, etc.)
-- [x] **INFRA-03**: I18nProvider integrado na árvore de componentes
-- [x] **INFRA-04**: Idioma padrão configurado como PT-BR
+### Components (COMP)
 
-### Translation
+- [ ] **COMP-01**: Auditar todos os componentes shadcn e corrigir defaults para match com design system (altura de botões, inputs, etc.)
+- [ ] **COMP-02**: Criar componente PageHeader — template canônico de layout de página
+- [ ] **COMP-03**: Criar padrão de data table padronizado — estrutura de tabela reutilizável única
+- [ ] **COMP-04**: Ajustar variantes CVA dos componentes (Button, Input, Badge, Card) para refletir tokens
 
-- [ ] **TRANS-01**: Todas as strings da Sidebar traduzidas
-- [ ] **TRANS-02**: Todas as strings do Dashboard traduzidas
-- [ ] **TRANS-03**: Todas as strings da página Highlights traduzidas
-- [ ] **TRANS-04**: Todas as strings da página Study traduzidas
-- [ ] **TRANS-05**: Todas as strings da página StudySession traduzidas
-- [ ] **TRANS-06**: Todas as strings da página Settings traduzidas
-- [ ] **TRANS-07**: Todas as strings da página Login traduzidas
-- [ ] **TRANS-08**: Todas as strings de modais e popovers traduzidas
-- [ ] **TRANS-09**: Todas as mensagens de erro e validação traduzidas
+### Page Migration (PAGE)
 
-### Formatting
+- [ ] **PAGE-01**: Migrar Dashboard para padrões canônicos (tokens, PageHeader, estilo Generous)
+- [ ] **PAGE-02**: Migrar Highlights para padrões canônicos
+- [ ] **PAGE-03**: Migrar Study para padrões canônicos
+- [ ] **PAGE-04**: Migrar StudySession para padrões canônicos (preservar fonte serif e desvios intencionais)
+- [ ] **PAGE-05**: Migrar BookDetails para padrões canônicos
+- [ ] **PAGE-06**: Migrar Settings para padrões canônicos
+- [ ] **PAGE-07**: Migrar Login para padrões canônicos
+- [ ] **PAGE-08**: Padronizar todos os modais e popovers para padrões consistentes
 
-- [ ] **FMT-01**: Datas formatadas conforme locale (DD/MM/YYYY para PT-BR)
-- [ ] **FMT-02**: Números formatados conforme locale (1.234,56 para PT-BR)
-- [ ] **FMT-03**: Pluralização correta (1 cartão vs 5 cartões)
+### Documentation (DOC)
 
-### Language Selection
+- [ ] **DOC-01**: Criar guia de design system enxuto (documento único: tokens + uso de componentes + padrões de página)
+- [ ] **DOC-02**: Substituir/atualizar compact-ui-design-guidelines.md existente com guia atualizado
 
-- [ ] **LANG-01**: Seletor de idioma na página Settings
-- [ ] **LANG-02**: Preferência de idioma persistida em localStorage
-- [ ] **LANG-03**: Idioma aplicado após reload da página
+## v2 Requirements
 
-### English Support
+### Enforcement (ENFORCE)
 
-- [ ] **EN-01**: Arquivo de tradução EN completo (fallback)
-- [ ] **EN-02**: Todas as strings traduzidas para inglês
+- **ENFORCE-01**: ESLint com eslint-plugin-tailwindcss e regra no-arbitrary-value para banir valores arbitrários
+- **ENFORCE-02**: Restrição do tailwind.config.js (theme.fontSize override) para expor apenas tokens permitidos
+- **ENFORCE-03**: Extensão do tailwind-merge para reconhecer classes de font-size customizadas
 
-## Future Requirements
+### Advanced Patterns (ADV)
 
-Deferred to future milestone. Tracked but not in current roadmap.
-
-### Enhanced UX
-
-- **UX-01**: Dynamic language switching sem reload
-- **UX-02**: Browser language detection na primeira visita
-- **UX-03**: Sincronização de preferência de idioma com Supabase
-
-### Advanced
-
-- **ADV-01**: RTL layout support (para árabe/hebraico)
-- **ADV-02**: Integração com Crowdin/Lokalise
-- **ADV-03**: Lazy loading de traduções por namespace
+- **ADV-01**: Interactive state matrix — todos os estados definidos para cada elemento interativo
+- **ADV-02**: Empty state pattern — template canônico para estados vazios
+- **ADV-03**: Density context system para exceções (Study compacto vs Dashboard generoso)
 
 ## Out of Scope
 
-Explicitly excluded. Documented to prevent scope creep.
-
 | Feature | Reason |
 |---------|--------|
-| Tradução de conteúdo do usuário (highlights, notas) | Conteúdo do usuário permanece no idioma original |
-| Mais de 2 idiomas | PT-BR e EN são suficientes para MVP |
-| Parsers de importação | Já funcionam, não mexer |
-| Backend/Supabase changes | Não é escopo deste milestone |
+| Storybook | Desnecessário para developer solo — guia markdown é suficiente |
+| W3C Design Tokens | Over-engineering para 7 páginas |
+| Tailwind v4 migration | Risco desnecessário — v3 atende perfeitamente |
+| @tailwindcss/typography | App é data-dense, não content-heavy |
+| Responsive typography com clamp() | Tamanhos fixos são apropriados para app data-dense |
+| Token pipeline automation | Manual é suficiente para este tamanho de projeto |
+| Redesign da estética | Warm/friendly já definido no v1.0 — foco é consistência |
+| Novas features funcionais | Escopo é visual/padrões, não funcionalidades |
 
 ## Traceability
 
-Which phases cover which requirements. Updated during roadmap creation.
-
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INFRA-01 | Phase 4 | Complete |
-| INFRA-02 | Phase 4 | Complete |
-| INFRA-03 | Phase 4 | Complete |
-| INFRA-04 | Phase 4 | Complete |
-| TRANS-01 | Phase 5 | Pending |
-| TRANS-02 | Phase 5 | Pending |
-| TRANS-03 | Phase 5 | Pending |
-| TRANS-04 | Phase 5 | Pending |
-| TRANS-05 | Phase 5 | Pending |
-| TRANS-06 | Phase 5 | Pending |
-| TRANS-07 | Phase 5 | Pending |
-| TRANS-08 | Phase 5 | Pending |
-| TRANS-09 | Phase 5 | Pending |
-| FMT-01 | Phase 7 | Pending |
-| FMT-02 | Phase 7 | Pending |
-| FMT-03 | Phase 7 | Pending |
-| LANG-01 | Phase 6 | Pending |
-| LANG-02 | Phase 6 | Pending |
-| LANG-03 | Phase 6 | Pending |
-| EN-01 | Phase 6 | Pending |
-| EN-02 | Phase 6 | Pending |
+| TOKENS-01 | TBD | Pending |
+| TOKENS-02 | TBD | Pending |
+| TOKENS-03 | TBD | Pending |
+| TOKENS-04 | TBD | Pending |
+| TOKENS-05 | TBD | Pending |
+| TOKENS-06 | TBD | Pending |
+| TOKENS-07 | TBD | Pending |
+| TOKENS-08 | TBD | Pending |
+| COMP-01 | TBD | Pending |
+| COMP-02 | TBD | Pending |
+| COMP-03 | TBD | Pending |
+| COMP-04 | TBD | Pending |
+| PAGE-01 | TBD | Pending |
+| PAGE-02 | TBD | Pending |
+| PAGE-03 | TBD | Pending |
+| PAGE-04 | TBD | Pending |
+| PAGE-05 | TBD | Pending |
+| PAGE-06 | TBD | Pending |
+| PAGE-07 | TBD | Pending |
+| PAGE-08 | TBD | Pending |
+| DOC-01 | TBD | Pending |
+| DOC-02 | TBD | Pending |
 
 **Coverage:**
-- v1.1 requirements: 21 total
-- Mapped to phases: 21/21 ✓
-- Unmapped: 0
+- v1 requirements: 22 total
+- Mapped to phases: 0 (awaiting roadmap)
+- Unmapped: 22
 
 ---
-*Requirements defined: 2026-01-24*
-*Last updated: 2026-01-24 after Phase 4 completion*
+*Requirements defined: 2026-01-27*
+*Last updated: 2026-01-27 after initial definition*
