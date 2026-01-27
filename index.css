@@ -27,6 +27,19 @@
     --ring: oklch(0.67 0.16 58);
     --radius: 0.75rem;
 
+    /* Status Colors (TOKENS-08) - study card states */
+    --status-new: oklch(0.55 0.20 250);         /* Blue - New cards */
+    --status-learning: oklch(0.70 0.15 85);     /* Amber - Learning cards */
+    --status-review: oklch(0.60 0.18 145);      /* Green - Review cards */
+    --status-foreground: oklch(0.99 0.01 90);   /* White text on status badges */
+
+    /* Tag Colors (TOKENS-08) - tag scope distinction */
+    --tag-global: oklch(0.55 0.20 250);         /* Blue - Global tags */
+    --tag-book: oklch(0.70 0.15 85);            /* Amber - Book-specific tags */
+
+    /* Success Color (TOKENS-08) - success messages */
+    --success: oklch(0.60 0.18 145);            /* Green - Success state */
+
     /* Typography Scale (TOKENS-01) - 6 named sizes */
     --text-display: 2rem;        /* 32px - Hero text, rare */
     --text-title: 1.875rem;      /* 30px - Page titles (text-3xl equivalent) */
@@ -109,6 +122,19 @@
     --border: oklch(1 0 0 / 10%);
     --input: oklch(1 0 0 / 12%);
     --ring: oklch(0.60 0.12 60);
+
+    /* Status Colors (TOKENS-08) - study card states (dark mode) */
+    --status-new: oklch(0.65 0.18 250);
+    --status-learning: oklch(0.78 0.13 85);
+    --status-review: oklch(0.70 0.16 145);
+    --status-foreground: oklch(0.99 0.01 90);
+
+    /* Tag Colors (TOKENS-08) - tag scope distinction (dark mode) */
+    --tag-global: oklch(0.65 0.18 250);
+    --tag-book: oklch(0.78 0.13 85);
+
+    /* Success Color (TOKENS-08) - success messages (dark mode) */
+    --success: oklch(0.70 0.16 145);
 
     /* Chart colors - warm dark mode variants */
     --chart-1: oklch(0.75 0.15 68);

@@ -72,6 +72,17 @@ module.exports = {
                     4: "var(--chart-4)",
                     5: "var(--chart-5)",
                 },
+                status: {
+                    new: "var(--status-new)",
+                    learning: "var(--status-learning)",
+                    review: "var(--status-review)",
+                    foreground: "var(--status-foreground)",
+                },
+                tag: {
+                    global: "var(--tag-global)",
+                    book: "var(--tag-book)",
+                },
+                success: "var(--success)",
             },
             fontSize: {
                 'display': 'var(--text-display)',
