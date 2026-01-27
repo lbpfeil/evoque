@@ -1,137 +1,61 @@
-# Project State: Evoque
-
-**Last updated:** 2026-01-24
-**Milestone:** v1.1 Internationalization
-**Phase:** 5 - String Extraction (COMPLETE)
-**Plan:** 05-10 Complete
-**Status:** Phase Complete
+# Project State
 
 ## Project Reference
 
-**Core Value:** Experiencia de estudo fluida e sem friccao
+See: .planning/PROJECT.md (updated 2026-01-27)
 
-**Current Focus:** Sistema multi-idioma com PT-BR como padrao e ingles disponivel
-
-**Key Constraint:** Preservar fluidez da experiencia de estudo, nao tocar parsers ou logica SM-2
+**Core value:** Consistencia obsessiva -- cada elemento visual identico ao equivalente em qualquer pagina. Zero surpresas visuais.
+**Current focus:** Phase 4 - Token Foundation
 
 ## Current Position
 
-**Milestone:** v1.1 Internationalization
+Phase: 4 of 7 (Token Foundation)
+Plan: 0 of TBD in current phase
+Status: Ready to plan
+Last activity: 2026-01-27 -- v2.0 roadmap created
 
-**Phase:** 5 - String Extraction (COMPLETE)
-- **Goal:** All UI strings translated to PT-BR
-- **Requirements:** TRANS-01 through TRANS-09
-- **Status:** 13 plans complete (including 05-05a, 05-06a, 05-07a)
-
-**Plans:**
-| Wave | Plan | Focus | Status |
-|------|------|-------|--------|
-| 1 | 05-01 | Login/Auth | Complete |
-| 1 | 05-02 | Sidebar/Common | Complete |
-| 2 | 05-03 | Dashboard | Complete |
-| 2 | 05-04 | Study Page | Complete |
-| 3 | 05-05 | Highlights | Complete |
-| 3 | 05-05a | TagManager | Complete |
-| 4 | 05-06 | StudySession | Complete |
-| 4 | 05-06a | StudySession Fixes | Complete |
-| 5 | 05-07 | Settings Import/Library | Complete |
-| 5 | 05-07a | Settings Account/Preferences | Complete |
-| 6 | 05-08 | Modals | Complete |
-| 6 | 05-09 | Errors | Complete |
-| 7 | 05-10 | Validation | Complete |
-
-**Progress:**
-```
-Milestone v1.1: [█████░░░░░] 50% (2/4 phases)
-Phase 5:       [██████████] 100% (13/13 plans)
-```
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
-**v1.0 Milestone (shipped 2026-01-23):**
-- Duration: 5 days
-- Phases: 3
-- Plans: 20
-- Commits: 70
-- Requirements: 27
+**Velocity (from v1.0):**
+- Total plans completed: 20
+- Average duration: 3.2min
+- Total execution time: 66min
 
-**v1.1 Milestone (in progress):**
-- Started: 2026-01-24
-- Phases planned: 4
-- Requirements: 21
-- Plans executed: 15 (Phase 4: 2, Phase 5: 13)
-- Commits: 27
+**By Phase (v2.0):**
 
-**Velocity:** 4.5 min/plan (Phase 4 baseline)
+| Phase | Plans | Total | Avg/Plan |
+|-------|-------|-------|----------|
+| - | - | - | - |
+
+**Recent Trend:**
+- Carrying forward v1.0 velocity baseline: ~3min/plan
+
+*Updated after each plan completion*
 
 ## Accumulated Context
 
-### Decisions Made
+### Decisions
 
-| Date | Decision | Rationale | Impact |
-|------|----------|-----------|--------|
-| 2026-01-24 | Use react-i18next for i18n | Industry standard, React 19 compatible, mature ecosystem | Foundation for all i18n work |
-| 2026-01-24 | PT-BR as default, EN available | Matches current user base, enables international growth | Language selection scope |
-| 2026-01-24 | Namespace structure by feature | Improves maintainability, enables lazy loading | Translation file organization |
-| 2026-01-24 | Use http-backend for lazy loading | Simpler than vite plugin, supports runtime loading | Translation file loading |
-| 2026-01-24 | Semantic hierarchical keys | buttons.save not btnSave, improves readability | Key naming convention |
-| 2026-01-24 | Suspense enabled for i18n | React 19 compatible, handles async translation loading | Provider behavior |
-| 2026-01-24 | Hardcoded Portuguese in loading fallback | Translations not loaded yet during initial render | UX consideration |
-| 2026-01-24 | Wave-based plan execution | Wave 1-2 parallel (foundational), Wave 3-5 sequential (complex), Wave 6-7 cleanup | Optimal parallelization |
-| 2026-01-24 | Manual string extraction | i18next-cli for validation only, manual t() wrapping | Reliability over automation |
-| 2026-01-24 | Pluralization with _one suffix | i18next standard for count-based strings | Proper singular/plural handling |
-| 2026-01-24 | Full heatmap localization | Month/day abbreviations need Portuguese | Complete study page i18n |
-| 2026-01-24 | Combined TSX/JSON commits | Tightly coupled changes benefit from atomic commits | Git history clarity |
-| 2026-01-24 | Phase 5 validated complete | All TRANS-* requirements satisfied, no hardcoded strings | Ready for Phase 6 |
+Decisions are logged in PROJECT.md Key Decisions table.
+Recent decisions affecting current work:
 
-### Active TODOs
+- [v2.0 Init]: "Generous" design language wins (Dashboard/Highlights style -- big titles, generous spacing, rounded containers)
+- [v2.0 Init]: No ESLint enforcement in v1 scope (deferred to v2 requirements)
+- [v2.0 Init]: Single concise design guide (not multiple docs)
+- [v2.0 Init]: All 7 pages migrated (no exceptions)
 
-- [x] Execute Plan 04-01: i18n dependencies and translation files
-- [x] Execute Plan 04-02: i18n configuration
-- [x] Plan Phase 5: String Extraction
-- [x] Execute Phase 5 plans (13/13 complete)
-- [x] Validate Phase 5 (05-10 validation passed)
-- [ ] Plan Phase 6: Language Switching
-- [ ] Execute Phase 6 plans
-- [ ] Plan Phase 7: Localization
-- [ ] Execute Phase 7 plans
+### Pending Todos
 
-### Known Blockers
+- Remove unused `hooks/useTheme.ts` (carried from v1.0)
 
-None currently.
+### Blockers/Concerns
 
-### Open Questions
-
-- Should EN translations load eagerly or lazy? — Decide during Phase 6 planning
+None.
 
 ## Session Continuity
 
-**Previous session (2026-01-23):**
-- Completed v1.0 UI Overhaul milestone
-- Shipped phases 1-3 (20 plans total)
-- Final commit: `08a7ed7`
-
-**This session (2026-01-24):**
-- Started v1.1 Internationalization milestone
-- Created roadmap with 4 phases
-- Mapped all 21 requirements
-- Executed Plan 04-01 and 04-02
-- Phase 4 (Foundation) complete
-- Completed Phase 5 research (05-RESEARCH.md)
-- Created 10 plans for Phase 5 (05-01 through 05-10)
-- Executed all Phase 5 plans (13 total including splits)
-- Validated Phase 5 complete (05-10)
-
-**Last activity:** 2026-01-24 - Completed 05-10-PLAN.md (Validation)
-**Resume file:** None
-
-**Next steps:**
-1. Plan Phase 6: Language Switching
-2. Execute Phase 6 plans
-
----
-
-*State initialized: 2026-01-24*
-*Phase 5 planned: 2026-01-24*
-*Phase 5 complete: 2026-01-24*
-*Ready for: Phase 6 planning*
+Last session: 2026-01-27
+Stopped at: Roadmap created, ready to plan Phase 4
+Resume file: None

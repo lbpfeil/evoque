@@ -1,195 +1,78 @@
-# Roadmap: Evoque v1.1 Internationalization
+# Roadmap: Evoque v2.0 Design System Overhaul
 
-**Created:** 2026-01-24
-**Milestone:** v1.1 Internationalization
-**Phases:** 4 (continuing from v1.0)
-**Requirements:** 21 mapped
-**Depth:** Quick
+## Milestones
 
-## Phase Overview
+- v1.0 UI Overhaul - Phases 1-3 (shipped 2026-01-23) -- see `.planning/milestones/v1.0-ROADMAP.md`
+- v2.0 Design System Overhaul - Phases 4-7 (in progress)
 
-| # | Phase | Goal | Requirements |
-|---|-------|------|--------------|
-| 4 | Foundation | i18n infrastructure ready for string extraction | INFRA-01, INFRA-02, INFRA-03, INFRA-04 |
-| 5 | String Extraction | All UI strings translated to PT-BR | TRANS-01, TRANS-02, TRANS-03, TRANS-04, TRANS-05, TRANS-06, TRANS-07, TRANS-08, TRANS-09 |
-| 6 | Language Switching | Users can toggle between PT-BR and EN | LANG-01, LANG-02, LANG-03, EN-01, EN-02 |
-| 7 | Localization | Dates/numbers formatted per locale | FMT-01, FMT-02, FMT-03 |
+## Overview
+
+v1.0 shipped a working theme system but no governing design system -- the result is two design languages coexisting accidentally (Compact vs Generous). v2.0 resolves this by picking the winner (Generous), encoding it into rigid design tokens, standardizing every component against those tokens, migrating all 7 pages to canonical patterns, and documenting the final system in a single concise guide. The goal is Apple-level visual uniformity: zero surprises across any page.
+
+## Phases
+
+- [ ] **Phase 4: Token Foundation** - Define the rigid design vocabulary (typography, spacing, radius, shadows, motion, icons, z-index, color rules)
+- [ ] **Phase 5: Component Standardization** - Audit and align all components to the token system
+- [ ] **Phase 6: Page Migration** - Migrate all 7 pages + modals to canonical patterns
+- [ ] **Phase 7: Design Guide** - Document the living design system in a single concise guide
 
 ## Phase Details
 
-### Phase 4: Foundation
+### Phase 4: Token Foundation
+**Goal**: Every visual decision has exactly one correct answer encoded in the design system
+**Depends on**: v1.0 complete (Phases 1-3)
+**Requirements**: TOKENS-01, TOKENS-02, TOKENS-03, TOKENS-04, TOKENS-05, TOKENS-06, TOKENS-07, TOKENS-08
+**Success Criteria** (what must be TRUE):
+  1. Typography uses exactly 6 named sizes -- applying any text style is a lookup, not a judgment call
+  2. Spacing uses semantic tokens on a 4px grid -- no arbitrary pixel values for padding/gaps/margins
+  3. Border-radius, shadows, and icon sizes each have exactly 3 allowed values
+  4. Motion tokens (durations + easings) exist as CSS custom properties usable in any transition
+  5. Raw color classes (text-zinc-*, bg-gray-*) are identified and mapped to semantic replacements
+**Plans**: TBD
 
-**Goal:** i18n infrastructure ready for string extraction
+### Phase 5: Component Standardization
+**Goal**: Every shadcn component has one canonical way to be used, and new composition components exist for repeated patterns
+**Depends on**: Phase 4
+**Requirements**: COMP-01, COMP-02, COMP-03, COMP-04
+**Success Criteria** (what must be TRUE):
+  1. All shadcn component defaults (button height, input height, card radius, badge size) match the token system
+  2. A PageHeader component provides the canonical page layout template (title, description, actions)
+  3. A data table pattern exists as a reusable structure with consistent header, row, and hover styles
+  4. CVA variants for Button, Input, Badge, and Card reflect the token system (no arbitrary overrides needed)
+**Plans**: TBD
 
-**Dependencies:** None (starts after v1.0 UI Overhaul completion)
+### Phase 6: Page Migration
+**Goal**: Every page in the app looks like it was designed by the same person on the same day
+**Depends on**: Phase 5
+**Requirements**: PAGE-01, PAGE-02, PAGE-03, PAGE-04, PAGE-05, PAGE-06, PAGE-07, PAGE-08
+**Success Criteria** (what must be TRUE):
+  1. All 7 pages use PageHeader with consistent title size, spacing, and layout
+  2. All tables (Highlights, DeckTable, Settings) use the canonical data table pattern
+  3. StudySession preserves its serif font and intentional deviations while using system tokens for everything else
+  4. All modals and popovers share identical padding, radius, header style, and button placement
+  5. No arbitrary Tailwind values (text-[Xpx], w-[Ypx]) remain in any page file
+**Plans**: TBD
 
-**Requirements:**
-- INFRA-01: Sistema i18n configurado com react-i18next
-- INFRA-02: Arquivos de tradução organizados por namespace (common, study, highlights, settings, etc.)
-- INFRA-03: I18nProvider integrado na árvore de componentes
-- INFRA-04: Idioma padrão configurado como PT-BR
-
-**Success Criteria:**
-1. User opens app and i18next initializes with PT-BR as default language
-2. Translation files organized in `public/locales/pt-BR/` with namespaces (common, auth, highlights, study, session, settings, dashboard, errors)
-3. I18nProvider renders in component tree below AuthProvider without errors
-4. Developer can import `useTranslation` hook and call `t('common:test')` successfully
-
-**Research Flags:** None (patterns well-documented)
-
-**Plans:** 2 plans
-
-Plans:
-- [x] 04-01-PLAN.md — Install i18n dependencies and create PT-BR translation file structure
-- [x] 04-02-PLAN.md — Configure i18next, create I18nProvider, integrate into App.tsx
-
----
-
-### Phase 5: String Extraction
-
-**Goal:** All UI strings translated to PT-BR
-
-**Dependencies:** Phase 4 (requires i18n infrastructure)
-
-**Requirements:**
-- TRANS-01: Todas as strings da Sidebar traduzidas
-- TRANS-02: Todas as strings do Dashboard traduzidas
-- TRANS-03: Todas as strings da página Highlights traduzidas
-- TRANS-04: Todas as strings da página Study traduzidas
-- TRANS-05: Todas as strings da página StudySession traduzidas
-- TRANS-06: Todas as strings da página Settings traduzidas
-- TRANS-07: Todas as strings da página Login traduzidas
-- TRANS-08: Todas as strings de modais e popovers traduzidas
-- TRANS-09: Todas as mensagens de erro e validação traduzidas
-
-**Success Criteria:**
-1. User navigates through all pages (Dashboard, Highlights, Study, StudySession, Settings, Login) and sees Portuguese text
-2. User triggers validation errors (invalid email, missing fields) and sees Portuguese error messages
-3. User opens all modals (EditHighlightModal, ConfirmDeleteModal, etc.) and sees Portuguese labels/buttons
-4. Developer runs grep for hardcoded strings and finds no remaining English text in JSX/components
-5. No console warnings about missing translation keys
-
-**Research Flags:** Medium (automation tools for detection)
-
-**Plans:** 13 plans
-
-| Wave | Plan | Focus | Requirements |
-|------|------|-------|--------------|
-| 1 | 05-01 | Login and Auth Strings | TRANS-07 |
-| 1 | 05-02 | Sidebar and Common Strings | TRANS-01 |
-| 2 | 05-03 | Dashboard Strings | TRANS-02 |
-| 2 | 05-04 | Study Page Strings | TRANS-04 |
-| 3 | 05-05 | Highlights Page Core Strings | TRANS-03 |
-| 3 | 05-05a | TagManager Component Strings | TRANS-03 |
-| 4 | 05-06 | StudySession UI States | TRANS-05 |
-| 4 | 05-06a | StudySession Rating Actions | TRANS-05 |
-| 5 | 05-07 | Settings Import/Library Tabs | TRANS-06 |
-| 5 | 05-07a | Settings Account/Preferences | TRANS-06 |
-| 6 | 05-08 | Modals and Remaining Components | TRANS-08 |
-| 6 | 05-09 | Error Messages and Validation | TRANS-09 |
-| 7 | 05-10 | Final Validation and Cleanup | All TRANS-* |
-
-Plans:
-- [x] 05-01-PLAN.md — Login and Auth Strings (auth namespace)
-- [x] 05-02-PLAN.md — Sidebar and Common Strings (common namespace)
-- [x] 05-03-PLAN.md — Dashboard Strings (dashboard namespace)
-- [x] 05-04-PLAN.md — Study Page Strings (study namespace)
-- [x] 05-05-PLAN.md — Highlights Page Strings (highlights namespace)
-- [x] 05-05a-PLAN.md — TagManager Component Strings (highlights namespace)
-- [x] 05-06-PLAN.md — StudySession UI States Strings (session namespace)
-- [x] 05-06a-PLAN.md — StudySession Rating Actions Strings (session namespace)
-- [x] 05-07-PLAN.md — Settings Import/Library Tabs (settings namespace)
-- [x] 05-07a-PLAN.md — Settings Account/Preferences Tabs (settings namespace)
-- [x] 05-08-PLAN.md — Modals and Remaining Components
-- [x] 05-09-PLAN.md — Error Messages and Validation (errors namespace)
-- [x] 05-10-PLAN.md — Final Validation and Cleanup
-
----
-
-### Phase 6: Language Switching
-
-**Goal:** Users can toggle between PT-BR and EN
-
-**Dependencies:** Phase 5 (requires PT-BR strings extracted)
-
-**Requirements:**
-- LANG-01: Seletor de idioma na página Settings
-- LANG-02: Preferência de idioma persistida em localStorage
-- LANG-03: Idioma aplicado após reload da página
-- EN-01: Arquivo de tradução EN completo (fallback)
-- EN-02: Todas as strings traduzidas para inglês
-
-**Success Criteria:**
-1. User opens Settings page and sees language selector (radio buttons or dropdown) with PT-BR and English options
-2. User switches from PT-BR to EN and entire UI updates immediately without page reload
-3. User reloads browser and selected language persists (reads from localStorage)
-4. User clears localStorage and app defaults to PT-BR
-5. Developer inspects translation files and confirms all PT-BR keys exist in EN with proper translations
-
-**Research Flags:** None (standard patterns)
-
-**Plans:** (created by /gsd:plan-phase)
-
-Plans:
-- [ ] TBD — awaiting planning
-
----
-
-### Phase 7: Localization
-
-**Goal:** Dates/numbers formatted per locale
-
-**Dependencies:** Phase 6 (requires language switching functional)
-
-**Requirements:**
-- FMT-01: Datas formatadas conforme locale (DD/MM/YYYY para PT-BR)
-- FMT-02: Números formatados conforme locale (1.234,56 para PT-BR)
-- FMT-03: Pluralização correta (1 cartão vs 5 cartões)
-
-**Success Criteria:**
-1. User views StudySession with PT-BR selected and sees dates formatted as "24/01/2026"
-2. User switches to EN and sees dates formatted as "01/24/2026"
-3. User views Dashboard statistics with PT-BR and sees numbers as "1.234,56"
-4. User switches to EN and sees numbers as "1,234.56"
-5. User views daily review limits and sees correct plural forms ("1 cartão" in PT-BR, "1 card" in EN, "5 cartões" in PT-BR, "5 cards" in EN)
-
-**Research Flags:** None (Intl API patterns established)
-
-**Plans:** (created by /gsd:plan-phase)
-
-Plans:
-- [ ] TBD — awaiting planning
-
----
-
-## Coverage Validation
-
-All v1.1 requirements mapped:
-
-- Infrastructure: 4/4 (Phase 4)
-- Translation: 9/9 (Phase 5)
-- Formatting: 3/3 (Phase 7)
-- Language Selection: 3/3 (Phase 6)
-- English Support: 2/2 (Phase 6)
-
-**Total: 21/21**
+### Phase 7: Design Guide
+**Goal**: A new developer (or future Claude) can build a page that looks identical to existing ones without asking questions
+**Depends on**: Phase 6
+**Requirements**: DOC-01, DOC-02
+**Success Criteria** (what must be TRUE):
+  1. A single design guide document exists with token tables, component usage rules, and page layout patterns
+  2. The old compact-ui-design-guidelines.md is replaced/updated to reflect the actual system (no contradictions with codebase)
+**Plans**: TBD
 
 ## Progress
 
-| Phase | Status | Plans | Completed |
-|-------|--------|-------|-----------|
-| 4 - Foundation | ✓ Complete | 2/2 | 100% |
-| 5 - String Extraction | ✓ Complete | 13/13 | 100% |
-| 6 - Language Switching | Pending | 0/0 | 0% |
-| 7 - Localization | Pending | 0/0 | 0% |
+**Execution Order:** Phase 4 -> 5 -> 6 -> 7
 
-**Overall:** 2/4 phases complete (50%)
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 4. Token Foundation | v2.0 | 0/TBD | Not started | - |
+| 5. Component Standardization | v2.0 | 0/TBD | Not started | - |
+| 6. Page Migration | v2.0 | 0/TBD | Not started | - |
+| 7. Design Guide | v2.0 | 0/TBD | Not started | - |
 
 ---
-
-*Roadmap created: 2026-01-24*
-*Phase 4 planned: 2026-01-24*
-*Phase 4 complete: 2026-01-24*
-*Phase 5 planned: 2026-01-24*
-*Phase 5 complete: 2026-01-24*
-*Next: `/gsd:plan-phase 6`*
+*Created: 2026-01-27*
+*Milestone: v2.0 Design System Overhaul*
