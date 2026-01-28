@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-27)
 ## Current Position
 
 Phase: 5 of 7 (Component Standardization)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-01-27 -- Phase 4 complete, verified ✓
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-01-28 -- Completed 05-01-PLAN.md
 
-Progress: [███░░░░░░░] 25%
+Progress: [████░░░░░░] 30%
 
 ## Performance Metrics
 
@@ -28,10 +28,11 @@ Progress: [███░░░░░░░] 25%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 04-token-foundation | 2 | 5.3min | 2.7min |
+| 05-component-standardization | 1 | 2.5min | 2.5min |
 
 **Recent Trend:**
-- Phase 4 complete: 2.7min/plan average (Plan 01: 1.7min, Plan 02: 3.6min)
-- Token foundation established efficiently
+- Phase 5 plan 01 complete: 2.5min (CVA defaults adjusted)
+- Maintaining fast velocity from Phase 4
 
 *Updated after each plan completion*
 
@@ -53,6 +54,9 @@ Recent decisions affecting current work:
 - [04-02]: Blue (new), Amber (learning), Green (review) for study status colors - preserves existing visual language
 - [04-02]: Blue (global), Amber (book-specific) for tag colors - critical for user comprehension
 - [04-02]: Heatmap gradients remain component-specific (not global semantic tokens)
+- [05-01]: Button 'compact' (h-8) as new CVA default - all existing usages specify explicit size
+- [05-01]: Input reduced to h-8 with proportional padding (px-2.5 py-1.5)
+- [05-01]: Badge verified as already token-aligned (h-5, text-xs, px-2)
 
 ### Pending Todos
 
@@ -64,6 +68,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-01-27
-Stopped at: Phase 4 complete, verified. Ready to plan Phase 5.
+Last session: 2026-01-28
+Stopped at: Completed 05-01-PLAN.md
 Resume file: None
