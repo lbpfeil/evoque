@@ -32,6 +32,7 @@ Progress: [█████████░] 88%
 | 06-page-migration | 6/7 | in progress | ~2.3min |
 
 **Recent Trend:**
+- Phase 6 plan 01: 3.6min (Login + Dashboard migration, 6 replacements across 2 files)
 - Phase 6 plan 04: 1.7min (StudySession migration, 13 replacements)
 - Phase 6 plan 06: 3.2min (Cross-cutting components, 14 replacements across 6 files)
 
@@ -65,6 +66,8 @@ Recent decisions affecting current work:
 - [06-06]: BookContextModal title downsized from text-2xl to text-heading for modal-appropriate scale
 - [06-05]: text-[11px] mapped to text-overline (10px) rather than text-caption (12px) for tiny metadata intent
 - [06-06]: All text-[9px] and text-[10px] consistently map to text-overline across all cross-cutting components
+- [06-01]: Login uses text-heading (not text-title) since it is not a destination page
+- [06-01]: StatCard title uses text-overline for uppercase tracking-wider label pattern
 
 ### Pending Todos
 
@@ -77,5 +80,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-28
-Stopped at: Completed 06-03-PLAN.md (Settings page migration)
+Stopped at: Completed 06-01-PLAN.md (Login and Dashboard migration)
 Resume file: None
