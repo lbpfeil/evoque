@@ -217,21 +217,21 @@ export const Highlights = () => {
   // Sort icon helper
   const getSortIcon = (column: 'book' | 'highlight' | 'note' | 'date') => {
     if (sortConfig.column !== column) return null;
-    return sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 ml-1" /> : <ChevronDown className="w-3 h-3 ml-1" />;
+    return sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 ml-xxs" /> : <ChevronDown className="w-3 h-3 ml-xxs" />;
   };
 
   return (
-    <div className="space-y-4 relative h-full flex flex-col w-full px-4 sm:px-6">
+    <div className="space-y-md relative h-full flex flex-col w-full px-md sm:px-lg">
       {/* Header */}
       <PageHeader
         title={t('title')}
         description={t('stats.summary', { highlightCount: highlights.length, bookCount: stats.uniqueBooks, lastDate: formatDate(stats.lastHighlight) })}
         size="compact"
-        className="pt-6 pb-2"
+        className="pt-lg pb-xs"
         actions={
           <button
             onClick={() => setIsTagManagerOpen(true)}
-            className="flex items-center gap-2 px-3 py-1.5 bg-muted hover:bg-accent text-foreground rounded-full text-xs font-medium transition-colors duration-200 border border-transparent hover:border-primary/30"
+            className="flex items-center gap-xs px-sm py-xs bg-muted hover:bg-accent text-foreground rounded-full text-caption font-medium transition-colors duration-200 border border-transparent hover:border-primary/30"
           >
             <TagIcon className="w-3.5 h-3.5" />
             {t('actions.manageTags')}
@@ -240,25 +240,25 @@ export const Highlights = () => {
       />
 
       {/* Toolbar */}
-      <div className="sticky top-0 z-20 bg-background py-2 -mx-2 px-2 border-b border-transparent">
-        <div className="flex flex-wrap items-center gap-2 bg-card p-2 rounded-xl border border-border shadow-sm transition-shadow hover:shadow-md">
+      <div className="sticky top-0 z-20 bg-background py-xs -mx-xs px-xs border-b border-transparent">
+        <div className="flex flex-wrap items-center gap-xs bg-card p-xs rounded-xl border border-border shadow-sm transition-shadow hover:shadow-md">
 
           {/* Bulk Actions (Conditional) */}
           {selectedIds.size > 0 && (
-            <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2 duration-200 mr-2 bg-foreground text-background px-3 py-1.5 rounded-lg shadow-md">
-              <span className="text-xs font-semibold whitespace-nowrap">{t('bulk.selected', { count: selectedIds.size })}</span>
-              <div className="h-4 w-[1px] bg-background/20 mx-1" />
+            <div className="flex items-center gap-xs animate-in fade-in slide-in-from-left-2 duration-200 mr-xs bg-foreground text-background px-sm py-xs rounded-lg shadow-md">
+              <span className="text-caption font-semibold whitespace-nowrap">{t('bulk.selected', { count: selectedIds.size })}</span>
+              <div className="h-4 w-[1px] bg-background/20 mx-xxs" />
 
               {/* Bulk Tag Trigger */}
               <Popover>
                 <PopoverTrigger asChild>
-                  <button className="flex items-center gap-1 text-overline hover:text-background/60 transition-colors duration-200 uppercase tracking-wider font-bold">
+                  <button className="flex items-center gap-xxs text-overline hover:text-background/60 transition-colors duration-200 uppercase tracking-wider font-bold">
                     <TagIcon className="w-3 h-3" /> {t('bulk.tag')}
                   </button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[200px] p-0" align="start">
-                  <div className="max-h-[300px] overflow-y-auto p-1">
-                    <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground border-b border-border mb-1">
+                  <div className="max-h-[300px] overflow-y-auto p-xxs">
+                    <div className="px-xs py-xs text-caption font-medium text-muted-foreground border-b border-border mb-xxs">
                       {t('bulk.assignTo', { count: selectedIds.size })}
                     </div>
                     {(() => {
@@ -268,11 +268,11 @@ export const Highlights = () => {
 
                       const sortedBulkTags = availableTagsForBulk.sort((a, b) => a.name.localeCompare(b.name));
 
-                      if (sortedBulkTags.length === 0) return <div className="px-2 text-xs italic text-muted-foreground">{t('bulk.noTags')}</div>;
+                      if (sortedBulkTags.length === 0) return <div className="px-xs text-caption italic text-muted-foreground">{t('bulk.noTags')}</div>;
 
                       return sortedBulkTags.map(tag => (
-                        <div key={tag.id} onClick={() => bulkAssignTag(Array.from(selectedIds), tag.id)} className="cursor-pointer hover:bg-accent px-2 py-1.5 rounded text-xs flex items-center gap-2 transition-colors duration-200">
-                          {tag.bookId ? <Book className="w-3 h-3 text-amber-500" /> : <TagIcon className="w-3 h-3 text-muted-foreground" />}
+                        <div key={tag.id} onClick={() => bulkAssignTag(Array.from(selectedIds), tag.id)} className="cursor-pointer hover:bg-accent px-xs py-xs rounded text-caption flex items-center gap-xs transition-colors duration-200">
+                          {tag.bookId ? <Book className="w-3 h-3 text-tag-book" /> : <TagIcon className="w-3 h-3 text-muted-foreground" />}
                           <span>{tag.name}</span>
                         </div>
                       ));
@@ -281,9 +281,9 @@ export const Highlights = () => {
                 </PopoverContent>
               </Popover>
 
-              <div className="h-4 w-[1px] bg-background/20 mx-1" />
+              <div className="h-4 w-[1px] bg-background/20 mx-xxs" />
 
-              <button onClick={handleBulkDelete} className="flex items-center gap-1 text-overline hover:text-destructive transition-colors duration-200 uppercase tracking-wider font-bold">
+              <button onClick={handleBulkDelete} className="flex items-center gap-xxs text-overline hover:text-destructive transition-colors duration-200 uppercase tracking-wider font-bold">
                 {t('bulk.delete')}
               </button>
             </div>
@@ -291,24 +291,24 @@ export const Highlights = () => {
 
           {/* Search */}
           <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Search className="absolute left-sm top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               type="text"
               placeholder={t('filters.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 bg-background border border-input rounded-lg text-sm transition-all focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+              className="w-full pl-9 pr-sm py-xs bg-background border border-input rounded-lg text-body transition-all focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
             />
           </div>
 
           {/* Book Filter */}
           <Popover>
             <PopoverTrigger asChild>
-              <button role="combobox" className="w-full sm:w-auto min-w-[160px] max-w-[240px] px-3 py-2 bg-background border border-input rounded-lg text-sm text-left flex items-center justify-between hover:bg-accent transition-colors duration-200">
+              <button role="combobox" className="w-full sm:w-auto min-w-[160px] max-w-[240px] px-sm py-xs bg-background border border-input rounded-lg text-body text-left flex items-center justify-between hover:bg-accent transition-colors duration-200">
                 <span className="truncate font-medium text-foreground">
                   {selectedBookId === 'all' ? t('filters.allBooks') : books.find(b => b.id === selectedBookId)?.title}
                 </span>
-                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                <ChevronsUpDown className="ml-xs h-4 w-4 shrink-0 opacity-50" />
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-[300px] p-0">
@@ -322,7 +322,7 @@ export const Highlights = () => {
                       onSelect={() => setSelectedBookId('all')}
                       className="data-[disabled]:opacity-100 data-[disabled]:pointer-events-auto cursor-pointer"
                     >
-                      <Check className={cn("mr-2 h-4 w-4", selectedBookId === 'all' ? "opacity-100" : "opacity-0")} />
+                      <Check className={cn("mr-xs h-4 w-4", selectedBookId === 'all' ? "opacity-100" : "opacity-0")} />
                       {t('filters.allBooks')}
                     </CommandItem>
                     {sortedBooks.map(book => (
@@ -332,7 +332,7 @@ export const Highlights = () => {
                         onSelect={() => setSelectedBookId(book.id)}
                         className="data-[disabled]:opacity-100 data-[disabled]:pointer-events-auto cursor-pointer"
                       >
-                        <Check className={cn("mr-2 h-4 w-4", selectedBookId === book.id ? "opacity-100" : "opacity-0")} />
+                        <Check className={cn("mr-xs h-4 w-4", selectedBookId === book.id ? "opacity-100" : "opacity-0")} />
                         <span className="truncate">{book.title}</span>
                       </CommandItem>
                     ))}
@@ -345,11 +345,11 @@ export const Highlights = () => {
           {/* Tag Filter */}
           <Popover>
             <PopoverTrigger asChild>
-              <button role="combobox" className="w-full sm:w-auto min-w-[140px] px-3 py-2 bg-background border border-input rounded-lg text-sm text-left flex items-center justify-between hover:bg-accent transition-colors duration-200">
+              <button role="combobox" className="w-full sm:w-auto min-w-[140px] px-sm py-xs bg-background border border-input rounded-lg text-body text-left flex items-center justify-between hover:bg-accent transition-colors duration-200">
                 <span className="truncate font-medium text-foreground">
                   {selectedTagId === 'all' ? t('filters.allTags') : tags.find(tg => tg.id === selectedTagId)?.name}
                 </span>
-                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                <ChevronsUpDown className="ml-xs h-4 w-4 shrink-0 opacity-50" />
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-[200px] p-0">
@@ -363,7 +363,7 @@ export const Highlights = () => {
                       onSelect={() => setSelectedTagId('all')}
                       className="data-[disabled]:opacity-100 data-[disabled]:pointer-events-auto cursor-pointer"
                     >
-                      <Check className={cn("mr-2 h-4 w-4", selectedTagId === 'all' ? "opacity-100" : "opacity-0")} />
+                      <Check className={cn("mr-xs h-4 w-4", selectedTagId === 'all' ? "opacity-100" : "opacity-0")} />
                       {t('filters.allTags')}
                     </CommandItem>
                     {/* Simple Tag List for Filter (Flattened or Recursive - simplified here for brevity, usually recursive) */}
@@ -377,9 +377,9 @@ export const Highlights = () => {
                           onSelect={() => setSelectedTagId(tag.id)}
                           className="data-[disabled]:opacity-100 data-[disabled]:pointer-events-auto cursor-pointer"
                         >
-                          <Check className={cn("mr-2 h-4 w-4", selectedTagId === tag.id ? "opacity-100" : "opacity-0")} />
-                          {tag.bookId && <Book className="w-3 h-3 mr-1 text-amber-500" />}
-                          <span className={tag.bookId ? "text-amber-600" : ""}>{tag.name}</span>
+                          <Check className={cn("mr-xs h-4 w-4", selectedTagId === tag.id ? "opacity-100" : "opacity-0")} />
+                          {tag.bookId && <Book className="w-3 h-3 mr-xxs text-tag-book" />}
+                          <span className={tag.bookId ? "text-tag-book" : ""}>{tag.name}</span>
                         </CommandItem>
                       ));
                     })()}
@@ -392,11 +392,11 @@ export const Highlights = () => {
           {/* Status Filter */}
           <Popover>
             <PopoverTrigger asChild>
-              <button role="combobox" className="w-full sm:w-auto min-w-[120px] px-3 py-2 bg-background border border-input rounded-lg text-sm text-left flex items-center justify-between hover:bg-accent transition-colors duration-200">
+              <button role="combobox" className="w-full sm:w-auto min-w-[120px] px-sm py-xs bg-background border border-input rounded-lg text-body text-left flex items-center justify-between hover:bg-accent transition-colors duration-200">
                 <span className="truncate font-medium text-foreground">
                   {studyFilter === 'all' ? t('filters.allStatus') : studyFilter === 'in-study' ? t('filters.inStudy') : t('filters.notInStudy')}
                 </span>
-                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                <ChevronsUpDown className="ml-xs h-4 w-4 shrink-0 opacity-50" />
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-[150px] p-0">
@@ -408,21 +408,21 @@ export const Highlights = () => {
                       onSelect={() => setStudyFilter('all')}
                       className="data-[disabled]:opacity-100 data-[disabled]:pointer-events-auto cursor-pointer"
                     >
-                      <Check className={cn("mr-2 h-4 w-4", studyFilter === 'all' ? "opacity-100" : "opacity-0")} /> {t('filters.allStatus')}
+                      <Check className={cn("mr-xs h-4 w-4", studyFilter === 'all' ? "opacity-100" : "opacity-0")} /> {t('filters.allStatus')}
                     </CommandItem>
                     <CommandItem
                       value="in-study"
                       onSelect={() => setStudyFilter('in-study')}
                       className="data-[disabled]:opacity-100 data-[disabled]:pointer-events-auto cursor-pointer"
                     >
-                      <Check className={cn("mr-2 h-4 w-4", studyFilter === 'in-study' ? "opacity-100" : "opacity-0")} /> {t('filters.inStudy')}
+                      <Check className={cn("mr-xs h-4 w-4", studyFilter === 'in-study' ? "opacity-100" : "opacity-0")} /> {t('filters.inStudy')}
                     </CommandItem>
                     <CommandItem
                       value="not-in-study"
                       onSelect={() => setStudyFilter('not-in-study')}
                       className="data-[disabled]:opacity-100 data-[disabled]:pointer-events-auto cursor-pointer"
                     >
-                      <Check className={cn("mr-2 h-4 w-4", studyFilter === 'not-in-study' ? "opacity-100" : "opacity-0")} /> {t('filters.notInStudy')}
+                      <Check className={cn("mr-xs h-4 w-4", studyFilter === 'not-in-study' ? "opacity-100" : "opacity-0")} /> {t('filters.notInStudy')}
                     </CommandItem>
                   </CommandGroup>
                 </CommandList>
@@ -433,9 +433,9 @@ export const Highlights = () => {
           {/* Sorting Dropdown (Optional or kept as buttons if preferred) */}
           <button
             onClick={() => handleSort('date')}
-            className="px-3 py-2 bg-background border border-input rounded-lg text-sm font-medium text-foreground hover:bg-accent transition-colors duration-200 flex items-center gap-1"
+            className="px-sm py-xs bg-background border border-input rounded-lg text-body font-medium text-foreground hover:bg-accent transition-colors duration-200 flex items-center gap-xxs"
           >
-            {t('filters.sortDate')} {getSortIcon('date') || <ChevronDown className="w-3 h-3 ml-1 opacity-30" />}
+            {t('filters.sortDate')} {getSortIcon('date') || <ChevronDown className="w-3 h-3 ml-xxs opacity-30" />}
           </button>
         </div>
       </div>
@@ -445,10 +445,10 @@ export const Highlights = () => {
         ref={tableContainerRef}
         className="flex-1 overflow-auto border border-border rounded-xl bg-card shadow-sm"
       >
-        <table className="w-full text-left text-xs">
+        <table className="w-full text-left text-caption">
           <thead className="bg-muted text-overline uppercase tracking-wider font-semibold text-muted-foreground sticky top-0 z-10 border-b border-border">
             <tr>
-              <th className="px-4 py-3 w-[40px] font-medium text-muted-foreground">
+              <th className="px-md py-sm w-[40px] font-medium text-muted-foreground">
                 <input
                   type="checkbox"
                   className="appearance-none w-4 h-4 rounded border border-input checked:bg-primary checked:border-primary transition-colors duration-200 cursor-pointer relative top-1"
@@ -456,44 +456,44 @@ export const Highlights = () => {
                   onChange={toggleAll}
                 />
               </th>
-              <th className="px-4 py-3 w-[180px] max-w-[200px]">
+              <th className="px-md py-sm w-[180px] max-w-[200px]">
                 <button
                   onClick={() => handleSort('book')}
-                  className="flex items-center gap-1 hover:text-foreground transition-colors duration-200"
+                  className="flex items-center gap-xxs hover:text-foreground transition-colors duration-200"
                 >
                   {t('table.bookAuthor')}
                   {getSortIcon('book')}
                 </button>
               </th>
-              <th className="px-4 py-3 min-w-[300px]">
+              <th className="px-md py-sm min-w-[300px]">
                 <button
                   onClick={() => handleSort('highlight')}
-                  className="flex items-center gap-1 hover:text-foreground transition-colors duration-200"
+                  className="flex items-center gap-xxs hover:text-foreground transition-colors duration-200"
                 >
                   {t('table.highlight')}
                   {getSortIcon('highlight')}
                 </button>
               </th>
-              <th className="px-4 py-3 w-[280px]">
+              <th className="px-md py-sm w-[280px]">
                 <button
                   onClick={() => handleSort('note')}
-                  className="flex items-center gap-1 hover:text-foreground transition-colors duration-200"
+                  className="flex items-center gap-xxs hover:text-foreground transition-colors duration-200"
                 >
                   {t('table.note')}
                   {getSortIcon('note')}
                 </button>
               </th>
-              <th className="px-4 py-3 w-[140px]">{t('table.tags')}</th>
-              <th className="px-4 py-3 w-[80px]">
+              <th className="px-md py-sm w-[140px]">{t('table.tags')}</th>
+              <th className="px-md py-sm w-[80px]">
                 <button
                   onClick={() => handleSort('date')}
-                  className="flex items-center gap-1 hover:text-foreground transition-colors duration-200"
+                  className="flex items-center gap-xxs hover:text-foreground transition-colors duration-200"
                 >
                   {t('table.date')}
                   {getSortIcon('date')}
                 </button>
               </th>
-              <th className="px-4 py-3 w-[90px]">{t('table.status')}</th>
+              <th className="px-md py-sm w-[90px]">{t('table.status')}</th>
             </tr>
           </thead>
           <tbody
@@ -502,7 +502,7 @@ export const Highlights = () => {
           >
             {currentItems.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-12 text-center text-muted-foreground italic">
+                <td colSpan={7} className="px-md py-2xl text-center text-muted-foreground italic">
                   {t('emptyState.noResults')}
                 </td>
               </tr>
@@ -525,23 +525,23 @@ export const Highlights = () => {
 
       {/* Pagination Footer */}
       {filteredAndSortedHighlights.length > 0 && (
-        <div className="py-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-border">
-          <div className="text-sm text-muted-foreground">
+        <div className="py-md flex flex-col sm:flex-row items-center justify-between gap-md border-t border-border">
+          <div className="text-body text-muted-foreground">
             {t('pagination.page', { current: currentPage, total: totalPages })}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-xs">
             <button
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-md border border-border text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent transition-colors duration-200"
+              className="flex items-center gap-xxs px-sm py-xs rounded-md border border-border text-body font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent transition-colors duration-200"
             >
               <ChevronLeft className="w-4 h-4" /> {t('pagination.previous')}
             </button>
             <button
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-md border border-border text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent transition-colors duration-200"
+              className="flex items-center gap-xxs px-sm py-xs rounded-md border border-border text-body font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent transition-colors duration-200"
             >
               {t('pagination.next')} <ChevronRight className="w-4 h-4" />
             </button>
