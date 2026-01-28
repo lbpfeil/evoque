@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useStore } from '../components/StoreContext';
 import { DeleteCardPopover } from '../components/DeleteCardPopover';
 import { TagSelector } from '../components/TagSelector';
+import { Button } from '../components/ui/button';
 import { ArrowLeft, CheckCircle, Edit2, Clock, Trash2, Tag as TagIcon, Copy } from 'lucide-react';
 import { calculateNextReview } from '../services/sm2';
 import { StudyCard } from '../types';
@@ -290,12 +291,11 @@ ${currentHighlight.text}`;
                                 : t('noCards.allEmpty')}
                     </p >
                 </div >
-                <button
+                <Button
                     onClick={() => navigate('/study')}
-                    className="px-lg py-xs bg-foreground text-background rounded-md hover:bg-foreground/90 transition-colors text-body"
                 >
                     {t('actions.backToDecks')}
-                </button>
+                </Button>
             </div >
         );
     }
@@ -318,12 +318,12 @@ ${currentHighlight.text}`;
                         </p>
                     </div>
                 </div>
-                <button
+                <Button
                     onClick={() => navigate('/study')}
-                    className="px-2xl py-md bg-foreground text-background rounded-md font-medium hover:bg-foreground/90 transition-colors shadow-xl shadow-foreground/10"
+                    className="px-2xl py-md shadow-xl shadow-foreground/10"
                 >
                     {t('actions.backToDecks')}
-                </button>
+                </Button>
             </div>
         );
     }
@@ -338,12 +338,11 @@ ${currentHighlight.text}`;
                         {t('error.message')}
                     </p>
                 </div>
-                <button
+                <Button
                     onClick={() => navigate('/study')}
-                    className="px-lg py-xs bg-foreground text-background rounded-md hover:bg-foreground/90 transition-colors text-body"
                 >
                     {t('actions.backToDecks')}
-                </button>
+                </Button>
             </div>
         );
     }
@@ -356,42 +355,49 @@ ${currentHighlight.text}`;
             {/* Compact Header */}
             <header className="px-sm sm:px-md py-xs border-b border-border">
                 <div className="flex items-center justify-between">
-                    <button
+                    <Button
+                        variant="ghost"
                         onClick={handleBack}
-                        className="flex items-center gap-xxs hover:bg-accent px-xs py-1.5 sm:py-xxs rounded transition-colors min-h-[40px] sm:min-h-0"
+                        className="flex items-center gap-xxs min-h-[40px] sm:min-h-0"
                     >
                         <ArrowLeft className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-muted-foreground" />
                         <span className="text-caption text-muted-foreground hidden sm:inline">{t('actions.backToDecks')}</span>
-                    </button>
+                    </Button>
 
                     <div className="text-caption text-muted-foreground">
                         {t('progress.cardOf', { current: currentIndex + 1, total: queueIds.length })}
                     </div>
 
                     <div className="flex items-center gap-xxs">
-                        <button
+                        <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={() => setShowTagSelector(prev => !prev)}
-                            className="p-xs -mr-xxs text-muted-foreground hover:text-primary transition-colors rounded-full hover:bg-accent min-h-[40px] sm:min-h-0"
+                            className="p-xs -mr-xxs rounded-full min-h-[40px] sm:min-h-0"
                             title={t('actions.manageTags')}
                         >
                             <TagIcon className="w-4 h-4" />
-                        </button>
+                        </Button>
                         {/* Copy to Clipboard button */}
-                        <button
+                        <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={handleCopyToClipboard}
                             disabled={!currentBook || !currentHighlight}
-                            className="p-xs -mr-xxs text-muted-foreground hover:text-success transition-colors rounded-full hover:bg-accent min-h-[40px] sm:min-h-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="p-xs -mr-xxs rounded-full min-h-[40px] sm:min-h-0"
                             title={justCopied ? t('actions.copied') : t('actions.copyToClipboard')}
                         >
                             <Copy className={`w-4 h-4 ${justCopied ? 'text-success' : ''}`} />
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={() => setShowDeletePopover(true)}
-                            className="p-xs -mr-xs text-muted-foreground hover:text-destructive transition-colors rounded-full hover:bg-accent min-h-[40px] sm:min-h-0"
+                            className="p-xs -mr-xs rounded-full min-h-[40px] sm:min-h-0"
                             title={t('actions.deleteCard')}
                         >
                             <Trash2 className="w-4 h-4" />
-                        </button>
+                        </Button>
                     </div>
                 </div>
 
@@ -460,13 +466,14 @@ ${currentHighlight.text}`;
                                         </span>
                                     ))}
                                     {remainingCount > 0 && (
-                                        <button
+                                        <Button
+                                            variant="ghost"
                                             onClick={() => setShowAllTags(!showAllTags)}
-                                            className="inline-flex items-center px-1.5 py-0.5 rounded text-overline font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-colors cursor-pointer"
+                                            className="inline-flex items-center px-1.5 py-0.5 h-auto text-overline font-medium"
                                             title={showAllTags ? 'Show less' : `Show ${remainingCount} more tags`}
                                         >
                                             {showAllTags ? '−' : `+${remainingCount}`}
-                                        </button>
+                                        </Button>
                                     )}
                                 </div>
                             );
@@ -503,13 +510,14 @@ ${currentHighlight.text}`;
                                     </span>
                                 ))}
                                 {remainingCount > 0 && (
-                                    <button
+                                    <Button
+                                        variant="ghost"
                                         onClick={() => setShowAllTags(!showAllTags)}
-                                        className="inline-flex items-center px-1.5 py-0.5 rounded text-overline font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-colors cursor-pointer"
+                                        className="inline-flex items-center px-1.5 py-0.5 h-auto text-overline font-medium"
                                         title={showAllTags ? 'Show less' : `Show ${remainingCount} more tags`}
                                     >
                                         {showAllTags ? '−' : `+${remainingCount}`}
-                                    </button>
+                                    </Button>
                                 )}
                             </div>
                         );
@@ -541,13 +549,15 @@ ${currentHighlight.text}`;
                             >
                                 "{currentHighlight.text}"
                             </blockquote>
-                            <button
+                            <Button
+                                variant="ghost"
+                                size="icon"
                                 onClick={handleEditHighlight}
-                                className="absolute -top-xxs -right-xxs p-xxs text-muted-foreground hover:text-foreground transition-colors opacity-0 group-hover:opacity-100"
+                                className="absolute -top-xxs -right-xxs p-xxs opacity-0 group-hover:opacity-100"
                                 title={t('edit.highlightLabel')}
                             >
                                 <Edit2 className="w-3.5 h-3.5" />
-                            </button>
+                            </Button>
                         </div>
                     )}
 
@@ -589,24 +599,26 @@ ${currentHighlight.text}`;
                                         ) : (
                                             <div className="text-center py-md">
                                                 <p className="text-body text-muted-foreground italic mb-xs">{t('note.empty')}</p>
-                                                <button
+                                                <Button
+                                                    variant="ghost"
                                                     onClick={handleEditNote}
-                                                    className="text-caption text-muted-foreground hover:text-foreground underline underline-offset-2 transition-colors"
+                                                    className="text-caption underline underline-offset-2 h-auto"
                                                 >
                                                     {t('note.add')}
-                                                </button>
+                                                </Button>
                                             </div>
                                         )}
 
                                         {currentHighlight.note && (
-                                            <button
+                                            <Button
+                                                variant="ghost"
                                                 onClick={handleEditNote}
-                                                className="absolute -top-lg right-0 p-xxs text-border hover:text-foreground transition-colors opacity-0 group-hover:opacity-100 flex items-center gap-1.5"
+                                                className="absolute -top-lg right-0 p-xxs opacity-0 group-hover:opacity-100 flex items-center gap-1.5 h-auto"
                                                 title={t('note.editHint')}
                                             >
                                                 <span className="text-overline uppercase tracking-wider font-medium">{t('note.edit')}</span>
                                                 <Edit2 className="w-3 h-3" />
-                                            </button>
+                                            </Button>
                                         )}
                                     </div>
                                 </div>
@@ -622,13 +634,15 @@ ${currentHighlight.text}`;
                     {/* Main controls - centered */}
                     <div>
                         {!showAnswer ? (
-                            <button
+                            <Button
                                 onClick={() => setShowAnswer(true)}
-                                className="w-full py-3.5 sm:py-sm min-h-[48px] bg-foreground hover:bg-foreground/90 text-background rounded-md font-medium text-body transition-all active:scale-[0.99]"
+                                className="w-full py-3.5 sm:py-sm min-h-[48px] active:scale-[0.99]"
                             >
                                 {t('actions.revealAnswer')} <span className="hidden sm:inline text-caption text-muted-foreground ml-xs">{t('keyboard.revealHint')}</span>
-                            </button>
+                            </Button>
                         ) : (
+                            <>
+                            {/* SM-2 rating buttons -- intentional deviation, raw colors for quality feedback */}
                             <div className="grid grid-cols-4 gap-1.5 sm:gap-xs">
                                 <button
                                     onClick={() => handleResponse(1)}
@@ -663,6 +677,7 @@ ${currentHighlight.text}`;
                                     <span className="hidden sm:block text-overline opacity-75">{t('keyboard.easy')}</span>
                                 </button>
                             </div>
+                            </>
                         )}
                     </div>
                 </div>
