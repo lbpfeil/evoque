@@ -137,7 +137,7 @@ const Sidebar = () => {
               <p className="text-xs font-medium text-sidebar-foreground truncate whitespace-nowrap">
                 {settings.fullName || user?.email || t('sidebar.defaultUser')}
               </p>
-              <p className="text-[10px] text-muted-foreground whitespace-nowrap">{t('sidebar.freePlan')}</p>
+              <p className="text-overline text-muted-foreground whitespace-nowrap">{t('sidebar.freePlan')}</p>
             </div>
 
             {/* ChevronUp - fade com opacity */}

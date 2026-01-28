@@ -183,7 +183,7 @@ export function TagSelector({ highlightId, bookId, className, open: controlledOp
                                 <span
                                     key={tag.id}
                                     className={cn(
-                                        "inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border",
+                                        "inline-flex items-center px-1.5 py-0.5 rounded text-overline font-medium border",
                                         tag.bookId
                                             ? "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-500 dark:border-amber-800"
                                             : "bg-muted text-muted-foreground border-border",

@@ -271,7 +271,7 @@ export function TagManagerSidebar({ open, onOpenChange }: TagManagerSidebarProps
                         <div className="flex items-center gap-1.5 px-1.5 py-1 mb-1">
                             <Folder className="w-3.5 h-3.5 text-primary" />
                             <span className="text-xs font-semibold text-foreground">{t('tagManager.globalTags')}</span>
-                            <span className="text-[9px] text-muted-foreground">({globalTags.length})</span>
+                            <span className="text-overline text-muted-foreground">({globalTags.length})</span>
                         </div>
                         {renderTagTree(undefined)}
                     </div>
@@ -286,7 +286,7 @@ export function TagManagerSidebar({ open, onOpenChange }: TagManagerSidebarProps
                                 <div className="flex items-center gap-1.5">
                                     <Book className="w-3.5 h-3.5 text-amber-600" />
                                     <span className="text-xs font-semibold text-foreground">{t('tagManager.bookTags')}</span>
-                                    <span className="text-[9px] text-muted-foreground">({t('tagManager.booksCount', { count: booksWithTags.length })})</span>
+                                    <span className="text-overline text-muted-foreground">({t('tagManager.booksCount', { count: booksWithTags.length })})</span>
                                 </div>
                                 {showBookTags ? (
                                     <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
@@ -319,7 +319,7 @@ export function TagManagerSidebar({ open, onOpenChange }: TagManagerSidebarProps
                                                     <span className="text-xs text-foreground truncate flex-1 text-left">
                                                         {book.title}
                                                     </span>
-                                                    <span className="text-[9px] text-muted-foreground">
+                                                    <span className="text-overline text-muted-foreground">
                                                         ({bookTagList.length})
                                                     </span>
                                                 </button>

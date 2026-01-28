@@ -24,7 +24,7 @@ const BottomNav = () => {
           }
         >
           <item.icon className="w-5 h-5" />
-          <span className="text-[10px] font-medium">{item.name}</span>
+          <span className="text-overline font-medium">{item.name}</span>
         </NavLink>
       ))}
     </nav>
