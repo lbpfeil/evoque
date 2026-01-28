@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../components/AuthContext';
 import { BookOpen, Loader2, AlertCircle } from 'lucide-react';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
 
 const Login = () => {
     const { t } = useTranslation('auth');
@@ -60,11 +62,11 @@ const Login = () => {
                             <label className="block text-body font-medium text-foreground mb-xs">
                                 {t('login.email')}
                             </label>
-                            <input
+                            <Input
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full px-sm py-sm sm:py-xs border border-input bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+                                className="w-full rounded-lg"
                                 placeholder={t('login.emailPlaceholder')}
                                 required
                             />
@@ -74,37 +76,38 @@ const Login = () => {
                             <label className="block text-body font-medium text-foreground mb-xs">
                                 {t('login.password')}
                             </label>
-                            <input
+                            <Input
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full px-sm py-sm sm:py-xs border border-input bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+                                className="w-full rounded-lg"
                                 placeholder="••••••••"
                                 required
                                 minLength={6}
                             />
                         </div>
 
-                        <button
+                        <Button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-sm min-h-[44px] rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-xs"
+                            className="w-full min-h-[44px] rounded-lg gap-xs"
                         >
                             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
                             {isSignUp ? t('signup.submit') : t('login.submit')}
-                        </button>
+                        </Button>
                     </form>
 
                     <div className="mt-lg text-center">
-                        <button
+                        <Button
+                            variant="link"
                             onClick={() => {
                                 setIsSignUp(!isSignUp);
                                 setError('');
                             }}
-                            className="text-body text-primary hover:text-primary/80 font-medium transition-colors duration-200"
+                            className="text-body font-medium"
                         >
                             {isSignUp ? t('signup.hasAccount') : t('login.noAccount')}
-                        </button>
+                        </Button>
                     </div>
                 </div>
 
