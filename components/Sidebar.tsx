@@ -6,6 +6,7 @@ import { useAuth } from './AuthContext';
 import { useStore } from './StoreContext';
 import { useSidebarContext } from './SidebarContext';
 import { ThemeToggle } from './ThemeToggle';
+import { Button } from './ui/button';
 
 const Sidebar = () => {
   const { t } = useTranslation('common');
@@ -56,14 +57,16 @@ const Sidebar = () => {
         <div className="flex-1" />
 
         {/* Toggle Button - fade quando collapsed */}
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={toggleCollapsed}
-          className={`p-xs mr-sm hover:bg-sidebar-accent rounded transition-opacity duration-200 shrink-0 ${isExpanded ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+          className={`p-xs mr-sm transition-opacity duration-200 shrink-0 ${isExpanded ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
           aria-label={isExpanded ? t('sidebar.collapse') : t('sidebar.expand')}
           title={isExpanded ? t('sidebar.collapse') : t('sidebar.expand')}
         >
           <ChevronLeft className="w-3.5 h-3.5 text-muted-foreground" />
-        </button>
+        </Button>
       </div>
 
       <nav className="flex-1 py-lg px-sm space-y-0.5">
@@ -105,22 +108,24 @@ const Sidebar = () => {
           className={`overflow-hidden transition-all duration-200 ${isExpanded && showLogout ? 'max-h-20 opacity-100' : 'max-h-0 opacity-0'}`}
         >
           <div className="p-sm border-b border-sidebar-border">
-            <button
+            <Button
+              variant="ghost"
               onClick={handleLogout}
-              className="w-full flex items-center gap-sm px-sm py-sm text-caption text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded transition-colors"
+              className="w-full justify-start gap-sm px-sm py-sm text-caption text-muted-foreground hover:text-destructive hover:bg-destructive/10"
             >
               <LogOut className="w-3 h-3" />
               {t('sidebar.logout')}
-            </button>
+            </Button>
           </div>
         </div>
 
         {/* User Info Button */}
-        <button
+        <Button
+          variant="ghost"
           onClick={() => setShowLogout(!showLogout)}
-          className="w-full px-sm py-md hover:bg-sidebar-accent transition-colors text-left"
+          className="w-full h-auto px-sm py-md justify-start transition-colors"
         >
-          <div className="flex items-center">
+          <div className="flex items-center w-full">
             {/* Avatar - SEMPRE na mesma posição (início do flex) */}
             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold text-caption shrink-0 overflow-hidden">
               {settings.avatarUrl ? (
@@ -145,7 +150,7 @@ const Sidebar = () => {
               className={`w-3.5 h-3.5 text-muted-foreground transition-all duration-200 ${showLogout ? '' : 'rotate-180'} ${isExpanded ? 'opacity-100 ml-sm' : 'opacity-0 w-0 overflow-hidden pointer-events-none'}`}
             />
           </div>
-        </button>
+        </Button>
       </div>
     </aside>
   );

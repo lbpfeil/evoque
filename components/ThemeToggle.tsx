@@ -1,5 +1,6 @@
 import { Moon, Sun, Monitor } from "lucide-react"
 import { useTheme } from "./ThemeProvider"
+import { Button } from "./ui/button"
 
 export function ThemeToggle() {
   const { theme, setTheme, resolvedTheme } = useTheme()
@@ -11,9 +12,11 @@ export function ThemeToggle() {
   }
 
   return (
-    <button
+    <Button
+      variant="ghost"
+      size="icon"
       onClick={cycleTheme}
-      className="inline-flex items-center justify-center rounded-lg p-xs text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+      className="rounded-lg p-xs text-muted-foreground"
       title={`Current: ${theme} (${resolvedTheme}). Click to cycle.`}
     >
       {theme === "system" ? (
@@ -24,6 +27,6 @@ export function ThemeToggle() {
         <Sun className="h-5 w-5" />
       )}
       <span className="sr-only">Toggle theme</span>
-    </button>
+    </Button>
   )
 }
