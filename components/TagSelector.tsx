@@ -108,24 +108,26 @@ export function TagSelector({ highlightId, bookId, className, open: controlledOp
                             {searchValue && (
                                 <>
                                     {/* tinted hover: no semantic token */}
-                                    <button
+                                    <Button
+                                        variant="ghost"
                                         onClick={handleCreateGlobalTag}
-                                        className="w-full flex items-center gap-xxs px-xs py-1.5 text-caption font-medium text-tag-global hover:bg-blue-50 rounded text-left"
+                                        className="w-full flex items-center gap-xxs px-xs py-1.5 h-auto text-caption font-medium text-tag-global hover:bg-blue-50 justify-start"
                                     >
                                         <Plus className="w-3 h-3" />
                                         {t('tagSelector.createGlobal', { name: searchValue })}
-                                    </button>
+                                    </Button>
 
                                     {bookId && (
                                         <>
                                             {/* tinted hover: no semantic token */}
-                                            <button
+                                            <Button
+                                                variant="ghost"
                                                 onClick={handleCreateChapter}
-                                                className="w-full flex items-center gap-xxs px-xs py-1.5 text-caption font-medium text-tag-book hover:bg-amber-50 rounded text-left"
+                                                className="w-full flex items-center gap-xxs px-xs py-1.5 h-auto text-caption font-medium text-tag-book hover:bg-amber-50 justify-start"
                                             >
                                                 <Book className="w-3 h-3" />
                                                 {t('tagSelector.createChapter', { name: searchValue })}
-                                            </button>
+                                            </Button>
                                         </>
                                     )}
                                 </>
@@ -232,24 +234,26 @@ export function TagSelector({ highlightId, bookId, className, open: controlledOp
                                 {searchValue && (
                                     <>
                                         {/* tinted hover: no semantic token */}
-                                        <button
+                                        <Button
+                                            variant="ghost"
                                             onClick={handleCreateGlobalTag}
-                                            className="w-full flex items-center gap-xxs px-xs py-1.5 text-caption font-medium text-tag-global hover:bg-blue-50 rounded text-left"
+                                            className="w-full flex items-center gap-xxs px-xs py-1.5 h-auto text-caption font-medium text-tag-global hover:bg-blue-50 justify-start"
                                         >
                                             <Plus className="w-3 h-3" />
                                             {t('tagSelector.createGlobal', { name: searchValue })}
-                                        </button>
+                                        </Button>
 
                                         {bookId && (
                                             <>
                                                 {/* tinted hover: no semantic token */}
-                                                <button
+                                                <Button
+                                                    variant="ghost"
                                                     onClick={handleCreateChapter}
-                                                    className="w-full flex items-center gap-xxs px-xs py-1.5 text-caption font-medium text-tag-book hover:bg-amber-50 rounded text-left"
+                                                    className="w-full flex items-center gap-xxs px-xs py-1.5 h-auto text-caption font-medium text-tag-book hover:bg-amber-50 justify-start"
                                                 >
                                                     <Book className="w-3 h-3" />
                                                     {t('tagSelector.createChapter', { name: searchValue })}
-                                                </button>
+                                                </Button>
                                             </>
                                         )}
                                     </>

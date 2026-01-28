@@ -279,9 +279,10 @@ export function TagManagerSidebar({ open, onOpenChange }: TagManagerSidebarProps
                     {/* Book-Specific Tags Section */}
                     {booksWithTags.length > 0 && (
                         <div className="border-t border-border pt-xs mt-xs">
-                            <button
+                            <Button
+                                variant="ghost"
                                 onClick={() => setShowBookTags(!showBookTags)}
-                                className="flex items-center justify-between w-full px-xs py-xxs hover:bg-accent rounded transition-colors duration-200"
+                                className="flex items-center justify-between w-full px-xs py-xxs h-auto"
                             >
                                 <div className="flex items-center gap-xs">
                                     <Book className="w-3.5 h-3.5 text-tag-book" />
@@ -293,7 +294,7 @@ export function TagManagerSidebar({ open, onOpenChange }: TagManagerSidebarProps
                                 ) : (
                                     <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
                                 )}
-                            </button>
+                            </Button>
 
                             {showBookTags && (
                                 <div className="mt-xxs space-y-0.5">
@@ -306,9 +307,10 @@ export function TagManagerSidebar({ open, onOpenChange }: TagManagerSidebarProps
 
                                         return (
                                             <div key={bookId} className="ml-xs">
-                                                <button
+                                                <Button
+                                                    variant="ghost"
                                                     onClick={() => toggleBookExpansion(bookId)}
-                                                    className="flex items-center gap-xs w-full px-xs py-0.5 hover:bg-accent rounded transition-colors duration-200"
+                                                    className="flex items-center gap-xs w-full px-xs py-0.5 h-auto justify-start"
                                                 >
                                                     {isExpanded ? (
                                                         <ChevronDown className="w-2.5 h-2.5 text-muted-foreground" />
@@ -322,7 +324,7 @@ export function TagManagerSidebar({ open, onOpenChange }: TagManagerSidebarProps
                                                     <span className="text-overline text-muted-foreground">
                                                         ({bookTagList.length})
                                                     </span>
-                                                </button>
+                                                </Button>
 
                                                 {isExpanded && (
                                                     <div className="ml-sm mt-0.5">
@@ -371,9 +373,9 @@ export function TagManagerSidebar({ open, onOpenChange }: TagManagerSidebarProps
                         {selectedParentId && (
                             <div className="flex items-center justify-between text-caption text-muted-foreground bg-muted px-xs py-0.5 rounded">
                                 <span>{t('tagManager.addingChildTo', { name: tags.find(tag => tag.id === selectedParentId)?.name })}</span>
-                                <button onClick={() => setSelectedParentId(undefined)} className="hover:text-foreground transition-colors duration-200">
+                                <Button variant="ghost" size="icon" onClick={() => setSelectedParentId(undefined)} className="h-5 w-5">
                                     <X className="w-3 h-3" />
-                                </button>
+                                </Button>
                             </div>
                         )}
                         <div className="flex gap-xxs">

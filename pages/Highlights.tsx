@@ -12,6 +12,7 @@ import { cn } from '../lib/utils';
 import { HighlightTableRow } from '../components/HighlightTableRow';
 import { PageHeader } from '../components/patterns/PageHeader';
 import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
 
 export const Highlights = () => {
   const { t } = useTranslation('highlights');
@@ -295,12 +296,12 @@ export const Highlights = () => {
           {/* Search */}
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-sm top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input
+            <Input
               type="text"
               placeholder={t('filters.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-sm py-xs bg-background border border-input rounded-lg text-body transition-all focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+              className="pl-9"
             />
           </div>
 
