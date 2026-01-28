@@ -3,7 +3,7 @@
 ## Milestones
 
 - v1.0 UI Overhaul - Phases 1-3 (shipped 2026-01-23) -- see `.planning/milestones/v1.0-ROADMAP.md`
-- v2.0 Design System Overhaul - Phases 4-7 (in progress)
+- v2.0 Design System Overhaul - Phases 4-7 (shipped 2026-01-28)
 
 ## Overview
 
@@ -14,7 +14,7 @@ v1.0 shipped a working theme system but no governing design system -- the result
 - [x] **Phase 4: Token Foundation** - Define the rigid design vocabulary (typography, spacing, radius, shadows, motion, icons, z-index, color rules)
 - [x] **Phase 5: Component Standardization** - Audit and align all components to the token system
 - [x] **Phase 6: Page Migration** - Migrate all 7 pages + modals to canonical patterns
-- [ ] **Phase 7: Design Guide** - Document the living design system in a single concise guide
+- [x] **Phase 7: Design Guide** - Document the living design system in a single concise guide
 
 ## Phase Details
 
@@ -76,7 +76,7 @@ Plans:
   2. The old compact-ui-design-guidelines.md is replaced/updated to reflect the actual system (no contradictions with codebase)
 **Plans**: 1 plan
 Plans:
-- [ ] 07-01-PLAN.md -- Write comprehensive design system guide and replace outdated compact-ui-design-guidelines.md
+- [x] 07-01-PLAN.md -- Write comprehensive design system guide and replace outdated compact-ui-design-guidelines.md
 
 ## Progress
 
@@ -87,7 +87,7 @@ Plans:
 | 4. Token Foundation | v2.0 | 2/2 | Complete | 2026-01-27 |
 | 5. Component Standardization | v2.0 | 2/2 | Complete | 2026-01-28 |
 | 6. Page Migration | v2.0 | 7/7 | Complete | 2026-01-28 |
-| 7. Design Guide | v2.0 | 0/1 | In progress | - |
+| 7. Design Guide | v2.0 | 1/1 | Complete | 2026-01-28 |
 
 ---
 *Created: 2026-01-27*

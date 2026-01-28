@@ -37,8 +37,8 @@
 
 ### Documentation (DOC)
 
-- [ ] **DOC-01**: Criar guia de design system enxuto (documento unico: tokens + uso de componentes + padroes de pagina)
-- [ ] **DOC-02**: Substituir/atualizar compact-ui-design-guidelines.md existente com guia atualizado
+- [x] **DOC-01**: Criar guia de design system enxuto (documento unico: tokens + uso de componentes + padroes de pagina)
+- [x] **DOC-02**: Substituir/atualizar compact-ui-design-guidelines.md existente com guia atualizado
 
 ## v2 Requirements
 
@@ -91,8 +91,8 @@
 | PAGE-06 | Phase 6 | Complete |
 | PAGE-07 | Phase 6 | Complete |
 | PAGE-08 | Phase 6 | Complete |
-| DOC-01 | Phase 7 | Pending |
-| DOC-02 | Phase 7 | Pending |
+| DOC-01 | Phase 7 | Complete |
+| DOC-02 | Phase 7 | Complete |
 
 **Coverage:**
 - v1 requirements: 22 total
