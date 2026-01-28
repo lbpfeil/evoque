@@ -359,7 +359,7 @@ export const StudyHeatmap: React.FC<StudyHeatmapProps> = ({ reviewLogs }) => {
           </div>
 
           {/* Month labels */}
-          <div className="flex mt-xs pl-3.5">
+          <div className="flex mt-xs pl-md">
             {monthLabels.map((label, i) => (
               <div
                 key={i}

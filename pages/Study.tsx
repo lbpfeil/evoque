@@ -41,7 +41,7 @@ const Study = () => {
   };
 
   return (
-    <div className="p-4 sm:p-6">
+    <div className="p-md sm:p-lg">
       {/* Header */}
       <PageHeader title={t('title')} description={t('subtitle')} size="compact" />
 
@@ -53,17 +53,17 @@ const Study = () => {
       {/* Prominent All Books Button */}
       <button
         onClick={() => handleDeckClick('all')}
-        className="w-full mb-4 px-3 sm:px-4 py-3 bg-foreground hover:bg-foreground/90 text-background rounded-md transition-colors flex items-center justify-between group"
+        className="w-full mb-md px-sm sm:px-md py-sm bg-foreground hover:bg-foreground/90 text-background rounded-md transition-colors flex items-center justify-between group"
       >
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-xs sm:gap-sm">
           <div className="flex items-center justify-center w-8 h-8 bg-background/10 rounded">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
           </div>
           <div className="text-left">
-            <div className="text-sm font-semibold">{t('allBooks.title')}</div>
-            <div className="text-xs text-background/70 hidden sm:block">{t('allBooks.subtitle')}</div>
+            <div className="text-body font-semibold">{t('allBooks.title')}</div>
+            <div className="text-caption text-background/70 hidden sm:block">{t('allBooks.subtitle')}</div>
           </div>
         </div>
 
@@ -74,22 +74,22 @@ const Study = () => {
         </div>
 
         {/* Stats - Desktop: show all */}
-        <div className="hidden sm:flex items-center gap-4 text-xs">
-          <div className="flex items-center gap-3">
+        <div className="hidden sm:flex items-center gap-md text-caption">
+          <div className="flex items-center gap-sm">
             <div className="text-center">
-              <div className="text-blue-300 dark:text-blue-700 font-semibold">{totalStats.new}</div>
+              <div className="text-status-new font-semibold">{totalStats.new}</div>
               <div className="text-background/50 text-overline">{t('stats.new')}</div>
             </div>
             <div className="text-center">
-              <div className="text-amber-300 dark:text-amber-700 font-semibold">{totalStats.learning}</div>
+              <div className="text-status-learning font-semibold">{totalStats.learning}</div>
               <div className="text-background/50 text-overline">{t('stats.learning')}</div>
             </div>
             <div className="text-center">
-              <div className="text-green-300 dark:text-green-700 font-semibold">{totalStats.review}</div>
+              <div className="text-status-review font-semibold">{totalStats.review}</div>
               <div className="text-background/50 text-overline">{t('stats.review')}</div>
             </div>
           </div>
-          <div className="text-right ml-4">
+          <div className="text-right ml-md">
             <div className="text-lg font-bold">{totalStats.total}</div>
             <div className="text-background/50 text-overline">{t('stats.total')}</div>
           </div>
@@ -97,15 +97,15 @@ const Study = () => {
       </button>
 
       {/* Individual Books Section */}
-      <div className="mb-2">
-        <h2 className="text-xs font-semibold text-muted-foreground">{t('byBook.title')}</h2>
+      <div className="mb-xs">
+        <h2 className="text-caption font-semibold text-muted-foreground">{t('byBook.title')}</h2>
       </div>
 
       {/* Deck Table (without All Books row) */}
       {books.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground text-sm mb-2">{t('emptyState.noBooks')}</p>
-          <p className="text-muted-foreground text-xs">
+        <div className="text-center py-2xl">
+          <p className="text-muted-foreground text-body mb-xs">{t('emptyState.noBooks')}</p>
+          <p className="text-muted-foreground text-caption">
             {t('emptyState.importPrompt')}
           </p>
         </div>

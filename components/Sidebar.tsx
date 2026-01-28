@@ -41,7 +41,7 @@ const Sidebar = () => {
     >
       <div className="flex items-center h-14 border-b border-sidebar-border relative">
         {/* Logo - SEMPRE na mesma posição (ml-3 fixo) */}
-        <div className="p-1.5 bg-black dark:bg-white text-white dark:text-black rounded-md ml-sm shrink-0">
+        <div className="p-xs bg-black dark:bg-white text-white dark:text-black rounded-md ml-sm shrink-0">
           <BookOpen className="w-4 h-4" />
         </div>
 
@@ -58,7 +58,7 @@ const Sidebar = () => {
         {/* Toggle Button - fade quando collapsed */}
         <button
           onClick={toggleCollapsed}
-          className={`p-1.5 mr-sm hover:bg-sidebar-accent rounded transition-opacity duration-200 shrink-0 ${isExpanded ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+          className={`p-xs mr-sm hover:bg-sidebar-accent rounded transition-opacity duration-200 shrink-0 ${isExpanded ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
           aria-label={isExpanded ? t('sidebar.collapse') : t('sidebar.expand')}
           title={isExpanded ? t('sidebar.collapse') : t('sidebar.expand')}
         >

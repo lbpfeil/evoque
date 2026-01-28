@@ -152,7 +152,7 @@ export function TagSelector({ highlightId, bookId, className, open: controlledOp
                                         >
                                             {isSelected && <Check className="h-3 w-3" />}
                                         </div>
-                                        <div className="flex items-center gap-1.5 text-caption">
+                                        <div className="flex items-center gap-xs text-caption">
                                             {tag.bookId && <Book className="w-3 h-3 text-tag-book" />}
                                             <span>{getTagPath(tag)}</span>
                                         </div>
@@ -187,7 +187,7 @@ export function TagSelector({ highlightId, bookId, className, open: controlledOp
                                 <span
                                     key={tag.id}
                                     className={cn(
-                                        "inline-flex items-center px-1.5 py-0.5 rounded text-overline font-medium border",
+                                        "inline-flex items-center px-xs py-0.5 rounded text-overline font-medium border",
                                         tag.bookId
                                             /* tinted tag badge: no semantic token */
                                             ? "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-500 dark:border-amber-800"
@@ -276,7 +276,7 @@ export function TagSelector({ highlightId, bookId, className, open: controlledOp
                                             >
                                                 {isSelected && <Check className="h-3 w-3" />}
                                             </div>
-                                            <div className="flex items-center gap-1.5 text-caption">
+                                            <div className="flex items-center gap-xs text-caption">
                                                 {tag.bookId && <Book className="w-3 h-3 text-tag-book" />}
                                                 <span>{getTagPath(tag)}</span>
                                             </div>

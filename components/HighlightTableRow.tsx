@@ -114,7 +114,7 @@ export const HighlightTableRow: React.FC<HighlightTableRowProps> = ({
             </td>
 
             {/* Date */}
-            <td className="px-md py-sm align-top whitespace-nowrap w-[80px] text-muted-foreground text-overline font-medium pt-3.5">
+            <td className="px-md py-sm align-top whitespace-nowrap w-[80px] text-muted-foreground text-overline font-medium pt-md">
                 {formatDateShort(highlight.dateAdded)}
             </td>
 

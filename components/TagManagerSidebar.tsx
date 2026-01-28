@@ -77,11 +77,11 @@ export function TagManagerSidebar({ open, onOpenChange }: TagManagerSidebarProps
         if (childTags.length === 0 && parentId) return null;
 
         return (
-            <div className={cn("flex flex-col gap-0.5", depth > 0 && "ml-sm border-l border-border pl-1.5")}>
+            <div className={cn("flex flex-col gap-0.5", depth > 0 && "ml-sm border-l border-border pl-xs")}>
                 {childTags.map(tag => {
                     return (
                         <div key={tag.id} className="group">
-                            <div className="flex items-center justify-between py-0.5 px-1.5 rounded hover:bg-accent group-hover:bg-accent transition-colors duration-200">
+                            <div className="flex items-center justify-between py-0.5 px-xs rounded hover:bg-accent group-hover:bg-accent transition-colors duration-200">
                                 <div className="flex items-center gap-xxs flex-1 overflow-hidden">
                                     {tags.some(t => t.parentId === tag.id) ? (
                                         <Folder className="w-3 h-3 text-muted-foreground shrink-0" />
@@ -157,7 +157,7 @@ export function TagManagerSidebar({ open, onOpenChange }: TagManagerSidebarProps
     // Render individual book tag
     const renderBookTag = (tag: Tag) => {
         return (
-            <div className="flex items-center justify-between py-0.5 px-1.5 rounded hover:bg-accent group-hover:bg-accent transition-colors duration-200">
+            <div className="flex items-center justify-between py-0.5 px-xs rounded hover:bg-accent group-hover:bg-accent transition-colors duration-200">
                 <div className="flex items-center gap-xxs flex-1 overflow-hidden">
                     <TagIcon className="w-3 h-3 text-tag-book shrink-0" />
 
@@ -268,7 +268,7 @@ export function TagManagerSidebar({ open, onOpenChange }: TagManagerSidebarProps
                 <div className="flex-1 overflow-y-auto pr-xs">
                     {/* Global Tags Section */}
                     <div className="mb-sm">
-                        <div className="flex items-center gap-1.5 px-1.5 py-xxs mb-xxs">
+                        <div className="flex items-center gap-xs px-xs py-xxs mb-xxs">
                             <Folder className="w-3.5 h-3.5 text-primary" />
                             <span className="text-caption font-semibold text-foreground">{t('tagManager.globalTags')}</span>
                             <span className="text-overline text-muted-foreground">({globalTags.length})</span>
@@ -281,9 +281,9 @@ export function TagManagerSidebar({ open, onOpenChange }: TagManagerSidebarProps
                         <div className="border-t border-border pt-xs mt-xs">
                             <button
                                 onClick={() => setShowBookTags(!showBookTags)}
-                                className="flex items-center justify-between w-full px-1.5 py-xxs hover:bg-accent rounded transition-colors duration-200"
+                                className="flex items-center justify-between w-full px-xs py-xxs hover:bg-accent rounded transition-colors duration-200"
                             >
-                                <div className="flex items-center gap-1.5">
+                                <div className="flex items-center gap-xs">
                                     <Book className="w-3.5 h-3.5 text-tag-book" />
                                     <span className="text-caption font-semibold text-foreground">{t('tagManager.bookTags')}</span>
                                     <span className="text-overline text-muted-foreground">({t('tagManager.booksCount', { count: booksWithTags.length })})</span>
@@ -308,7 +308,7 @@ export function TagManagerSidebar({ open, onOpenChange }: TagManagerSidebarProps
                                             <div key={bookId} className="ml-xs">
                                                 <button
                                                     onClick={() => toggleBookExpansion(bookId)}
-                                                    className="flex items-center gap-1.5 w-full px-1.5 py-0.5 hover:bg-accent rounded transition-colors duration-200"
+                                                    className="flex items-center gap-xs w-full px-xs py-0.5 hover:bg-accent rounded transition-colors duration-200"
                                                 >
                                                     {isExpanded ? (
                                                         <ChevronDown className="w-2.5 h-2.5 text-muted-foreground" />
@@ -333,7 +333,7 @@ export function TagManagerSidebar({ open, onOpenChange }: TagManagerSidebarProps
                                                         ))}
 
                                                         {/* Add new chapter tag input */}
-                                                        <div className="flex items-center gap-xxs px-1.5 py-0.5 mt-xxs">
+                                                        <div className="flex items-center gap-xxs px-xs py-0.5 mt-xxs">
                                                             <Input
                                                                 placeholder={t('tagManager.newChapterTag')}
                                                                 value={newChapterTagName[bookId] || ''}
@@ -369,7 +369,7 @@ export function TagManagerSidebar({ open, onOpenChange }: TagManagerSidebarProps
                 <div className="pt-xxs mt-xxs border-t border-border">
                     <div className="flex flex-col gap-xxs">
                         {selectedParentId && (
-                            <div className="flex items-center justify-between text-caption text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                            <div className="flex items-center justify-between text-caption text-muted-foreground bg-muted px-xs py-0.5 rounded">
                                 <span>{t('tagManager.addingChildTo', { name: tags.find(tag => tag.id === selectedParentId)?.name })}</span>
                                 <button onClick={() => setSelectedParentId(undefined)} className="hover:text-foreground transition-colors duration-200">
                                     <X className="w-3 h-3" />

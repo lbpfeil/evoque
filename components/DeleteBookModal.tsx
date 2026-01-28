@@ -64,7 +64,7 @@ export const DeleteBookModal: React.FC<DeleteBookModalProps> = ({ bookId, onConf
           <AlertDialogDescription asChild>
             <div className="space-y-sm">
               <p>{t('deleteBook.warning')}</p>
-              <ul className="list-disc list-inside ml-sm space-y-1">
+              <ul className="list-disc list-inside ml-sm space-y-xxs">
                 <li>{t('deleteBook.highlights', { count: bookData.highlightCount })}</li>
                 <li>{t('deleteBook.studyCards', { count: bookData.cardCount })}</li>
                 <li>{t('deleteBook.reviewHistory')}</li>
