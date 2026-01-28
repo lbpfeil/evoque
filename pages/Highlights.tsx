@@ -11,6 +11,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { cn } from '../lib/utils';
 import { HighlightTableRow } from '../components/HighlightTableRow';
 import { PageHeader } from '../components/patterns/PageHeader';
+import { Button } from '../components/ui/button';
 
 export const Highlights = () => {
   const { t } = useTranslation('highlights');
@@ -229,13 +230,15 @@ export const Highlights = () => {
         size="compact"
         className="pt-lg pb-xs"
         actions={
-          <button
+          <Button
             onClick={() => setIsTagManagerOpen(true)}
-            className="flex items-center gap-xs px-sm py-xs bg-muted hover:bg-accent text-foreground rounded-full text-caption font-medium transition-colors duration-200 border border-transparent hover:border-primary/30"
+            variant="ghost"
+            size="compact"
+            className="flex items-center gap-xs rounded-full"
           >
             <TagIcon className="w-3.5 h-3.5" />
             {t('actions.manageTags')}
-          </button>
+          </Button>
         }
       />
 
@@ -252,9 +255,9 @@ export const Highlights = () => {
               {/* Bulk Tag Trigger */}
               <Popover>
                 <PopoverTrigger asChild>
-                  <button className="flex items-center gap-xxs text-overline hover:text-background/60 transition-colors duration-200 uppercase tracking-wider font-bold">
+                  <Button variant="ghost" size="compact" className="text-overline uppercase tracking-wider font-bold flex items-center gap-xxs">
                     <TagIcon className="w-3 h-3" /> {t('bulk.tag')}
-                  </button>
+                  </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[200px] p-0" align="start">
                   <div className="max-h-[300px] overflow-y-auto p-xxs">
@@ -283,9 +286,9 @@ export const Highlights = () => {
 
               <div className="h-4 w-[1px] bg-background/20 mx-xxs" />
 
-              <button onClick={handleBulkDelete} className="flex items-center gap-xxs text-overline hover:text-destructive transition-colors duration-200 uppercase tracking-wider font-bold">
+              <Button onClick={handleBulkDelete} variant="ghost" size="compact" className="text-overline uppercase tracking-wider font-bold flex items-center gap-xxs hover:text-destructive">
                 {t('bulk.delete')}
-              </button>
+              </Button>
             </div>
           )}
 
@@ -304,12 +307,12 @@ export const Highlights = () => {
           {/* Book Filter */}
           <Popover>
             <PopoverTrigger asChild>
-              <button role="combobox" className="w-full sm:w-auto min-w-[160px] max-w-[240px] px-sm py-xs bg-background border border-input rounded-lg text-body text-left flex items-center justify-between hover:bg-accent transition-colors duration-200">
+              <Button role="combobox" variant="outline" size="compact" className="w-full sm:w-auto min-w-[160px] max-w-[240px] justify-between">
                 <span className="truncate font-medium text-foreground">
                   {selectedBookId === 'all' ? t('filters.allBooks') : books.find(b => b.id === selectedBookId)?.title}
                 </span>
                 <ChevronsUpDown className="ml-xs h-4 w-4 shrink-0 opacity-50" />
-              </button>
+              </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[300px] p-0">
               <Command>
@@ -345,12 +348,12 @@ export const Highlights = () => {
           {/* Tag Filter */}
           <Popover>
             <PopoverTrigger asChild>
-              <button role="combobox" className="w-full sm:w-auto min-w-[140px] px-sm py-xs bg-background border border-input rounded-lg text-body text-left flex items-center justify-between hover:bg-accent transition-colors duration-200">
+              <Button role="combobox" variant="outline" size="compact" className="w-full sm:w-auto min-w-[140px] justify-between">
                 <span className="truncate font-medium text-foreground">
                   {selectedTagId === 'all' ? t('filters.allTags') : tags.find(tg => tg.id === selectedTagId)?.name}
                 </span>
                 <ChevronsUpDown className="ml-xs h-4 w-4 shrink-0 opacity-50" />
-              </button>
+              </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[200px] p-0">
               <Command>
@@ -392,12 +395,12 @@ export const Highlights = () => {
           {/* Status Filter */}
           <Popover>
             <PopoverTrigger asChild>
-              <button role="combobox" className="w-full sm:w-auto min-w-[120px] px-sm py-xs bg-background border border-input rounded-lg text-body text-left flex items-center justify-between hover:bg-accent transition-colors duration-200">
+              <Button role="combobox" variant="outline" size="compact" className="w-full sm:w-auto min-w-[120px] justify-between">
                 <span className="truncate font-medium text-foreground">
                   {studyFilter === 'all' ? t('filters.allStatus') : studyFilter === 'in-study' ? t('filters.inStudy') : t('filters.notInStudy')}
                 </span>
                 <ChevronsUpDown className="ml-xs h-4 w-4 shrink-0 opacity-50" />
-              </button>
+              </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[150px] p-0">
               <Command>
@@ -431,12 +434,14 @@ export const Highlights = () => {
           </Popover>
 
           {/* Sorting Dropdown (Optional or kept as buttons if preferred) */}
-          <button
+          <Button
             onClick={() => handleSort('date')}
-            className="px-sm py-xs bg-background border border-input rounded-lg text-body font-medium text-foreground hover:bg-accent transition-colors duration-200 flex items-center gap-xxs"
+            variant="outline"
+            size="compact"
+            className="flex items-center gap-xxs"
           >
             {t('filters.sortDate')} {getSortIcon('date') || <ChevronDown className="w-3 h-3 ml-xxs opacity-30" />}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -457,41 +462,49 @@ export const Highlights = () => {
                 />
               </th>
               <th className="px-md py-sm w-[180px] max-w-[200px]">
-                <button
+                <Button
                   onClick={() => handleSort('book')}
-                  className="flex items-center gap-xxs hover:text-foreground transition-colors duration-200"
+                  variant="ghost"
+                  size="compact"
+                  className="flex items-center gap-xxs h-auto p-0 hover:text-foreground"
                 >
                   {t('table.bookAuthor')}
                   {getSortIcon('book')}
-                </button>
+                </Button>
               </th>
               <th className="px-md py-sm min-w-[300px]">
-                <button
+                <Button
                   onClick={() => handleSort('highlight')}
-                  className="flex items-center gap-xxs hover:text-foreground transition-colors duration-200"
+                  variant="ghost"
+                  size="compact"
+                  className="flex items-center gap-xxs h-auto p-0 hover:text-foreground"
                 >
                   {t('table.highlight')}
                   {getSortIcon('highlight')}
-                </button>
+                </Button>
               </th>
               <th className="px-md py-sm w-[280px]">
-                <button
+                <Button
                   onClick={() => handleSort('note')}
-                  className="flex items-center gap-xxs hover:text-foreground transition-colors duration-200"
+                  variant="ghost"
+                  size="compact"
+                  className="flex items-center gap-xxs h-auto p-0 hover:text-foreground"
                 >
                   {t('table.note')}
                   {getSortIcon('note')}
-                </button>
+                </Button>
               </th>
               <th className="px-md py-sm w-[140px]">{t('table.tags')}</th>
               <th className="px-md py-sm w-[80px]">
-                <button
+                <Button
                   onClick={() => handleSort('date')}
-                  className="flex items-center gap-xxs hover:text-foreground transition-colors duration-200"
+                  variant="ghost"
+                  size="compact"
+                  className="flex items-center gap-xxs h-auto p-0 hover:text-foreground"
                 >
                   {t('table.date')}
                   {getSortIcon('date')}
-                </button>
+                </Button>
               </th>
               <th className="px-md py-sm w-[90px]">{t('table.status')}</th>
             </tr>
@@ -531,20 +544,24 @@ export const Highlights = () => {
           </div>
 
           <div className="flex items-center gap-xs">
-            <button
+            <Button
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="flex items-center gap-xxs px-sm py-xs rounded-md border border-border text-body font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent transition-colors duration-200"
+              variant="outline"
+              size="compact"
+              className="flex items-center gap-xxs"
             >
               <ChevronLeft className="w-4 h-4" /> {t('pagination.previous')}
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="flex items-center gap-xxs px-sm py-xs rounded-md border border-border text-body font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent transition-colors duration-200"
+              variant="outline"
+              size="compact"
+              className="flex items-center gap-xxs"
             >
               {t('pagination.next')} <ChevronRight className="w-4 h-4" />
-            </button>
+            </Button>
           </div>
         </div>
       )}
