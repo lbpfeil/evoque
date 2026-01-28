@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useStore } from '../components/StoreContext';
 import { Book, Highlighter, Brain, Clock, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { PageHeader } from '../components/patterns/PageHeader';
 
 // Lazy load charts to reduce initial bundle size
 const DashboardCharts = lazy(() => import('../components/DashboardCharts'));
@@ -16,13 +17,13 @@ interface StatCardProps {
 const StatCard = ({ title, value, icon: Icon }: StatCardProps) => (
   <Card className="hover:border-primary/30 transition-colors duration-200">
     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-      <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+      <CardTitle className="text-overline font-medium uppercase tracking-wider text-muted-foreground">
         {title}
       </CardTitle>
       <Icon className="w-5 h-5 text-muted-foreground" />
     </CardHeader>
     <CardContent>
-      <p className="text-3xl font-bold tracking-tight">{value}</p>
+      <p className="text-title font-bold tracking-tight">{value}</p>
     </CardContent>
   </Card>
 );
@@ -44,10 +45,7 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-12">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground tracking-tight">{t('title')}</h1>
-        <p className="text-muted-foreground mt-2 font-light">{t('subtitle')}</p>
-      </div>
+      <PageHeader title={t('title')} description={t('subtitle')} size="default" />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -85,7 +83,7 @@ const Dashboard = () => {
       {/* Recent Books */}
       <div>
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-bold text-foreground">{t('recentBooks.title')}</h3>
+          <h3 className="text-heading font-bold text-foreground">{t('recentBooks.title')}</h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {books.slice(0, 3).map(book => (
