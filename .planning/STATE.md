@@ -9,10 +9,10 @@ See: .planning/PROJECT.md (updated 2026-01-27)
 
 ## Current Position
 
-Phase: 8 of 10 (Token Consumption) -- COMPLETE (verified)
-Plan: 5 of 5 in phase 8
-Status: All pages + components verified with semantic tokens. Plan 08-02 found already complete in previous commits.
-Last activity: 2026-01-28 -- Verified 08-02-PLAN.md (StudySession and Study already migrated in commits 6a591e7, 0d5f597)
+Phase: 8 of 10 (Token Consumption) -- COMPLETE (re-verified)
+Plan: 4 of 5 executed (08-01, 08-03, 08-04, 08-05 complete; 08-02 already done)
+Status: All 6 high-interaction components migrated to semantic tokens (08-04 complete)
+Last activity: 2026-01-28 -- Completed 08-04-PLAN.md (Tag/status components with semantic color tokens)
 
 Progress: [████████░░░] 80% (8/10 phases)
 
@@ -36,6 +36,7 @@ Progress: [████████░░░] 80% (8/10 phases)
 **Recent Trend:**
 - Phase 7 plan 01: 7.2min (601-line design system guide + CLAUDE.md updates)
 - Phase 8 plan 03: ~5min (Dashboard + Highlights token migration)
+- Phase 8 plan 04: 12.5min (6 high-interaction components + tag/status color tokens)
 - Phase 8 plan 05: ~8min (11 remaining components + comprehensive audit, phase complete)
 
 *Updated after each plan completion*
@@ -85,6 +86,9 @@ Recent decisions affecting current work:
 - [08-02]: StudySession rating buttons preserve raw colors (SM-2 quality feedback, not status indicators)
 - [08-02]: Study page inverted background uses raw light shades (300/700) for proper contrast on dark foreground background
 - [08-02]: Plan 08-02 verification - work already complete in commits 6a591e7 and 0d5f597
+- [08-04]: Tinted color variants (bg-blue-50, hover:bg-amber-50) kept as raw with comments - no semantic tinted tokens exist
+- [08-04]: Tag solid colors successfully migrated (text-tag-global, text-tag-book)
+- [08-04]: Status stat colors successfully migrated (text-status-new/learning/review in DeckTable)
 
 ### Pending Todos
 
@@ -97,5 +101,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-28
-Stopped at: Verified 08-02-PLAN.md (StudySession and Study already migrated, documented intentional deviations)
+Stopped at: Completed 08-04-PLAN.md (6 high-interaction components with tag/status color tokens)
 Resume file: None
