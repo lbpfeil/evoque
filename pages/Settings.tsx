@@ -311,7 +311,7 @@ const Settings = () => {
           <div className="space-y-3">
             <div>
               <h2 className="text-xs font-semibold text-muted-foreground">{t('import.title')}</h2>
-              <p className="text-[10px] text-muted-foreground mt-0.5">{t('import.subtitle')}</p>
+              <p className="text-overline text-muted-foreground mt-0.5">{t('import.subtitle')}</p>
             </div>
 
             {/* Success Notification */}
@@ -379,7 +379,7 @@ const Settings = () => {
                 </div>
 
                 {!isProcessing && (
-                  <div className="flex items-center text-[10px] text-muted-foreground bg-muted px-2 py-1 rounded border border-border">
+                  <div className="flex items-center text-overline text-muted-foreground bg-muted px-2 py-1 rounded border border-border">
                     <FileText className="w-3 h-3 mr-1.5" />
                     {t('import.fileTypes')}
                   </div>
@@ -392,7 +392,7 @@ const Settings = () => {
               <AlertCircle className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-0.5" />
               <div className="text-xs text-muted-foreground space-y-1">
                 <p className="font-semibold text-foreground">{t('import.instructions.title')}</p>
-                <div className="space-y-2 text-[11px] leading-relaxed">
+                <div className="space-y-2 text-caption leading-relaxed">
                   <div>
                     <p className="font-medium text-foreground">{t('import.instructions.option1Title')}</p>
                     <ol className="list-decimal list-inside space-y-0.5 ml-2">
@@ -430,7 +430,7 @@ const Settings = () => {
           <div className="space-y-3">
             <div>
               <h2 className="text-xs font-semibold text-muted-foreground">{t('library.title')}</h2>
-              <p className="text-[10px] text-muted-foreground mt-0.5">{t('library.bookCount', { count: books.length })}</p>
+              <p className="text-overline text-muted-foreground mt-0.5">{t('library.bookCount', { count: books.length })}</p>
             </div>
 
             {/* Books List */}
@@ -501,7 +501,7 @@ const Settings = () => {
                           {book.title.length > 100 ? `${book.title.substring(0, 100)}...` : book.title}
                         </h3>
                         <p className="text-xs text-muted-foreground truncate">{book.author} • {t('library.highlightsCount', { count: book.highlightCount })}</p>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">
+                        <p className="text-overline text-muted-foreground mt-0.5">
                           {t('library.lastImport', { date: formatDate(book.lastImported) })}
                         </p>
                       </div>
@@ -550,7 +550,7 @@ const Settings = () => {
                                 }}
                                 className="h-6 w-16 px-1.5 text-xs border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring bg-background text-foreground"
                               />
-                              <span className="text-[10px] text-muted-foreground">{t('library.cardsPerDay')}</span>
+                              <span className="text-overline text-muted-foreground">{t('library.cardsPerDay')}</span>
                             </div>
                           </div>
 
@@ -571,11 +571,11 @@ const Settings = () => {
                                 }}
                                 className="h-6 w-16 px-1.5 text-xs border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring bg-background text-foreground"
                               />
-                              <span className="text-[10px] text-muted-foreground">{t('library.newCards')}</span>
+                              <span className="text-overline text-muted-foreground">{t('library.newCards')}</span>
                             </div>
                           </div>
 
-                          <p className="text-[9px] text-muted-foreground italic">
+                          <p className="text-overline text-muted-foreground italic">
                             {t('library.useDefaults')}
                           </p>
                         </div>
@@ -593,7 +593,7 @@ const Settings = () => {
           <div className="space-y-4">
             <div>
               <h2 className="text-xs font-semibold text-muted-foreground">{t('account.title')}</h2>
-              <p className="text-[10px] text-muted-foreground mt-0.5">{t('account.subtitle')}</p>
+              <p className="text-overline text-muted-foreground mt-0.5">{t('account.subtitle')}</p>
             </div>
 
             {/* Profile Photo */}
@@ -632,7 +632,7 @@ const Settings = () => {
                     <Camera className="w-3 h-3" />
                     {t('account.photo.change')}
                   </label>
-                  <p className="text-[10px] text-muted-foreground mt-1">
+                  <p className="text-overline text-muted-foreground mt-1">
                     {t('account.photo.hint')}
                   </p>
                 </div>
@@ -699,7 +699,7 @@ const Settings = () => {
           <div className="space-y-4">
             <div>
               <h2 className="text-xs font-semibold text-muted-foreground">{t('preferences.title')}</h2>
-              <p className="text-[10px] text-muted-foreground mt-0.5">{t('preferences.subtitle')}</p>
+              <p className="text-overline text-muted-foreground mt-0.5">{t('preferences.subtitle')}</p>
             </div>
 
             {/* Study Options */}
@@ -717,7 +717,7 @@ const Settings = () => {
                       onChange={(e) => updateSettings({ maxReviewsPerDay: Number(e.target.value) })}
                       className="h-6 w-16 px-1.5 text-xs border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring bg-background text-foreground"
                     />
-                    <span className="text-[10px] text-muted-foreground">{t('preferences.study.cardsPerBookDay')}</span>
+                    <span className="text-overline text-muted-foreground">{t('preferences.study.cardsPerBookDay')}</span>
                   </div>
                 </div>
 
@@ -733,7 +733,7 @@ const Settings = () => {
                       onChange={(e) => updateSettings({ defaultInitialEaseFactor: Number(e.target.value) })}
                       className="h-6 w-16 px-1.5 text-xs border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring bg-background text-foreground"
                     />
-                    <span className="text-[10px] text-muted-foreground">{t('preferences.study.newCards')}</span>
+                    <span className="text-overline text-muted-foreground">{t('preferences.study.newCards')}</span>
                   </div>
                 </div>
 
@@ -749,7 +749,7 @@ const Settings = () => {
                     <SettingsIcon className="w-3 h-3" />
                     {t('preferences.study.applyGlobal')}
                   </button>
-                  <p className="text-[9px] text-muted-foreground mt-1 text-center">
+                  <p className="text-overline text-muted-foreground mt-1 text-center">
                     {t('preferences.study.applyGlobalHint')}
                   </p>
                 </div>
