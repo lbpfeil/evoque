@@ -10,6 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popove
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../components/ui/command';
 import { cn } from '../lib/utils';
 import { HighlightTableRow } from '../components/HighlightTableRow';
+import { PageHeader } from '../components/patterns/PageHeader';
 
 export const Highlights = () => {
   const { t } = useTranslation('highlights');
@@ -222,21 +223,21 @@ export const Highlights = () => {
   return (
     <div className="space-y-4 relative h-full flex flex-col w-full px-4 sm:px-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 pt-6 pb-2">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground tracking-tight">{t('title')}</h1>
-          <p className="text-muted-foreground mt-1.5 font-light text-sm">
-            {t('stats.summary', { highlightCount: highlights.length, bookCount: stats.uniqueBooks, lastDate: formatDate(stats.lastHighlight) })}
-          </p>
-        </div>
-        <button
-          onClick={() => setIsTagManagerOpen(true)}
-          className="self-start flex items-center gap-2 px-3 py-1.5 bg-muted hover:bg-accent text-foreground rounded-full text-xs font-medium transition-colors duration-200 border border-transparent hover:border-primary/30"
-        >
-          <TagIcon className="w-3.5 h-3.5" />
-          {t('actions.manageTags')}
-        </button>
-      </div>
+      <PageHeader
+        title={t('title')}
+        description={t('stats.summary', { highlightCount: highlights.length, bookCount: stats.uniqueBooks, lastDate: formatDate(stats.lastHighlight) })}
+        size="default"
+        className="pt-6 pb-2"
+        actions={
+          <button
+            onClick={() => setIsTagManagerOpen(true)}
+            className="flex items-center gap-2 px-3 py-1.5 bg-muted hover:bg-accent text-foreground rounded-full text-xs font-medium transition-colors duration-200 border border-transparent hover:border-primary/30"
+          >
+            <TagIcon className="w-3.5 h-3.5" />
+            {t('actions.manageTags')}
+          </button>
+        }
+      />
 
       {/* Toolbar */}
       <div className="sticky top-0 z-20 bg-background py-2 -mx-2 px-2 border-b border-transparent">
@@ -251,7 +252,7 @@ export const Highlights = () => {
               {/* Bulk Tag Trigger */}
               <Popover>
                 <PopoverTrigger asChild>
-                  <button className="flex items-center gap-1 text-[10px] hover:text-background/60 transition-colors duration-200 uppercase tracking-wider font-bold">
+                  <button className="flex items-center gap-1 text-overline hover:text-background/60 transition-colors duration-200 uppercase tracking-wider font-bold">
                     <TagIcon className="w-3 h-3" /> {t('bulk.tag')}
                   </button>
                 </PopoverTrigger>
@@ -282,7 +283,7 @@ export const Highlights = () => {
 
               <div className="h-4 w-[1px] bg-background/20 mx-1" />
 
-              <button onClick={handleBulkDelete} className="flex items-center gap-1 text-[10px] hover:text-destructive transition-colors duration-200 uppercase tracking-wider font-bold">
+              <button onClick={handleBulkDelete} className="flex items-center gap-1 text-overline hover:text-destructive transition-colors duration-200 uppercase tracking-wider font-bold">
                 {t('bulk.delete')}
               </button>
             </div>
@@ -445,7 +446,7 @@ export const Highlights = () => {
         className="flex-1 overflow-auto border border-border rounded-xl bg-card shadow-sm"
       >
         <table className="w-full text-left text-xs">
-          <thead className="bg-muted text-[10px] uppercase tracking-wider font-semibold text-muted-foreground sticky top-0 z-10 border-b border-border">
+          <thead className="bg-muted text-overline uppercase tracking-wider font-semibold text-muted-foreground sticky top-0 z-10 border-b border-border">
             <tr>
               <th className="px-4 py-3 w-[40px] font-medium text-muted-foreground">
                 <input
