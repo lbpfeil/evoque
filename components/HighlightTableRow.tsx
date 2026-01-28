@@ -69,7 +69,7 @@ export const HighlightTableRow: React.FC<HighlightTableRowProps> = ({
                         <Book className="w-3 h-3 text-muted-foreground shrink-0" />
                         <span className="truncate" title={book?.title}>{book?.title || t('table.unknownBook')}</span>
                     </div>
-                    <span className="text-[11px] text-muted-foreground pl-4 truncate" title={book?.author}>
+                    <span className="text-overline text-muted-foreground pl-4 truncate" title={book?.author}>
                         {book?.author}
                     </span>
                 </div>
@@ -99,7 +99,7 @@ export const HighlightTableRow: React.FC<HighlightTableRowProps> = ({
                 ) : (
                     <button
                         onClick={() => onEdit(highlight.id)}
-                        className="text-[10px] text-muted-foreground/50 hover:text-muted-foreground transition-colors duration-200 italic group-hover:block"
+                        className="text-overline text-muted-foreground/50 hover:text-muted-foreground transition-colors duration-200 italic group-hover:block"
                     >
                         {t('table.addNote')}
                     </button>
@@ -114,7 +114,7 @@ export const HighlightTableRow: React.FC<HighlightTableRowProps> = ({
             </td>
 
             {/* Date */}
-            <td className="px-4 py-3 align-top whitespace-nowrap w-[80px] text-muted-foreground text-[11px] font-medium pt-3.5">
+            <td className="px-4 py-3 align-top whitespace-nowrap w-[80px] text-muted-foreground text-overline font-medium pt-3.5">
                 {formatDateShort(highlight.dateAdded)}
             </td>
 
