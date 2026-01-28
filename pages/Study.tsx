@@ -5,6 +5,7 @@ import { useStore } from '../components/StoreContext';
 import { DeckTable } from '../components/DeckTable';
 import { EmptyDeckPopover } from '../components/EmptyDeckPopover';
 import { StudyHeatmap } from '../components/StudyHeatmap';
+import { PageHeader } from '../components/patterns/PageHeader';
 
 const Study = () => {
   const navigate = useNavigate();
@@ -42,12 +43,7 @@ const Study = () => {
   return (
     <div className="p-4 sm:p-6">
       {/* Header */}
-      <header className="mb-3">
-        <h1 className="text-base font-semibold text-foreground">{t('title')}</h1>
-        <p className="text-xs text-muted-foreground mt-1">
-          {t('subtitle')}
-        </p>
-      </header>
+      <PageHeader title={t('title')} description={t('subtitle')} size="compact" />
 
       {/* Review Activity Heatmap */}
       {reviewLogs.length > 0 && (
@@ -74,7 +70,7 @@ const Study = () => {
         {/* Stats - Mobile: only show total */}
         <div className="sm:hidden text-right">
           <div className="text-lg font-bold">{totalStats.total}</div>
-          <div className="text-background/50 text-[10px]">{t('stats.due')}</div>
+          <div className="text-background/50 text-overline">{t('stats.due')}</div>
         </div>
 
         {/* Stats - Desktop: show all */}
@@ -82,20 +78,20 @@ const Study = () => {
           <div className="flex items-center gap-3">
             <div className="text-center">
               <div className="text-blue-300 dark:text-blue-700 font-semibold">{totalStats.new}</div>
-              <div className="text-background/50 text-[10px]">{t('stats.new')}</div>
+              <div className="text-background/50 text-overline">{t('stats.new')}</div>
             </div>
             <div className="text-center">
               <div className="text-amber-300 dark:text-amber-700 font-semibold">{totalStats.learning}</div>
-              <div className="text-background/50 text-[10px]">{t('stats.learning')}</div>
+              <div className="text-background/50 text-overline">{t('stats.learning')}</div>
             </div>
             <div className="text-center">
               <div className="text-green-300 dark:text-green-700 font-semibold">{totalStats.review}</div>
-              <div className="text-background/50 text-[10px]">{t('stats.review')}</div>
+              <div className="text-background/50 text-overline">{t('stats.review')}</div>
             </div>
           </div>
           <div className="text-right ml-4">
             <div className="text-lg font-bold">{totalStats.total}</div>
-            <div className="text-background/50 text-[10px]">{t('stats.total')}</div>
+            <div className="text-background/50 text-overline">{t('stats.total')}</div>
           </div>
         </div>
       </button>
