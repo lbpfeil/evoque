@@ -57,7 +57,15 @@ Plans:
   3. StudySession preserves its serif font and intentional deviations while using system tokens for everything else
   4. All modals and popovers share identical padding, radius, header style, and button placement
   5. No arbitrary Tailwind values (text-[Xpx], w-[Ypx]) remain in any page file
-**Plans**: TBD
+**Plans**: 7 plans
+Plans:
+- [ ] 06-01-PLAN.md -- Migrate Login and Dashboard to token typography and PageHeader
+- [ ] 06-02-PLAN.md -- Migrate Study, DeckTable, and StudyStatusBadge to token patterns
+- [ ] 06-03-PLAN.md -- Migrate Settings to PageHeader and eliminate 15+ arbitrary values
+- [ ] 06-04-PLAN.md -- Migrate StudySession while preserving intentional deviations
+- [ ] 06-05-PLAN.md -- Migrate Highlights and HighlightTableRow to PageHeader and token typography
+- [ ] 06-06-PLAN.md -- Migrate modals, sidebar, and bottom nav to token typography
+- [ ] 06-07-PLAN.md -- Comprehensive audit and visual verification
 
 ### Phase 7: Design Guide
 **Goal**: A new developer (or future Claude) can build a page that looks identical to existing ones without asking questions
@@ -76,7 +84,7 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 4. Token Foundation | v2.0 | 2/2 | Complete | 2026-01-27 |
 | 5. Component Standardization | v2.0 | 2/2 | Complete | 2026-01-28 |
-| 6. Page Migration | v2.0 | 0/TBD | Not started | - |
+| 6. Page Migration | v2.0 | 0/7 | In progress | - |
 | 7. Design Guide | v2.0 | 0/TBD | Not started | - |
 
 ---
