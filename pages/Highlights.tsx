@@ -226,7 +226,7 @@ export const Highlights = () => {
       <PageHeader
         title={t('title')}
         description={t('stats.summary', { highlightCount: highlights.length, bookCount: stats.uniqueBooks, lastDate: formatDate(stats.lastHighlight) })}
-        size="default"
+        size="compact"
         className="pt-6 pb-2"
         actions={
           <button

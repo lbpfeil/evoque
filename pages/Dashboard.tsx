@@ -45,7 +45,7 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-12">
-      <PageHeader title={t('title')} description={t('subtitle')} size="default" />
+      <PageHeader title={t('title')} description={t('subtitle')} size="compact" />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
