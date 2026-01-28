@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-01-27)
 
 ## Current Position
 
-Phase: 9 of 10 (Component Adoption)
-Plan: 4 of 5 in phase 9
-Status: In progress
-Last activity: 2026-01-28 -- Completed 09-04-PLAN.md (Highlights page Button/Input migration)
+Phase: 9 of 10 (Component Adoption) -- COMPLETE
+Plan: 5 of 5 in phase 9
+Status: Phase complete -- all component Button/Input migration verified
+Last activity: 2026-01-28 -- Completed 09-05-PLAN.md (component-level Button adoption + DataTable removal + phase-wide audit)
 
-Progress: [█████████░] 90% (9/10 phases, 4/5 plans in phase 9)
+Progress: [█████████░] 90% (9/10 phases complete)
 
 ## Performance Metrics
 
@@ -32,13 +32,14 @@ Progress: [█████████░] 90% (9/10 phases, 4/5 plans in phase 
 | 06-page-migration | 7/7 | ~18.6min | ~2.7min |
 | 07-design-guide | 1/1 | 7.2min | 7.2min |
 | 08-token-consumption | 5/5 | ~30min | ~6min |
-| 09-component-adoption | 4/5 | 21.4min | 5.4min |
+| 09-component-adoption | 5/5 | 28.4min | 5.7min |
 
 **Recent Trend:**
 - Phase 9 plan 01: 4min (Login, Sidebar, ThemeToggle, ErrorBoundary Button/Input migration)
 - Phase 9 plan 02: 5.8min (Settings page 8 buttons + 5 inputs migration)
 - Phase 9 plan 03: 5.6min (StudySession 13 buttons + Study 1 button, 4 rating buttons preserved)
 - Phase 9 plan 04: 6min (Highlights page 13 buttons + search input migration)
+- Phase 9 plan 05: 7min (component-level Button adoption + DataTable removal + phase-wide audit)
 
 *Updated after each plan completion*
 
@@ -102,6 +103,11 @@ Recent decisions affecting current work:
 - [09-04]: Combobox triggers use variant='outline' with role='combobox' preserved for accessibility
 - [09-04]: Table header sort buttons use variant='ghost' with h-auto p-0 for minimal padding
 - [09-04]: Bulk action buttons use variant='ghost' with className overrides for custom dark background styling
+- [09-05]: TagManagerSidebar and TagSelector already migrated in phase 08-04 (no changes needed)
+- [09-05]: DataTable removed per YAGNI - 0 imports after 3+ weeks, incompatible with existing table structures
+- [09-05]: DeckTable deck row button kept raw intentionally - Button styling conflicts with table row grid appearance
+- [09-05]: HighlightTableRow custom checkbox documented as intentional deviation (SVG checkmark styling)
+- [09-05]: Phase 9 complete - all 4 ROADMAP success criteria verified across entire codebase
 
 ### Pending Todos
 
@@ -114,5 +120,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-28
-Stopped at: Completed 09-04-PLAN.md (Highlights page Button/Input migration)
+Stopped at: Phase 9 complete -- all component Button/Input migration verified, ROADMAP criteria met
 Resume file: None
