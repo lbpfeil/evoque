@@ -33,6 +33,7 @@ export const DeckTable: React.FC<DeckTableProps> = ({ decks, onDeckClick }) => {
             {/* Table Body */}
             <div className="divide-y divide-border">
                 {decks.map((deck) => (
+                    /* Deck row button -- kept raw intentionally (Button styling conflicts with table row grid appearance) */
                     <button
                         key={deck.id}
                         onClick={() => onDeckClick(deck.id)}

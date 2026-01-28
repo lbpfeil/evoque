@@ -5,6 +5,7 @@ import { TagSelector } from './TagSelector';
 import { StudyStatusBadge } from './StudyStatusBadge';
 import { Book, Tag as TagIcon } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { Button } from './ui/button';
 
 interface HighlightTableRowProps {
     highlight: Highlight;
@@ -46,6 +47,7 @@ export const HighlightTableRow: React.FC<HighlightTableRowProps> = ({
         >
             {/* Checkbox */}
             <td className="px-md py-sm align-top w-[40px]">
+                {/* Custom checkbox -- kept raw for SVG checkmark styling */}
                 <input
                     type="checkbox"
                     className="appearance-none w-4 h-4 rounded border border-input checked:bg-primary checked:border-primary transition-colors duration-200 cursor-pointer relative top-1"
@@ -97,12 +99,14 @@ export const HighlightTableRow: React.FC<HighlightTableRowProps> = ({
                         {highlight.note}
                     </div>
                 ) : (
-                    <button
+                    <Button
+                        variant="ghost"
+                        size="compact"
                         onClick={() => onEdit(highlight.id)}
-                        className="text-overline text-muted-foreground/50 hover:text-muted-foreground transition-colors duration-200 italic group-hover:block"
+                        className="text-overline text-muted-foreground/50 hover:text-muted-foreground h-auto p-0 italic group-hover:block"
                     >
                         {t('table.addNote')}
-                    </button>
+                    </Button>
                 )}
             </td>
 

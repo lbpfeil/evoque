@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from './ui/dialog';
+import { Button } from './ui/button';
 
 interface BookContextModalProps {
   bookId: string | null;
@@ -106,12 +107,9 @@ const BookContextModal: React.FC<BookContextModalProps> = ({ bookId, onClose }) 
 
         {/* Footer */}
         <div className="p-md border-t border-border bg-muted flex justify-end flex-shrink-0">
-          <button
-            onClick={onClose}
-            className="px-lg py-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors duration-200 text-body font-medium"
-          >
+          <Button onClick={onClose}>
             {t('common:buttons.close')}
-          </button>
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from './ui/dialog';
+import { Button } from './ui/button';
 
 interface HighlightEditModalProps {
   highlightId: string | null;
@@ -143,16 +144,17 @@ const HighlightEditModal: React.FC<HighlightEditModalProps> = ({ highlightId, on
 
           {/* Stats toggle button */}
           {card && (
-            <button
+            <Button
+              variant="outline"
               onClick={() => setShowStats(!showStats)}
-              className="w-full flex items-center justify-between p-xs rounded border border-border hover:bg-accent transition-colors duration-200 text-caption"
+              className="w-full flex items-center justify-between h-auto p-xs"
             >
               <span className="flex items-center gap-xs text-muted-foreground font-medium">
                 <TrendingUp className="w-3 h-3" />
                 {t('editModal.learningStats')}
               </span>
               {showStats ? <ChevronUp className="w-3 h-3 text-muted-foreground" /> : <ChevronDown className="w-3 h-3 text-muted-foreground" />}
-            </button>
+            </Button>
           )}
 
           {/* Stats section (collapsible) */}
