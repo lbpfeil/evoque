@@ -550,7 +550,7 @@ const Settings = () => {
                           <div className="flex items-center justify-between">
                             <label className="text-caption text-foreground">{t('library.dailyLimit')}</label>
                             <div className="flex items-center gap-xs">
-                              <input
+                              <Input
                                 type="number"
                                 min="1"
                                 max="100"
@@ -560,7 +560,7 @@ const Settings = () => {
                                   const value = e.target.value === '' ? undefined : Number(e.target.value);
                                   updateBookSettings(book.id, { dailyReviewLimit: value });
                                 }}
-                                className="h-6 w-16 px-xs text-caption border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring bg-background text-foreground"
+                                className="h-6 w-16"
                               />
                               <span className="text-overline text-muted-foreground">{t('library.cardsPerDay')}</span>
                             </div>
@@ -570,7 +570,7 @@ const Settings = () => {
                           <div className="flex items-center justify-between">
                             <label className="text-caption text-foreground">{t('library.easeFactor')}</label>
                             <div className="flex items-center gap-xs">
-                              <input
+                              <Input
                                 type="number"
                                 min="1.3"
                                 max="3.5"
@@ -581,7 +581,7 @@ const Settings = () => {
                                   const value = e.target.value === '' ? undefined : Number(e.target.value);
                                   updateBookSettings(book.id, { initialEaseFactor: value });
                                 }}
-                                className="h-6 w-16 px-xs text-caption border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring bg-background text-foreground"
+                                className="h-6 w-16"
                               />
                               <span className="text-overline text-muted-foreground">{t('library.newCards')}</span>
                             </div>
@@ -657,13 +657,13 @@ const Settings = () => {
               <div className="bg-muted border border-border rounded p-sm space-y-xs">
                 <div className="flex items-center justify-between">
                   <span className="text-caption text-muted-foreground">{t('account.profile.name')}</span>
-                  <input
+                  <Input
                     type="text"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     onBlur={handleSaveFullName}
                     placeholder={t('account.profile.namePlaceholder')}
-                    className="h-6 px-xs text-caption border border-input rounded w-48 focus:outline-none focus:ring-1 focus:ring-ring bg-background text-foreground"
+                    className="h-6 w-48"
                   />
                 </div>
                 <div className="flex items-center justify-between">
@@ -721,13 +721,13 @@ const Settings = () => {
                 <div className="flex items-center justify-between">
                   <label className="text-caption text-foreground">{t('preferences.study.dailyLimit')}</label>
                   <div className="flex items-center gap-xs">
-                    <input
+                    <Input
                       type="number"
                       min="1"
                       max="100"
                       value={settings.maxReviewsPerDay || 10}
                       onChange={(e) => updateSettings({ maxReviewsPerDay: Number(e.target.value) })}
-                      className="h-6 w-16 px-xs text-caption border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring bg-background text-foreground"
+                      className="h-6 w-16"
                     />
                     <span className="text-overline text-muted-foreground">{t('preferences.study.cardsPerBookDay')}</span>
                   </div>
@@ -736,14 +736,14 @@ const Settings = () => {
                 <div className="flex items-center justify-between">
                   <label className="text-caption text-foreground">{t('preferences.study.easeFactor')}</label>
                   <div className="flex items-center gap-xs">
-                    <input
+                    <Input
                       type="number"
                       min="1.3"
                       max="3.5"
                       step="0.1"
                       value={settings.defaultInitialEaseFactor || 2.5}
                       onChange={(e) => updateSettings({ defaultInitialEaseFactor: Number(e.target.value) })}
-                      className="h-6 w-16 px-xs text-caption border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring bg-background text-foreground"
+                      className="h-6 w-16"
                     />
                     <span className="text-overline text-muted-foreground">{t('preferences.study.newCards')}</span>
                   </div>

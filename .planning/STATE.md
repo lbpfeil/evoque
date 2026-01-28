@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-01-27)
 
 ## Current Position
 
-Phase: 8 of 10 (Token Consumption) -- COMPLETE
-Plan: 5 of 5 in phase 8
-Status: Phase complete -- verified with orchestrator corrections
-Last activity: 2026-01-28 -- Phase 8 complete (all 5 plans + verification + corrections)
+Phase: 9 of 10 (Component Adoption)
+Plan: 1 of 5 in phase 9
+Status: In progress
+Last activity: 2026-01-28 -- Completed 09-01-PLAN.md (foundation files migration)
 
-Progress: [████████░░] 80% (8/10 phases)
+Progress: [█████████░] 90% (9/10 phases, 1/5 plans in phase 9)
 
 ## Performance Metrics
 
@@ -32,12 +32,13 @@ Progress: [████████░░] 80% (8/10 phases)
 | 06-page-migration | 7/7 | ~18.6min | ~2.7min |
 | 07-design-guide | 1/1 | 7.2min | 7.2min |
 | 08-token-consumption | 5/5 | ~30min | ~6min |
+| 09-component-adoption | 1/5 | 4min | 4min |
 
 **Recent Trend:**
-- Phase 7 plan 01: 7.2min (601-line design system guide + CLAUDE.md updates)
 - Phase 8 plan 03: ~5min (Dashboard + Highlights token migration)
 - Phase 8 plan 04: 12.5min (6 high-interaction components + tag/status color tokens)
 - Phase 8 plan 05: ~8min (11 remaining components + comprehensive audit, phase complete)
+- Phase 9 plan 01: 4min (Login, Sidebar, ThemeToggle, ErrorBoundary Button/Input migration)
 
 *Updated after each plan completion*
 
@@ -89,6 +90,9 @@ Recent decisions affecting current work:
 - [08-04]: Tinted color variants (bg-blue-50, hover:bg-amber-50) kept as raw with comments - no semantic tinted tokens exist
 - [08-04]: Tag solid colors successfully migrated (text-tag-global, text-tag-book)
 - [08-04]: Status stat colors successfully migrated (text-status-new/learning/review in DeckTable)
+- [09-01]: Login toggle button uses variant='link' for text-only action (underlined navigation pattern)
+- [09-01]: Sidebar buttons use variant='ghost' for transparent navigation with hover
+- [09-01]: Dashboard.tsx confirmed 0 raw buttons via grep (no migration needed)
 
 ### Pending Todos
 
@@ -101,5 +105,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-28
-Stopped at: Phase 8 complete -- all token consumption verified
+Stopped at: Completed 09-01-PLAN.md (foundation files migration complete)
 Resume file: None
