@@ -79,10 +79,10 @@
 | TOKENS-06 | Phase 4 | Complete |
 | TOKENS-07 | Phase 4 | Complete |
 | TOKENS-08 | Phase 4 | Complete |
-| COMP-01 | Phase 5 | Pending |
-| COMP-02 | Phase 5 | Pending |
-| COMP-03 | Phase 5 | Pending |
-| COMP-04 | Phase 5 | Pending |
+| COMP-01 | Phase 5 | Complete |
+| COMP-02 | Phase 5 | Complete |
+| COMP-03 | Phase 5 | Complete |
+| COMP-04 | Phase 5 | Complete |
 | PAGE-01 | Phase 6 | Pending |
 | PAGE-02 | Phase 6 | Pending |
 | PAGE-03 | Phase 6 | Pending |

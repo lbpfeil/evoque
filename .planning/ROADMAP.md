@@ -12,7 +12,7 @@ v1.0 shipped a working theme system but no governing design system -- the result
 ## Phases
 
 - [x] **Phase 4: Token Foundation** - Define the rigid design vocabulary (typography, spacing, radius, shadows, motion, icons, z-index, color rules)
-- [ ] **Phase 5: Component Standardization** - Audit and align all components to the token system
+- [x] **Phase 5: Component Standardization** - Audit and align all components to the token system
 - [ ] **Phase 6: Page Migration** - Migrate all 7 pages + modals to canonical patterns
 - [ ] **Phase 7: Design Guide** - Document the living design system in a single concise guide
 
@@ -44,8 +44,8 @@ Plans:
   4. CVA variants for Button, Input, Badge, and Card reflect the token system (no arbitrary overrides needed)
 **Plans**: 2 plans
 Plans:
-- [ ] 05-01-PLAN.md -- Fix shadcn component CVA defaults (Button compact variant, Input h-8, Badge verification)
-- [ ] 05-02-PLAN.md -- Create PageHeader and DataTable composition patterns
+- [x] 05-01-PLAN.md -- Fix shadcn component CVA defaults (Button compact variant, Input h-8, Badge verification)
+- [x] 05-02-PLAN.md -- Create PageHeader and DataTable composition patterns
 
 ### Phase 6: Page Migration
 **Goal**: Every page in the app looks like it was designed by the same person on the same day
@@ -75,7 +75,7 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 4. Token Foundation | v2.0 | 2/2 | Complete | 2026-01-27 |
-| 5. Component Standardization | v2.0 | 0/2 | In progress | - |
+| 5. Component Standardization | v2.0 | 2/2 | Complete | 2026-01-28 |
 | 6. Page Migration | v2.0 | 0/TBD | Not started | - |
 | 7. Design Guide | v2.0 | 0/TBD | Not started | - |
 
