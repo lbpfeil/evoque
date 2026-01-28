@@ -26,14 +26,14 @@
 
 ### Page Migration (PAGE)
 
-- [ ] **PAGE-01**: Migrar Dashboard para padroes canonicos (tokens, PageHeader, estilo Generous)
-- [ ] **PAGE-02**: Migrar Highlights para padroes canonicos
-- [ ] **PAGE-03**: Migrar Study para padroes canonicos
-- [ ] **PAGE-04**: Migrar StudySession para padroes canonicos (preservar fonte serif e desvios intencionais)
-- [ ] **PAGE-05**: Migrar BookDetails para padroes canonicos
-- [ ] **PAGE-06**: Migrar Settings para padroes canonicos
-- [ ] **PAGE-07**: Migrar Login para padroes canonicos
-- [ ] **PAGE-08**: Padronizar todos os modais e popovers para padroes consistentes
+- [x] **PAGE-01**: Migrar Dashboard para padroes canonicos (tokens, PageHeader, estilo Generous)
+- [x] **PAGE-02**: Migrar Highlights para padroes canonicos
+- [x] **PAGE-03**: Migrar Study para padroes canonicos
+- [x] **PAGE-04**: Migrar StudySession para padroes canonicos (preservar fonte serif e desvios intencionais)
+- [x] **PAGE-05**: Migrar BookDetails para padroes canonicos
+- [x] **PAGE-06**: Migrar Settings para padroes canonicos
+- [x] **PAGE-07**: Migrar Login para padroes canonicos
+- [x] **PAGE-08**: Padronizar todos os modais e popovers para padroes consistentes
 
 ### Documentation (DOC)
 
@@ -83,14 +83,14 @@
 | COMP-02 | Phase 5 | Complete |
 | COMP-03 | Phase 5 | Complete |
 | COMP-04 | Phase 5 | Complete |
-| PAGE-01 | Phase 6 | Pending |
-| PAGE-02 | Phase 6 | Pending |
-| PAGE-03 | Phase 6 | Pending |
-| PAGE-04 | Phase 6 | Pending |
-| PAGE-05 | Phase 6 | Pending |
-| PAGE-06 | Phase 6 | Pending |
-| PAGE-07 | Phase 6 | Pending |
-| PAGE-08 | Phase 6 | Pending |
+| PAGE-01 | Phase 6 | Complete |
+| PAGE-02 | Phase 6 | Complete |
+| PAGE-03 | Phase 6 | Complete |
+| PAGE-04 | Phase 6 | Complete |
+| PAGE-05 | Phase 6 | Complete |
+| PAGE-06 | Phase 6 | Complete |
+| PAGE-07 | Phase 6 | Complete |
+| PAGE-08 | Phase 6 | Complete |
 | DOC-01 | Phase 7 | Pending |
 | DOC-02 | Phase 7 | Pending |
 
