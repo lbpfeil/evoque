@@ -9,13 +9,13 @@
 ### Design Tokens (TOKENS)
 
 - [ ] **TOKENS-01**: Escala tipografica com 6 tamanhos nomeados e regras estritas por contexto (display, title, heading, body, caption, overline)
-- [ ] **TOKENS-02**: Escala de espacamento com 8 tokens semanticos em grid de 4px
+- [x] **TOKENS-02**: Escala de espacamento com 8 tokens semanticos em grid de 4px
 - [ ] **TOKENS-03**: Escala de border-radius com exatamente 3 valores (sm, md, lg)
 - [ ] **TOKENS-04**: Escala de shadows com exatamente 3 elevacoes
 - [ ] **TOKENS-05**: Motion tokens -- 3 duracoes + 3 easings como CSS custom properties
 - [ ] **TOKENS-06**: Escala de icones com exatamente 3 tamanhos (14px, 16px, 20px)
 - [ ] **TOKENS-07**: Sistema de z-index com 7 camadas semanticas
-- [ ] **TOKENS-08**: Regras de uso de cor -- banir classes raw (text-zinc-*), forcar uso semantico (text-foreground, text-muted-foreground)
+- [x] **TOKENS-08**: Regras de uso de cor -- banir classes raw (text-zinc-*), forcar uso semantico (text-foreground, text-muted-foreground)
 
 ### Components (COMP)
 
@@ -72,13 +72,13 @@
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | TOKENS-01 | Phase 4 | Complete |
-| TOKENS-02 | Phase 4 + **Phase 8** | Partial (defined, not consumed) |
+| TOKENS-02 | Phase 4 + Phase 8 | Complete |
 | TOKENS-03 | Phase 4 | Complete |
 | TOKENS-04 | Phase 4 | Complete |
 | TOKENS-05 | Phase 4 | Complete |
 | TOKENS-06 | Phase 4 | Complete |
 | TOKENS-07 | Phase 4 | Complete |
-| TOKENS-08 | Phase 4 + **Phase 8** | Partial (defined, not consumed) |
+| TOKENS-08 | Phase 4 + Phase 8 | Complete |
 | COMP-01 | Phase 5 + **Phase 9** | Partial (standardized, not adopted) |
 | COMP-02 | Phase 5 | Complete |
 | COMP-03 | Phase 5 + **Phase 9** | Partial (created, orphaned) |
@@ -97,10 +97,10 @@
 **Coverage:**
 - v1 requirements: 22 total
 - Mapped to phases: 22
-- Fully satisfied: 17
-- Partial (gap closure needed): 5 (TOKENS-02, TOKENS-08, COMP-01, COMP-03, DOC-01)
+- Fully satisfied: 19
+- Partial (gap closure needed): 3 (COMP-01, COMP-03, DOC-01)
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-01-27*
-*Last updated: 2026-01-28 -- gap closure phases 8-10 added from milestone audit*
+*Last updated: 2026-01-28 -- Phase 8 complete (TOKENS-02, TOKENS-08 fully satisfied)*

@@ -16,7 +16,7 @@ v1.0 shipped a working theme system but no governing design system -- the result
 - [x] **Phase 5: Component Standardization** - Audit and align all components to the token system
 - [x] **Phase 6: Page Migration** - Migrate all 7 pages + modals to canonical patterns
 - [x] **Phase 7: Design Guide** - Document the living design system in a single concise guide
-- [ ] **Phase 8: Token Consumption** - Migrate all pages from raw values to semantic spacing, typography, and color tokens
+- [x] **Phase 8: Token Consumption** - Migrate all pages from raw values to semantic spacing, typography, and color tokens
 - [ ] **Phase 9: Component Adoption** - Replace raw HTML elements with standardized shadcn components across all pages
 - [ ] **Phase 10: Bug Fixes & Guide Accuracy** - Fix color rendering bugs, update guide to match reality, clean up stale references
 
@@ -94,11 +94,11 @@ Plans:
   4. Zero raw numeric spacing, raw color, or raw typography values in page files
 **Plans**: 5 plans
 Plans:
-- [ ] 08-01-PLAN.md -- Migrate Settings and Login to semantic spacing, typography, and color tokens
-- [ ] 08-02-PLAN.md -- Migrate StudySession and Study to semantic tokens (with deviation preservation)
-- [ ] 08-03-PLAN.md -- Migrate Highlights and Dashboard to semantic tokens
-- [ ] 08-04-PLAN.md -- Migrate tag, deck, status, and highlight components to semantic tokens
-- [ ] 08-05-PLAN.md -- Migrate remaining components (nav, modals, popovers, error, data-viz) and run final audit
+- [x] 08-01-PLAN.md -- Migrate Settings and Login to semantic spacing, typography, and color tokens
+- [x] 08-02-PLAN.md -- Migrate StudySession and Study to semantic tokens (with deviation preservation)
+- [x] 08-03-PLAN.md -- Migrate Highlights and Dashboard to semantic tokens
+- [x] 08-04-PLAN.md -- Migrate tag, deck, status, and highlight components to semantic tokens
+- [x] 08-05-PLAN.md -- Migrate remaining components (nav, modals, popovers, error, data-viz) and run final audit
 
 ### Phase 9: Component Adoption
 **Goal**: Every interactive element uses the standardized shadcn component -- no raw HTML buttons or inputs remain
@@ -134,7 +134,7 @@ Plans: TBD
 | 5. Component Standardization | v2.0 | 2/2 | Complete | 2026-01-28 |
 | 6. Page Migration | v2.0 | 7/7 | Complete | 2026-01-28 |
 | 7. Design Guide | v2.0 | 1/1 | Complete | 2026-01-28 |
-| 8. Token Consumption | v2.0 | 0/5 | In Progress | -- |
+| 8. Token Consumption | v2.0 | 5/5 | Complete | 2026-01-28 |
 | 9. Component Adoption | v2.0 | 0/? | Not Started | -- |
 | 10. Bug Fixes & Guide Accuracy | v2.0 | 0/? | Not Started | -- |
 
