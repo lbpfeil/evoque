@@ -22,12 +22,12 @@ export const DeckTable: React.FC<DeckTableProps> = ({ decks, onDeckClick }) => {
     return (
         <div className="border border-border rounded overflow-hidden">
             {/* Table Header */}
-            <div className="bg-muted border-b border-border px-2 py-1 grid grid-cols-[1fr_48px] sm:grid-cols-[1fr_48px_64px_48px_48px] gap-2 items-center">
-                <div className="text-xs font-semibold text-muted-foreground">{t('table.deck')}</div>
-                <div className="hidden sm:block text-xs font-semibold text-muted-foreground text-right">{t('table.new')}</div>
-                <div className="hidden sm:block text-xs font-semibold text-muted-foreground text-right">{t('table.learning')}</div>
-                <div className="hidden sm:block text-xs font-semibold text-muted-foreground text-right">{t('table.review')}</div>
-                <div className="text-xs font-semibold text-muted-foreground text-right">{t('table.total')}</div>
+            <div className="bg-muted border-b border-border px-xs py-xxs grid grid-cols-[1fr_48px] sm:grid-cols-[1fr_48px_64px_48px_48px] gap-xs items-center">
+                <div className="text-caption font-semibold text-muted-foreground">{t('table.deck')}</div>
+                <div className="hidden sm:block text-caption font-semibold text-muted-foreground text-right">{t('table.new')}</div>
+                <div className="hidden sm:block text-caption font-semibold text-muted-foreground text-right">{t('table.learning')}</div>
+                <div className="hidden sm:block text-caption font-semibold text-muted-foreground text-right">{t('table.review')}</div>
+                <div className="text-caption font-semibold text-muted-foreground text-right">{t('table.total')}</div>
             </div>
 
             {/* Table Body */}
@@ -37,7 +37,7 @@ export const DeckTable: React.FC<DeckTableProps> = ({ decks, onDeckClick }) => {
                         key={deck.id}
                         onClick={() => onDeckClick(deck.id)}
                         className={cn(
-                            "w-full px-2 py-1 grid grid-cols-[1fr_48px] sm:grid-cols-[1fr_48px_64px_48px_48px] gap-2 items-center",
+                            "w-full px-xs py-xxs grid grid-cols-[1fr_48px] sm:grid-cols-[1fr_48px_64px_48px_48px] gap-xs items-center",
                             "hover:bg-accent/50 transition-colors text-left",
                             deck.isAllBooks && "bg-muted/50 font-medium"
                         )}
@@ -45,13 +45,13 @@ export const DeckTable: React.FC<DeckTableProps> = ({ decks, onDeckClick }) => {
                         {/* Deck Name */}
                         <div className="min-w-0">
                             <div className={cn(
-                                "text-sm sm:text-xs text-foreground truncate",
+                                "text-body sm:text-caption text-foreground truncate",
                                 deck.isAllBooks && "font-semibold"
                             )}>
                                 {deck.title}
                             </div>
                             {deck.author && (
-                                <div className="text-xs sm:text-overline text-muted-foreground truncate">
+                                <div className="text-caption sm:text-overline text-muted-foreground truncate">
                                     {deck.author}
                                 </div>
                             )}
@@ -59,31 +59,31 @@ export const DeckTable: React.FC<DeckTableProps> = ({ decks, onDeckClick }) => {
 
                         {/* New Count - Hidden on mobile */}
                         <div className={cn(
-                            "hidden sm:block text-xs text-right tabular-nums",
-                            deck.stats.new > 0 ? "text-blue-600 font-medium" : "text-muted-foreground"
+                            "hidden sm:block text-caption text-right tabular-nums",
+                            deck.stats.new > 0 ? "text-status-new font-medium" : "text-muted-foreground"
                         )}>
                             {deck.stats.new}
                         </div>
 
                         {/* Learning Count - Hidden on mobile */}
                         <div className={cn(
-                            "hidden sm:block text-xs text-right tabular-nums",
-                            deck.stats.learning > 0 ? "text-amber-600 font-medium" : "text-muted-foreground"
+                            "hidden sm:block text-caption text-right tabular-nums",
+                            deck.stats.learning > 0 ? "text-status-learning font-medium" : "text-muted-foreground"
                         )}>
                             {deck.stats.learning}
                         </div>
 
                         {/* Review Count - Hidden on mobile */}
                         <div className={cn(
-                            "hidden sm:block text-xs text-right tabular-nums",
-                            deck.stats.review > 0 ? "text-green-600 font-medium" : "text-muted-foreground"
+                            "hidden sm:block text-caption text-right tabular-nums",
+                            deck.stats.review > 0 ? "text-status-review font-medium" : "text-muted-foreground"
                         )}>
                             {deck.stats.review}
                         </div>
 
                         {/* Total Count */}
                         <div className={cn(
-                            "text-sm sm:text-xs text-right tabular-nums font-semibold",
+                            "text-body sm:text-caption text-right tabular-nums font-semibold",
                             deck.stats.total > 0 ? "text-foreground" : "text-muted-foreground"
                         )}>
                             {deck.stats.total}

@@ -45,7 +45,7 @@ export const HighlightTableRow: React.FC<HighlightTableRowProps> = ({
             )}
         >
             {/* Checkbox */}
-            <td className="px-4 py-3 align-top w-[40px]">
+            <td className="px-md py-sm align-top w-[40px]">
                 <input
                     type="checkbox"
                     className="appearance-none w-4 h-4 rounded border border-input checked:bg-primary checked:border-primary transition-colors duration-200 cursor-pointer relative top-1"
@@ -63,22 +63,22 @@ export const HighlightTableRow: React.FC<HighlightTableRowProps> = ({
             </td>
 
             {/* Book */}
-            <td className="px-4 py-3 align-top w-[180px] max-w-[200px]">
+            <td className="px-md py-sm align-top w-[180px] max-w-[200px]">
                 <div className="flex flex-col gap-0.5">
-                    <div className="flex items-center gap-1.5 text-foreground font-medium text-xs">
+                    <div className="flex items-center gap-1.5 text-foreground font-medium text-caption">
                         <Book className="w-3 h-3 text-muted-foreground shrink-0" />
                         <span className="truncate" title={book?.title}>{book?.title || t('table.unknownBook')}</span>
                     </div>
-                    <span className="text-overline text-muted-foreground pl-4 truncate" title={book?.author}>
+                    <span className="text-overline text-muted-foreground pl-md truncate" title={book?.author}>
                         {book?.author}
                     </span>
                 </div>
             </td>
 
             {/* Highlight Text */}
-            <td className="px-4 py-3 align-top min-w-[300px]">
+            <td className="px-md py-sm align-top min-w-[300px]">
                 <div
-                    className="text-sm leading-relaxed text-foreground cursor-pointer hover:text-muted-foreground line-clamp-3 transition-colors duration-200"
+                    className="text-body leading-relaxed text-foreground cursor-pointer hover:text-muted-foreground line-clamp-3 transition-colors duration-200"
                     onClick={() => onEdit(highlight.id)}
                     title={highlight.text}
                 >
@@ -87,10 +87,10 @@ export const HighlightTableRow: React.FC<HighlightTableRowProps> = ({
             </td>
 
             {/* Note */}
-            <td className="px-4 py-3 align-top w-[280px]">
+            <td className="px-md py-sm align-top w-[280px]">
                 {highlight.note ? (
                     <div
-                        className="text-sm leading-relaxed text-foreground cursor-pointer hover:text-muted-foreground line-clamp-3 transition-colors duration-200"
+                        className="text-body leading-relaxed text-foreground cursor-pointer hover:text-muted-foreground line-clamp-3 transition-colors duration-200"
                         onClick={() => onEdit(highlight.id)}
                         title={highlight.note}
                     >
@@ -107,19 +107,19 @@ export const HighlightTableRow: React.FC<HighlightTableRowProps> = ({
             </td>
 
             {/* Tags */}
-            <td className="px-4 py-3 align-top w-[140px]">
+            <td className="px-md py-sm align-top w-[140px]">
                 <div className="flex items-start">
                     <TagSelector highlightId={highlight.id} bookId={highlight.bookId} variant="minimal" />
                 </div>
             </td>
 
             {/* Date */}
-            <td className="px-4 py-3 align-top whitespace-nowrap w-[80px] text-muted-foreground text-overline font-medium pt-3.5">
+            <td className="px-md py-sm align-top whitespace-nowrap w-[80px] text-muted-foreground text-overline font-medium pt-3.5">
                 {formatDateShort(highlight.dateAdded)}
             </td>
 
             {/* Status */}
-            <td className="px-4 py-3 align-top w-[90px] pt-3">
+            <td className="px-md py-sm align-top w-[90px] pt-sm">
                 <StudyStatusBadge status={studyStatus} />
             </td>
         </tr>

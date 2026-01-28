@@ -9,10 +9,10 @@ See: .planning/PROJECT.md (updated 2026-01-27)
 
 ## Current Position
 
-Phase: 8 of 10 (Token Consumption) -- NOT STARTED
-Plan: 0 of ? in phase 8
-Status: Gap closure phases created from milestone audit
-Last activity: 2026-01-28 -- Created gap closure phases 8-10
+Phase: 8 of 10 (Token Consumption) -- IN PROGRESS
+Plan: 3 of ? in phase 8
+Status: Page token migrations complete (Plans 01-03)
+Last activity: 2026-01-28 -- Completed 08-03-PLAN.md (Highlights + Dashboard pages)
 
 Progress: [███████░░░░] 70% (7/10 phases)
 
@@ -31,11 +31,12 @@ Progress: [███████░░░░] 70% (7/10 phases)
 | 05-component-standardization | 2 | 5.9min | 3.0min |
 | 06-page-migration | 7/7 | ~18.6min | ~2.7min |
 | 07-design-guide | 1/1 | 7.2min | 7.2min |
+| 08-token-consumption | 3/? | 7.0min | 2.3min |
 
 **Recent Trend:**
-- Phase 6 plan 06: 3.2min (Cross-cutting components, 14 replacements across 6 files)
 - Phase 6 plan 07: 2.5min (Comprehensive audit + visual verification + PageHeader standardization)
 - Phase 7 plan 01: 7.2min (601-line design system guide + CLAUDE.md updates)
+- Phase 8 plan 03: 7.0min (Highlights + Dashboard token migration, ~80 replacements)
 
 *Updated after each plan completion*
 
@@ -73,6 +74,8 @@ Recent decisions affecting current work:
 - [07-01]: Single design-system-guide.md replaces compact-ui-design-guidelines.md
 - [07-01]: Guide written in English (matches CLAUDE.md and codebase)
 - [07-01]: CLAUDE.md updated to reference new guide in all locations
+- [08-03]: Tag colors use text-tag-book and text-tag-global semantic tokens (not raw amber/blue)
+- [08-03]: py-20 (80px) kept as raw value when above token scale maximum (64px)
 
 ### Pending Todos
 
@@ -85,5 +88,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-28
-Stopped at: Completed 07-01-PLAN.md (Phase 7 complete, all phases done)
+Stopped at: Completed 08-03-PLAN.md (Highlights + Dashboard pages migrated to tokens)
 Resume file: None

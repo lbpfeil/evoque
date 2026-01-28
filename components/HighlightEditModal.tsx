@@ -92,21 +92,21 @@ const HighlightEditModal: React.FC<HighlightEditModalProps> = ({ highlightId, on
     <Dialog open={!!highlightId} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="max-w-2xl max-h-[95vh] overflow-hidden flex flex-col p-0">
         {/* Header with book info */}
-        <DialogHeader className="p-3 border-b border-border flex-shrink-0">
-          <div className="flex items-start gap-3">
+        <DialogHeader className="p-sm border-b border-border flex-shrink-0">
+          <div className="flex items-start gap-sm">
             <img src={book.coverUrl} alt={book.title} className="w-14 h-[86px] object-cover rounded shadow-sm flex-shrink-0" />
             <div className="flex-1 min-w-0">
-              <DialogTitle className="text-base font-bold mb-0.5 line-clamp-1">
+              <DialogTitle className="text-heading font-bold mb-0.5 line-clamp-1">
                 {book.title}
               </DialogTitle>
-              <p className="text-xs text-muted-foreground mb-2">{book.author}</p>
-              <div className="flex flex-wrap gap-3 text-overline text-muted-foreground">
-                <div className="flex items-center gap-1">
+              <p className="text-caption text-muted-foreground mb-xs">{book.author}</p>
+              <div className="flex flex-wrap gap-sm text-overline text-muted-foreground">
+                <div className="flex items-center gap-xxs">
                   <Calendar className="w-3 h-3" />
                   <span>{formatDate(highlight.dateAdded)}</span>
                 </div>
                 {highlight.location && (
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-xxs">
                     <BookOpen className="w-3 h-3" />
                     <span>{highlight.location}</span>
                   </div>
@@ -117,25 +117,25 @@ const HighlightEditModal: React.FC<HighlightEditModalProps> = ({ highlightId, on
         </DialogHeader>
 
         {/* Content area - scrollable */}
-        <div className="flex-1 overflow-y-auto p-3 space-y-2">
+        <div className="flex-1 overflow-y-auto p-sm space-y-xs">
           {/* Highlight text area */}
-          <div className="bg-muted border border-border rounded p-2">
-            <label className="text-overline uppercase text-muted-foreground font-semibold mb-1 block">{t('editModal.highlight')}</label>
+          <div className="bg-muted border border-border rounded p-xs">
+            <label className="text-overline uppercase text-muted-foreground font-semibold mb-xxs block">{t('editModal.highlight')}</label>
             <textarea
               value={editForm.text}
               onChange={(e) => handleChange('text', e.target.value)}
-              className="w-full bg-transparent border-0 px-0 py-0 text-xs text-foreground resize-none focus:outline-none placeholder:text-muted-foreground"
+              className="w-full bg-transparent border-0 px-0 py-0 text-caption text-foreground resize-none focus:outline-none placeholder:text-muted-foreground"
               rows={6}
             />
           </div>
 
           {/* Note text area */}
-          <div className="bg-muted border border-border rounded p-2">
-            <label className="text-overline uppercase text-muted-foreground font-semibold mb-1 block">{t('editModal.note')}</label>
+          <div className="bg-muted border border-border rounded p-xs">
+            <label className="text-overline uppercase text-muted-foreground font-semibold mb-xxs block">{t('editModal.note')}</label>
             <textarea
               value={editForm.note}
               onChange={(e) => handleChange('note', e.target.value)}
-              className="w-full bg-transparent border-0 px-0 py-0 text-xs text-foreground resize-none focus:outline-none placeholder:text-muted-foreground"
+              className="w-full bg-transparent border-0 px-0 py-0 text-caption text-foreground resize-none focus:outline-none placeholder:text-muted-foreground"
               rows={5}
               placeholder={t('editModal.notePlaceholder')}
             />
@@ -145,9 +145,9 @@ const HighlightEditModal: React.FC<HighlightEditModalProps> = ({ highlightId, on
           {card && (
             <button
               onClick={() => setShowStats(!showStats)}
-              className="w-full flex items-center justify-between p-2 rounded border border-border hover:bg-accent transition-colors duration-200 text-xs"
+              className="w-full flex items-center justify-between p-xs rounded border border-border hover:bg-accent transition-colors duration-200 text-caption"
             >
-              <span className="flex items-center gap-2 text-muted-foreground font-medium">
+              <span className="flex items-center gap-xs text-muted-foreground font-medium">
                 <TrendingUp className="w-3 h-3" />
                 {t('editModal.learningStats')}
               </span>
@@ -157,7 +157,7 @@ const HighlightEditModal: React.FC<HighlightEditModalProps> = ({ highlightId, on
 
           {/* Stats section (collapsible) */}
           {showStats && card && (
-            <div className="space-y-3 pt-2">
+            <div className="space-y-sm pt-xs">
               {/* Chart */}
               {statsData.length > 0 && (
                 <div className="h-40 w-full">
@@ -198,18 +198,18 @@ const HighlightEditModal: React.FC<HighlightEditModalProps> = ({ highlightId, on
               )}
 
               {/* Stats grid */}
-              <div className="grid grid-cols-3 gap-2">
-                <div className="bg-muted p-2 rounded text-center">
+              <div className="grid grid-cols-3 gap-xs">
+                <div className="bg-muted p-xs rounded text-center">
                   <p className="text-overline text-muted-foreground uppercase font-semibold">{t('editModal.reps')}</p>
-                  <p className="text-sm font-bold">{card.repetitions}</p>
+                  <p className="text-body font-bold">{card.repetitions}</p>
                 </div>
-                <div className="bg-muted p-2 rounded text-center">
+                <div className="bg-muted p-xs rounded text-center">
                   <p className="text-overline text-muted-foreground uppercase font-semibold">{t('editModal.ease')}</p>
-                  <p className="text-sm font-bold">{card.easeFactor.toFixed(2)}</p>
+                  <p className="text-body font-bold">{card.easeFactor.toFixed(2)}</p>
                 </div>
-                <div className="bg-muted p-2 rounded text-center">
+                <div className="bg-muted p-xs rounded text-center">
                   <p className="text-overline text-muted-foreground uppercase font-semibold">{t('editModal.interval')}</p>
-                  <p className="text-sm font-bold">{card.interval}d</p>
+                  <p className="text-body font-bold">{card.interval}d</p>
                 </div>
               </div>
             </div>
