@@ -33,52 +33,52 @@ const Login = () => {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-background">
-            <div className="w-full max-w-md px-4 py-6 sm:p-8">
+            <div className="w-full max-w-md px-md py-lg sm:p-xl">
                 {/* Logo */}
-                <div className="flex items-center justify-center gap-3 mb-6 sm:mb-8">
-                    <div className="p-2 bg-foreground text-background rounded-lg">
+                <div className="flex items-center justify-center gap-sm mb-lg sm:mb-xl">
+                    <div className="p-xs bg-foreground text-background rounded-lg">
                         <BookOpen className="w-6 h-6" />
                     </div>
                     <h1 className="text-heading font-bold tracking-tight">EVOQUE</h1>
                 </div>
 
                 {/* Card */}
-                <div className="bg-card rounded-2xl shadow-xl border border-border p-6 sm:p-8">
-                    <h2 className="text-heading font-semibold text-card-foreground mb-4 sm:mb-6">
+                <div className="bg-card rounded-2xl shadow-xl border border-border p-lg sm:p-xl">
+                    <h2 className="text-heading font-semibold text-card-foreground mb-md sm:mb-lg">
                         {isSignUp ? t('signup.title') : t('login.title')}
                     </h2>
 
                     {error && (
-                        <div className="mb-4 p-3 bg-destructive/10 border border-destructive/30 rounded-lg flex items-start gap-2">
+                        <div className="mb-md p-sm bg-destructive/10 border border-destructive/30 rounded-lg flex items-start gap-xs">
                             <AlertCircle className="w-4 h-4 text-destructive mt-0.5 shrink-0" />
-                            <p className="text-sm text-destructive">{error}</p>
+                            <p className="text-body text-destructive">{error}</p>
                         </div>
                     )}
 
-                    <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+                    <form onSubmit={handleSubmit} className="space-y-sm sm:space-y-md">
                         <div>
-                            <label className="block text-sm font-medium text-foreground mb-1.5">
+                            <label className="block text-body font-medium text-foreground mb-xs">
                                 {t('login.email')}
                             </label>
                             <input
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full px-3 py-2.5 sm:py-2 border border-input bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+                                className="w-full px-sm py-sm sm:py-xs border border-input bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                                 placeholder={t('login.emailPlaceholder')}
                                 required
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-foreground mb-1.5">
+                            <label className="block text-body font-medium text-foreground mb-xs">
                                 {t('login.password')}
                             </label>
                             <input
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full px-3 py-2.5 sm:py-2 border border-input bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+                                className="w-full px-sm py-sm sm:py-xs border border-input bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                                 placeholder="••••••••"
                                 required
                                 minLength={6}
@@ -88,27 +88,27 @@ const Login = () => {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-3 sm:py-2.5 min-h-[44px] rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-sm min-h-[44px] rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-xs"
                         >
                             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
                             {isSignUp ? t('signup.submit') : t('login.submit')}
                         </button>
                     </form>
 
-                    <div className="mt-6 text-center">
+                    <div className="mt-lg text-center">
                         <button
                             onClick={() => {
                                 setIsSignUp(!isSignUp);
                                 setError('');
                             }}
-                            className="text-sm text-primary hover:text-primary/80 font-medium transition-colors duration-200"
+                            className="text-body text-primary hover:text-primary/80 font-medium transition-colors duration-200"
                         >
                             {isSignUp ? t('signup.hasAccount') : t('login.noAccount')}
                         </button>
                     </div>
                 </div>
 
-                <p className="text-center text-xs text-muted-foreground mt-6">
+                <p className="text-center text-caption text-muted-foreground mt-lg">
                     {t('login.dataProtected')}
                 </p>
             </div>
