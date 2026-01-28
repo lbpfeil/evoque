@@ -53,10 +53,10 @@ Plans:
 **Requirements**: PAGE-01, PAGE-02, PAGE-03, PAGE-04, PAGE-05, PAGE-06, PAGE-07, PAGE-08
 **Success Criteria** (what must be TRUE):
   1. All 7 pages use PageHeader with consistent title size, spacing, and layout
-  2. All tables (Highlights, DeckTable, Settings) use the canonical data table pattern
+  2. All tables use token-aligned typography and consistent header/hover styling
   3. StudySession preserves its serif font and intentional deviations while using system tokens for everything else
-  4. All modals and popovers share identical padding, radius, header style, and button placement
-  5. No arbitrary Tailwind values (text-[Xpx], w-[Ypx]) remain in any page file
+  4. All modals share consistent header style (DialogTitle text-heading) and button placement
+  5. No arbitrary typography values (text-[Xpx]) remain in any page or component file
 **Plans**: 7 plans
 Plans:
 - [ ] 06-01-PLAN.md -- Migrate Login and Dashboard to token typography and PageHeader
@@ -64,7 +64,7 @@ Plans:
 - [ ] 06-03-PLAN.md -- Migrate Settings to PageHeader and eliminate 15+ arbitrary values
 - [ ] 06-04-PLAN.md -- Migrate StudySession while preserving intentional deviations
 - [ ] 06-05-PLAN.md -- Migrate Highlights and HighlightTableRow to PageHeader and token typography
-- [ ] 06-06-PLAN.md -- Migrate modals, sidebar, and bottom nav to token typography
+- [ ] 06-06-PLAN.md -- Migrate modals, sidebar, bottom nav, and tag selector to token typography
 - [ ] 06-07-PLAN.md -- Comprehensive audit and visual verification
 
 ### Phase 7: Design Guide
