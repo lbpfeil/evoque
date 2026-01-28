@@ -17,7 +17,7 @@ v1.0 shipped a working theme system but no governing design system -- the result
 - [x] **Phase 6: Page Migration** - Migrate all 7 pages + modals to canonical patterns
 - [x] **Phase 7: Design Guide** - Document the living design system in a single concise guide
 - [x] **Phase 8: Token Consumption** - Migrate all pages from raw values to semantic spacing, typography, and color tokens
-- [ ] **Phase 9: Component Adoption** - Replace raw HTML elements with standardized shadcn components across all pages
+- [x] **Phase 9: Component Adoption** - Replace raw HTML elements with standardized shadcn components across all pages
 - [ ] **Phase 10: Bug Fixes & Guide Accuracy** - Fix color rendering bugs, update guide to match reality, clean up stale references
 
 ## Phase Details
@@ -112,11 +112,11 @@ Plans:
   4. No raw `<button>` with manual styling remains in any page file
 **Plans**: 5 plans
 Plans:
-- [ ] 09-01-PLAN.md — Migrate Login, Sidebar, ThemeToggle, ErrorBoundary to Button/Input
-- [ ] 09-02-PLAN.md — Migrate Settings to Button/Input (file inputs, checkboxes)
-- [ ] 09-03-PLAN.md — Migrate StudySession and Study (preserve rating button deviations)
-- [ ] 09-04-PLAN.md — Migrate Highlights to Button/Input (comboboxes, filters, bulk actions)
-- [ ] 09-05-PLAN.md — Complete component Button adoption + remove orphaned DataTable
+- [x] 09-01-PLAN.md — Migrate Login, Sidebar, ThemeToggle, ErrorBoundary to Button/Input
+- [x] 09-02-PLAN.md — Migrate Settings to Button/Input (file inputs, checkboxes)
+- [x] 09-03-PLAN.md — Migrate StudySession and Study (preserve rating button deviations)
+- [x] 09-04-PLAN.md — Migrate Highlights to Button/Input (comboboxes, filters, bulk actions)
+- [x] 09-05-PLAN.md — Complete component Button adoption + remove orphaned DataTable
 
 ### Phase 10: Bug Fixes & Guide Accuracy
 **Goal**: The design guide accurately describes the codebase and all functional bugs are fixed
@@ -141,7 +141,7 @@ Plans: TBD
 | 6. Page Migration | v2.0 | 7/7 | Complete | 2026-01-28 |
 | 7. Design Guide | v2.0 | 1/1 | Complete | 2026-01-28 |
 | 8. Token Consumption | v2.0 | 5/5 | Complete | 2026-01-28 |
-| 9. Component Adoption | v2.0 | 0/5 | Planned | -- |
+| 9. Component Adoption | v2.0 | 5/5 | Complete | 2026-01-28 |
 | 10. Bug Fixes & Guide Accuracy | v2.0 | 0/? | Not Started | -- |
 
 ---

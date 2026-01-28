@@ -19,10 +19,10 @@
 
 ### Components (COMP)
 
-- [ ] **COMP-01**: Auditar todos os componentes shadcn e corrigir defaults para match com design system (altura de botoes, inputs, etc.)
-- [ ] **COMP-02**: Criar componente PageHeader -- template canonico de layout de pagina
-- [ ] **COMP-03**: Criar padrao de data table padronizado -- estrutura de tabela reutilizavel unica
-- [ ] **COMP-04**: Ajustar variantes CVA dos componentes (Button, Input, Badge, Card) para refletir tokens
+- [x] **COMP-01**: Auditar todos os componentes shadcn e corrigir defaults para match com design system (altura de botoes, inputs, etc.)
+- [x] **COMP-02**: Criar componente PageHeader -- template canonico de layout de pagina
+- [x] **COMP-03**: Criar padrao de data table padronizado -- estrutura de tabela reutilizavel unica
+- [x] **COMP-04**: Ajustar variantes CVA dos componentes (Button, Input, Badge, Card) para refletir tokens
 
 ### Page Migration (PAGE)
 
@@ -79,9 +79,9 @@
 | TOKENS-06 | Phase 4 | Complete |
 | TOKENS-07 | Phase 4 | Complete |
 | TOKENS-08 | Phase 4 + Phase 8 | Complete |
-| COMP-01 | Phase 5 + **Phase 9** | Partial (standardized, not adopted) |
+| COMP-01 | Phase 5 + Phase 9 | Complete |
 | COMP-02 | Phase 5 | Complete |
-| COMP-03 | Phase 5 + **Phase 9** | Partial (created, orphaned) |
+| COMP-03 | Phase 5 + Phase 9 | Complete (removed -- orphaned, YAGNI) |
 | COMP-04 | Phase 5 | Complete |
 | PAGE-01 | Phase 6 | Complete |
 | PAGE-02 | Phase 6 | Complete |
@@ -97,10 +97,10 @@
 **Coverage:**
 - v1 requirements: 22 total
 - Mapped to phases: 22
-- Fully satisfied: 19
-- Partial (gap closure needed): 3 (COMP-01, COMP-03, DOC-01)
+- Fully satisfied: 21
+- Partial (gap closure needed): 1 (DOC-01)
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-01-27*
-*Last updated: 2026-01-28 -- Phase 8 complete (TOKENS-02, TOKENS-08 fully satisfied)*
+*Last updated: 2026-01-28 -- Phase 9 complete (COMP-01, COMP-03 fully satisfied)*
