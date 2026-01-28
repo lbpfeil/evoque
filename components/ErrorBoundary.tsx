@@ -27,19 +27,19 @@ class ErrorBoundary extends Component<Props, State> {
     public render() {
         if (this.state.hasError) {
             return (
-                <div className="min-h-screen flex items-center justify-center bg-background p-4">
-                    <div className="bg-card p-8 rounded-lg shadow-xl max-w-md w-full text-center border border-border">
-                        <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <div className="min-h-screen flex items-center justify-center bg-background p-md">
+                    <div className="bg-card p-xl rounded-lg shadow-xl max-w-md w-full text-center border border-border">
+                        <div className="w-16 h-16 bg-destructive/10 text-destructive rounded-full flex items-center justify-center mx-auto mb-lg">
                             <AlertTriangle className="w-8 h-8" />
                         </div>
-                        <h1 className="text-2xl font-bold text-foreground mb-2">Something went wrong</h1>
-                        <p className="text-muted-foreground mb-6 text-sm leading-relaxed">
+                        <h1 className="text-2xl font-bold text-foreground mb-sm">Something went wrong</h1>
+                        <p className="text-muted-foreground mb-lg text-body leading-relaxed">
                             We encountered an unexpected error. Please try refreshing the page.
                         </p>
 
                         {this.state.error && (
-                            <div className="mb-6 p-3 bg-muted rounded text-left overflow-auto max-h-32">
-                                <p className="text-xs font-mono text-red-600 break-all">
+                            <div className="mb-lg p-sm bg-muted rounded text-left overflow-auto max-h-32">
+                                <p className="text-caption font-mono text-destructive break-all">
                                     {this.state.error.toString()}
                                 </p>
                             </div>
@@ -47,7 +47,7 @@ class ErrorBoundary extends Component<Props, State> {
 
                         <button
                             onClick={() => window.location.reload()}
-                            className="w-full py-3 bg-primary text-primary-foreground rounded-md font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+                            className="w-full py-sm bg-primary text-primary-foreground rounded-md font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-sm"
                         >
                             <RefreshCw className="w-4 h-4" />
                             Reload Application

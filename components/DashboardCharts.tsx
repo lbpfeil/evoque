@@ -11,9 +11,9 @@ interface DashboardChartsProps {
 const DashboardCharts: React.FC<DashboardChartsProps> = ({ timelineData, books }) => {
   const { t } = useTranslation('dashboard');
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      <div className="bg-card p-8 rounded-md border border-border">
-        <h3 className="text-sm font-semibold text-card-foreground uppercase tracking-wider mb-8">{t('charts.importActivity')}</h3>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-xl">
+      <div className="bg-card p-xl rounded-md border border-border">
+        <h3 className="text-body font-semibold text-card-foreground uppercase tracking-wider mb-xl">{t('charts.importActivity')}</h3>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={timelineData}>
@@ -33,8 +33,8 @@ const DashboardCharts: React.FC<DashboardChartsProps> = ({ timelineData, books }
         </div>
       </div>
 
-      <div className="bg-card p-8 rounded-md border border-border">
-        <h3 className="text-sm font-semibold text-card-foreground uppercase tracking-wider mb-8">{t('charts.highlightsPerBook')}</h3>
+      <div className="bg-card p-xl rounded-md border border-border">
+        <h3 className="text-body font-semibold text-card-foreground uppercase tracking-wider mb-xl">{t('charts.highlightsPerBook')}</h3>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={books.slice(0, 5)} layout="vertical">

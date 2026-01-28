@@ -7,8 +7,8 @@ import { Loader2 } from 'lucide-react';
 const I18nLoadingFallback = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
     <div className="text-center">
-      <Loader2 className="w-8 h-8 text-primary animate-spin mx-auto mb-2" />
-      <p className="text-xs text-muted-foreground">Carregando idioma...</p>
+      <Loader2 className="w-8 h-8 text-primary animate-spin mx-auto mb-sm" />
+      <p className="text-caption text-muted-foreground">Carregando idioma...</p>
     </div>
   </div>
 );

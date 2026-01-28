@@ -211,6 +211,7 @@ function getIntensityClass(intensity: number, date: string): string {
     return 'bg-muted/50 cursor-default';
   }
 
+  /* data-viz: intentional raw color - heatmap gradient specific to data visualization */
   const classes: Record<number, string> = {
     0: 'bg-muted hover:bg-muted/80',
     1: 'bg-green-200 dark:bg-green-900 hover:bg-green-300 dark:hover:bg-green-800',
@@ -309,16 +310,17 @@ export const StudyHeatmap: React.FC<StudyHeatmapProps> = ({ reviewLogs }) => {
   };
 
   return (
-    <div ref={containerRef} className="bg-card rounded border border-border p-3 mb-3">
+    <div ref={containerRef} className="bg-card rounded border border-border p-sm mb-sm">
       {/* Stats Row */}
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-xs font-semibold text-muted-foreground">{t('heatmap.title')}</h3>
-        <div className="flex items-center gap-3 text-xs">
-          <div className="flex items-center gap-1 text-orange-500" title={t('heatmap.currentStreak')}>
+      <div className="flex items-center justify-between mb-sm">
+        <h3 className="text-caption font-semibold text-muted-foreground">{t('heatmap.title')}</h3>
+        <div className="flex items-center gap-sm text-caption">
+          {/* data-viz: intentional raw color - streak indicator accent */}
+          <div className="flex items-center gap-xs text-orange-500" title={t('heatmap.currentStreak')}>
             <Flame className="w-3 h-3" />
             <span>{stats.currentStreak}</span>
           </div>
-          <div className="flex items-center gap-1 text-muted-foreground" title={t('heatmap.longestStreak')}>
+          <div className="flex items-center gap-xs text-muted-foreground" title={t('heatmap.longestStreak')}>
             <TrendingUp className="w-3 h-3" />
             <span>{stats.longestStreak}</span>
           </div>
@@ -357,7 +359,7 @@ export const StudyHeatmap: React.FC<StudyHeatmapProps> = ({ reviewLogs }) => {
           </div>
 
           {/* Month labels */}
-          <div className="flex mt-1 pl-3.5">
+          <div className="flex mt-xs pl-3.5">
             {monthLabels.map((label, i) => (
               <div
                 key={i}
@@ -373,8 +375,9 @@ export const StudyHeatmap: React.FC<StudyHeatmapProps> = ({ reviewLogs }) => {
 
       {/* Tooltip */}
       {tooltip && (
+        /* data-viz: intentional raw color - inverted tooltip for heatmap */
         <div
-          className="fixed z-50 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap pointer-events-none"
+          className="fixed z-50 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-caption px-sm py-xs rounded shadow-lg whitespace-nowrap pointer-events-none"
           style={{
             left: tooltip.x,
             top: tooltip.y,
@@ -382,6 +385,7 @@ export const StudyHeatmap: React.FC<StudyHeatmapProps> = ({ reviewLogs }) => {
           }}
         >
           <div className="font-medium">{formatDate(tooltip.date)}</div>
+          {/* data-viz: intentional raw color - tooltip subtext */}
           <div className="text-zinc-300 dark:text-zinc-600">
             {t('heatmap.reviews', { count: tooltip.count })}
           </div>
