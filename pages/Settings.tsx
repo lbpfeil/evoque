@@ -6,6 +6,7 @@ import { useAuth } from '../components/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Upload, Library, User, Sliders, FileText, CheckCircle, AlertCircle, Download, Trash2, Loader2, Camera, ChevronDown, ChevronUp, Settings as SettingsIcon } from 'lucide-react';
 import DeleteBookModal from '../components/DeleteBookModal';
+import { PageHeader } from '../components/patterns/PageHeader';
 import { resizeImage } from '../lib/imageUtils';
 
 type TabId = 'import' | 'library' | 'account' | 'preferences';
@@ -281,12 +282,7 @@ const Settings = () => {
   return (
     <div className="p-6">
       {/* Header */}
-      <header className="mb-3">
-        <h1 className="text-base font-semibold text-foreground">{t('title')}</h1>
-        <p className="text-xs text-muted-foreground mt-1">
-          {t('subtitle')}
-        </p>
-      </header>
+      <PageHeader title={t('title')} description={t('subtitle')} size="compact" />
 
       {/* Tabs */}
       <div className="flex gap-1 border-b border-border mb-3">
