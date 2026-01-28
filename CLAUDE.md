@@ -138,28 +138,21 @@ updateHighlight(id, { note: 'new note' })
 
 ## UI/UX Guidelines
 
-Full guidelines in `lbp_diretrizes/compact-ui-design-guidelines.md` (550 lines). Key principles:
+Full guidelines in `lbp_diretrizes/design-system-guide.md` (~600 lines). Key principles:
 
-### Design System v1.1 (Updated 2025-12-30)
-```css
-/* Typography (increased for better legibility) */
-H1/Titles: text-lg (18px)
-Normal text: text-sm (14px)
-Secondary/Metadata: text-xs (12px)
+### Design System v2.0 (Updated 2026-01-28)
+```
+/* Typography -- semantic tokens (not raw Tailwind sizes) */
+text-heading (18px), text-body (14px), text-caption (12px), text-overline (10px)
 
-/* Colors */
-Primary: black (#000000)
-Borders: zinc-200
-Backgrounds: white (cards), zinc-50 (page)
+/* Colors -- oklch semantic tokens with light/dark mode */
+text-foreground, bg-muted, border-border, bg-primary, text-muted-foreground
 
-/* Spacing (Compact - 4px base unit) */
-Gaps: gap-1 (4px), gap-2 (8px)
-Padding: py-0.5 px-1.5 (items), py-1 px-2 (buttons)
+/* Spacing -- semantic tokens on 4px grid */
+gap-sm (12px), p-md (16px), mb-lg (24px), gap-xl (32px)
 
-/* Components */
-Buttons: h-7 px-3 text-xs
-Inputs: h-7 px-1.5 text-xs
-Icons: w-3 h-3 (standard)
+/* Components -- CVA variants */
+Button default: h-8 (compact), Input: h-8, PageHeader: size="compact"
 ```
 
 ### Component Patterns
@@ -202,7 +195,7 @@ Located in `lbp_context/` and `lbp_diretrizes/`:
 **Include with AI when working on:**
 - Study system / SM-2 / cards → `spaced-repetition-system.md` (753 lines)
 - Highlights page / filters / tags → `HighlightTab-context.md` (483 lines)
-- UI components / styling → `compact-ui-design-guidelines.md` (550 lines)
+- UI components / styling → `design-system-guide.md` (~600 lines)
 - Import system / deduplication → `id-stability-improvement-options.md`
 - Settings page → `SETTINGS_PAGE_DESIGN.md` (623 lines)
 
