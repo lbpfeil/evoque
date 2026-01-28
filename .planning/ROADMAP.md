@@ -13,7 +13,7 @@ v1.0 shipped a working theme system but no governing design system -- the result
 
 - [x] **Phase 4: Token Foundation** - Define the rigid design vocabulary (typography, spacing, radius, shadows, motion, icons, z-index, color rules)
 - [x] **Phase 5: Component Standardization** - Audit and align all components to the token system
-- [ ] **Phase 6: Page Migration** - Migrate all 7 pages + modals to canonical patterns
+- [x] **Phase 6: Page Migration** - Migrate all 7 pages + modals to canonical patterns
 - [ ] **Phase 7: Design Guide** - Document the living design system in a single concise guide
 
 ## Phase Details
@@ -59,13 +59,13 @@ Plans:
   5. No arbitrary typography values (text-[Xpx]) remain in any page or component file
 **Plans**: 7 plans
 Plans:
-- [ ] 06-01-PLAN.md -- Migrate Login and Dashboard to token typography and PageHeader
-- [ ] 06-02-PLAN.md -- Migrate Study, DeckTable, and StudyStatusBadge to token patterns
-- [ ] 06-03-PLAN.md -- Migrate Settings to PageHeader and eliminate 15+ arbitrary values
-- [ ] 06-04-PLAN.md -- Migrate StudySession while preserving intentional deviations
-- [ ] 06-05-PLAN.md -- Migrate Highlights and HighlightTableRow to PageHeader and token typography
-- [ ] 06-06-PLAN.md -- Migrate modals, sidebar, bottom nav, and tag selector to token typography
-- [ ] 06-07-PLAN.md -- Comprehensive audit and visual verification
+- [x] 06-01-PLAN.md -- Migrate Login and Dashboard to token typography and PageHeader
+- [x] 06-02-PLAN.md -- Migrate Study, DeckTable, and StudyStatusBadge to token patterns
+- [x] 06-03-PLAN.md -- Migrate Settings to PageHeader and eliminate 15+ arbitrary values
+- [x] 06-04-PLAN.md -- Migrate StudySession while preserving intentional deviations
+- [x] 06-05-PLAN.md -- Migrate Highlights and HighlightTableRow to PageHeader and token typography
+- [x] 06-06-PLAN.md -- Migrate modals, sidebar, bottom nav, and tag selector to token typography
+- [x] 06-07-PLAN.md -- Comprehensive audit and visual verification
 
 ### Phase 7: Design Guide
 **Goal**: A new developer (or future Claude) can build a page that looks identical to existing ones without asking questions
@@ -84,7 +84,7 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 4. Token Foundation | v2.0 | 2/2 | Complete | 2026-01-27 |
 | 5. Component Standardization | v2.0 | 2/2 | Complete | 2026-01-28 |
-| 6. Page Migration | v2.0 | 0/7 | In progress | - |
+| 6. Page Migration | v2.0 | 7/7 | Complete | 2026-01-28 |
 | 7. Design Guide | v2.0 | 0/TBD | Not started | - |
 
 ---
