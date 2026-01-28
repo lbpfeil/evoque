@@ -51,7 +51,7 @@ export const DeckTable: React.FC<DeckTableProps> = ({ decks, onDeckClick }) => {
                                 {deck.title}
                             </div>
                             {deck.author && (
-                                <div className="text-xs sm:text-[10px] text-muted-foreground truncate">
+                                <div className="text-xs sm:text-overline text-muted-foreground truncate">
                                     {deck.author}
                                 </div>
                             )}
