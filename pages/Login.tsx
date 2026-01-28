@@ -39,12 +39,12 @@ const Login = () => {
                     <div className="p-2 bg-foreground text-background rounded-lg">
                         <BookOpen className="w-6 h-6" />
                     </div>
-                    <h1 className="text-2xl font-bold tracking-tight">EVOQUE</h1>
+                    <h1 className="text-heading font-bold tracking-tight">EVOQUE</h1>
                 </div>
 
                 {/* Card */}
                 <div className="bg-card rounded-2xl shadow-xl border border-border p-6 sm:p-8">
-                    <h2 className="text-xl font-semibold text-card-foreground mb-4 sm:mb-6">
+                    <h2 className="text-heading font-semibold text-card-foreground mb-4 sm:mb-6">
                         {isSignUp ? t('signup.title') : t('login.title')}
                     </h2>
 
