@@ -16,7 +16,7 @@ interface StatCardProps {
 
 const StatCard = ({ title, value, icon: Icon }: StatCardProps) => (
   <Card className="hover:border-primary/30 transition-colors duration-200">
-    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-xs">
       <CardTitle className="text-overline font-medium uppercase tracking-wider text-muted-foreground">
         {title}
       </CardTitle>
@@ -44,11 +44,11 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-2xl">
       <PageHeader title={t('title')} description={t('subtitle')} size="compact" />
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-md">
         <StatCard
           title={t('stats.books')}
           value={books.length}
@@ -82,19 +82,19 @@ const Dashboard = () => {
 
       {/* Recent Books */}
       <div>
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-lg">
           <h3 className="text-heading font-bold text-foreground">{t('recentBooks.title')}</h3>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
           {books.slice(0, 3).map(book => (
-            <div key={book.id} className="bg-card p-4 rounded-md border border-border flex gap-5 hover:border-primary/30 transition-colors duration-200">
+            <div key={book.id} className="bg-card p-md rounded-md border border-border flex gap-lg hover:border-primary/30 transition-colors duration-200">
                <div className="w-16 h-24 bg-muted rounded-sm overflow-hidden flex-shrink-0 border border-border">
                  <img src={book.coverUrl} alt={book.title} loading="lazy" className="w-full h-full object-cover grayscale opacity-90 hover:grayscale-0 transition-all" />
                </div>
-               <div className="flex flex-col justify-center py-1">
-                 <h4 className="font-semibold text-card-foreground line-clamp-2 leading-tight mb-1">{book.title}</h4>
-                 <p className="text-sm text-muted-foreground mb-3">{book.author}</p>
-                 <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-sm border border-border w-fit font-medium">
+               <div className="flex flex-col justify-center py-xxs">
+                 <h4 className="font-semibold text-card-foreground line-clamp-2 leading-tight mb-xxs">{book.title}</h4>
+                 <p className="text-body text-muted-foreground mb-sm">{book.author}</p>
+                 <span className="text-caption bg-muted text-muted-foreground px-xs py-xxs rounded-sm border border-border w-fit font-medium">
                    {t('recentBooks.highlightsCount', { count: book.highlightCount })}
                  </span>
                </div>
