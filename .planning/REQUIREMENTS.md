@@ -71,14 +71,14 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TOKENS-01 | Phase 4 | Pending |
-| TOKENS-02 | Phase 4 | Pending |
-| TOKENS-03 | Phase 4 | Pending |
-| TOKENS-04 | Phase 4 | Pending |
-| TOKENS-05 | Phase 4 | Pending |
-| TOKENS-06 | Phase 4 | Pending |
-| TOKENS-07 | Phase 4 | Pending |
-| TOKENS-08 | Phase 4 | Pending |
+| TOKENS-01 | Phase 4 | Complete |
+| TOKENS-02 | Phase 4 | Complete |
+| TOKENS-03 | Phase 4 | Complete |
+| TOKENS-04 | Phase 4 | Complete |
+| TOKENS-05 | Phase 4 | Complete |
+| TOKENS-06 | Phase 4 | Complete |
+| TOKENS-07 | Phase 4 | Complete |
+| TOKENS-08 | Phase 4 | Complete |
 | COMP-01 | Phase 5 | Pending |
 | COMP-02 | Phase 5 | Pending |
 | COMP-03 | Phase 5 | Pending |

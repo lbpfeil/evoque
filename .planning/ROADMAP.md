@@ -11,7 +11,7 @@ v1.0 shipped a working theme system but no governing design system -- the result
 
 ## Phases
 
-- [ ] **Phase 4: Token Foundation** - Define the rigid design vocabulary (typography, spacing, radius, shadows, motion, icons, z-index, color rules)
+- [x] **Phase 4: Token Foundation** - Define the rigid design vocabulary (typography, spacing, radius, shadows, motion, icons, z-index, color rules)
 - [ ] **Phase 5: Component Standardization** - Audit and align all components to the token system
 - [ ] **Phase 6: Page Migration** - Migrate all 7 pages + modals to canonical patterns
 - [ ] **Phase 7: Design Guide** - Document the living design system in a single concise guide
@@ -30,8 +30,8 @@ v1.0 shipped a working theme system but no governing design system -- the result
   5. Raw color classes (text-zinc-*, bg-gray-*) are identified and mapped to semantic replacements
 **Plans**: 2 plans
 Plans:
-- [ ] 04-01-PLAN.md -- Define CSS custom properties and Tailwind config for all token scales (typography, spacing, radius, shadows, motion, icons, z-index)
-- [ ] 04-02-PLAN.md -- Audit raw color classes and define semantic replacements (status tokens + migration map)
+- [x] 04-01-PLAN.md -- Define CSS custom properties and Tailwind config for all token scales (typography, spacing, radius, shadows, motion, icons, z-index)
+- [x] 04-02-PLAN.md -- Audit raw color classes and define semantic replacements (status tokens + migration map)
 
 ### Phase 5: Component Standardization
 **Goal**: Every shadcn component has one canonical way to be used, and new composition components exist for repeated patterns
@@ -71,7 +71,7 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 4. Token Foundation | v2.0 | 0/2 | Planned | - |
+| 4. Token Foundation | v2.0 | 2/2 | Complete | 2026-01-27 |
 | 5. Component Standardization | v2.0 | 0/TBD | Not started | - |
 | 6. Page Migration | v2.0 | 0/TBD | Not started | - |
 | 7. Design Guide | v2.0 | 0/TBD | Not started | - |
