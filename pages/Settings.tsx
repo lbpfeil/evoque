@@ -280,18 +280,18 @@ const Settings = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-lg">
       {/* Header */}
       <PageHeader title={t('title')} description={t('subtitle')} size="compact" />
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-border mb-3">
+      <div className="flex gap-xxs border-b border-border mb-sm">
         {tabs.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`
-              px-3 py-1 text-xs font-medium rounded-t transition-colors flex items-center gap-1.5
+              px-sm py-xxs text-caption font-medium rounded-t transition-colors flex items-center gap-xs
               ${activeTab === tab.id
                 ? 'bg-card text-card-foreground border-t border-x border-border -mb-px'
                 : 'text-muted-foreground hover:text-foreground hover:bg-muted'
@@ -308,24 +308,24 @@ const Settings = () => {
       <div className="max-h-[calc(100vh-200px)] overflow-y-auto">
         {/* IMPORT TAB */}
         {activeTab === 'import' && (
-          <div className="space-y-3">
+          <div className="space-y-sm">
             <div>
-              <h2 className="text-xs font-semibold text-muted-foreground">{t('import.title')}</h2>
+              <h2 className="text-caption font-semibold text-muted-foreground">{t('import.title')}</h2>
               <p className="text-overline text-muted-foreground mt-0.5">{t('import.subtitle')}</p>
             </div>
 
             {/* Success Notification */}
             {importResult && (
-              <div className="bg-green-500/10 border border-green-500/30 rounded p-2 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400 shrink-0" />
-                  <span className="text-xs text-green-600 dark:text-green-400">
+              <div className="bg-success/10 border border-success/30 rounded p-xs flex items-center justify-between">
+                <div className="flex items-center gap-xs">
+                  <CheckCircle className="w-4 h-4 text-success shrink-0" />
+                  <span className="text-caption text-success">
                     {t('import.success', { books: importResult.newBooks, highlights: importResult.newHighlights })}
                   </span>
                 </div>
                 <button
                   onClick={() => setActiveTab('library')}
-                  className="text-xs text-green-600 dark:text-green-400 hover:underline shrink-0"
+                  className="text-caption text-success hover:underline shrink-0"
                 >
                   {t('import.viewLibrary')}
                 </button>
@@ -334,7 +334,7 @@ const Settings = () => {
 
             {/* Error Notification */}
             {importError && (
-              <div className="bg-destructive/10 border border-destructive/30 text-destructive px-3 py-2 rounded text-xs">
+              <div className="bg-destructive/10 border border-destructive/30 text-destructive px-sm py-xs rounded text-caption">
                 <strong className="font-semibold">{t('import.error')}</strong>
                 <span>{importError}</span>
               </div>
@@ -343,7 +343,7 @@ const Settings = () => {
             {/* Drop Zone */}
             <div
               className={`
-                relative border border-dashed rounded p-8 text-center transition-all
+                relative border border-dashed rounded p-xl text-center transition-all
                 ${dragActive ? 'border-primary bg-primary/5' : 'border-border bg-card hover:border-primary/30'}
                 ${isProcessing ? 'opacity-50 pointer-events-none' : ''}
               `}
@@ -360,7 +360,7 @@ const Settings = () => {
                 onChange={handleChange}
               />
 
-              <div className="flex flex-col items-center justify-center space-y-3">
+              <div className="flex flex-col items-center justify-center space-y-sm">
                 <div className="w-12 h-12 bg-muted text-foreground border border-border rounded-full flex items-center justify-center">
                   {isProcessing ? (
                     <div className="animate-spin w-5 h-5 border-2 border-foreground border-t-transparent rounded-full" />
@@ -369,18 +369,18 @@ const Settings = () => {
                   )}
                 </div>
 
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-foreground">
+                <div className="space-y-xxs">
+                  <p className="text-body font-medium text-foreground">
                     {isProcessing ? t('import.processing') : t('import.dragDrop')}
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-caption text-muted-foreground">
                     {t('import.browseUploadPrefix')} <label htmlFor="file-upload" className="text-foreground hover:underline cursor-pointer font-medium">{t('import.browseUpload')}</label>
                   </p>
                 </div>
 
                 {!isProcessing && (
-                  <div className="flex items-center text-overline text-muted-foreground bg-muted px-2 py-1 rounded border border-border">
-                    <FileText className="w-3 h-3 mr-1.5" />
+                  <div className="flex items-center text-overline text-muted-foreground bg-muted px-xs py-xxs rounded border border-border">
+                    <FileText className="w-3 h-3 mr-xs" />
                     {t('import.fileTypes')}
                   </div>
                 )}
@@ -388,14 +388,14 @@ const Settings = () => {
             </div>
 
             {/* Instructions */}
-            <div className="bg-muted border border-border rounded p-3 flex gap-2 items-start">
+            <div className="bg-muted border border-border rounded p-sm flex gap-xs items-start">
               <AlertCircle className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-0.5" />
-              <div className="text-xs text-muted-foreground space-y-1">
+              <div className="text-caption text-muted-foreground space-y-xxs">
                 <p className="font-semibold text-foreground">{t('import.instructions.title')}</p>
-                <div className="space-y-2 text-caption leading-relaxed">
+                <div className="space-y-xs text-caption leading-relaxed">
                   <div>
                     <p className="font-medium text-foreground">{t('import.instructions.option1Title')}</p>
-                    <ol className="list-decimal list-inside space-y-0.5 ml-2">
+                    <ol className="list-decimal list-inside space-y-0.5 ml-xs">
                       <li>{t('import.instructions.option1Step1')}</li>
                       <li>{t('import.instructions.option1Step2')}</li>
                       <li>{t('import.instructions.option1Step3')}</li>
@@ -404,7 +404,7 @@ const Settings = () => {
                   </div>
                   <div>
                     <p className="font-medium text-foreground">{t('import.instructions.option2Title')}</p>
-                    <ol className="list-decimal list-inside space-y-0.5 ml-2">
+                    <ol className="list-decimal list-inside space-y-0.5 ml-xs">
                       <li>{t('import.instructions.option2Step1')}</li>
                       <li>{t('import.instructions.option2Step2')}</li>
                       <li>{t('import.instructions.option2Step3')}</li>
@@ -413,7 +413,7 @@ const Settings = () => {
                   </div>
                   <div>
                     <p className="font-medium text-foreground">{t('import.instructions.option3Title')}</p>
-                    <ol className="list-decimal list-inside space-y-0.5 ml-2">
+                    <ol className="list-decimal list-inside space-y-0.5 ml-xs">
                       <li>{t('import.instructions.option3Step1')}</li>
                       <li>{t('import.instructions.option3Step2')}</li>
                       <li>{t('import.instructions.option3Step3')}</li>
@@ -427,45 +427,45 @@ const Settings = () => {
 
         {/* LIBRARY TAB */}
         {activeTab === 'library' && (
-          <div className="space-y-3">
+          <div className="space-y-sm">
             <div>
-              <h2 className="text-xs font-semibold text-muted-foreground">{t('library.title')}</h2>
+              <h2 className="text-caption font-semibold text-muted-foreground">{t('library.title')}</h2>
               <p className="text-overline text-muted-foreground mt-0.5">{t('library.bookCount', { count: books.length })}</p>
             </div>
 
             {/* Books List */}
             {filteredBooks.length === 0 ? (
-              <div className="text-center py-12 bg-muted rounded border border-dashed border-border">
-                <p className="text-xs text-muted-foreground">
+              <div className="text-center py-2xl bg-muted rounded border border-dashed border-border">
+                <p className="text-caption text-muted-foreground">
                   {t('library.empty')}
                 </p>
                 {books.length === 0 && (
                   <button
                     onClick={() => setActiveTab('import')}
-                    className="mt-2 text-xs text-foreground hover:underline"
+                    className="mt-xs text-caption text-foreground hover:underline"
                   >
                     {t('library.goToImport')}
                   </button>
                 )}
               </div>
             ) : (
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-xxs">
                 {filteredBooks.map(book => (
-                  <div key={book.id} className="relative py-2 px-3 border border-border rounded bg-card">
+                  <div key={book.id} className="relative py-xs px-sm border border-border rounded bg-card">
                     {/* Botão delete (canto superior direito) */}
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         setBookToDelete(book.id);
                       }}
-                      className="absolute top-2 right-2 p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded transition-colors z-10"
+                      className="absolute top-xs right-xs p-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded transition-colors z-10"
                       title={t('library.deleteBook')}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
 
                     {/* Book card content */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-xs">
                       {/* Cover thumbnail with upload on hover */}
                       <div className="relative w-10 h-14 bg-muted rounded border border-border shrink-0 overflow-hidden group">
                         {book.coverUrl ? (
@@ -497,10 +497,10 @@ const Settings = () => {
 
                       {/* Book info */}
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-semibold text-card-foreground truncate">
+                        <h3 className="text-body font-semibold text-card-foreground truncate">
                           {book.title.length > 100 ? `${book.title.substring(0, 100)}...` : book.title}
                         </h3>
-                        <p className="text-xs text-muted-foreground truncate">{book.author} • {t('library.highlightsCount', { count: book.highlightCount })}</p>
+                        <p className="text-caption text-muted-foreground truncate">{book.author} • {t('library.highlightsCount', { count: book.highlightCount })}</p>
                         <p className="text-overline text-muted-foreground mt-0.5">
                           {t('library.lastImport', { date: formatDate(book.lastImported) })}
                         </p>
@@ -508,7 +508,7 @@ const Settings = () => {
                     </div>
 
                     {/* Book Settings Collapsible */}
-                    <div className="mt-2 border-t border-border/50 pt-2">
+                    <div className="mt-xs border-t border-border/50 pt-xs">
                       <button
                         onClick={() => {
                           setExpandedBooks(prev => {
@@ -521,7 +521,7 @@ const Settings = () => {
                             return next;
                           });
                         }}
-                        className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                        className="flex items-center gap-xs text-caption text-muted-foreground hover:text-foreground transition-colors"
                       >
                         <SettingsIcon className="w-3 h-3" />
                         <span>{t('library.bookSettings')}</span>
@@ -533,11 +533,11 @@ const Settings = () => {
                       </button>
 
                       {expandedBooks.has(book.id) && (
-                        <div className="mt-2 bg-muted rounded p-2 space-y-2">
+                        <div className="mt-xs bg-muted rounded p-xs space-y-xs">
                           {/* Daily Review Limit */}
                           <div className="flex items-center justify-between">
-                            <label className="text-xs text-foreground">{t('library.dailyLimit')}</label>
-                            <div className="flex items-center gap-1.5">
+                            <label className="text-caption text-foreground">{t('library.dailyLimit')}</label>
+                            <div className="flex items-center gap-xs">
                               <input
                                 type="number"
                                 min="1"
@@ -548,7 +548,7 @@ const Settings = () => {
                                   const value = e.target.value === '' ? undefined : Number(e.target.value);
                                   updateBookSettings(book.id, { dailyReviewLimit: value });
                                 }}
-                                className="h-6 w-16 px-1.5 text-xs border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring bg-background text-foreground"
+                                className="h-6 w-16 px-xs text-caption border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring bg-background text-foreground"
                               />
                               <span className="text-overline text-muted-foreground">{t('library.cardsPerDay')}</span>
                             </div>
@@ -556,8 +556,8 @@ const Settings = () => {
 
                           {/* Initial Ease Factor */}
                           <div className="flex items-center justify-between">
-                            <label className="text-xs text-foreground">{t('library.easeFactor')}</label>
-                            <div className="flex items-center gap-1.5">
+                            <label className="text-caption text-foreground">{t('library.easeFactor')}</label>
+                            <div className="flex items-center gap-xs">
                               <input
                                 type="number"
                                 min="1.3"
@@ -569,7 +569,7 @@ const Settings = () => {
                                   const value = e.target.value === '' ? undefined : Number(e.target.value);
                                   updateBookSettings(book.id, { initialEaseFactor: value });
                                 }}
-                                className="h-6 w-16 px-1.5 text-xs border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring bg-background text-foreground"
+                                className="h-6 w-16 px-xs text-caption border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring bg-background text-foreground"
                               />
                               <span className="text-overline text-muted-foreground">{t('library.newCards')}</span>
                             </div>
@@ -590,19 +590,19 @@ const Settings = () => {
 
         {/* ACCOUNT TAB */}
         {activeTab === 'account' && (
-          <div className="space-y-4">
+          <div className="space-y-md">
             <div>
-              <h2 className="text-xs font-semibold text-muted-foreground">{t('account.title')}</h2>
+              <h2 className="text-caption font-semibold text-muted-foreground">{t('account.title')}</h2>
               <p className="text-overline text-muted-foreground mt-0.5">{t('account.subtitle')}</p>
             </div>
 
             {/* Profile Photo */}
             <div>
-              <h3 className="text-xs font-semibold text-card-foreground mb-1.5">{t('account.photo.title')}</h3>
-              <div className="bg-muted border border-border rounded p-3 flex items-center gap-3">
+              <h3 className="text-caption font-semibold text-card-foreground mb-xs">{t('account.photo.title')}</h3>
+              <div className="bg-muted border border-border rounded p-sm flex items-center gap-sm">
                 {/* Avatar Preview */}
                 <div className="relative">
-                  <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-lg overflow-hidden">
+                  <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-white font-semibold text-heading overflow-hidden">
                     {avatarUrl ? (
                       <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                     ) : (
@@ -627,12 +627,12 @@ const Settings = () => {
                   />
                   <label
                     htmlFor="avatar-upload"
-                    className="inline-flex items-center gap-1.5 h-7 px-3 text-xs bg-secondary hover:bg-accent text-secondary-foreground rounded transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-xs h-7 px-sm text-caption bg-secondary hover:bg-accent text-secondary-foreground rounded transition-colors cursor-pointer"
                   >
                     <Camera className="w-3 h-3" />
                     {t('account.photo.change')}
                   </label>
-                  <p className="text-overline text-muted-foreground mt-1">
+                  <p className="text-overline text-muted-foreground mt-xxs">
                     {t('account.photo.hint')}
                   </p>
                 </div>
@@ -641,35 +641,35 @@ const Settings = () => {
 
             {/* Profile Information */}
             <div>
-              <h3 className="text-xs font-semibold text-card-foreground mb-1.5">{t('account.profile.title')}</h3>
-              <div className="bg-muted border border-border rounded p-3 space-y-2">
+              <h3 className="text-caption font-semibold text-card-foreground mb-xs">{t('account.profile.title')}</h3>
+              <div className="bg-muted border border-border rounded p-sm space-y-xs">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">{t('account.profile.name')}</span>
+                  <span className="text-caption text-muted-foreground">{t('account.profile.name')}</span>
                   <input
                     type="text"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     onBlur={handleSaveFullName}
                     placeholder={t('account.profile.namePlaceholder')}
-                    className="h-6 px-2 text-xs border border-input rounded w-48 focus:outline-none focus:ring-1 focus:ring-ring bg-background text-foreground"
+                    className="h-6 px-xs text-caption border border-input rounded w-48 focus:outline-none focus:ring-1 focus:ring-ring bg-background text-foreground"
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">{t('account.profile.email')}</span>
-                  <span className="text-xs font-medium text-foreground">{user?.email}</span>
+                  <span className="text-caption text-muted-foreground">{t('account.profile.email')}</span>
+                  <span className="text-caption font-medium text-foreground">{user?.email}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">{t('account.profile.plan')}</span>
-                  <span className="text-xs font-medium text-foreground">{t('account.profile.freePlan')}</span>
+                  <span className="text-caption text-muted-foreground">{t('account.profile.plan')}</span>
+                  <span className="text-caption font-medium text-foreground">{t('account.profile.freePlan')}</span>
                 </div>
               </div>
             </div>
 
             {/* Statistics */}
             <div>
-              <h3 className="text-xs font-semibold text-card-foreground mb-1.5">{t('account.stats.title')}</h3>
-              <div className="bg-muted border border-border rounded p-3">
-                <p className="text-xs text-muted-foreground">
+              <h3 className="text-caption font-semibold text-card-foreground mb-xs">{t('account.stats.title')}</h3>
+              <div className="bg-muted border border-border rounded p-sm">
+                <p className="text-caption text-muted-foreground">
                   <span className="font-semibold text-foreground">{books.length}</span> {t('account.stats.books')} •{' '}
                   <span className="font-semibold text-foreground">{highlights.length}</span> {t('account.stats.highlights')} •{' '}
                   <span className="font-semibold text-foreground">{studyCards.length}</span> {t('account.stats.studyCards')}
@@ -679,13 +679,13 @@ const Settings = () => {
 
             {/* Danger Zone */}
             <div>
-              <h3 className="text-xs font-semibold text-destructive mb-1.5">{t('account.danger.title')}</h3>
-              <div className="flex gap-2">
-                <button className="flex-1 h-7 px-3 text-xs bg-secondary hover:bg-accent text-secondary-foreground rounded transition-colors border border-border flex items-center justify-center gap-1.5">
+              <h3 className="text-caption font-semibold text-destructive mb-xs">{t('account.danger.title')}</h3>
+              <div className="flex gap-xs">
+                <button className="flex-1 h-7 px-sm text-caption bg-secondary hover:bg-accent text-secondary-foreground rounded transition-colors border border-border flex items-center justify-center gap-xs">
                   <Download className="w-3 h-3" />
                   {t('account.danger.export')}
                 </button>
-                <button className="flex-1 h-7 px-3 text-xs bg-secondary hover:bg-destructive/10 text-destructive rounded transition-colors border border-destructive/30 flex items-center justify-center gap-1.5">
+                <button className="flex-1 h-7 px-sm text-caption bg-secondary hover:bg-destructive/10 text-destructive rounded transition-colors border border-destructive/30 flex items-center justify-center gap-xs">
                   <Trash2 className="w-3 h-3" />
                   {t('account.danger.delete')}
                 </button>
@@ -696,34 +696,34 @@ const Settings = () => {
 
         {/* PREFERENCES TAB */}
         {activeTab === 'preferences' && (
-          <div className="space-y-4">
+          <div className="space-y-md">
             <div>
-              <h2 className="text-xs font-semibold text-muted-foreground">{t('preferences.title')}</h2>
+              <h2 className="text-caption font-semibold text-muted-foreground">{t('preferences.title')}</h2>
               <p className="text-overline text-muted-foreground mt-0.5">{t('preferences.subtitle')}</p>
             </div>
 
             {/* Study Options */}
             <div>
-              <h3 className="text-xs font-semibold text-card-foreground mb-1.5">{t('preferences.study.title')}</h3>
-              <div className="bg-muted border border-border rounded p-3 space-y-2">
+              <h3 className="text-caption font-semibold text-card-foreground mb-xs">{t('preferences.study.title')}</h3>
+              <div className="bg-muted border border-border rounded p-sm space-y-xs">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs text-foreground">{t('preferences.study.dailyLimit')}</label>
-                  <div className="flex items-center gap-2">
+                  <label className="text-caption text-foreground">{t('preferences.study.dailyLimit')}</label>
+                  <div className="flex items-center gap-xs">
                     <input
                       type="number"
                       min="1"
                       max="100"
                       value={settings.maxReviewsPerDay || 10}
                       onChange={(e) => updateSettings({ maxReviewsPerDay: Number(e.target.value) })}
-                      className="h-6 w-16 px-1.5 text-xs border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring bg-background text-foreground"
+                      className="h-6 w-16 px-xs text-caption border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring bg-background text-foreground"
                     />
                     <span className="text-overline text-muted-foreground">{t('preferences.study.cardsPerBookDay')}</span>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <label className="text-xs text-foreground">{t('preferences.study.easeFactor')}</label>
-                  <div className="flex items-center gap-2">
+                  <label className="text-caption text-foreground">{t('preferences.study.easeFactor')}</label>
+                  <div className="flex items-center gap-xs">
                     <input
                       type="number"
                       min="1.3"
@@ -731,25 +731,25 @@ const Settings = () => {
                       step="0.1"
                       value={settings.defaultInitialEaseFactor || 2.5}
                       onChange={(e) => updateSettings({ defaultInitialEaseFactor: Number(e.target.value) })}
-                      className="h-6 w-16 px-1.5 text-xs border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring bg-background text-foreground"
+                      className="h-6 w-16 px-xs text-caption border border-input rounded focus:outline-none focus:ring-1 focus:ring-ring bg-background text-foreground"
                     />
                     <span className="text-overline text-muted-foreground">{t('preferences.study.newCards')}</span>
                   </div>
                 </div>
 
-                <div className="pt-2 border-t border-border">
+                <div className="pt-xs border-t border-border">
                   <button
                     onClick={async () => {
                       if (confirm(t('preferences.study.applyGlobalConfirm'))) {
                         await resetAllBooksToDefaults();
                       }
                     }}
-                    className="w-full h-7 px-3 text-xs bg-secondary hover:bg-accent text-secondary-foreground rounded transition-colors flex items-center justify-center gap-1.5"
+                    className="w-full h-7 px-sm text-caption bg-secondary hover:bg-accent text-secondary-foreground rounded transition-colors flex items-center justify-center gap-xs"
                   >
                     <SettingsIcon className="w-3 h-3" />
                     {t('preferences.study.applyGlobal')}
                   </button>
-                  <p className="text-overline text-muted-foreground mt-1 text-center">
+                  <p className="text-overline text-muted-foreground mt-xxs text-center">
                     {t('preferences.study.applyGlobalHint')}
                   </p>
                 </div>
@@ -758,17 +758,17 @@ const Settings = () => {
 
             {/* Display & Interface */}
             <div>
-              <h3 className="text-xs font-semibold text-card-foreground mb-1.5">{t('preferences.display.title')}</h3>
-              <div className="bg-muted border border-border rounded p-3 space-y-2">
-                <label className="flex items-center gap-2 text-xs text-foreground cursor-pointer">
+              <h3 className="text-caption font-semibold text-card-foreground mb-xs">{t('preferences.display.title')}</h3>
+              <div className="bg-muted border border-border rounded p-sm space-y-xs">
+                <label className="flex items-center gap-xs text-caption text-foreground cursor-pointer">
                   <input type="checkbox" className="w-3.5 h-3.5 rounded border-border" />
                   {t('preferences.display.keyboardHints')}
                 </label>
-                <label className="flex items-center gap-2 text-xs text-foreground cursor-pointer">
+                <label className="flex items-center gap-xs text-caption text-foreground cursor-pointer">
                   <input type="checkbox" defaultChecked className="w-3.5 h-3.5 rounded border-border" />
                   {t('preferences.display.autoReveal')}
                 </label>
-                <p className="text-xs text-muted-foreground italic mt-2">
+                <p className="text-caption text-muted-foreground italic mt-xs">
                   {t('preferences.display.notFunctional')}
                 </p>
               </div>

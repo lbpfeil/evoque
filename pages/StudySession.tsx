@@ -11,12 +11,12 @@ import { StudyCard } from '../types';
 // Determine card status for visual indicator (aligned with getDeckStats)
 function getCardStatus(card: StudyCard, t: (key: string) => string): { status: 'new' | 'learning' | 'review'; color: string; label: string } {
     if (card.repetitions === 0) {
-        return { status: 'new', color: 'bg-blue-500', label: t('status.new') };
+        return { status: 'new', color: 'bg-status-new', label: t('status.new') };
     }
     if (card.repetitions >= 1 && card.repetitions < 5) {
-        return { status: 'learning', color: 'bg-amber-500', label: t('status.learning') };
+        return { status: 'learning', color: 'bg-status-learning', label: t('status.learning') };
     }
-    return { status: 'review', color: 'bg-green-500', label: t('status.review') };
+    return { status: 'review', color: 'bg-status-review', label: t('status.review') };
 }
 
 const StudySession = () => {
@@ -264,7 +264,7 @@ ${currentHighlight.text}`;
     // Loading state
     if (!isLoaded) {
         return (
-            <div className="h-screen flex items-center justify-center text-muted-foreground">
+            <div className="h-screen flex items-center justify-center text-muted-foreground text-body">
                 {t('loading')}
             </div>
         );
@@ -277,12 +277,12 @@ ${currentHighlight.text}`;
         const isDailyLimitReached = deckId && reviewsToday >= 10;
 
         return (
-            <div className="h-screen flex flex-col items-center justify-center text-center space-y-6">
+            <div className="h-screen flex flex-col items-center justify-center text-center space-y-lg">
                 <div className="text-muted-foreground">
-                    <p className="text-base font-medium mb-2">
+                    <p className="text-body font-medium mb-xs">
                         {isDailyLimitReached ? t('dailyLimit.title') : t('noCards.title')}
                     </p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-body text-muted-foreground">
                         {isDailyLimitReached
                             ? t('dailyLimit.message')
                             : deckId
@@ -292,7 +292,7 @@ ${currentHighlight.text}`;
                 </div >
                 <button
                     onClick={() => navigate('/study')}
-                    className="px-6 py-2 bg-foreground text-background rounded-md hover:bg-foreground/90 transition-colors text-sm"
+                    className="px-lg py-xs bg-foreground text-background rounded-md hover:bg-foreground/90 transition-colors text-body"
                 >
                     {t('actions.backToDecks')}
                 </button>
@@ -303,16 +303,16 @@ ${currentHighlight.text}`;
     // Session complete
     if (sessionComplete) {
         return (
-            <div className="h-screen flex flex-col items-center justify-center text-center space-y-8">
+            <div className="h-screen flex flex-col items-center justify-center text-center space-y-xl">
                 <h2 className="text-2xl font-bold text-foreground">{t('complete.title')}</h2>
-                <div className="flex gap-12">
+                <div className="flex gap-3xl">
                     <div className="text-center">
-                        <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest mb-2">{t('complete.reviewed')}</p>
+                        <p className="text-muted-foreground text-caption font-bold uppercase tracking-widest mb-xs">{t('complete.reviewed')}</p>
                         <p className="text-4xl font-bold text-foreground">{sessionStats.reviewed}</p>
                     </div>
                     <div className="w-px bg-border h-16"></div>
                     <div className="text-center">
-                        <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest mb-2">{t('complete.accuracy')}</p>
+                        <p className="text-muted-foreground text-caption font-bold uppercase tracking-widest mb-xs">{t('complete.accuracy')}</p>
                         <p className="text-4xl font-bold text-foreground">
                             {sessionStats.reviewed > 0 ? Math.round((sessionStats.correct / sessionStats.reviewed) * 100) : 0}%
                         </p>
@@ -320,7 +320,7 @@ ${currentHighlight.text}`;
                 </div>
                 <button
                     onClick={() => navigate('/study')}
-                    className="px-10 py-4 bg-foreground text-background rounded-md font-medium hover:bg-foreground/90 transition-colors shadow-xl shadow-foreground/10"
+                    className="px-2xl py-md bg-foreground text-background rounded-md font-medium hover:bg-foreground/90 transition-colors shadow-xl shadow-foreground/10"
                 >
                     {t('actions.backToDecks')}
                 </button>
@@ -331,16 +331,16 @@ ${currentHighlight.text}`;
     // Missing card data
     if (!currentHighlight || !currentBook) {
         return (
-            <div className="h-screen flex flex-col items-center justify-center text-center space-y-6">
-                <div className="text-red-500">
-                    <p className="text-base font-medium mb-2">{t('error.title')}</p>
-                    <p className="text-sm text-muted-foreground">
+            <div className="h-screen flex flex-col items-center justify-center text-center space-y-lg">
+                <div className="text-destructive">
+                    <p className="text-body font-medium mb-xs">{t('error.title')}</p>
+                    <p className="text-body text-muted-foreground">
                         {t('error.message')}
                     </p>
                 </div>
                 <button
                     onClick={() => navigate('/study')}
-                    className="px-6 py-2 bg-foreground text-background rounded-md hover:bg-foreground/90 transition-colors text-sm"
+                    className="px-lg py-xs bg-foreground text-background rounded-md hover:bg-foreground/90 transition-colors text-body"
                 >
                     {t('actions.backToDecks')}
                 </button>
@@ -354,24 +354,24 @@ ${currentHighlight.text}`;
     return (
         <div className="h-screen flex flex-col bg-background">
             {/* Compact Header */}
-            <header className="px-3 sm:px-4 py-2 border-b border-border">
+            <header className="px-sm sm:px-md py-xs border-b border-border">
                 <div className="flex items-center justify-between">
                     <button
                         onClick={handleBack}
-                        className="flex items-center gap-1 hover:bg-accent px-2 py-1.5 sm:py-1 rounded transition-colors min-h-[40px] sm:min-h-0"
+                        className="flex items-center gap-xxs hover:bg-accent px-xs py-1.5 sm:py-xxs rounded transition-colors min-h-[40px] sm:min-h-0"
                     >
                         <ArrowLeft className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-muted-foreground" />
-                        <span className="text-xs text-muted-foreground hidden sm:inline">{t('actions.backToDecks')}</span>
+                        <span className="text-caption text-muted-foreground hidden sm:inline">{t('actions.backToDecks')}</span>
                     </button>
 
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-caption text-muted-foreground">
                         {t('progress.cardOf', { current: currentIndex + 1, total: queueIds.length })}
                     </div>
 
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-xxs">
                         <button
                             onClick={() => setShowTagSelector(prev => !prev)}
-                            className="p-2 -mr-1 text-muted-foreground hover:text-primary transition-colors rounded-full hover:bg-accent min-h-[40px] sm:min-h-0"
+                            className="p-xs -mr-xxs text-muted-foreground hover:text-primary transition-colors rounded-full hover:bg-accent min-h-[40px] sm:min-h-0"
                             title={t('actions.manageTags')}
                         >
                             <TagIcon className="w-4 h-4" />
@@ -380,14 +380,14 @@ ${currentHighlight.text}`;
                         <button
                             onClick={handleCopyToClipboard}
                             disabled={!currentBook || !currentHighlight}
-                            className="p-2 -mr-1 text-muted-foreground hover:text-green-600 transition-colors rounded-full hover:bg-accent min-h-[40px] sm:min-h-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="p-xs -mr-xxs text-muted-foreground hover:text-success transition-colors rounded-full hover:bg-accent min-h-[40px] sm:min-h-0 disabled:opacity-50 disabled:cursor-not-allowed"
                             title={justCopied ? t('actions.copied') : t('actions.copyToClipboard')}
                         >
-                            <Copy className={`w-4 h-4 ${justCopied ? 'text-green-600' : ''}`} />
+                            <Copy className={`w-4 h-4 ${justCopied ? 'text-success' : ''}`} />
                         </button>
                         <button
                             onClick={() => setShowDeletePopover(true)}
-                            className="p-2 -mr-2 text-muted-foreground hover:text-destructive transition-colors rounded-full hover:bg-accent min-h-[40px] sm:min-h-0"
+                            className="p-xs -mr-xs text-muted-foreground hover:text-destructive transition-colors rounded-full hover:bg-accent min-h-[40px] sm:min-h-0"
                             title={t('actions.deleteCard')}
                         >
                             <Trash2 className="w-4 h-4" />
@@ -396,7 +396,7 @@ ${currentHighlight.text}`;
                 </div>
 
                 {/* Progress bar */}
-                <div className="h-[3px] bg-border mt-2 rounded-full overflow-hidden">
+                <div className="h-[3px] bg-border mt-xs rounded-full overflow-hidden">
                     <div
                         className="h-full progress-bar-animated transition-all duration-300 ease-out"
                         style={{ width: `${progress}%` }}
@@ -405,10 +405,10 @@ ${currentHighlight.text}`;
             </header>
 
             {/* Main Content */}
-            <div className="flex-1 overflow-y-auto px-6 sm:px-8 py-6 sm:py-8">
-                <div className="max-w-2xl mx-auto space-y-6">
+            <div className="flex-1 overflow-y-auto px-lg sm:px-xl py-lg sm:py-xl">
+                <div className="max-w-2xl mx-auto space-y-lg">
                     {/* Book Info */}
-                    <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start justify-between gap-md">
                         <div className="flex items-center gap-2.5 flex-1 min-w-0">
                             {currentBook.coverUrl && (
                                 <img
@@ -425,8 +425,8 @@ ${currentHighlight.text}`;
                                 />
                             )}
                             <div className="min-w-0">
-                                <h3 className="text-sm font-semibold text-foreground">{currentBook.title}</h3>
-                                <p className="text-xs text-muted-foreground">{currentBook.author}</p>
+                                <h3 className="text-body font-semibold text-foreground">{currentBook.title}</h3>
+                                <p className="text-caption text-muted-foreground">{currentBook.author}</p>
                             </div>
                         </div>
 
@@ -447,7 +447,7 @@ ${currentHighlight.text}`;
                             const remainingCount = highlightTags.length - maxTags;
 
                             return (
-                                <div className="hidden md:flex flex-wrap gap-1 justify-end items-start max-w-xs">
+                                <div className="hidden md:flex flex-wrap gap-xxs justify-end items-start max-w-xs">
                                     {displayTags.map(tag => (
                                         <span
                                             key={tag.id}
@@ -490,7 +490,7 @@ ${currentHighlight.text}`;
                         const remainingCount = highlightTags.length - maxTags;
 
                         return (
-                            <div className="flex md:hidden flex-wrap gap-1 mb-3">
+                            <div className="flex md:hidden flex-wrap gap-xxs mb-sm">
                                 {displayTags.map(tag => (
                                     <span
                                         key={tag.id}
@@ -517,8 +517,8 @@ ${currentHighlight.text}`;
 
                     {/* Highlight Text - Editable */}
                     {isEditingHighlight ? (
-                        <div className="bg-muted border border-border rounded-md p-4">
-                            <div className="flex items-center justify-between mb-2">
+                        <div className="bg-muted border border-border rounded-md p-md">
+                            <div className="flex items-center justify-between mb-xs">
                                 <span className="text-overline uppercase tracking-wider text-muted-foreground font-semibold">
                                     {t('edit.highlightLabel')}
                                 </span>
@@ -528,11 +528,11 @@ ${currentHighlight.text}`;
                                 value={editedHighlight}
                                 onChange={(e) => setEditedHighlight(e.target.value)}
                                 onBlur={handleSaveHighlight}
-                                className="w-full bg-background border border-input rounded-sm p-3 text-base text-foreground focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring resize-none font-serif"
+                                className="w-full bg-background border border-input rounded-sm p-sm text-base text-foreground focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring resize-none font-serif"
                                 rows={6}
                                 autoFocus
                             />
-                            <p className="text-overline text-muted-foreground mt-2">{t('edit.saveHint')}</p>
+                            <p className="text-overline text-muted-foreground mt-xs">{t('edit.saveHint')}</p>
                         </div>
                     ) : (
                         <div className="relative group">
@@ -543,7 +543,7 @@ ${currentHighlight.text}`;
                             </blockquote>
                             <button
                                 onClick={handleEditHighlight}
-                                className="absolute -top-1 -right-1 p-1 text-muted-foreground hover:text-foreground transition-colors opacity-0 group-hover:opacity-100"
+                                className="absolute -top-xxs -right-xxs p-xxs text-muted-foreground hover:text-foreground transition-colors opacity-0 group-hover:opacity-100"
                                 title={t('edit.highlightLabel')}
                             >
                                 <Edit2 className="w-3.5 h-3.5" />
@@ -555,8 +555,8 @@ ${currentHighlight.text}`;
                     {showAnswer && (
                         <div className="animate-fade-in-up">
                             {isEditingNote ? (
-                                <div className="bg-muted border border-border rounded-md p-4">
-                                    <div className="flex items-center justify-between mb-2">
+                                <div className="bg-muted border border-border rounded-md p-md">
+                                    <div className="flex items-center justify-between mb-xs">
                                         <span className="text-overline uppercase tracking-wider text-muted-foreground font-semibold">
                                             {t('edit.noteLabel')}
                                         </span>
@@ -566,16 +566,16 @@ ${currentHighlight.text}`;
                                         value={editedNote}
                                         onChange={(e) => setEditedNote(e.target.value)}
                                         onBlur={handleSaveNote}
-                                        className="w-full bg-background border border-input rounded-sm p-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring resize-none"
+                                        className="w-full bg-background border border-input rounded-sm p-sm text-body text-foreground focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring resize-none"
                                         rows={6}
                                         placeholder={t('edit.notePlaceholder')}
                                         autoFocus
                                     />
-                                    <p className="text-overline text-muted-foreground mt-2">{t('edit.saveHint')}</p>
+                                    <p className="text-overline text-muted-foreground mt-xs">{t('edit.saveHint')}</p>
                                 </div>
                             ) : (
-                                <div className="mt-8">
-                                    <div className="flex items-center justify-center gap-4 mb-8 select-none">
+                                <div className="mt-xl">
+                                    <div className="flex items-center justify-center gap-md mb-xl select-none">
                                         <div className="h-px flex-1 bg-border"></div>
                                         <span className="font-serif italic text-lg text-border">~</span>
                                         <div className="h-px flex-1 bg-border"></div>
@@ -587,11 +587,11 @@ ${currentHighlight.text}`;
                                                 {currentHighlight.note}
                                             </div>
                                         ) : (
-                                            <div className="text-center py-4">
-                                                <p className="text-sm text-muted-foreground italic mb-2">{t('note.empty')}</p>
+                                            <div className="text-center py-md">
+                                                <p className="text-body text-muted-foreground italic mb-xs">{t('note.empty')}</p>
                                                 <button
                                                     onClick={handleEditNote}
-                                                    className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 transition-colors"
+                                                    className="text-caption text-muted-foreground hover:text-foreground underline underline-offset-2 transition-colors"
                                                 >
                                                     {t('note.add')}
                                                 </button>
@@ -601,7 +601,7 @@ ${currentHighlight.text}`;
                                         {currentHighlight.note && (
                                             <button
                                                 onClick={handleEditNote}
-                                                className="absolute -top-6 right-0 p-1 text-border hover:text-foreground transition-colors opacity-0 group-hover:opacity-100 flex items-center gap-1.5"
+                                                className="absolute -top-lg right-0 p-xxs text-border hover:text-foreground transition-colors opacity-0 group-hover:opacity-100 flex items-center gap-1.5"
                                                 title={t('note.editHint')}
                                             >
                                                 <span className="text-overline uppercase tracking-wider font-medium">{t('note.edit')}</span>
@@ -617,23 +617,23 @@ ${currentHighlight.text}`;
             </div>
 
             {/* Fixed Footer - Controls */}
-            <div className="border-t border-border bg-background p-3 pb-[calc(2rem+env(safe-area-inset-bottom))] sm:p-4 sm:pb-4">
+            <div className="border-t border-border bg-background p-sm pb-[calc(2rem+env(safe-area-inset-bottom))] sm:p-md sm:pb-md">
                 <div className="max-w-2xl mx-auto relative">
                     {/* Main controls - centered */}
                     <div>
                         {!showAnswer ? (
                             <button
                                 onClick={() => setShowAnswer(true)}
-                                className="w-full py-3.5 sm:py-3 min-h-[48px] bg-foreground hover:bg-foreground/90 text-background rounded-md font-medium text-sm transition-all active:scale-[0.99]"
+                                className="w-full py-3.5 sm:py-sm min-h-[48px] bg-foreground hover:bg-foreground/90 text-background rounded-md font-medium text-body transition-all active:scale-[0.99]"
                             >
-                                {t('actions.revealAnswer')} <span className="hidden sm:inline text-xs text-muted-foreground ml-2">{t('keyboard.revealHint')}</span>
+                                {t('actions.revealAnswer')} <span className="hidden sm:inline text-caption text-muted-foreground ml-xs">{t('keyboard.revealHint')}</span>
                             </button>
                         ) : (
-                            <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
+                            <div className="grid grid-cols-4 gap-1.5 sm:gap-xs">
                                 <button
                                     onClick={() => handleResponse(1)}
                                     disabled={isEditing || isSubmittingResponse}
-                                    className="py-2.5 sm:py-1.5 min-h-[48px] sm:min-h-0 bg-red-500 dark:bg-red-600 hover:bg-red-600 dark:hover:bg-red-700 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="py-2.5 sm:py-1.5 min-h-[48px] sm:min-h-0 bg-red-500 dark:bg-red-600 hover:bg-red-600 dark:hover:bg-red-700 text-white rounded-md font-medium text-body flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <span>{t('rating.again')}</span>
                                     <span className="hidden sm:block text-overline opacity-75">{t('keyboard.again')}</span>
@@ -641,7 +641,7 @@ ${currentHighlight.text}`;
                                 <button
                                     onClick={() => handleResponse(2)}
                                     disabled={isEditing || isSubmittingResponse}
-                                    className="py-2.5 sm:py-1.5 min-h-[48px] sm:min-h-0 bg-amber-500 dark:bg-amber-600 hover:bg-amber-600 dark:hover:bg-amber-700 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="py-2.5 sm:py-1.5 min-h-[48px] sm:min-h-0 bg-amber-500 dark:bg-amber-600 hover:bg-amber-600 dark:hover:bg-amber-700 text-white rounded-md font-medium text-body flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <span>{t('rating.hard')}</span>
                                     <span className="hidden sm:block text-overline opacity-75">{t('keyboard.hard')}</span>
@@ -649,7 +649,7 @@ ${currentHighlight.text}`;
                                 <button
                                     onClick={() => handleResponse(3)}
                                     disabled={isEditing || isSubmittingResponse}
-                                    className="py-2.5 sm:py-1.5 min-h-[48px] sm:min-h-0 bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="py-2.5 sm:py-1.5 min-h-[48px] sm:min-h-0 bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white rounded-md font-medium text-body flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <span>{t('rating.good')}</span>
                                     <span className="hidden sm:block text-overline opacity-75">{t('keyboard.good')}</span>
@@ -657,7 +657,7 @@ ${currentHighlight.text}`;
                                 <button
                                     onClick={() => handleResponse(4)}
                                     disabled={isEditing || isSubmittingResponse}
-                                    className="py-2.5 sm:py-1.5 min-h-[48px] sm:min-h-0 bg-green-500 dark:bg-green-600 hover:bg-green-600 dark:hover:bg-green-700 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="py-2.5 sm:py-1.5 min-h-[48px] sm:min-h-0 bg-green-500 dark:bg-green-600 hover:bg-green-600 dark:hover:bg-green-700 text-white rounded-md font-medium text-body flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <span>{t('rating.easy')}</span>
                                     <span className="hidden sm:block text-overline opacity-75">{t('keyboard.easy')}</span>
@@ -691,7 +691,7 @@ ${currentHighlight.text}`;
                     />
 
                     {/* TagSelector centered */}
-                    <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 px-2 w-full max-w-md sm:px-4">
+                    <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 px-xs w-full max-w-md sm:px-md">
                         <div className="bg-card rounded-md shadow-xl border border-border">
                             <TagSelector
                                 highlightId={currentHighlight.id}

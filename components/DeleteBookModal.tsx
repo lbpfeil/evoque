@@ -57,21 +57,21 @@ export const DeleteBookModal: React.FC<DeleteBookModalProps> = ({ bookId, onConf
     <AlertDialog open={!!bookId} onOpenChange={(open) => !open && onCancel()}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle className="flex items-center gap-2">
+          <AlertDialogTitle className="flex items-center gap-sm">
             <AlertTriangle className="w-5 h-5 text-destructive" />
             {t('deleteBook.title', { title: bookData.book.title })}
           </AlertDialogTitle>
           <AlertDialogDescription asChild>
-            <div className="space-y-2">
+            <div className="space-y-sm">
               <p>{t('deleteBook.warning')}</p>
-              <ul className="list-disc list-inside ml-2 space-y-1">
+              <ul className="list-disc list-inside ml-sm space-y-1">
                 <li>{t('deleteBook.highlights', { count: bookData.highlightCount })}</li>
                 <li>{t('deleteBook.studyCards', { count: bookData.cardCount })}</li>
                 <li>{t('deleteBook.reviewHistory')}</li>
                 <li>{t('deleteBook.chapterTags')}</li>
               </ul>
               {bookData.isInActiveSession && (
-                <p className="text-destructive font-medium mt-3 flex items-center gap-1">
+                <p className="text-destructive font-medium mt-sm flex items-center gap-xs">
                   <AlertTriangle className="w-3 h-3" />
                   {t('deleteBook.activeSession')}
                 </p>
@@ -80,13 +80,13 @@ export const DeleteBookModal: React.FC<DeleteBookModalProps> = ({ bookId, onConf
           </AlertDialogDescription>
         </AlertDialogHeader>
 
-        <div className="flex items-center gap-2 py-2">
+        <div className="flex items-center gap-sm py-sm">
           <Checkbox
             id="confirm-delete"
             checked={confirmed}
             onCheckedChange={(checked) => setConfirmed(!!checked)}
           />
-          <label htmlFor="confirm-delete" className="text-sm text-muted-foreground cursor-pointer">
+          <label htmlFor="confirm-delete" className="text-body text-muted-foreground cursor-pointer">
             {t('deleteBook.confirm')}
           </label>
         </div>

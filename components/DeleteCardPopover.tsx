@@ -24,19 +24,19 @@ export const DeleteCardPopover: React.FC<DeleteCardPopoverProps> = ({ onConfirm,
     <AlertDialog open={true} onOpenChange={(isOpen) => !isOpen && onCancel()}>
       <AlertDialogContent className="max-w-xs">
         <AlertDialogHeader>
-          <AlertDialogTitle className="flex items-center gap-2 text-sm">
+          <AlertDialogTitle className="flex items-center gap-sm text-body">
             <AlertTriangle className="w-4 h-4 text-destructive" />
             {t('deleteCard.title')}
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-xs">
+          <AlertDialogDescription className="text-caption">
             {t('deleteCard.message')}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel className="text-xs">{t('common:buttons.cancel')}</AlertDialogCancel>
+          <AlertDialogCancel className="text-caption">{t('common:buttons.cancel')}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90 text-xs"
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90 text-caption"
           >
             {t('common:buttons.delete')}
           </AlertDialogAction>

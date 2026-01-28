@@ -22,16 +22,16 @@ export const EmptyDeckPopover: React.FC<EmptyDeckPopoverProps> = ({ onClose }) =
     <AlertDialog open={true} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <AlertDialogContent className="max-w-xs">
         <AlertDialogHeader>
-          <AlertDialogTitle className="flex items-center gap-2 text-sm">
-            <AlertCircle className="w-4 h-4 text-amber-500" />
+          <AlertDialogTitle className="flex items-center gap-sm text-body">
+            <AlertCircle className="w-4 h-4 text-learning" />
             {t('emptyDeck.title')}
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-xs">
+          <AlertDialogDescription className="text-caption">
             {t('emptyDeck.message')}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogAction onClick={onClose} className="text-xs">
+          <AlertDialogAction onClick={onClose} className="text-caption">
             {t('common:buttons.confirm')}
           </AlertDialogAction>
         </AlertDialogFooter>

@@ -49,15 +49,15 @@ const HighlightHistoryModal: React.FC<HighlightHistoryModalProps> = ({ highlight
     <Dialog open={!!highlightId} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-sm">
             <TrendingUp className="w-5 h-5 text-primary" />
             {t('historyModal.title')}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto space-y-6">
+        <div className="flex-1 overflow-y-auto space-y-lg">
           <div>
-            <p className="text-sm text-muted-foreground italic mb-2">
+            <p className="text-body text-muted-foreground italic mb-sm">
               "{highlight.text.substring(0, 100)}{highlight.text.length > 100 ? '...' : ''}"
             </p>
           </div>
@@ -100,23 +100,23 @@ const HighlightHistoryModal: React.FC<HighlightHistoryModalProps> = ({ highlight
                 </LineChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
+              <div className="flex items-center justify-center h-full text-muted-foreground text-body">
                 {t('historyModal.noHistory')}
               </div>
             )}
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
-            <div className="bg-muted p-3 rounded-md text-center">
-              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">{t('historyModal.repetitions')}</p>
+          <div className="grid grid-cols-3 gap-md">
+            <div className="bg-muted p-sm rounded-md text-center">
+              <p className="text-caption text-muted-foreground uppercase tracking-wider font-semibold">{t('historyModal.repetitions')}</p>
               <p className="text-xl font-bold">{card?.repetitions || 0}</p>
             </div>
-            <div className="bg-muted p-3 rounded-md text-center">
-              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">{t('historyModal.easeFactor')}</p>
+            <div className="bg-muted p-sm rounded-md text-center">
+              <p className="text-caption text-muted-foreground uppercase tracking-wider font-semibold">{t('historyModal.easeFactor')}</p>
               <p className="text-xl font-bold">{card?.easeFactor?.toFixed(2) || '-'}</p>
             </div>
-            <div className="bg-muted p-3 rounded-md text-center">
-              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">{t('historyModal.nextReview')}</p>
+            <div className="bg-muted p-sm rounded-md text-center">
+              <p className="text-caption text-muted-foreground uppercase tracking-wider font-semibold">{t('historyModal.nextReview')}</p>
               <p className="text-xl font-bold">
                 {card ? new Date(card.nextReviewDate).toLocaleDateString() : '-'}
               </p>
