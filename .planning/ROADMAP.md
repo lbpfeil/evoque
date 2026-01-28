@@ -42,7 +42,10 @@ Plans:
   2. A PageHeader component provides the canonical page layout template (title, description, actions)
   3. A data table pattern exists as a reusable structure with consistent header, row, and hover styles
   4. CVA variants for Button, Input, Badge, and Card reflect the token system (no arbitrary overrides needed)
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 05-01-PLAN.md -- Fix shadcn component CVA defaults (Button compact variant, Input h-8, Badge verification)
+- [ ] 05-02-PLAN.md -- Create PageHeader and DataTable composition patterns
 
 ### Phase 6: Page Migration
 **Goal**: Every page in the app looks like it was designed by the same person on the same day
@@ -72,7 +75,7 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 4. Token Foundation | v2.0 | 2/2 | Complete | 2026-01-27 |
-| 5. Component Standardization | v2.0 | 0/TBD | Not started | - |
+| 5. Component Standardization | v2.0 | 0/2 | In progress | - |
 | 6. Page Migration | v2.0 | 0/TBD | Not started | - |
 | 7. Design Guide | v2.0 | 0/TBD | Not started | - |
 
