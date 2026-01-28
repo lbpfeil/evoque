@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-27)
 
 **Core value:** Consistencia obsessiva -- cada elemento visual identico ao equivalente em qualquer pagina. Zero surpresas visuais.
-**Current focus:** Phase 5 - Component Standardization
+**Current focus:** Phase 6 - Page Migration
 
 ## Current Position
 
-Phase: 5 of 7 (Component Standardization)
-Plan: 2 of 2 in current phase
-Status: Phase complete
-Last activity: 2026-01-28 -- Completed 05-02-PLAN.md
+Phase: 6 of 7 (Page Migration)
+Plan: 4 of 7 in current phase
+Status: In progress
+Last activity: 2026-01-28 -- Completed 06-04-PLAN.md
 
-Progress: [████░░░░░░] 35%
+Progress: [███████░░░] 73%
 
 ## Performance Metrics
 
@@ -29,10 +29,11 @@ Progress: [████░░░░░░] 35%
 |-------|-------|-------|----------|
 | 04-token-foundation | 2 | 5.3min | 2.7min |
 | 05-component-standardization | 2 | 5.9min | 3.0min |
+| 06-page-migration | 4/7 | in progress | ~1.7min |
 
 **Recent Trend:**
-- Phase 5 complete: 5.9min total (Plan 01: 2.5min, Plan 02: 3.4min)
-- Composition patterns established for Phase 6 migration
+- Phase 6 plan 04: 1.7min (StudySession migration, 13 replacements)
+- Fastest plan yet due to single-file scope with clear replacement targets
 
 *Updated after each plan completion*
 
@@ -59,6 +60,8 @@ Recent decisions affecting current work:
 - [05-01]: Badge verified as already token-aligned (h-5, text-xs, px-2)
 - [05-02]: PageHeader size='default' (text-title 30px) for destination pages, size='compact' (text-heading 18px) for tool pages
 - [05-02]: DataTable uses gridCols string prop for flexibility, rowClassName function for per-row styling
+- [06-04]: StudySession preserves font-serif, rating colors, full-screen layout as intentional deviations
+- [06-04]: No PageHeader on StudySession (custom compact header is intentional immersive UX)
 
 ### Pending Todos
 
@@ -71,5 +74,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-28
-Stopped at: Phase 5 complete, verified. Ready to plan Phase 6.
+Stopped at: Completed 06-04-PLAN.md (StudySession migration)
 Resume file: None
