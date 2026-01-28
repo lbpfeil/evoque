@@ -451,7 +451,7 @@ ${currentHighlight.text}`;
                                     {displayTags.map(tag => (
                                         <span
                                             key={tag.id}
-                                            className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium ${tag.bookId
+                                            className={`inline-flex items-center px-1.5 py-0.5 rounded text-overline font-medium ${tag.bookId
                                                 ? 'bg-amber-500 dark:bg-amber-600 text-white'  // Book-specific
                                                 : 'bg-blue-500 dark:bg-blue-600 text-white'   // Global
                                                 }`}
@@ -462,7 +462,7 @@ ${currentHighlight.text}`;
                                     {remainingCount > 0 && (
                                         <button
                                             onClick={() => setShowAllTags(!showAllTags)}
-                                            className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-colors cursor-pointer"
+                                            className="inline-flex items-center px-1.5 py-0.5 rounded text-overline font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-colors cursor-pointer"
                                             title={showAllTags ? 'Show less' : `Show ${remainingCount} more tags`}
                                         >
                                             {showAllTags ? '−' : `+${remainingCount}`}
@@ -494,7 +494,7 @@ ${currentHighlight.text}`;
                                 {displayTags.map(tag => (
                                     <span
                                         key={tag.id}
-                                        className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium ${tag.bookId
+                                        className={`inline-flex items-center px-1.5 py-0.5 rounded text-overline font-medium ${tag.bookId
                                             ? 'bg-amber-500 dark:bg-amber-600 text-white'  // Book-specific
                                             : 'bg-blue-500 dark:bg-blue-600 text-white'   // Global
                                             }`}
@@ -505,7 +505,7 @@ ${currentHighlight.text}`;
                                 {remainingCount > 0 && (
                                     <button
                                         onClick={() => setShowAllTags(!showAllTags)}
-                                        className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-colors cursor-pointer"
+                                        className="inline-flex items-center px-1.5 py-0.5 rounded text-overline font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-colors cursor-pointer"
                                         title={showAllTags ? 'Show less' : `Show ${remainingCount} more tags`}
                                     >
                                         {showAllTags ? '−' : `+${remainingCount}`}
@@ -519,7 +519,7 @@ ${currentHighlight.text}`;
                     {isEditingHighlight ? (
                         <div className="bg-muted border border-border rounded-md p-4">
                             <div className="flex items-center justify-between mb-2">
-                                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+                                <span className="text-overline uppercase tracking-wider text-muted-foreground font-semibold">
                                     {t('edit.highlightLabel')}
                                 </span>
                                 {isSaving && <Clock className="w-3 h-3 text-muted-foreground animate-spin" />}
@@ -532,7 +532,7 @@ ${currentHighlight.text}`;
                                 rows={6}
                                 autoFocus
                             />
-                            <p className="text-[10px] text-muted-foreground mt-2">{t('edit.saveHint')}</p>
+                            <p className="text-overline text-muted-foreground mt-2">{t('edit.saveHint')}</p>
                         </div>
                     ) : (
                         <div className="relative group">
@@ -557,7 +557,7 @@ ${currentHighlight.text}`;
                             {isEditingNote ? (
                                 <div className="bg-muted border border-border rounded-md p-4">
                                     <div className="flex items-center justify-between mb-2">
-                                        <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+                                        <span className="text-overline uppercase tracking-wider text-muted-foreground font-semibold">
                                             {t('edit.noteLabel')}
                                         </span>
                                         {isSaving && <Clock className="w-3 h-3 text-muted-foreground animate-spin" />}
@@ -571,7 +571,7 @@ ${currentHighlight.text}`;
                                         placeholder={t('edit.notePlaceholder')}
                                         autoFocus
                                     />
-                                    <p className="text-[10px] text-muted-foreground mt-2">{t('edit.saveHint')}</p>
+                                    <p className="text-overline text-muted-foreground mt-2">{t('edit.saveHint')}</p>
                                 </div>
                             ) : (
                                 <div className="mt-8">
@@ -604,7 +604,7 @@ ${currentHighlight.text}`;
                                                 className="absolute -top-6 right-0 p-1 text-border hover:text-foreground transition-colors opacity-0 group-hover:opacity-100 flex items-center gap-1.5"
                                                 title={t('note.editHint')}
                                             >
-                                                <span className="text-[10px] uppercase tracking-wider font-medium">{t('note.edit')}</span>
+                                                <span className="text-overline uppercase tracking-wider font-medium">{t('note.edit')}</span>
                                                 <Edit2 className="w-3 h-3" />
                                             </button>
                                         )}
@@ -636,7 +636,7 @@ ${currentHighlight.text}`;
                                     className="py-2.5 sm:py-1.5 min-h-[48px] sm:min-h-0 bg-red-500 dark:bg-red-600 hover:bg-red-600 dark:hover:bg-red-700 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <span>{t('rating.again')}</span>
-                                    <span className="hidden sm:block text-[10px] opacity-75">{t('keyboard.again')}</span>
+                                    <span className="hidden sm:block text-overline opacity-75">{t('keyboard.again')}</span>
                                 </button>
                                 <button
                                     onClick={() => handleResponse(2)}
@@ -644,7 +644,7 @@ ${currentHighlight.text}`;
                                     className="py-2.5 sm:py-1.5 min-h-[48px] sm:min-h-0 bg-amber-500 dark:bg-amber-600 hover:bg-amber-600 dark:hover:bg-amber-700 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <span>{t('rating.hard')}</span>
-                                    <span className="hidden sm:block text-[10px] opacity-75">{t('keyboard.hard')}</span>
+                                    <span className="hidden sm:block text-overline opacity-75">{t('keyboard.hard')}</span>
                                 </button>
                                 <button
                                     onClick={() => handleResponse(3)}
@@ -652,7 +652,7 @@ ${currentHighlight.text}`;
                                     className="py-2.5 sm:py-1.5 min-h-[48px] sm:min-h-0 bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <span>{t('rating.good')}</span>
-                                    <span className="hidden sm:block text-[10px] opacity-75">{t('keyboard.good')}</span>
+                                    <span className="hidden sm:block text-overline opacity-75">{t('keyboard.good')}</span>
                                 </button>
                                 <button
                                     onClick={() => handleResponse(4)}
@@ -660,7 +660,7 @@ ${currentHighlight.text}`;
                                     className="py-2.5 sm:py-1.5 min-h-[48px] sm:min-h-0 bg-green-500 dark:bg-green-600 hover:bg-green-600 dark:hover:bg-green-700 text-white rounded-md font-medium text-sm flex flex-col items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <span>{t('rating.easy')}</span>
-                                    <span className="hidden sm:block text-[10px] opacity-75">{t('keyboard.easy')}</span>
+                                    <span className="hidden sm:block text-overline opacity-75">{t('keyboard.easy')}</span>
                                 </button>
                             </div>
                         )}
