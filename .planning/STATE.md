@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-01-27)
 
 ## Current Position
 
-Phase: 8 of 10 (Token Consumption) -- IN PROGRESS
-Plan: 3 of ? in phase 8
-Status: Page token migrations complete (Plans 01-03)
-Last activity: 2026-01-28 -- Completed 08-03-PLAN.md (Highlights + Dashboard pages)
+Phase: 8 of 10 (Token Consumption) -- COMPLETE
+Plan: 5 of 5 in phase 8
+Status: All 6 pages + 30+ components migrated to semantic tokens
+Last activity: 2026-01-28 -- Completed 08-05-PLAN.md (Phase 8 Token Consumption complete)
 
-Progress: [███████░░░░] 70% (7/10 phases)
+Progress: [████████░░░] 80% (8/10 phases)
 
 ## Performance Metrics
 
@@ -31,12 +31,12 @@ Progress: [███████░░░░] 70% (7/10 phases)
 | 05-component-standardization | 2 | 5.9min | 3.0min |
 | 06-page-migration | 7/7 | ~18.6min | ~2.7min |
 | 07-design-guide | 1/1 | 7.2min | 7.2min |
-| 08-token-consumption | 3/? | 7.0min | 2.3min |
+| 08-token-consumption | 5/5 | ~30min | ~6min |
 
 **Recent Trend:**
-- Phase 6 plan 07: 2.5min (Comprehensive audit + visual verification + PageHeader standardization)
 - Phase 7 plan 01: 7.2min (601-line design system guide + CLAUDE.md updates)
-- Phase 8 plan 03: 7.0min (Highlights + Dashboard token migration, ~80 replacements)
+- Phase 8 plan 03: ~5min (Dashboard + Highlights token migration)
+- Phase 8 plan 05: ~8min (11 remaining components + comprehensive audit, phase complete)
 
 *Updated after each plan completion*
 
@@ -76,6 +76,12 @@ Recent decisions affecting current work:
 - [07-01]: CLAUDE.md updated to reference new guide in all locations
 - [08-03]: Tag colors use text-tag-book and text-tag-global semantic tokens (not raw amber/blue)
 - [08-03]: py-20 (80px) kept as raw value when above token scale maximum (64px)
+- [08-01]: py-2.5 maps to py-sm (12px) with acceptable +2px variance for Login input fields
+- [08-01]: Sub-4px micro-spacing (0.5 values) preserved as raw - semantic grid starts at 4px
+- [08-05]: ErrorBoundary uses text-destructive and bg-destructive/10 for error states
+- [08-05]: StudyHeatmap data-viz colors (green gradients, orange streak, inverted tooltip) preserved as intentional deviations with /* data-viz */ comments
+- [08-05]: DashboardCharts hsl() color bug deferred to Phase 10 (hsl-to-oklch migration)
+- [08-05]: Phase 8 complete - all pages + components use semantic tokens (zero unexpected raw values)
 
 ### Pending Todos
 
@@ -88,5 +94,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-28
-Stopped at: Completed 08-03-PLAN.md (Highlights + Dashboard pages migrated to tokens)
+Stopped at: Completed 08-05-PLAN.md (Phase 8 Token Consumption complete)
 Resume file: None
