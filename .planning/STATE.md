@@ -9,10 +9,10 @@ See: .planning/PROJECT.md (updated 2026-01-27)
 
 ## Current Position
 
-Phase: 8 of 10 (Token Consumption) -- COMPLETE
+Phase: 8 of 10 (Token Consumption) -- COMPLETE (verified)
 Plan: 5 of 5 in phase 8
-Status: All 6 pages + 30+ components migrated to semantic tokens
-Last activity: 2026-01-28 -- Completed 08-05-PLAN.md (Phase 8 Token Consumption complete)
+Status: All pages + components verified with semantic tokens. Plan 08-02 found already complete in previous commits.
+Last activity: 2026-01-28 -- Verified 08-02-PLAN.md (StudySession and Study already migrated in commits 6a591e7, 0d5f597)
 
 Progress: [████████░░░] 80% (8/10 phases)
 
@@ -82,6 +82,9 @@ Recent decisions affecting current work:
 - [08-05]: StudyHeatmap data-viz colors (green gradients, orange streak, inverted tooltip) preserved as intentional deviations with /* data-viz */ comments
 - [08-05]: DashboardCharts hsl() color bug deferred to Phase 10 (hsl-to-oklch migration)
 - [08-05]: Phase 8 complete - all pages + components use semantic tokens (zero unexpected raw values)
+- [08-02]: StudySession rating buttons preserve raw colors (SM-2 quality feedback, not status indicators)
+- [08-02]: Study page inverted background uses raw light shades (300/700) for proper contrast on dark foreground background
+- [08-02]: Plan 08-02 verification - work already complete in commits 6a591e7 and 0d5f597
 
 ### Pending Todos
 
@@ -94,5 +97,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-28
-Stopped at: Completed 08-05-PLAN.md (Phase 8 Token Consumption complete)
+Stopped at: Verified 08-02-PLAN.md (StudySession and Study already migrated, documented intentional deviations)
 Resume file: None
