@@ -8,6 +8,8 @@ import { Upload, Library, User, Sliders, FileText, CheckCircle, AlertCircle, Dow
 import DeleteBookModal from '../components/DeleteBookModal';
 import { PageHeader } from '../components/patterns/PageHeader';
 import { resizeImage } from '../lib/imageUtils';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
 
 type TabId = 'import' | 'library' | 'account' | 'preferences';
 
@@ -287,20 +289,22 @@ const Settings = () => {
       {/* Tabs */}
       <div className="flex gap-xxs border-b border-border mb-sm">
         {tabs.map(tab => (
-          <button
+          <Button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
+            variant="ghost"
+            size="sm"
             className={`
-              px-sm py-xxs text-caption font-medium rounded-t transition-colors flex items-center gap-xs
+              rounded-t gap-xs
               ${activeTab === tab.id
                 ? 'bg-card text-card-foreground border-t border-x border-border -mb-px'
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                : 'text-muted-foreground'
               }
             `}
           >
             <tab.icon className="w-3 h-3" />
             {tab.name}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -323,12 +327,14 @@ const Settings = () => {
                     {t('import.success', { books: importResult.newBooks, highlights: importResult.newHighlights })}
                   </span>
                 </div>
-                <button
+                <Button
                   onClick={() => setActiveTab('library')}
-                  className="text-caption text-success hover:underline shrink-0"
+                  variant="link"
+                  size="sm"
+                  className="text-success hover:underline shrink-0 h-auto p-0"
                 >
                   {t('import.viewLibrary')}
-                </button>
+                </Button>
               </div>
             )}
 
@@ -440,12 +446,14 @@ const Settings = () => {
                   {t('library.empty')}
                 </p>
                 {books.length === 0 && (
-                  <button
+                  <Button
                     onClick={() => setActiveTab('import')}
-                    className="mt-xs text-caption text-foreground hover:underline"
+                    variant="link"
+                    size="sm"
+                    className="mt-xs h-auto p-0"
                   >
                     {t('library.goToImport')}
-                  </button>
+                  </Button>
                 )}
               </div>
             ) : (
@@ -453,16 +461,18 @@ const Settings = () => {
                 {filteredBooks.map(book => (
                   <div key={book.id} className="relative py-xs px-sm border border-border rounded bg-card">
                     {/* Botão delete (canto superior direito) */}
-                    <button
+                    <Button
                       onClick={(e) => {
                         e.stopPropagation();
                         setBookToDelete(book.id);
                       }}
-                      className="absolute top-xs right-xs p-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded transition-colors z-10"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute top-xs right-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 z-10"
                       title={t('library.deleteBook')}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    </Button>
 
                     {/* Book card content */}
                     <div className="flex items-center gap-xs">
@@ -509,7 +519,7 @@ const Settings = () => {
 
                     {/* Book Settings Collapsible */}
                     <div className="mt-xs border-t border-border/50 pt-xs">
-                      <button
+                      <Button
                         onClick={() => {
                           setExpandedBooks(prev => {
                             const next = new Set(prev);
@@ -521,7 +531,9 @@ const Settings = () => {
                             return next;
                           });
                         }}
-                        className="flex items-center gap-xs text-caption text-muted-foreground hover:text-foreground transition-colors"
+                        variant="ghost"
+                        size="sm"
+                        className="gap-xs text-muted-foreground h-auto p-0"
                       >
                         <SettingsIcon className="w-3 h-3" />
                         <span>{t('library.bookSettings')}</span>
@@ -530,7 +542,7 @@ const Settings = () => {
                         ) : (
                           <ChevronDown className="w-3 h-3" />
                         )}
-                      </button>
+                      </Button>
 
                       {expandedBooks.has(book.id) && (
                         <div className="mt-xs bg-muted rounded p-xs space-y-xs">
@@ -681,14 +693,14 @@ const Settings = () => {
             <div>
               <h3 className="text-caption font-semibold text-destructive mb-xs">{t('account.danger.title')}</h3>
               <div className="flex gap-xs">
-                <button className="flex-1 h-7 px-sm text-caption bg-secondary hover:bg-accent text-secondary-foreground rounded transition-colors border border-border flex items-center justify-center gap-xs">
+                <Button variant="secondary" size="sm" className="flex-1 gap-xs border border-border">
                   <Download className="w-3 h-3" />
                   {t('account.danger.export')}
-                </button>
-                <button className="flex-1 h-7 px-sm text-caption bg-secondary hover:bg-destructive/10 text-destructive rounded transition-colors border border-destructive/30 flex items-center justify-center gap-xs">
+                </Button>
+                <Button variant="secondary" size="sm" className="flex-1 gap-xs text-destructive hover:bg-destructive/10 border border-destructive/30">
                   <Trash2 className="w-3 h-3" />
                   {t('account.danger.delete')}
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -738,17 +750,19 @@ const Settings = () => {
                 </div>
 
                 <div className="pt-xs border-t border-border">
-                  <button
+                  <Button
                     onClick={async () => {
                       if (confirm(t('preferences.study.applyGlobalConfirm'))) {
                         await resetAllBooksToDefaults();
                       }
                     }}
-                    className="w-full h-7 px-sm text-caption bg-secondary hover:bg-accent text-secondary-foreground rounded transition-colors flex items-center justify-center gap-xs"
+                    variant="secondary"
+                    size="sm"
+                    className="w-full gap-xs"
                   >
                     <SettingsIcon className="w-3 h-3" />
                     {t('preferences.study.applyGlobal')}
-                  </button>
+                  </Button>
                   <p className="text-overline text-muted-foreground mt-xxs text-center">
                     {t('preferences.study.applyGlobalHint')}
                   </p>
