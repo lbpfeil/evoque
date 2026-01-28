@@ -110,7 +110,13 @@ Plans:
   2. All pages use `<Input>` component instead of raw `<input>` elements where applicable
   3. DataTable is either adopted by DeckTable/other tables or removed if unnecessary
   4. No raw `<button>` with manual styling remains in any page file
-Plans: TBD
+**Plans**: 5 plans
+Plans:
+- [ ] 09-01-PLAN.md — Migrate Login, Sidebar, ThemeToggle, ErrorBoundary to Button/Input
+- [ ] 09-02-PLAN.md — Migrate Settings to Button/Input (file inputs, checkboxes)
+- [ ] 09-03-PLAN.md — Migrate StudySession and Study (preserve rating button deviations)
+- [ ] 09-04-PLAN.md — Migrate Highlights to Button/Input (comboboxes, filters, bulk actions)
+- [ ] 09-05-PLAN.md — Complete component Button adoption + remove orphaned DataTable
 
 ### Phase 10: Bug Fixes & Guide Accuracy
 **Goal**: The design guide accurately describes the codebase and all functional bugs are fixed
@@ -135,7 +141,7 @@ Plans: TBD
 | 6. Page Migration | v2.0 | 7/7 | Complete | 2026-01-28 |
 | 7. Design Guide | v2.0 | 1/1 | Complete | 2026-01-28 |
 | 8. Token Consumption | v2.0 | 5/5 | Complete | 2026-01-28 |
-| 9. Component Adoption | v2.0 | 0/? | Not Started | -- |
+| 9. Component Adoption | v2.0 | 0/5 | Planned | -- |
 | 10. Bug Fixes & Guide Accuracy | v2.0 | 0/? | Not Started | -- |
 
 ---
