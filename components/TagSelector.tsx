@@ -87,60 +87,64 @@ export function TagSelector({ highlightId, bookId, className, open: controlledOp
         <div className="w-full sm:w-[360px] p-0 mx-auto">
             <div className="flex flex-col">
                 {/* Search Input */}
-                <div className="flex items-center border-b px-2 py-2">
-                    <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                <div className="flex items-center border-b px-xs py-xs">
+                    <Search className="mr-xs h-4 w-4 shrink-0 opacity-50" />
                     <input
                         type="text"
                         placeholder={t('tagSelector.searchPlaceholder')}
                         value={searchValue}
                         onChange={(e) => setSearchValue(e.target.value)}
                         onKeyDown={(e) => e.stopPropagation()}
-                        className="flex h-8 w-full rounded-md bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                        className="flex h-8 w-full rounded-md bg-transparent text-body outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
                     />
                 </div>
 
                 {/* Tags List */}
                 <div className="max-h-[300px] overflow-y-auto overflow-x-hidden">
                     {sortedTags.length === 0 ? (
-                        <div className="p-2 text-xs text-muted-foreground flex flex-col gap-1">
+                        <div className="p-xs text-caption text-muted-foreground flex flex-col gap-xxs">
                             <span>{t('tagSelector.noTagsFound')}</span>
 
                             {searchValue && (
                                 <>
+                                    {/* tinted hover: no semantic token */}
                                     <button
                                         onClick={handleCreateGlobalTag}
-                                        className="w-full flex items-center gap-1 px-2 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50 rounded text-left"
+                                        className="w-full flex items-center gap-xxs px-xs py-1.5 text-caption font-medium text-tag-global hover:bg-blue-50 rounded text-left"
                                     >
                                         <Plus className="w-3 h-3" />
                                         {t('tagSelector.createGlobal', { name: searchValue })}
                                     </button>
 
                                     {bookId && (
-                                        <button
-                                            onClick={handleCreateChapter}
-                                            className="w-full flex items-center gap-1 px-2 py-1.5 text-xs font-medium text-amber-600 hover:bg-amber-50 rounded text-left"
-                                        >
-                                            <Book className="w-3 h-3" />
-                                            {t('tagSelector.createChapter', { name: searchValue })}
-                                        </button>
+                                        <>
+                                            {/* tinted hover: no semantic token */}
+                                            <button
+                                                onClick={handleCreateChapter}
+                                                className="w-full flex items-center gap-xxs px-xs py-1.5 text-caption font-medium text-tag-book hover:bg-amber-50 rounded text-left"
+                                            >
+                                                <Book className="w-3 h-3" />
+                                                {t('tagSelector.createChapter', { name: searchValue })}
+                                            </button>
+                                        </>
                                     )}
                                 </>
                             )}
                         </div>
                     ) : (
-                        <div className="p-1">
-                            <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">{t('tagSelector.tagsLabel')}</div>
+                        <div className="p-xxs">
+                            <div className="px-xs py-1.5 text-caption font-medium text-muted-foreground">{t('tagSelector.tagsLabel')}</div>
                             {sortedTags.map((tag) => {
                                 const isSelected = selectedTagIds.includes(tag.id);
                                 return (
                                     <div
                                         key={tag.id}
                                         onClick={() => handleSelectTag(tag.id)}
-                                        className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+                                        className="relative flex cursor-pointer select-none items-center rounded-sm px-xs py-1.5 text-body outline-none hover:bg-accent hover:text-accent-foreground"
                                     >
                                         <div
                                             className={cn(
-                                                "mr-2 flex h-3 w-3 items-center justify-center rounded-sm border border-primary",
+                                                "mr-xs flex h-3 w-3 items-center justify-center rounded-sm border border-primary",
                                                 isSelected
                                                     ? "bg-primary text-primary-foreground"
                                                     : "opacity-50"
@@ -148,8 +152,8 @@ export function TagSelector({ highlightId, bookId, className, open: controlledOp
                                         >
                                             {isSelected && <Check className="h-3 w-3" />}
                                         </div>
-                                        <div className="flex items-center gap-1.5 text-xs">
-                                            {tag.bookId && <Book className="w-3 h-3 text-amber-500" />}
+                                        <div className="flex items-center gap-1.5 text-caption">
+                                            {tag.bookId && <Book className="w-3 h-3 text-tag-book" />}
                                             <span>{getTagPath(tag)}</span>
                                         </div>
                                     </div>
@@ -175,28 +179,29 @@ export function TagSelector({ highlightId, bookId, className, open: controlledOp
                     variant="ghost"
                     role="combobox"
                     aria-expanded={open}
-                    className={cn("h-auto p-1 hover:bg-accent justify-start font-normal text-left", className)}
+                    className={cn("h-auto p-xxs hover:bg-accent justify-start font-normal text-left", className)}
                 >
                     {selectedTags.length > 0 ? (
-                        <div className="flex flex-wrap gap-1">
+                        <div className="flex flex-wrap gap-xxs">
                             {selectedTags.map((tag) => (
                                 <span
                                     key={tag.id}
                                     className={cn(
                                         "inline-flex items-center px-1.5 py-0.5 rounded text-overline font-medium border",
                                         tag.bookId
+                                            /* tinted tag badge: no semantic token */
                                             ? "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-500 dark:border-amber-800"
                                             : "bg-muted text-muted-foreground border-border",
-                                        variant === 'minimal' && "rounded-full px-2"
+                                        variant === 'minimal' && "rounded-full px-xs"
                                     )}
                                 >
-                                    {tag.bookId && <Book className="w-3 h-3 mr-1 opacity-50" />}
+                                    {tag.bookId && <Book className="w-3 h-3 mr-xxs opacity-50" />}
                                     {tag.name}
                                 </span>
                             ))}
                         </div>
                     ) : (
-                        <div className={cn("text-muted-foreground text-xs italic flex items-center gap-1", variant === 'minimal' && "opacity-0 group-hover:opacity-100 transition-opacity duration-200")}>
+                        <div className={cn("text-muted-foreground text-caption italic flex items-center gap-xxs", variant === 'minimal' && "opacity-0 group-hover:opacity-100 transition-opacity duration-200")}>
                             <Plus className="w-3 h-3" />
                             <span className={cn(variant === 'minimal' && "hidden sm:inline")}>{t('tagSelector.addTags')}</span>
                         </div>
@@ -206,60 +211,64 @@ export function TagSelector({ highlightId, bookId, className, open: controlledOp
             <PopoverContent className="w-[220px] p-0" align="start">
                 <div className="flex flex-col">
                     {/* Search Input */}
-                    <div className="flex items-center border-b px-2 py-2">
-                        <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                    <div className="flex items-center border-b px-xs py-xs">
+                        <Search className="mr-xs h-4 w-4 shrink-0 opacity-50" />
                         <input
                             type="text"
                             placeholder={t('tagSelector.searchPlaceholder')}
                             value={searchValue}
                             onChange={(e) => setSearchValue(e.target.value)}
                             onKeyDown={(e) => e.stopPropagation()}
-                            className="flex h-8 w-full rounded-md bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                            className="flex h-8 w-full rounded-md bg-transparent text-body outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
                         />
                     </div>
 
                     {/* Tags List */}
                     <div className="max-h-[300px] overflow-y-auto overflow-x-hidden">
                         {sortedTags.length === 0 ? (
-                            <div className="p-2 text-xs text-muted-foreground flex flex-col gap-1">
+                            <div className="p-xs text-caption text-muted-foreground flex flex-col gap-xxs">
                                 <span>{t('tagSelector.noTagsFound')}</span>
 
                                 {searchValue && (
                                     <>
+                                        {/* tinted hover: no semantic token */}
                                         <button
                                             onClick={handleCreateGlobalTag}
-                                            className="w-full flex items-center gap-1 px-2 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50 rounded text-left"
+                                            className="w-full flex items-center gap-xxs px-xs py-1.5 text-caption font-medium text-tag-global hover:bg-blue-50 rounded text-left"
                                         >
                                             <Plus className="w-3 h-3" />
                                             {t('tagSelector.createGlobal', { name: searchValue })}
                                         </button>
 
                                         {bookId && (
-                                            <button
-                                                onClick={handleCreateChapter}
-                                                className="w-full flex items-center gap-1 px-2 py-1.5 text-xs font-medium text-amber-600 hover:bg-amber-50 rounded text-left"
-                                            >
-                                                <Book className="w-3 h-3" />
-                                                {t('tagSelector.createChapter', { name: searchValue })}
-                                            </button>
+                                            <>
+                                                {/* tinted hover: no semantic token */}
+                                                <button
+                                                    onClick={handleCreateChapter}
+                                                    className="w-full flex items-center gap-xxs px-xs py-1.5 text-caption font-medium text-tag-book hover:bg-amber-50 rounded text-left"
+                                                >
+                                                    <Book className="w-3 h-3" />
+                                                    {t('tagSelector.createChapter', { name: searchValue })}
+                                                </button>
+                                            </>
                                         )}
                                     </>
                                 )}
                             </div>
                         ) : (
-                            <div className="p-1">
-                                <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">{t('tagSelector.tagsLabel')}</div>
+                            <div className="p-xxs">
+                                <div className="px-xs py-1.5 text-caption font-medium text-muted-foreground">{t('tagSelector.tagsLabel')}</div>
                                 {sortedTags.map((tag) => {
                                     const isSelected = selectedTagIds.includes(tag.id);
                                     return (
                                         <div
                                             key={tag.id}
                                             onClick={() => handleSelectTag(tag.id)}
-                                            className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+                                            className="relative flex cursor-pointer select-none items-center rounded-sm px-xs py-1.5 text-body outline-none hover:bg-accent hover:text-accent-foreground"
                                         >
                                             <div
                                                 className={cn(
-                                                    "mr-2 flex h-3 w-3 items-center justify-center rounded-sm border border-primary",
+                                                    "mr-xs flex h-3 w-3 items-center justify-center rounded-sm border border-primary",
                                                     isSelected
                                                         ? "bg-primary text-primary-foreground"
                                                         : "opacity-50"
@@ -267,8 +276,8 @@ export function TagSelector({ highlightId, bookId, className, open: controlledOp
                                             >
                                                 {isSelected && <Check className="h-3 w-3" />}
                                             </div>
-                                            <div className="flex items-center gap-1.5 text-xs">
-                                                {tag.bookId && <Book className="w-3 h-3 text-amber-500" />}
+                                            <div className="flex items-center gap-1.5 text-caption">
+                                                {tag.bookId && <Book className="w-3 h-3 text-tag-book" />}
                                                 <span>{getTagPath(tag)}</span>
                                             </div>
                                         </div>
