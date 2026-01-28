@@ -49,7 +49,7 @@ const BookContextModal: React.FC<BookContextModalProps> = ({ bookId, onClose }) 
               className="w-24 h-36 object-cover rounded-sm shadow-md flex-shrink-0"
             />
             <div className="flex-1 min-w-0">
-              <DialogTitle className="text-2xl font-bold mb-1 line-clamp-2">
+              <DialogTitle className="text-heading font-bold mb-1 line-clamp-2">
                 {book.title}
               </DialogTitle>
               <p className="text-muted-foreground mb-3">{book.author}</p>
@@ -89,11 +89,11 @@ const BookContextModal: React.FC<BookContextModalProps> = ({ bookId, onClose }) 
                     </p>
                     {highlight.note && (
                       <div className="bg-card border-l-2 border-foreground p-3 rounded-sm">
-                        <span className="text-[10px] uppercase font-semibold text-muted-foreground block mb-1">{t('bookModal.myNote')}</span>
+                        <span className="text-overline uppercase font-semibold text-muted-foreground block mb-1">{t('bookModal.myNote')}</span>
                         <p className="text-xs text-muted-foreground italic">{highlight.note}</p>
                       </div>
                     )}
-                    <div className="flex items-center gap-3 mt-2 text-[10px] text-muted-foreground">
+                    <div className="flex items-center gap-3 mt-2 text-overline text-muted-foreground">
                       {highlight.location && <span>{t('bookModal.location', { location: highlight.location })}</span>}
                       {highlight.dateAdded && <span>* {formatDate(highlight.dateAdded)}</span>}
                     </div>
