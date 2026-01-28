@@ -63,6 +63,7 @@ Recent decisions affecting current work:
 - [06-04]: StudySession preserves font-serif, rating colors, full-screen layout as intentional deviations
 - [06-04]: No PageHeader on StudySession (custom compact header is intentional immersive UX)
 - [06-06]: BookContextModal title downsized from text-2xl to text-heading for modal-appropriate scale
+- [06-05]: text-[11px] mapped to text-overline (10px) rather than text-caption (12px) for tiny metadata intent
 - [06-06]: All text-[9px] and text-[10px] consistently map to text-overline across all cross-cutting components
 
 ### Pending Todos
