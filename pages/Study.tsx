@@ -6,6 +6,7 @@ import { DeckTable } from '../components/DeckTable';
 import { EmptyDeckPopover } from '../components/EmptyDeckPopover';
 import { StudyHeatmap } from '../components/StudyHeatmap';
 import { PageHeader } from '../components/patterns/PageHeader';
+import { Button } from '../components/ui/button';
 
 const Study = () => {
   const navigate = useNavigate();
@@ -51,9 +52,9 @@ const Study = () => {
       )}
 
       {/* Prominent All Books Button */}
-      <button
+      <Button
         onClick={() => handleDeckClick('all')}
-        className="w-full mb-md px-sm sm:px-md py-sm bg-foreground hover:bg-foreground/90 text-background rounded-md transition-colors flex items-center justify-between group"
+        className="w-full mb-md px-sm sm:px-md py-sm flex items-center justify-between group"
       >
         <div className="flex items-center gap-xs sm:gap-sm">
           <div className="flex items-center justify-center w-8 h-8 bg-background/10 rounded">
@@ -94,7 +95,7 @@ const Study = () => {
             <div className="text-background/50 text-overline">{t('stats.total')}</div>
           </div>
         </div>
-      </button>
+      </Button>
 
       {/* Individual Books Section */}
       <div className="mb-xs">
