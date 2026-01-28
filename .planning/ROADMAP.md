@@ -4,6 +4,7 @@
 
 - v1.0 UI Overhaul - Phases 1-3 (shipped 2026-01-23) -- see `.planning/milestones/v1.0-ROADMAP.md`
 - v2.0 Design System Overhaul - Phases 4-7 (shipped 2026-01-28)
+- v2.0 Gap Closure - Phases 8-10 (audit-driven)
 
 ## Overview
 
@@ -15,6 +16,9 @@ v1.0 shipped a working theme system but no governing design system -- the result
 - [x] **Phase 5: Component Standardization** - Audit and align all components to the token system
 - [x] **Phase 6: Page Migration** - Migrate all 7 pages + modals to canonical patterns
 - [x] **Phase 7: Design Guide** - Document the living design system in a single concise guide
+- [ ] **Phase 8: Token Consumption** - Migrate all pages from raw values to semantic spacing, typography, and color tokens
+- [ ] **Phase 9: Component Adoption** - Replace raw HTML elements with standardized shadcn components across all pages
+- [ ] **Phase 10: Bug Fixes & Guide Accuracy** - Fix color rendering bugs, update guide to match reality, clean up stale references
 
 ## Phase Details
 
@@ -78,9 +82,45 @@ Plans:
 Plans:
 - [x] 07-01-PLAN.md -- Write comprehensive design system guide and replace outdated compact-ui-design-guidelines.md
 
+### Phase 8: Token Consumption
+**Goal**: Every page uses semantic tokens for spacing, typography, and color -- no raw numeric values remain
+**Depends on**: Phase 7 (all original phases complete)
+**Requirements**: TOKENS-02 (full satisfaction), TOKENS-08 (full satisfaction)
+**Gap Closure**: Closes audit gaps -- spacing tokens BROKEN, color tokens BROKEN, typography flow PARTIAL
+**Success Criteria** (what must be TRUE):
+  1. All pages use semantic spacing tokens (p-sm, gap-md, mb-lg) instead of raw numeric values (p-4, gap-6, mb-3)
+  2. All status/tag/success colors use semantic tokens (bg-status-new, bg-tag-global, text-success) instead of raw Tailwind colors
+  3. All remaining raw text-sm/text-xs usages are replaced with text-body/text-caption tokens
+  4. Zero raw numeric spacing, raw color, or raw typography values in page files
+Plans: TBD
+
+### Phase 9: Component Adoption
+**Goal**: Every interactive element uses the standardized shadcn component -- no raw HTML buttons or inputs remain
+**Depends on**: Phase 8
+**Requirements**: COMP-01 (full adoption), COMP-03 (adopt or remove DataTable)
+**Gap Closure**: Closes audit gaps -- Button BROKEN, DataTable ORPHANED
+**Success Criteria** (what must be TRUE):
+  1. All pages use `<Button>` component instead of raw `<button>` elements
+  2. All pages use `<Input>` component instead of raw `<input>` elements where applicable
+  3. DataTable is either adopted by DeckTable/other tables or removed if unnecessary
+  4. No raw `<button>` with manual styling remains in any page file
+Plans: TBD
+
+### Phase 10: Bug Fixes & Guide Accuracy
+**Goal**: The design guide accurately describes the codebase and all functional bugs are fixed
+**Depends on**: Phase 9
+**Requirements**: DOC-01 (accuracy update)
+**Gap Closure**: Closes audit gaps -- hsl/oklch bug, guide aspirational rules, stale references
+**Success Criteria** (what must be TRUE):
+  1. hsl() wrapping of oklch() values fixed in DashboardCharts, HighlightEditModal, HighlightHistoryModal
+  2. Design guide "Rules and Anti-Patterns" section reflects actual codebase state (not aspirational)
+  3. Secondary reference files (lbp_context/) no longer reference deleted compact-ui-design-guidelines.md
+  4. Motion/z-index/icon tokens documented as "infrastructure-ready" in guide (not forced consumption)
+Plans: TBD
+
 ## Progress
 
-**Execution Order:** Phase 4 -> 5 -> 6 -> 7
+**Execution Order:** Phase 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -88,6 +128,9 @@ Plans:
 | 5. Component Standardization | v2.0 | 2/2 | Complete | 2026-01-28 |
 | 6. Page Migration | v2.0 | 7/7 | Complete | 2026-01-28 |
 | 7. Design Guide | v2.0 | 1/1 | Complete | 2026-01-28 |
+| 8. Token Consumption | v2.0 | 0/? | Not Started | — |
+| 9. Component Adoption | v2.0 | 0/? | Not Started | — |
+| 10. Bug Fixes & Guide Accuracy | v2.0 | 0/? | Not Started | — |
 
 ---
 *Created: 2026-01-27*

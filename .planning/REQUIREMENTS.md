@@ -72,16 +72,16 @@
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | TOKENS-01 | Phase 4 | Complete |
-| TOKENS-02 | Phase 4 | Complete |
+| TOKENS-02 | Phase 4 + **Phase 8** | Partial (defined, not consumed) |
 | TOKENS-03 | Phase 4 | Complete |
 | TOKENS-04 | Phase 4 | Complete |
 | TOKENS-05 | Phase 4 | Complete |
 | TOKENS-06 | Phase 4 | Complete |
 | TOKENS-07 | Phase 4 | Complete |
-| TOKENS-08 | Phase 4 | Complete |
-| COMP-01 | Phase 5 | Complete |
+| TOKENS-08 | Phase 4 + **Phase 8** | Partial (defined, not consumed) |
+| COMP-01 | Phase 5 + **Phase 9** | Partial (standardized, not adopted) |
 | COMP-02 | Phase 5 | Complete |
-| COMP-03 | Phase 5 | Complete |
+| COMP-03 | Phase 5 + **Phase 9** | Partial (created, orphaned) |
 | COMP-04 | Phase 5 | Complete |
 | PAGE-01 | Phase 6 | Complete |
 | PAGE-02 | Phase 6 | Complete |
@@ -91,14 +91,16 @@
 | PAGE-06 | Phase 6 | Complete |
 | PAGE-07 | Phase 6 | Complete |
 | PAGE-08 | Phase 6 | Complete |
-| DOC-01 | Phase 7 | Complete |
+| DOC-01 | Phase 7 + **Phase 10** | Partial (guide documents aspirational state) |
 | DOC-02 | Phase 7 | Complete |
 
 **Coverage:**
 - v1 requirements: 22 total
 - Mapped to phases: 22
+- Fully satisfied: 17
+- Partial (gap closure needed): 5 (TOKENS-02, TOKENS-08, COMP-01, COMP-03, DOC-01)
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-01-27*
-*Last updated: 2026-01-27 -- traceability mapped to phases 4-7*
+*Last updated: 2026-01-28 -- gap closure phases 8-10 added from milestone audit*
