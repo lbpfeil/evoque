@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-27)
 
 **Core value:** Consistencia obsessiva -- cada elemento visual identico ao equivalente em qualquer pagina. Zero surpresas visuais.
-**Current focus:** Phase 7 - Design Guide
+**Current focus:** v2.0 Design System Overhaul -- COMPLETE
 
 ## Current Position
 
-Phase: 6 of 7 (Page Migration) -- COMPLETE
-Plan: 7 of 7 in phase 6 (all complete)
-Status: Phase 6 complete, Phase 7 not started
-Last activity: 2026-01-28 -- Completed 06-07-PLAN.md (comprehensive audit + visual verification)
+Phase: 7 of 7 (Design Guide) -- COMPLETE
+Plan: 1 of 1 in phase 7 (all complete)
+Status: All phases complete (04-07)
+Last activity: 2026-01-28 -- Completed 07-01-PLAN.md (design system guide)
 
-Progress: [██████████░] 92%
+Progress: [███████████] 100%
 
 ## Performance Metrics
 
 **Velocity (from v1.0):**
-- Total plans completed: 21
-- Average duration: 3.1min
-- Total execution time: 68.5min
+- Total plans completed: 22
+- Average duration: 3.3min
+- Total execution time: 75.7min
 
 **By Phase (v2.0):**
 
@@ -30,12 +30,12 @@ Progress: [██████████░] 92%
 | 04-token-foundation | 2 | 5.3min | 2.7min |
 | 05-component-standardization | 2 | 5.9min | 3.0min |
 | 06-page-migration | 7/7 | ~18.6min | ~2.7min |
+| 07-design-guide | 1/1 | 7.2min | 7.2min |
 
 **Recent Trend:**
-- Phase 6 plan 01: 3.6min (Login + Dashboard migration, 6 replacements across 2 files)
-- Phase 6 plan 04: 1.7min (StudySession migration, 13 replacements)
 - Phase 6 plan 06: 3.2min (Cross-cutting components, 14 replacements across 6 files)
 - Phase 6 plan 07: 2.5min (Comprehensive audit + visual verification + PageHeader standardization)
+- Phase 7 plan 01: 7.2min (601-line design system guide + CLAUDE.md updates)
 
 *Updated after each plan completion*
 
@@ -70,6 +70,9 @@ Recent decisions affecting current work:
 - [06-01]: Login uses text-heading (not text-title) since it is not a destination page
 - [06-01]: StatCard title uses text-overline for uppercase tracking-wider label pattern
 - [06-07]: All PageHeader pages standardized to size='compact' (default/compact distinction removed)
+- [07-01]: Single design-system-guide.md replaces compact-ui-design-guidelines.md
+- [07-01]: Guide written in English (matches CLAUDE.md and codebase)
+- [07-01]: CLAUDE.md updated to reference new guide in all locations
 
 ### Pending Todos
 
@@ -82,5 +85,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-28
-Stopped at: Completed 06-07-PLAN.md (Phase 6 complete)
+Stopped at: Completed 07-01-PLAN.md (Phase 7 complete, all phases done)
 Resume file: None
