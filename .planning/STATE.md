@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-27)
 ## Current Position
 
 Phase: 6 of 7 (Page Migration)
-Plan: 5 of 7 in current phase
+Plan: 6 of 7 in current phase
 Status: In progress
-Last activity: 2026-01-28 -- Completed 06-02-PLAN.md
+Last activity: 2026-01-28 -- Completed 06-06-PLAN.md
 
-Progress: [████████░░] 82%
+Progress: [█████████░] 88%
 
 ## Performance Metrics
 
@@ -29,11 +29,11 @@ Progress: [████████░░] 82%
 |-------|-------|-------|----------|
 | 04-token-foundation | 2 | 5.3min | 2.7min |
 | 05-component-standardization | 2 | 5.9min | 3.0min |
-| 06-page-migration | 5/7 | in progress | ~1.7min |
+| 06-page-migration | 6/7 | in progress | ~2.3min |
 
 **Recent Trend:**
-- Phase 6 plan 02: 2.0min (Study + DeckTable + StudyStatusBadge, 10 replacements)
 - Phase 6 plan 04: 1.7min (StudySession migration, 13 replacements)
+- Phase 6 plan 06: 3.2min (Cross-cutting components, 14 replacements across 6 files)
 
 *Updated after each plan completion*
 
@@ -62,6 +62,8 @@ Recent decisions affecting current work:
 - [05-02]: DataTable uses gridCols string prop for flexibility, rowClassName function for per-row styling
 - [06-04]: StudySession preserves font-serif, rating colors, full-screen layout as intentional deviations
 - [06-04]: No PageHeader on StudySession (custom compact header is intentional immersive UX)
+- [06-06]: BookContextModal title downsized from text-2xl to text-heading for modal-appropriate scale
+- [06-06]: All text-[9px] and text-[10px] consistently map to text-overline across all cross-cutting components
 
 ### Pending Todos
 
@@ -74,5 +76,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-28
-Stopped at: Completed 06-02-PLAN.md (Study page migration)
+Stopped at: Completed 06-06-PLAN.md (cross-cutting component migration)
 Resume file: None
