@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-27)
 ## Current Position
 
 Phase: 9 of 10 (Component Adoption)
-Plan: 2 of 5 in phase 9
+Plan: 3 of 5 in phase 9
 Status: In progress
-Last activity: 2026-01-28 -- Completed 09-02-PLAN.md (Settings page migration)
+Last activity: 2026-01-28 -- Completed 09-03-PLAN.md (StudySession & Study button migration)
 
-Progress: [█████████░] 90% (9/10 phases, 2/5 plans in phase 9)
+Progress: [█████████░] 90% (9/10 phases, 3/5 plans in phase 9)
 
 ## Performance Metrics
 
@@ -32,13 +32,13 @@ Progress: [█████████░] 90% (9/10 phases, 2/5 plans in phase 
 | 06-page-migration | 7/7 | ~18.6min | ~2.7min |
 | 07-design-guide | 1/1 | 7.2min | 7.2min |
 | 08-token-consumption | 5/5 | ~30min | ~6min |
-| 09-component-adoption | 2/5 | 9.8min | 4.9min |
+| 09-component-adoption | 3/5 | 15.4min | 5.1min |
 
 **Recent Trend:**
-- Phase 8 plan 04: 12.5min (6 high-interaction components + tag/status color tokens)
 - Phase 8 plan 05: ~8min (11 remaining components + comprehensive audit, phase complete)
 - Phase 9 plan 01: 4min (Login, Sidebar, ThemeToggle, ErrorBoundary Button/Input migration)
 - Phase 9 plan 02: 5.8min (Settings page 8 buttons + 5 inputs migration)
+- Phase 9 plan 03: 5.6min (StudySession 13 buttons + Study 1 button, 4 rating buttons preserved)
 
 *Updated after each plan completion*
 
@@ -97,6 +97,9 @@ Recent decisions affecting current work:
 - [09-02]: Checkbox inputs kept raw (not text inputs, would need Checkbox component)
 - [09-02]: Tab buttons use variant='ghost' size='sm' (borderless with hover matches tab pattern)
 - [09-02]: Link buttons use variant='link' with h-auto p-0 (inline text flow override)
+- [09-03]: StudySession rating buttons preserved as raw with SM-2 quality feedback colors (documented deviation)
+- [09-03]: Study.tsx All Books button migrated to Button (primary action, not card-like)
+- [09-03]: Button variant selection pattern: ghost for subtle controls, ghost+icon for icon-only, default for primary actions
 
 ### Pending Todos
 
@@ -109,5 +112,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-28
-Stopped at: Completed 09-02-PLAN.md (Settings page Button/Input migration complete)
+Stopped at: Completed 09-03-PLAN.md (StudySession & Study button migration complete)
 Resume file: None
