@@ -54,7 +54,7 @@ const Study = () => {
       {/* Prominent All Books Button */}
       <Button
         onClick={() => handleDeckClick('all')}
-        className="w-full mb-md px-sm sm:px-md py-sm flex items-center justify-between group"
+        className="w-full h-auto mb-md px-md py-md flex items-center justify-between group"
       >
         <div className="flex items-center gap-xs sm:gap-sm">
           <div className="flex items-center justify-center w-8 h-8 bg-background/10 rounded">
@@ -70,12 +70,12 @@ const Study = () => {
 
         {/* Stats - Mobile: only show total */}
         <div className="sm:hidden text-right">
-          <div className="text-lg font-bold">{totalStats.total}</div>
+          <div className="text-body font-bold">{totalStats.total}</div>
           <div className="text-background/50 text-overline">{t('stats.due')}</div>
         </div>
 
         {/* Stats - Desktop: show all */}
-        <div className="hidden sm:flex items-center gap-md text-caption">
+        <div className="hidden sm:flex items-center gap-md text-body">
           <div className="flex items-center gap-sm">
             <div className="text-center">
               <div className="text-status-new font-semibold">{totalStats.new}</div>
@@ -91,7 +91,7 @@ const Study = () => {
             </div>
           </div>
           <div className="text-right ml-md">
-            <div className="text-lg font-bold">{totalStats.total}</div>
+            <div className="text-body font-bold">{totalStats.total}</div>
             <div className="text-background/50 text-overline">{t('stats.total')}</div>
           </div>
         </div>

@@ -638,7 +638,7 @@ ${currentHighlight.text}`;
                                 onClick={() => setShowAnswer(true)}
                                 className="w-full py-3.5 sm:py-sm min-h-[48px] active:scale-[0.99]"
                             >
-                                {t('actions.revealAnswer')} <span className="hidden sm:inline text-caption text-muted-foreground ml-xs">{t('keyboard.revealHint')}</span>
+                                {t('actions.revealAnswer')} <span className="hidden sm:inline text-caption text-primary-foreground/60 ml-xs">{t('keyboard.revealHint')}</span>
                             </Button>
                         ) : (
                             <>

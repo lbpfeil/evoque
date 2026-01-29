@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Target, Settings, BookOpen, Highlighter, LogOut, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Target, Settings, BookOpen, Highlighter, LogOut, ChevronUp, ChevronLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from './AuthContext';
 import { useStore } from './StoreContext';
@@ -28,9 +28,8 @@ const Sidebar = () => {
   };
 
   const navItems = [
-    { name: t('nav.dashboard'), icon: LayoutDashboard, path: '/' },
-    { name: t('nav.highlights'), icon: Highlighter, path: '/highlights' },
     { name: t('nav.study'), icon: Target, path: '/study' },
+    { name: t('nav.highlights'), icon: Highlighter, path: '/highlights' },
     { name: t('nav.settings'), icon: Settings, path: '/settings' },
   ];
 
