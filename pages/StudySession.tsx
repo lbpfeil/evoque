@@ -636,12 +636,12 @@ ${currentHighlight.text}`;
                                         {currentHighlight.note && (
                                             <Button
                                                 variant="ghost"
+                                                size="icon"
                                                 onClick={handleEditNote}
-                                                className="absolute -top-lg right-0 p-xxs opacity-0 group-hover:opacity-100 flex items-center gap-1.5 h-auto"
-                                                title={t('note.editHint')}
+                                                className="absolute -top-xxs -right-xxs p-xxs opacity-0 group-hover:opacity-100"
+                                                title={t('note.edit')}
                                             >
-                                                <span className="text-overline uppercase tracking-wider font-medium">{t('note.edit')}</span>
-                                                <Edit2 className="w-3 h-3" />
+                                                <Edit2 className="w-3.5 h-3.5" />
                                             </Button>
                                         )}
                                     </div>
