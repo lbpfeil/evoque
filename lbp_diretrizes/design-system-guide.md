@@ -103,6 +103,8 @@ Layer 3: Usage in Components
 | Ease Out | `--ease-out` | cubic-bezier(0, 0, 0.2, 1) | `ease-out` |
 | Ease In-Out | `--ease-in-out` | cubic-bezier(0.4, 0, 0.2, 1) | `ease-in-out` |
 
+> **Status:** Infrastructure-ready. These tokens are defined and available but not yet consumed by components. Use them for new animations -- the infrastructure is in place.
+
 ### Icon Sizes
 
 3 fixed rem values (not CSS variables -- icons are theme-invariant).
@@ -113,7 +115,7 @@ Layer 3: Usage in Components
 | MD | 1rem (16px) | `w-icon-md h-icon-md` | Standard icons |
 | LG | 1.25rem (20px) | `w-icon-lg h-icon-lg` | Section/header icons |
 
-Note: Some existing code uses explicit sizes (`w-3 h-3`, `w-4 h-4`). Prefer semantic tokens for new code.
+> **Status:** Infrastructure-ready. Some existing code uses explicit sizes (`w-3 h-3`, `w-4 h-4`). The semantic tokens are available for new code -- adopt them when adding or modifying icon usage.
 
 ### Z-Index Layers
 
@@ -129,6 +131,8 @@ Note: Some existing code uses explicit sizes (`w-3 h-3`, `w-4 h-4`). Prefer sema
 | Modal | `--z-modal` | 1050 | `z-modal` | Modal content |
 | Popover | `--z-popover` | 1060 | `z-popover` | Popovers |
 | Tooltip | `--z-tooltip` | 1070 | `z-tooltip` | Top-level tooltips |
+
+> **Status:** Infrastructure-ready. Radix components use their internal z-index (z-50), which works because they portal to `<body>`. Custom overlays should use these semantic tokens. Currently no custom overlays exist in the codebase.
 
 ### Colors
 
