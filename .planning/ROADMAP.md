@@ -37,7 +37,12 @@
 5. Sidebar retraída tem ícones perfeitamente centralizados
 
 **Depends on:** None
-**Estimated plans:** 2-3
+**Plans:** 3 plans
+
+Plans:
+- [ ] 11-01-PLAN.md — Badge contrast, deck table text, Settings width (FIX-01, FIX-02, FIX-07)
+- [ ] 11-02-PLAN.md — Heatmap size increase and timezone fix (FIX-03, FIX-04)
+- [ ] 11-03-PLAN.md — Sidebar centering, favicon update, dead code removal (FIX-05, FIX-06, FIX-08)
 
 ---
 
