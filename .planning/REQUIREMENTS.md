@@ -9,14 +9,14 @@ Requirements for v3.0 release. Each maps to roadmap phases.
 
 ### Quick Fixes
 
-- [ ] **FIX-01**: Badge "Aprendendo" tem contraste adequado contra o fundo do botão
-- [ ] **FIX-02**: Título e autor dos livros na tabela Study têm tamanho legível
-- [ ] **FIX-03**: Heatmap é mais largo e círculos são maiores
-- [ ] **FIX-04**: Heatmap conta datas corretamente (fix timezone bug)
-- [ ] **FIX-05**: Ícones da sidebar ficam centralizados quando retraída
-- [ ] **FIX-06**: Favicon atualizado para novo design (favicon-evq)
-- [ ] **FIX-07**: Páginas de Settings têm largura mais estreita
-- [ ] **FIX-08**: Arquivo hooks/useTheme.ts removido (não usado)
+- [x] **FIX-01**: Badge "Aprendendo" tem contraste adequado contra o fundo do botão
+- [x] **FIX-02**: Título e autor dos livros na tabela Study têm tamanho legível
+- [x] **FIX-03**: Heatmap é mais largo e círculos são maiores
+- [x] **FIX-04**: Heatmap conta datas corretamente (fix timezone bug)
+- [x] **FIX-05**: Ícones da sidebar ficam centralizados quando retraída
+- [x] **FIX-06**: Favicon atualizado para novo design (favicon-evq)
+- [x] **FIX-07**: Páginas de Settings têm largura mais estreita
+- [x] **FIX-08**: Arquivo hooks/useTheme.ts removido (não usado)
 
 ### StudySession UX
 
@@ -94,14 +94,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FIX-01 | Phase 1 | Pending |
-| FIX-02 | Phase 1 | Pending |
-| FIX-03 | Phase 1 | Pending |
-| FIX-04 | Phase 1 | Pending |
-| FIX-05 | Phase 1 | Pending |
-| FIX-06 | Phase 1 | Pending |
-| FIX-07 | Phase 1 | Pending |
-| FIX-08 | Phase 1 | Pending |
+| FIX-01 | Phase 11 | Complete |
+| FIX-02 | Phase 11 | Complete |
+| FIX-03 | Phase 11 | Complete |
+| FIX-04 | Phase 11 | Complete |
+| FIX-05 | Phase 11 | Complete |
+| FIX-06 | Phase 11 | Complete |
+| FIX-07 | Phase 11 | Complete |
+| FIX-08 | Phase 11 | Complete |
 | STUDY-01 | Phase 2 | Pending |
 | STUDY-02 | Phase 2 | Pending |
 | STUDY-03 | Phase 2 | Pending |
