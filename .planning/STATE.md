@@ -40,6 +40,7 @@ Progress: [█████████░] 92% (9/10 phases complete, phase 10 i
 - Phase 9 plan 03: 5.6min (StudySession 13 buttons + Study 1 button, 4 rating buttons preserved)
 - Phase 9 plan 04: 6min (Highlights page 13 buttons + search input migration)
 - Phase 9 plan 05: 7min (component-level Button adoption + DataTable removal + phase-wide audit)
+- Phase 10 plan 01: 2.8min (hsl-to-oklch chart color fix)
 - Phase 10 plan 02: 2.5min (design guide accuracy + reference fixes)
 
 *Updated after each plan completion*
@@ -84,7 +85,8 @@ Recent decisions affecting current work:
 - [08-01]: Sub-4px micro-spacing (0.5 values) preserved as raw - semantic grid starts at 4px
 - [08-05]: ErrorBoundary uses text-destructive and bg-destructive/10 for error states
 - [08-05]: StudyHeatmap data-viz colors (green gradients, orange streak, inverted tooltip) preserved as intentional deviations with /* data-viz */ comments
-- [08-05]: DashboardCharts hsl() color bug deferred to Phase 10 (hsl-to-oklch migration)
+- [08-05]: DashboardCharts hsl() color bug deferred to Phase 10 (hsl-to-oklch migration) -- RESOLVED in 10-01
+- [10-01]: var(--token) direct usage for Recharts - oklch values work without hsl() wrapper
 - [08-05]: Phase 8 complete - all pages + components use semantic tokens (zero unexpected raw values)
 - [08-02]: StudySession rating buttons preserve raw colors (SM-2 quality feedback, not status indicators)
 - [08-02]: Study page inverted background uses raw light shades (300/700) for proper contrast on dark foreground background
