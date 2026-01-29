@@ -17,6 +17,15 @@ interface StudyHeatmapProps {
   reviewLogs: ReviewLog[];
 }
 
+// Format date to YYYY-MM-DD using local timezone (not UTC)
+// This is critical for streak calculations - toISOString() uses UTC which causes timezone bugs
+function formatLocalDate(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 // Aggregate reviews by date (using local timezone)
 function aggregateReviewsByDate(reviewLogs: ReviewLog[]): Map<string, number> {
   const dateMap = new Map<string, number>();
@@ -24,10 +33,7 @@ function aggregateReviewsByDate(reviewLogs: ReviewLog[]): Map<string, number> {
   for (const log of reviewLogs) {
     // Convert to local date (JavaScript Date uses browser's timezone)
     const localDate = new Date(log.reviewedAt);
-    const year = localDate.getFullYear();
-    const month = String(localDate.getMonth() + 1).padStart(2, '0');
-    const day = String(localDate.getDate()).padStart(2, '0');
-    const dateKey = `${year}-${month}-${day}`;
+    const dateKey = formatLocalDate(localDate);
 
     dateMap.set(dateKey, (dateMap.get(dateKey) || 0) + 1);
   }
@@ -104,11 +110,11 @@ function calculateStreaks(dateCountMap: Map<string, number>): { current: number;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // Get today and yesterday keys
-  const todayKey = today.toISOString().split('T')[0];
+  // Get today and yesterday keys using local timezone (not UTC)
+  const todayKey = formatLocalDate(today);
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayKey = yesterday.toISOString().split('T')[0];
+  const yesterdayKey = formatLocalDate(yesterday);
 
   // Calculate current streak
   let currentStreak = 0;
