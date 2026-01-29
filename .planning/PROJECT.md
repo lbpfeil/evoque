@@ -1,8 +1,20 @@
-# Evoque Design System
+# Evoque
 
 ## What This Is
 
-Um app de flashcards para revisão de highlights de leitura (React 19 + TypeScript + Tailwind + shadcn/ui + Supabase). Após v2.0 (design system completo), o app tem consistência visual obsessiva em todas as páginas. Próximo foco: novas features funcionais.
+Um app de flashcards para revisão de highlights de leitura (React 19 + TypeScript + Tailwind + shadcn/ui + Supabase). App funcional com design system completo (v2.0). Próximo foco: Dashboard inteligente, auth robusto, e landing page de marketing.
+
+## Current Milestone: v3.0 Features & Polish
+
+**Goal:** Transformar o app de funcional para completo — Dashboard como home com KPIs inteligentes, auth production-ready, UX refinada no StudySession, e landing page para aquisição de usuários.
+
+**Target features:**
+- Dashboard como página inicial com KPIs disruptivos e atalho para estudar
+- Time tracking por card persistido no banco para analytics
+- Edição inline clean no StudySession (mesma fonte/posição)
+- Auth completo: esqueci senha, login Google, alterar senha
+- Landing page de marketing para visitantes não logados
+- Quick fixes: contraste, heatmap, sidebar, favicon, settings width
 
 ## Core Value
 
@@ -33,14 +45,22 @@ Um app de flashcards para revisão de highlights de leitura (React 19 + TypeScri
 
 ### Active
 
-(Nenhum — aguardando definição do próximo milestone)
+- [ ] Quick fixes: contraste badge, título tabela Study, heatmap, sidebar, favicon, settings width
+- [ ] Bug fix: contagem de data do heatmap (timezone issue)
+- [ ] StudySession UX: capa maior, botão voltar como seta, edição inline clean
+- [ ] Dashboard como home com KPIs inteligentes e atalho para estudar
+- [ ] Time tracking por card persistido em review_logs
+- [ ] Settings audit: validar lógica de Opções de Estudo, escrever testes
+- [ ] Auth infrastructure: esqueci senha, login Google, alterar senha
+- [ ] Landing page de marketing para visitantes não logados
 
 ### Out of Scope
 
 - Parsers de importação (My Clippings, PDF, Anki) — já funcionam, não mexer
 - Lógica do SM-2 (algoritmo de repetição espaçada) — já funciona
-- Backend/Supabase — não é escopo deste projeto
 - Redesign da estética — warm/friendly já está definido pelo v1.0
+- OAuth além de Google (Apple, GitHub) — Google cobre 90% dos usuários
+- Mobile app nativo — web-first, PWA já funciona
 
 ## Context
 
@@ -59,23 +79,30 @@ Um app de flashcards para revisão de highlights de leitura (React 19 + TypeScri
 - PageHeader component para layout consistente
 - Button/Input components adotados em toda a aplicação
 - Design guide de 605 linhas (`lbp_diretrizes/design-system-guide.md`)
-- Dashboard removido (será recriado)
 - ~10,500 LOC TypeScript/CSS
 
 **Páginas atuais:**
-- Study.tsx — seleção de deck (página inicial)
+- Study.tsx — seleção de deck (será substituída por Dashboard)
 - StudySession.tsx — sessão de estudo (fonte serif preservada)
 - Highlights.tsx — browse, search, filter, tag highlights
 - Settings.tsx — importação, preferências
 - Login.tsx — autenticação
 
+**v3.0 additions:**
+- Dashboard.tsx — nova home com KPIs e atalho para estudar
+- LandingPage.tsx — marketing para visitantes não logados
+- Nova coluna `duration_ms` em `review_logs` para time tracking
+- Supabase Auth: Google OAuth, password reset flow
+
 ## Constraints
 
 - **Preservar:** Fonte serif nos cards de StudySession
 - **Preservar:** Estética warm/friendly do v1.0
-- **Não tocar:** Parsers de importação, lógica SM-2, backend
+- **Não tocar:** Parsers de importação, lógica SM-2
 - **Base:** shadcn/ui como base de componentes
 - **Padrão:** Consistência obsessiva — Apple-level visual uniformity
+- **Auth:** Supabase Auth built-in (não implementar auth custom)
+- **Landing:** Estática, sem backend — pode ser servida por qualquer CDN
 
 ## Key Decisions
 
@@ -90,6 +117,11 @@ Um app de flashcards para revisão de highlights de leitura (React 19 + TypeScri
 | Button 'compact' (h-8) como default | Todos os usages existentes especificam size explícito | ✓ Good |
 | DataTable removido (YAGNI) | 0 imports após 3+ semanas | ✓ Good |
 | Dashboard removido | Será recriado com novas features no próximo milestone | — Pending |
+| Dashboard como home | Usuário vê KPIs primeiro, atalho rápido para estudar | — Pending |
+| Time tracking persistido | Analytics de longo prazo, métricas inteligentes | — Pending |
+| Edição inline clean | Mesma fonte/posição, UX seamless durante revisão | — Pending |
+| Só Google OAuth | Cobre 90% dos usuários, mais simples | — Pending |
+| Landing page separada | Marketing para aquisição, não mistura com app | — Pending |
 
 ---
-*Last updated: 2026-01-29 after v2.0 milestone complete*
+*Last updated: 2026-01-29 after v3.0 milestone initialization*
