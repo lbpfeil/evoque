@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-01-29)
 ## Current Position
 
 Phase: 11 (Quick Fixes)
-Plan: 02 of 3 complete
-Status: In progress
-Last activity: 2026-01-29 — Completed 11-02-PLAN.md (Heatmap Size & Timezone)
+Plan: 03 of 3 complete
+Status: Phase complete
+Last activity: 2026-01-29 — Completed 11-03-PLAN.md (Sidebar, Favicon & Cleanup)
 
-Progress: [==========----------] 17% (1/6 phases, 2/? plans)
+Progress: [====================] 17% (1/6 phases complete)
 
 ## Milestones
 
@@ -28,7 +28,7 @@ See `.planning/MILESTONES.md` for full history.
 
 | Phase | Name | Reqs | Status |
 |-------|------|------|--------|
-| 11 | Quick Fixes | 8 | In progress (02/03) |
+| 11 | Quick Fixes | 8 | Complete (03/03) |
 | 12 | StudySession UX | 4 | Pending |
 | 13 | Dashboard & Analytics | 7 | Pending |
 | 14 | Settings Audit | 3 | Pending |
@@ -48,6 +48,8 @@ See `.planning/MILESTONES.md` for full history.
 - Fixed 14px (text-body) for deck titles (no responsive downsizing)
 - max-w-2xl (672px) for Settings page readable width
 - formatLocalDate() helper for consistent local timezone date formatting
+- Use cn() for conditional class merging in collapsed sidebar state
+- SVG favicon format as primary for modern browsers
 
 ### Pending Todos
 
@@ -60,5 +62,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-29T17:31Z
-Stopped at: Completed 11-02-PLAN.md
-Resume file: None
+Stopped at: Completed 11-03-PLAN.md (Phase 11 complete)
+Resume with: `/gsd:plan-phase 12`
