@@ -420,7 +420,7 @@ ${currentHighlight.text}`;
                                 <img
                                     src={currentBook.coverUrl}
                                     alt={currentBook.title}
-                                    className="w-10 h-14 object-cover rounded-sm shadow-sm flex-shrink-0"
+                                    className="w-16 h-24 object-cover rounded-sm shadow-sm flex-shrink-0"
                                 />
                             )}
                             {/* Card Status Indicator */}
@@ -525,22 +525,30 @@ ${currentHighlight.text}`;
 
                     {/* Highlight Text - Editable */}
                     {isEditingHighlight ? (
-                        <div className="bg-muted border border-border rounded-md p-md">
-                            <div className="flex items-center justify-between mb-xs">
-                                <span className="text-overline uppercase tracking-wider text-muted-foreground font-semibold">
-                                    {t('edit.highlightLabel')}
-                                </span>
-                                {isSaving && <Clock className="w-3 h-3 text-muted-foreground animate-spin" />}
-                            </div>
+                        <div className="relative">
                             <textarea
                                 value={editedHighlight}
-                                onChange={(e) => setEditedHighlight(e.target.value)}
+                                onChange={(e) => {
+                                    setEditedHighlight(e.target.value);
+                                    // Auto-resize
+                                    e.target.style.height = 'auto';
+                                    e.target.style.height = `${e.target.scrollHeight}px`;
+                                }}
                                 onBlur={handleSaveHighlight}
-                                className="w-full bg-background border border-input rounded-sm p-sm text-base text-foreground focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring resize-none font-serif"
-                                rows={6}
+                                className="w-full text-lg md:text-xl font-serif italic text-foreground leading-relaxed text-justify bg-transparent border border-dashed border-border/50 rounded-sm resize-none focus:outline-none focus:ring-0 -m-1 p-1"
+                                style={{ minHeight: '3rem' }}
                                 autoFocus
+                                onFocus={(e) => {
+                                    // Set initial height on focus
+                                    e.target.style.height = 'auto';
+                                    e.target.style.height = `${e.target.scrollHeight}px`;
+                                }}
                             />
-                            <p className="text-overline text-muted-foreground mt-xs">{t('edit.saveHint')}</p>
+                            {isSaving && (
+                                <div className="absolute top-0 right-0">
+                                    <Clock className="w-3 h-3 text-muted-foreground animate-spin" />
+                                </div>
+                            )}
                         </div>
                     ) : (
                         <div className="relative group">
@@ -565,23 +573,38 @@ ${currentHighlight.text}`;
                     {showAnswer && (
                         <div className="animate-fade-in-up">
                             {isEditingNote ? (
-                                <div className="bg-muted border border-border rounded-md p-md">
-                                    <div className="flex items-center justify-between mb-xs">
-                                        <span className="text-overline uppercase tracking-wider text-muted-foreground font-semibold">
-                                            {t('edit.noteLabel')}
-                                        </span>
-                                        {isSaving && <Clock className="w-3 h-3 text-muted-foreground animate-spin" />}
+                                <div className="mt-xl">
+                                    <div className="flex items-center justify-center gap-md mb-xl select-none">
+                                        <div className="h-px flex-1 bg-border"></div>
+                                        <span className="font-serif italic text-lg text-border">~</span>
+                                        <div className="h-px flex-1 bg-border"></div>
                                     </div>
-                                    <textarea
-                                        value={editedNote}
-                                        onChange={(e) => setEditedNote(e.target.value)}
-                                        onBlur={handleSaveNote}
-                                        className="w-full bg-background border border-input rounded-sm p-sm text-body text-foreground focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring resize-none"
-                                        rows={6}
-                                        placeholder={t('edit.notePlaceholder')}
-                                        autoFocus
-                                    />
-                                    <p className="text-overline text-muted-foreground mt-xs">{t('edit.saveHint')}</p>
+                                    <div className="relative">
+                                        <textarea
+                                            value={editedNote}
+                                            onChange={(e) => {
+                                                setEditedNote(e.target.value);
+                                                // Auto-resize
+                                                e.target.style.height = 'auto';
+                                                e.target.style.height = `${e.target.scrollHeight}px`;
+                                            }}
+                                            onBlur={handleSaveNote}
+                                            placeholder={t('edit.notePlaceholder')}
+                                            className="w-full text-lg md:text-xl font-serif text-foreground leading-relaxed text-justify whitespace-pre-wrap bg-transparent border border-dashed border-border/50 rounded-sm resize-none focus:outline-none focus:ring-0 -m-1 p-1"
+                                            style={{ minHeight: '3rem' }}
+                                            autoFocus
+                                            onFocus={(e) => {
+                                                // Set initial height on focus
+                                                e.target.style.height = 'auto';
+                                                e.target.style.height = `${e.target.scrollHeight}px`;
+                                            }}
+                                        />
+                                        {isSaving && (
+                                            <div className="absolute top-0 right-0">
+                                                <Clock className="w-3 h-3 text-muted-foreground animate-spin" />
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             ) : (
                                 <div className="mt-xl">
