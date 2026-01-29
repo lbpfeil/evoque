@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-29)
 
 **Core value:** Revisao eficiente de highlights — ajudar usuarios a reter conhecimento dos livros que leem atraves de repeticao espacada (SM-2).
-**Current focus:** v3.0 Features & Polish — Phase 11 (Quick Fixes)
+**Current focus:** v3.0 Features & Polish — Phase 12 (StudySession UX)
 
 ## Current Position
 
-Phase: 11 (Quick Fixes) — VERIFIED ✓
-Plan: 3/3 complete
-Status: Phase verified, 8/8 requirements verified
-Last activity: 2026-01-29 — Phase 11 verified
+Phase: 12 (StudySession UX)
+Plan: 1/1 complete
+Status: Plan 12-01 complete, 3/4 requirements satisfied
+Last activity: 2026-01-29 — Completed 12-01-PLAN.md
 
-Progress: ██░░░░░░░░ 17% (1/6 phases complete)
+Progress: ██░░░░░░░░ 20% (1.2/6 phases complete)
 
 ## Milestones
 
@@ -28,8 +28,8 @@ See `.planning/MILESTONES.md` for full history.
 
 | Phase | Name | Reqs | Status |
 |-------|------|------|--------|
-| 11 | Quick Fixes | 8 | ✓ Verified |
-| 12 | StudySession UX | 4 | Pending |
+| 11 | Quick Fixes | 8 | Verified |
+| 12 | StudySession UX | 4 | 3/4 (STUDY-01,02,03 done) |
 | 13 | Dashboard & Analytics | 7 | Pending |
 | 14 | Settings Audit | 3 | Pending |
 | 15 | Auth Infrastructure | 3 | Pending |
@@ -50,6 +50,8 @@ See `.planning/MILESTONES.md` for full history.
 - formatLocalDate() helper for consistent local timezone date formatting
 - Use cn() for conditional class merging in collapsed sidebar state
 - SVG favicon format as primary for modern browsers
+- Arrow-only back button with primary color for cleaner visual hierarchy
+- Icon-only edit buttons (no text labels) for consistent styling
 
 ### Pending Todos
 
@@ -62,5 +64,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: Phase 11 verified, ready for Phase 12
-Resume with: `/gsd:discuss-phase 12`
+Stopped at: Completed 12-01-PLAN.md
+Resume with: `/gsd:execute-phase` for remaining Phase 12 plans (if any), or `/gsd:discuss-phase 13`
