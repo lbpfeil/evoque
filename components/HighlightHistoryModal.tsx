@@ -81,20 +81,20 @@ const HighlightHistoryModal: React.FC<HighlightHistoryModalProps> = ({ highlight
                   />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
+                      backgroundColor: 'var(--card)',
                       borderRadius: '0.5rem',
-                      border: '1px solid hsl(var(--border))',
+                      border: '1px solid var(--border)',
                       boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                      color: 'hsl(var(--card-foreground))'
+                      color: 'var(--card-foreground)'
                     }}
-                    itemStyle={{ color: 'hsl(var(--primary))', fontSize: '12px' }}
+                    itemStyle={{ color: 'var(--primary)', fontSize: '12px' }}
                   />
                   <Line
                     type="monotone"
                     dataKey="interval"
-                    stroke="hsl(var(--primary))"
+                    stroke="var(--primary)"
                     strokeWidth={2}
-                    dot={{ r: 4, fill: 'hsl(var(--primary))' }}
+                    dot={{ r: 4, fill: 'var(--primary)' }}
                     activeDot={{ r: 6 }}
                   />
                 </LineChart>
