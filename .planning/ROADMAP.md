@@ -18,7 +18,7 @@ v1.0 shipped a working theme system but no governing design system -- the result
 - [x] **Phase 7: Design Guide** - Document the living design system in a single concise guide
 - [x] **Phase 8: Token Consumption** - Migrate all pages from raw values to semantic spacing, typography, and color tokens
 - [x] **Phase 9: Component Adoption** - Replace raw HTML elements with standardized shadcn components across all pages
-- [ ] **Phase 10: Bug Fixes & Guide Accuracy** - Fix color rendering bugs, update guide to match reality, clean up stale references
+- [x] **Phase 10: Bug Fixes & Guide Accuracy** - Fix color rendering bugs, update guide to match reality, clean up stale references
 
 ## Phase Details
 
@@ -130,8 +130,8 @@ Plans:
   4. Motion/z-index/icon tokens documented as "infrastructure-ready" in guide (not forced consumption)
 **Plans**: 2 plans
 Plans:
-- [ ] 10-01-PLAN.md — Fix hsl() wrapping of oklch() values in chart components
-- [ ] 10-02-PLAN.md — Update design guide accuracy and fix stale references
+- [x] 10-01-PLAN.md — Fix hsl() wrapping of oklch() values in chart components
+- [x] 10-02-PLAN.md — Update design guide accuracy and fix stale references
 
 ## Progress
 
@@ -145,7 +145,7 @@ Plans:
 | 7. Design Guide | v2.0 | 1/1 | Complete | 2026-01-28 |
 | 8. Token Consumption | v2.0 | 5/5 | Complete | 2026-01-28 |
 | 9. Component Adoption | v2.0 | 5/5 | Complete | 2026-01-28 |
-| 10. Bug Fixes & Guide Accuracy | v2.0 | 0/2 | Not Started | -- |
+| 10. Bug Fixes & Guide Accuracy | v2.0 | 2/2 | Complete | 2026-01-29 |
 
 ---
 *Created: 2026-01-27*
