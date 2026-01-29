@@ -19,15 +19,15 @@ const DashboardCharts: React.FC<DashboardChartsProps> = ({ timelineData, books }
             <AreaChart data={timelineData}>
               <defs>
                 <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(var(--foreground))" stopOpacity={0.1}/>
-                  <stop offset="95%" stopColor="hsl(var(--foreground))" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="var(--foreground)" stopOpacity={0.1}/>
+                  <stop offset="95%" stopColor="var(--foreground)" stopOpacity={0}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: 'hsl(var(--muted-foreground))', fontSize: 12}} dy={10} />
-              <YAxis axisLine={false} tickLine={false} tick={{fill: 'hsl(var(--muted-foreground))', fontSize: 12}} />
-              <Tooltip contentStyle={{backgroundColor: 'hsl(var(--popover))', color: 'hsl(var(--popover-foreground))', border: 'none', borderRadius: '4px'}} itemStyle={{color: 'hsl(var(--popover-foreground))'}} cursor={{stroke: 'hsl(var(--border))'}} />
-              <Area type="monotone" dataKey="count" stroke="hsl(var(--primary))" strokeWidth={2} fillOpacity={1} fill="url(#colorCount)" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: 'var(--muted-foreground)', fontSize: 12}} dy={10} />
+              <YAxis axisLine={false} tickLine={false} tick={{fill: 'var(--muted-foreground)', fontSize: 12}} />
+              <Tooltip contentStyle={{backgroundColor: 'var(--popover)', color: 'var(--popover-foreground)', border: 'none', borderRadius: '4px'}} itemStyle={{color: 'var(--popover-foreground)'}} cursor={{stroke: 'var(--border)'}} />
+              <Area type="monotone" dataKey="count" stroke="var(--primary)" strokeWidth={2} fillOpacity={1} fill="url(#colorCount)" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -38,11 +38,11 @@ const DashboardCharts: React.FC<DashboardChartsProps> = ({ timelineData, books }
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={books.slice(0, 5)} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsl(var(--border))" />
+              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--border)" />
               <XAxis type="number" hide />
-              <YAxis dataKey="title" type="category" width={120} tick={{fontSize: 12, fill: 'hsl(var(--muted-foreground))'}} />
-              <Tooltip contentStyle={{backgroundColor: 'hsl(var(--popover))', color: 'hsl(var(--popover-foreground))', border: 'none', borderRadius: '4px'}} cursor={{fill: 'hsl(var(--muted))'}} />
-              <Bar dataKey="highlightCount" fill="hsl(var(--primary))" radius={[0, 2, 2, 0]} barSize={24} />
+              <YAxis dataKey="title" type="category" width={120} tick={{fontSize: 12, fill: 'var(--muted-foreground)'}} />
+              <Tooltip contentStyle={{backgroundColor: 'var(--popover)', color: 'var(--popover-foreground)', border: 'none', borderRadius: '4px'}} cursor={{fill: 'var(--muted)'}} />
+              <Bar dataKey="highlightCount" fill="var(--primary)" radius={[0, 2, 2, 0]} barSize={24} />
             </BarChart>
           </ResponsiveContainer>
         </div>
