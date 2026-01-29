@@ -128,7 +128,10 @@ Plans:
   2. Design guide "Rules and Anti-Patterns" section reflects actual codebase state (not aspirational)
   3. Secondary reference files (lbp_context/) no longer reference deleted compact-ui-design-guidelines.md
   4. Motion/z-index/icon tokens documented as "infrastructure-ready" in guide (not forced consumption)
-Plans: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 10-01-PLAN.md — Fix hsl() wrapping of oklch() values in chart components
+- [ ] 10-02-PLAN.md — Update design guide accuracy and fix stale references
 
 ## Progress
 
@@ -142,7 +145,7 @@ Plans: TBD
 | 7. Design Guide | v2.0 | 1/1 | Complete | 2026-01-28 |
 | 8. Token Consumption | v2.0 | 5/5 | Complete | 2026-01-28 |
 | 9. Component Adoption | v2.0 | 5/5 | Complete | 2026-01-28 |
-| 10. Bug Fixes & Guide Accuracy | v2.0 | 0/? | Not Started | -- |
+| 10. Bug Fixes & Guide Accuracy | v2.0 | 0/2 | Not Started | -- |
 
 ---
 *Created: 2026-01-27*
