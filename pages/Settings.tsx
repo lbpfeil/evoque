@@ -282,7 +282,7 @@ const Settings = () => {
   };
 
   return (
-    <div className="p-lg">
+    <div className="p-lg max-w-2xl">
       {/* Header */}
       <PageHeader title={t('title')} description={t('subtitle')} size="compact" />
 
