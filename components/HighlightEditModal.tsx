@@ -179,20 +179,20 @@ const HighlightEditModal: React.FC<HighlightEditModalProps> = ({ highlightId, on
                       />
                       <Tooltip
                         contentStyle={{
-                          backgroundColor: 'hsl(var(--card))',
+                          backgroundColor: 'var(--card)',
                           borderRadius: '0.375rem',
-                          border: '1px solid hsl(var(--border))',
+                          border: '1px solid var(--border)',
                           fontSize: '10px',
-                          color: 'hsl(var(--card-foreground))'
+                          color: 'var(--card-foreground)'
                         }}
-                        itemStyle={{ color: 'hsl(var(--primary))' }}
+                        itemStyle={{ color: 'var(--primary)' }}
                       />
                       <Line
                         type="monotone"
                         dataKey="interval"
-                        stroke="hsl(var(--primary))"
+                        stroke="var(--primary)"
                         strokeWidth={2}
-                        dot={{ r: 3, fill: 'hsl(var(--primary))' }}
+                        dot={{ r: 3, fill: 'var(--primary)' }}
                       />
                     </LineChart>
                   </ResponsiveContainer>
