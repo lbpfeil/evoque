@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Target, Settings, BookOpen, Highlighter, LogOut, ChevronUp, ChevronLeft } from 'lucide-react';
+import { cn } from '../lib/utils';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from './AuthContext';
 import { useStore } from './StoreContext';
@@ -39,9 +40,15 @@ const Sidebar = () => {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div className="flex items-center h-14 border-b border-sidebar-border relative">
-        {/* Logo - SEMPRE na mesma posição (ml-3 fixo) */}
-        <div className="p-xs bg-black dark:bg-white text-white dark:text-black rounded-md ml-sm shrink-0">
+      <div className={cn(
+        "flex items-center h-14 border-b border-sidebar-border relative",
+        !isExpanded && "justify-center"
+      )}>
+        {/* Logo - centered when collapsed, left-aligned when expanded */}
+        <div className={cn(
+          "p-xs bg-black dark:bg-white text-white dark:text-black rounded-md shrink-0",
+          isExpanded && "ml-sm"
+        )}>
           <BookOpen className="w-4 h-4" />
         </div>
 
@@ -74,10 +81,13 @@ const Sidebar = () => {
             key={item.name}
             to={item.path}
             className={({ isActive }) =>
-              `flex items-center pl-sm pr-sm py-sm rounded-md text-body font-medium transition-colors duration-200 ${isActive
-                ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                : 'text-muted-foreground hover:text-sidebar-accent-foreground hover:bg-sidebar-accent'
-              }`
+              cn(
+                "flex items-center py-sm rounded-md text-body font-medium transition-colors duration-200",
+                isExpanded ? "px-sm" : "justify-center w-full",
+                isActive
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-muted-foreground hover:text-sidebar-accent-foreground hover:bg-sidebar-accent"
+              )
             }
           >
             {/* Ícone - SEMPRE na mesma posição, centralizado quando colapsado */}
@@ -122,10 +132,16 @@ const Sidebar = () => {
         <Button
           variant="ghost"
           onClick={() => setShowLogout(!showLogout)}
-          className="w-full h-auto px-sm py-md justify-start transition-colors"
+          className={cn(
+            "w-full h-auto py-md transition-colors",
+            isExpanded ? "px-sm justify-start" : "justify-center px-0"
+          )}
         >
-          <div className="flex items-center w-full">
-            {/* Avatar - SEMPRE na mesma posição (início do flex) */}
+          <div className={cn(
+            "flex items-center",
+            isExpanded ? "w-full" : "justify-center"
+          )}>
+            {/* Avatar - centered when collapsed */}
             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold text-caption shrink-0 overflow-hidden">
               {settings.avatarUrl ? (
                 <img src={settings.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
