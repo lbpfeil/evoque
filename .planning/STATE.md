@@ -5,42 +5,49 @@
 See: .planning/PROJECT.md (updated 2026-01-29)
 
 **Core value:** Revisão eficiente de highlights — ajudar usuários a reter conhecimento dos livros que leem através de repetição espaçada (SM-2).
-**Current focus:** v2.0 COMPLETE — awaiting next milestone definition
+**Current focus:** v3.0 Features & Polish — Phase 11 (Quick Fixes)
 
 ## Current Position
 
-Phase: None (milestone complete)
-Plan: None
-Status: Ready for next milestone
-Last activity: 2026-01-29 — v2.0 milestone archived
+Phase: 11 (Quick Fixes)
+Plan: None (not yet planned)
+Status: Ready to plan
+Last activity: 2026-01-29 — v3.0 roadmap created
 
-Progress: Milestone complete
+Progress: ░░░░░░░░░░ 0%
 
 ## Milestones
 
 - ✅ v1.0 UI Overhaul — Phases 1-3 (shipped 2026-01-23)
 - ✅ v2.0 Design System Overhaul — Phases 4-10 (shipped 2026-01-29)
+- ◆ v3.0 Features & Polish — Phases 11-16 (in progress)
 
 See `.planning/MILESTONES.md` for full history.
 
-## Performance Metrics
+## v3.0 Phase Summary
 
-**v2.0 Summary:**
-- Total plans completed: 24
-- Total execution time: ~100min
-- Average per plan: ~4.2min
-- Timeline: 3 days (2026-01-27 → 2026-01-29)
+| Phase | Name | Reqs | Status |
+|-------|------|------|--------|
+| 11 | Quick Fixes | 8 | ○ Pending |
+| 12 | StudySession UX | 4 | ○ Pending |
+| 13 | Dashboard & Analytics | 7 | ○ Pending |
+| 14 | Settings Audit | 3 | ○ Pending |
+| 15 | Auth Infrastructure | 3 | ○ Pending |
+| 16 | Landing Page | 3 | ○ Pending |
 
 ## Accumulated Context
 
 ### Decisions
 
-All decisions logged in PROJECT.md Key Decisions table.
+- Dashboard como home (não Study)
+- Time tracking persistido em review_logs.duration_ms
+- Edição inline: botão ativa, mas campo aparece in-place com mesma estética
+- Só Google OAuth (não Apple/GitHub)
+- Landing page separada para marketing
 
 ### Pending Todos
 
-- Remove unused `hooks/useTheme.ts` (carried from v1.0)
-- Recreate Dashboard page with new features (next milestone)
+None.
 
 ### Blockers/Concerns
 
@@ -49,5 +56,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-29
-Stopped at: v2.0 milestone complete
-Resume file: None — run `/gsd:new-milestone` to start next milestone
+Stopped at: Roadmap created, ready to plan Phase 11
+Resume with: `/gsd:plan-phase 11`
