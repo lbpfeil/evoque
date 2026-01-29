@@ -66,8 +66,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 12-01-PLAN.md — Book cover, back button, edit button styling (STUDY-01, STUDY-02, STUDY-03)
-- [ ] 12-02-PLAN.md — Seamless inline editing for highlight and note (STUDY-04)
+- [x] 12-01-PLAN.md — Book cover, back button, edit button styling (STUDY-01, STUDY-02, STUDY-03)
+- [x] 12-02-PLAN.md — Seamless inline editing for highlight and note (STUDY-04)
 
 ---
 

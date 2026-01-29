@@ -20,10 +20,10 @@ Requirements for v3.0 release. Each maps to roadmap phases.
 
 ### StudySession UX
 
-- [ ] **STUDY-01**: Capa do livro é exibida em tamanho maior
-- [ ] **STUDY-02**: Botão "Voltar aos decks" é uma seta com cor primária
-- [ ] **STUDY-03**: Botões de editar destaque e nota são padronizados (mesmo estilo)
-- [ ] **STUDY-04**: Edição de destaque/nota é inline clean (mesma fonte, tamanho, posição)
+- [x] **STUDY-01**: Capa do livro é exibida em tamanho maior
+- [x] **STUDY-02**: Botão "Voltar aos decks" é uma seta com cor primária
+- [x] **STUDY-03**: Botões de editar destaque e nota são padronizados (mesmo estilo)
+- [x] **STUDY-04**: Edição de destaque/nota é inline clean (mesma fonte, tamanho, posição)
 
 ### Dashboard
 
@@ -102,26 +102,26 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FIX-06 | Phase 11 | Complete |
 | FIX-07 | Phase 11 | Complete |
 | FIX-08 | Phase 11 | Complete |
-| STUDY-01 | Phase 2 | Pending |
-| STUDY-02 | Phase 2 | Pending |
-| STUDY-03 | Phase 2 | Pending |
-| STUDY-04 | Phase 2 | Pending |
-| DASH-01 | Phase 3 | Pending |
-| DASH-02 | Phase 3 | Pending |
-| DASH-03 | Phase 3 | Pending |
-| DASH-04 | Phase 3 | Pending |
-| ANLYT-01 | Phase 3 | Pending |
-| ANLYT-02 | Phase 3 | Pending |
-| ANLYT-03 | Phase 3 | Pending |
-| SETT-01 | Phase 4 | Pending |
-| SETT-02 | Phase 4 | Pending |
-| SETT-03 | Phase 4 | Pending |
-| AUTH-01 | Phase 5 | Pending |
-| AUTH-02 | Phase 5 | Pending |
-| AUTH-03 | Phase 5 | Pending |
-| LAND-01 | Phase 6 | Pending |
-| LAND-02 | Phase 6 | Pending |
-| LAND-03 | Phase 6 | Pending |
+| STUDY-01 | Phase 12 | Complete |
+| STUDY-02 | Phase 12 | Complete |
+| STUDY-03 | Phase 12 | Complete |
+| STUDY-04 | Phase 12 | Complete |
+| DASH-01 | Phase 13 | Pending |
+| DASH-02 | Phase 13 | Pending |
+| DASH-03 | Phase 13 | Pending |
+| DASH-04 | Phase 13 | Pending |
+| ANLYT-01 | Phase 13 | Pending |
+| ANLYT-02 | Phase 13 | Pending |
+| ANLYT-03 | Phase 13 | Pending |
+| SETT-01 | Phase 14 | Pending |
+| SETT-02 | Phase 14 | Pending |
+| SETT-03 | Phase 14 | Pending |
+| AUTH-01 | Phase 15 | Pending |
+| AUTH-02 | Phase 15 | Pending |
+| AUTH-03 | Phase 15 | Pending |
+| LAND-01 | Phase 16 | Pending |
+| LAND-02 | Phase 16 | Pending |
+| LAND-03 | Phase 16 | Pending |
 
 **Coverage:**
 - v1 requirements: 28 total
