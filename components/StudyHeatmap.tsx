@@ -231,10 +231,10 @@ function formatDate(dateStr: string): string {
 
 // Calculate number of weeks based on container width
 function calculateNumWeeks(containerWidth: number): number {
-  // Cell size (10px) + gap (2px) = 12px per week column
-  // Day labels take ~14px, padding ~24px
-  const availableWidth = containerWidth - 38; // 14px labels + 24px padding
-  const weekWidth = 12; // 10px cell + 2px gap
+  // Cell size (14px) + gap (2px) = 16px per week column
+  // Day labels take ~18px, padding ~24px
+  const availableWidth = containerWidth - 42; // 18px labels + 24px padding
+  const weekWidth = 16; // 14px cell + 2px gap
   const maxWeeks = Math.floor(availableWidth / weekWidth);
 
   // Clamp between 14 and 52 weeks (3-12 months)
@@ -336,7 +336,7 @@ export const StudyHeatmap: React.FC<StudyHeatmapProps> = ({ reviewLogs }) => {
               {dayLabels.map((day, i) => (
                 <div
                   key={i}
-                  className="w-2.5 h-2.5 text-[8px] text-muted-foreground flex items-center justify-center"
+                  className="w-3.5 h-3.5 text-[10px] text-muted-foreground flex items-center justify-center"
                 >
                   {i % 2 === 1 ? day : ''}
                 </div>
@@ -349,7 +349,7 @@ export const StudyHeatmap: React.FC<StudyHeatmapProps> = ({ reviewLogs }) => {
                 {week.days.map((day, dayIndex) => (
                   <div
                     key={dayIndex}
-                    className={`w-2.5 h-2.5 rounded-sm cursor-pointer transition-colors ${getIntensityClass(day.intensity, day.date)}`}
+                    className={`w-3.5 h-3.5 rounded-sm cursor-pointer transition-colors ${getIntensityClass(day.intensity, day.date)}`}
                     onMouseEnter={(e) => handleCellHover(e, day)}
                     onMouseLeave={() => setTooltip(null)}
                   />
@@ -363,8 +363,8 @@ export const StudyHeatmap: React.FC<StudyHeatmapProps> = ({ reviewLogs }) => {
             {monthLabels.map((label, i) => (
               <div
                 key={i}
-                className="text-[8px] text-muted-foreground"
-                style={{ width: `${label.span * 12}px` }}
+                className="text-[10px] text-muted-foreground"
+                style={{ width: `${label.span * 16}px` }}
               >
                 {label.name}
               </div>
