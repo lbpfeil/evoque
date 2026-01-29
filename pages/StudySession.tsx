@@ -357,11 +357,12 @@ ${currentHighlight.text}`;
                 <div className="flex items-center justify-between">
                     <Button
                         variant="ghost"
+                        size="icon"
                         onClick={handleBack}
-                        className="flex items-center gap-xxs min-h-[40px] sm:min-h-0"
+                        className="min-h-[40px] min-w-[40px]"
+                        title={t('actions.backToDecks')}
                     >
-                        <ArrowLeft className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-muted-foreground" />
-                        <span className="text-caption text-muted-foreground hidden sm:inline">{t('actions.backToDecks')}</span>
+                        <ArrowLeft className="w-5 h-5 text-primary" />
                     </Button>
 
                     <div className="text-caption text-muted-foreground">
