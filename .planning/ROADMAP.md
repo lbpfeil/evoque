@@ -118,7 +118,12 @@ Plans:
 4. Nenhuma regressão nas funcionalidades existentes
 
 **Depends on:** Phase 13 (Dashboard done, app stable)
-**Estimated plans:** 2-3
+**Plans:** 3 plans
+
+Plans:
+- [ ] 14-01-PLAN.md — Fix settings bugs (ease factor cascade, daily limit check, constants) (SETT-01, SETT-02)
+- [ ] 14-02-PLAN.md — Set up Vitest testing infrastructure (SETT-03 foundation)
+- [ ] 14-03-PLAN.md — Write tests for SM-2 and settings logic (SETT-03)
 
 ---
 
