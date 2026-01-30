@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-01-29)
 ## Current Position
 
 Phase: 13 (Dashboard & Analytics)
-Plan: 1/4 complete
+Plan: 2/4 complete
 Status: In progress
-Last activity: 2026-01-30 — Completed 13-01-PLAN.md
+Last activity: 2026-01-30 — Completed 13-02-PLAN.md
 
 Progress: ███░░░░░░░ 33% (2/6 phases complete)
 
@@ -30,7 +30,7 @@ See `.planning/MILESTONES.md` for full history.
 |-------|------|------|--------|
 | 11 | Quick Fixes | 8 | ✓ Verified |
 | 12 | StudySession UX | 4 | ✓ Verified |
-| 13 | Dashboard & Analytics | 7 | 1/4 plans |
+| 13 | Dashboard & Analytics | 7 | 2/4 plans |
 | 14 | Settings Audit | 3 | Pending |
 | 15 | Auth Infrastructure | 3 | Pending |
 | 16 | Landing Page | 3 | Pending |
@@ -56,6 +56,9 @@ See `.planning/MILESTONES.md` for full history.
 - Auto-resize textareas: height='auto' then scrollHeight on change/focus
 - minHeight: 3rem for empty textarea usability
 - durationMs optional (nullable) for backward compatibility with existing review logs
+- Dashboard: inline StatCard/QuickStudyButton components (not extracted to separate files)
+- Quick Study navigates to /study (deck selection) not direct session start
+- EmptyState shown when no books to guide new users
 
 ### Pending Todos
 
@@ -68,5 +71,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-30
-Stopped at: Completed 13-01-PLAN.md (Add Duration Field)
-Resume with: `/gsd:execute-phase 13` (plan 02)
+Stopped at: Completed 13-02-PLAN.md (Dashboard Page)
+Resume with: `/gsd:execute-phase 13` (plan 03)
