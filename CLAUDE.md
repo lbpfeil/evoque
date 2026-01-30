@@ -136,6 +136,14 @@ await updateHighlight(id, { note: 'new note' })
 updateHighlight(id, { note: 'new note' })
 ```
 
+### Internationalization (i18n)
+- **Location**: Translation files in `public/locales/pt-BR/*.json`
+- **CRITICAL**: Always use proper Portuguese accents (é, ã, ç, etc.)
+  - ✅ "revisões", "mês", "ação", "configurações"
+  - ❌ "revisoes", "mes", "acao", "configuracoes"
+- **Format**: JSON with nested keys, supports pluralization (`_one` suffix)
+- **Usage**: `useTranslation('namespace')` hook, `t('key')` function
+
 ## UI/UX Guidelines
 
 Full guidelines in `lbp_diretrizes/design-system-guide.md` (~600 lines). Key principles:

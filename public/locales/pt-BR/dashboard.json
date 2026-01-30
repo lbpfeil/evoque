@@ -36,11 +36,11 @@
   },
   "topBooks": {
     "title": "Mais Revisados",
-    "thisMonth": "este mes",
+    "thisMonth": "este mês",
     "lastMonthTitle": "Destaque",
-    "lastMonth": "mes passado",
-    "reviewCount": "{{count}} revisoes",
-    "reviewCount_one": "{{count}} revisao"
+    "lastMonth": "mês passado",
+    "reviewCount": "{{count}} revisões",
+    "reviewCount_one": "{{count}} revisão"
   },
   "empty": {
     "title": "Bem-vindo ao Evoque!",

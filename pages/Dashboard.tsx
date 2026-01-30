@@ -299,8 +299,8 @@ const Dashboard = () => {
                   <span className="text-caption text-muted-foreground">{t('topBooks.lastMonth')}</span>
                 </div>
                 <Card size="sm" className="h-full">
-                  <CardContent className="p-md flex items-center gap-md">
-                    <div className="w-16 h-24 rounded bg-muted flex-shrink-0 overflow-hidden shadow-md">
+                  <CardContent className="p-md flex flex-col items-center text-center">
+                    <div className="w-20 h-28 rounded bg-muted overflow-hidden shadow-md mb-md">
                       {analytics.topBookLastMonth.coverUrl ? (
                         <img
                           src={analytics.topBookLastMonth.coverUrl}
@@ -313,19 +313,17 @@ const Dashboard = () => {
                         </div>
                       )}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-body font-semibold text-foreground line-clamp-2">
-                        {analytics.topBookLastMonth.title}
+                    <p className="text-body font-semibold text-foreground line-clamp-2">
+                      {analytics.topBookLastMonth.title}
+                    </p>
+                    {analytics.topBookLastMonth.author && (
+                      <p className="text-caption text-muted-foreground truncate mt-1 max-w-full">
+                        {analytics.topBookLastMonth.author}
                       </p>
-                      {analytics.topBookLastMonth.author && (
-                        <p className="text-caption text-muted-foreground truncate mt-1">
-                          {analytics.topBookLastMonth.author}
-                        </p>
-                      )}
-                      <p className="text-caption text-primary font-medium mt-2">
-                        {t('topBooks.reviewCount', { count: analytics.topBookLastMonth.reviews })}
-                      </p>
-                    </div>
+                    )}
+                    <p className="text-caption text-primary font-medium mt-2">
+                      {t('topBooks.reviewCount', { count: analytics.topBookLastMonth.reviews })}
+                    </p>
                   </CardContent>
                 </Card>
               </div>
