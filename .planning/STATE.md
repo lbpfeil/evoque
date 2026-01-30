@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-01-29)
 ## Current Position
 
 Phase: 13 (Dashboard & Analytics)
-Plan: 2/4 complete
+Plan: 3/4 complete
 Status: In progress
-Last activity: 2026-01-30 — Completed 13-02-PLAN.md
+Last activity: 2026-01-30 — Completed 13-03-PLAN.md (Time Tracking)
 
 Progress: ███░░░░░░░ 33% (2/6 phases complete)
 
@@ -30,7 +30,7 @@ See `.planning/MILESTONES.md` for full history.
 |-------|------|------|--------|
 | 11 | Quick Fixes | 8 | ✓ Verified |
 | 12 | StudySession UX | 4 | ✓ Verified |
-| 13 | Dashboard & Analytics | 7 | 2/4 plans |
+| 13 | Dashboard & Analytics | 7 | 3/4 plans |
 | 14 | Settings Audit | 3 | Pending |
 | 15 | Auth Infrastructure | 3 | Pending |
 | 16 | Landing Page | 3 | Pending |
@@ -59,6 +59,7 @@ See `.planning/MILESTONES.md` for full history.
 - Dashboard: inline StatCard/QuickStudyButton components (not extracted to separate files)
 - Quick Study navigates to /study (deck selection) not direct session start
 - EmptyState shown when no books to guide new users
+- Wall clock time tracking (Date.now()) for card duration - includes time away from tab
 
 ### Pending Todos
 
@@ -71,5 +72,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-30
-Stopped at: Completed 13-02-PLAN.md (Dashboard Page)
-Resume with: `/gsd:execute-phase 13` (plan 03)
+Stopped at: Completed 13-03-PLAN.md (Time Tracking)
+Resume with: `/gsd:execute-phase 13` (plan 04)
