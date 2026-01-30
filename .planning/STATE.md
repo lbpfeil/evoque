@@ -65,7 +65,7 @@ See `.planning/MILESTONES.md` for full history.
 
 ### Pending Todos
 
-None.
+1. Corrigir sidebar - layout contraído e transições (ui)
 
 ### Blockers/Concerns
 
