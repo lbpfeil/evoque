@@ -62,6 +62,11 @@ See `.planning/MILESTONES.md` for full history.
 - Wall clock time tracking (Date.now()) for card duration - includes time away from tab
 - Dashboard as first nav item (before Study) in both Sidebar and BottomNav
 - Catch-all routes redirect to /dashboard (not /study)
+- App rebranded from "Evoque/Kindle Mgr." to "Revision"
+- Sidebar: fixed ICON_SLOT (w-10=40px) keeps icons at exact same x-position during expand/collapse
+- Sidebar: footer (ThemeToggle + User) absolutely positioned at bottom with fixed height (114px)
+- Sidebar: all elements have explicit heights (h-14 header, h-10 nav items, h-12 theme toggle, h-16 user)
+- Sidebar: only opacity transitions for text, never position/height changes for icons
 
 ### Pending Todos
 

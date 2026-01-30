@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-EVOQUE is a web app for managing and studying Kindle highlights using spaced repetition (SM-2 algorithm). Built with React 19, TypeScript, Vite, Supabase (PostgreSQL), and Tailwind CSS.
+Revision (formerly Evoque) is a web app for managing and studying Kindle highlights using spaced repetition (SM-2 algorithm). Built with React 19, TypeScript, Vite, Supabase (PostgreSQL), and Tailwind CSS.
 
 ## Development Commands
 
@@ -78,6 +78,34 @@ evoque/
 │   └── utils.ts               # Tailwind cn() utility
 └── types.ts                   # ⚠️ CRITICAL: Single source of truth for all types
 ```
+
+## Sidebar Architecture
+
+The collapsible sidebar (`components/Sidebar.tsx`) uses specific patterns to ensure smooth transitions:
+
+### Key Principles
+1. **Fixed Icon Slot**: `ICON_SLOT = "w-10"` (40px) keeps all icons at exact same x-position during expand/collapse
+2. **Absolute Footer**: ThemeToggle + User Menu are absolutely positioned at bottom with fixed height (114px)
+3. **Explicit Heights**: All elements have fixed heights (h-14 header, h-10 nav items, h-12 theme toggle, h-16 user)
+4. **Opacity-Only Transitions**: Text fades in/out, icons never change position
+
+### Structure
+```
+aside (w-14 collapsed, w-56 expanded)
+├── Header (h-14, fixed)
+│   └── [ICON_SLOT: logo] [text fades]
+├── Nav (flex-1, paddingBottom for footer)
+│   └── NavLink (h-10 each)
+│       └── [ICON_SLOT: icon] [text fades]
+└── Footer (absolute bottom-0, height 114px)
+    ├── ThemeToggle (h-12)
+    └── User Menu (h-16)
+```
+
+### Why This Matters
+- Icons must NEVER move during transitions (user expectation)
+- Footer must NEVER shift vertically (absolute positioning guarantees this)
+- Only opacity changes for text content, no layout recalculations
 
 ## Critical Workflows
 
