@@ -54,6 +54,7 @@ const StudySession = () => {
     const [showAllTags, setShowAllTags] = useState(false);
     const [showTagSelector, setShowTagSelector] = useState(false);
     const [justCopied, setJustCopied] = useState(false);
+    const [cardShowTime, setCardShowTime] = useState<number>(Date.now());
 
     // Derived state from session
     const queueIds = currentSession ? currentSession.cardIds : [];
@@ -85,11 +86,12 @@ const StudySession = () => {
         }
     }, [isLoaded, deckId]);
 
-    // Reset showAnswer when card changes (prevents flashing next card's answer)
+    // Reset showAnswer and timer when card changes (prevents flashing next card's answer)
     useEffect(() => {
         setShowAnswer(false);
         setIsEditingHighlight(false);
         setIsEditingNote(false);
+        setCardShowTime(Date.now());  // Reset timer for new card
     }, [currentCardId]);
 
     const handleResponse = useCallback(async (quality: number) => {
@@ -97,6 +99,9 @@ const StudySession = () => {
         if (!currentCard || isSubmittingResponse) return;
 
         setIsSubmittingResponse(true);
+
+        // Calculate duration for this card
+        const durationMs = Date.now() - cardShowTime;
 
         // Save previous state BEFORE updating
         const previousCard = { ...currentCard };
@@ -108,7 +113,7 @@ const StudySession = () => {
         // Both functions do optimistic updates internally, so UI updates immediately
         Promise.allSettled([
             updateCard(updatedCard),
-            submitReview(currentCard.id, quality, previousCard)
+            submitReview(currentCard.id, quality, previousCard, durationMs)
         ]).then(results => {
             // Log failures but don't block UI
             results.forEach((result, idx) => {
@@ -123,7 +128,7 @@ const StudySession = () => {
 
         // Note: showAnswer reset handled by useEffect on currentCardId change
         // UI continues immediately - next card loads without waiting for DB
-    }, [currentCard, isSubmittingResponse, updateCard, submitReview]);
+    }, [currentCard, isSubmittingResponse, updateCard, submitReview, cardShowTime]);
 
     const handleSaveHighlight = useCallback(async () => {
         if (!currentHighlight) return;
