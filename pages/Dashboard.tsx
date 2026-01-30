@@ -16,6 +16,18 @@ function formatLocalDate(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+// Get month boundaries (start/end dates)
+function getMonthBounds(date: Date): { start: Date; end: Date } {
+  const start = new Date(date.getFullYear(), date.getMonth(), 1);
+  const end = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
+  return { start, end };
+}
+
+// Check if date is within range
+function isInRange(date: Date, start: Date, end: Date): boolean {
+  return date >= start && date <= end;
+}
+
 interface StatCardProps {
   title: string;
   value: string | number;
@@ -113,20 +125,29 @@ const Dashboard = () => {
       : null;
     const avgTimeSeconds = avgTimeMs ? Math.round(avgTimeMs / 1000) : null;
 
-    // Most reviewed books
-    const bookReviewCounts = new Map<string, number>();
-    for (const log of reviewLogs) {
-      const card = studyCards.find(c => c.id === log.cardId);
-      if (!card) continue;
-      const highlight = highlights.find(h => h.id === card.highlightId);
-      if (!highlight) continue;
-      bookReviewCounts.set(
-        highlight.bookId,
-        (bookReviewCounts.get(highlight.bookId) || 0) + 1
-      );
-    }
+    // Month boundaries
+    const thisMonth = getMonthBounds(now);
+    const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonth = getMonthBounds(lastMonthDate);
 
-    const topBooks = Array.from(bookReviewCounts.entries())
+    // Helper to count reviews per book for a given period
+    const countBookReviews = (start: Date, end: Date) => {
+      const counts = new Map<string, number>();
+      for (const log of reviewLogs) {
+        const logDate = new Date(log.reviewedAt);
+        if (!isInRange(logDate, start, end)) continue;
+        const card = studyCards.find(c => c.id === log.cardId);
+        if (!card) continue;
+        const highlight = highlights.find(h => h.id === card.highlightId);
+        if (!highlight) continue;
+        counts.set(highlight.bookId, (counts.get(highlight.bookId) || 0) + 1);
+      }
+      return counts;
+    };
+
+    // Top books this month
+    const thisMonthCounts = countBookReviews(thisMonth.start, thisMonth.end);
+    const topBooksThisMonth = Array.from(thisMonthCounts.entries())
       .sort((a, b) => b[1] - a[1])
       .slice(0, 3)
       .map(([bookId, count]) => {
@@ -138,11 +159,25 @@ const Dashboard = () => {
           reviews: count
         };
       });
+    const maxReviewsThisMonth = topBooksThisMonth.length > 0 ? topBooksThisMonth[0].reviews : 0;
 
-    // Calculate max reviews for percentage bars
-    const maxReviews = topBooks.length > 0 ? topBooks[0].reviews : 0;
+    // Top book last month
+    const lastMonthCounts = countBookReviews(lastMonth.start, lastMonth.end);
+    const topBookLastMonth = Array.from(lastMonthCounts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 1)
+      .map(([bookId, count]) => {
+        const book = books.find(b => b.id === bookId);
+        return {
+          id: bookId,
+          title: book?.title || 'Unknown',
+          author: book?.author,
+          coverUrl: book?.coverUrl,
+          reviews: count
+        };
+      })[0] || null;
 
-    return { reviewsToday, avgTimeSeconds, topBooks, maxReviews };
+    return { reviewsToday, avgTimeSeconds, topBooksThisMonth, maxReviewsThisMonth, topBookLastMonth };
   }, [reviewLogs, studyCards, highlights, books]);
 
   // Cards due count
@@ -210,52 +245,91 @@ const Dashboard = () => {
           </section>
         )}
 
-        {/* Top Books Section */}
-        {analytics.topBooks.length > 0 && (
-          <section>
-            <div className="flex items-baseline justify-between mb-md">
-              <h2 className="text-body font-semibold text-foreground">{t('topBooks.title')}</h2>
-              <span className="text-caption text-muted-foreground">{t('topBooks.period')}</span>
-            </div>
-            <Card size="sm">
-              <CardContent className="p-md space-y-md">
-                {analytics.topBooks.map((book) => (
-                  <div key={book.id} className="flex items-center gap-md">
-                    {/* Book Cover */}
-                    <div className="w-10 h-14 rounded bg-muted flex-shrink-0 overflow-hidden">
-                      {book.coverUrl ? (
+        {/* Top Books Section - This Month + Last Month Featured */}
+        {(analytics.topBooksThisMonth.length > 0 || analytics.topBookLastMonth) && (
+          <section className="grid grid-cols-1 sm:grid-cols-2 gap-md">
+            {/* This Month */}
+            {analytics.topBooksThisMonth.length > 0 && (
+              <div>
+                <div className="flex items-baseline justify-between mb-md">
+                  <h2 className="text-body font-semibold text-foreground">{t('topBooks.title')}</h2>
+                  <span className="text-caption text-muted-foreground">{t('topBooks.thisMonth')}</span>
+                </div>
+                <Card size="sm" className="h-full">
+                  <CardContent className="p-md space-y-md">
+                    {analytics.topBooksThisMonth.map((book) => (
+                      <div key={book.id} className="flex items-center gap-md">
+                        <div className="w-10 h-14 rounded bg-muted flex-shrink-0 overflow-hidden">
+                          {book.coverUrl ? (
+                            <img src={book.coverUrl} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <BookOpen className="w-5 h-5 text-muted-foreground/50" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-caption font-medium text-foreground truncate mb-1">
+                            {book.title}
+                          </p>
+                          <div className="flex items-center gap-sm">
+                            <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-primary rounded-full transition-all"
+                                style={{ width: `${(book.reviews / analytics.maxReviewsThisMonth) * 100}%` }}
+                              />
+                            </div>
+                            <span className="text-caption text-muted-foreground w-8 text-right">
+                              {book.reviews}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Last Month Featured */}
+            {analytics.topBookLastMonth && (
+              <div>
+                <div className="flex items-baseline justify-between mb-md">
+                  <h2 className="text-body font-semibold text-foreground">{t('topBooks.lastMonthTitle')}</h2>
+                  <span className="text-caption text-muted-foreground">{t('topBooks.lastMonth')}</span>
+                </div>
+                <Card size="sm" className="h-full">
+                  <CardContent className="p-md flex items-center gap-md">
+                    <div className="w-16 h-24 rounded bg-muted flex-shrink-0 overflow-hidden shadow-md">
+                      {analytics.topBookLastMonth.coverUrl ? (
                         <img
-                          src={book.coverUrl}
+                          src={analytics.topBookLastMonth.coverUrl}
                           alt=""
                           className="w-full h-full object-cover"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <BookOpen className="w-5 h-5 text-muted-foreground/50" />
+                          <BookOpen className="w-8 h-8 text-muted-foreground/50" />
                         </div>
                       )}
                     </div>
-                    {/* Title and Bar */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-caption font-medium text-foreground truncate mb-1">
-                        {book.title}
+                      <p className="text-body font-semibold text-foreground line-clamp-2">
+                        {analytics.topBookLastMonth.title}
                       </p>
-                      <div className="flex items-center gap-sm">
-                        <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-primary rounded-full transition-all"
-                            style={{ width: `${(book.reviews / analytics.maxReviews) * 100}%` }}
-                          />
-                        </div>
-                        <span className="text-caption text-muted-foreground w-8 text-right">
-                          {book.reviews}
-                        </span>
-                      </div>
+                      {analytics.topBookLastMonth.author && (
+                        <p className="text-caption text-muted-foreground truncate mt-1">
+                          {analytics.topBookLastMonth.author}
+                        </p>
+                      )}
+                      <p className="text-caption text-primary font-medium mt-2">
+                        {t('topBooks.reviewCount', { count: analytics.topBookLastMonth.reviews })}
+                      </p>
                     </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
           </section>
         )}
       </div>
