@@ -140,7 +140,8 @@ export const toSupabaseReviewLog = (log: any, userId: string) => ({
     quality: log.quality,
     reviewed_at: log.reviewedAt,
     interval_days: log.interval,
-    ease_factor: log.easeFactor
+    ease_factor: log.easeFactor,
+    duration_ms: log.durationMs || null
 });
 
 export const fromSupabaseReviewLog = (row: any) => ({
@@ -149,6 +150,7 @@ export const fromSupabaseReviewLog = (row: any) => ({
     quality: row.quality,
     reviewedAt: row.reviewed_at,
     interval: row.interval_days,
-    easeFactor: row.ease_factor
+    easeFactor: row.ease_factor,
+    durationMs: row.duration_ms
 });
 
