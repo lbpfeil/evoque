@@ -218,12 +218,13 @@ function getIntensityClass(intensity: number, date: string): string {
   }
 
   /* data-viz: intentional raw color - heatmap gradient using primary/amber tones */
+  /* Inverted: lighter = more reviews (in both light and dark modes) */
   const classes: Record<number, string> = {
     0: 'bg-muted hover:bg-muted/80',
-    1: 'bg-amber-200 dark:bg-amber-900 hover:bg-amber-300 dark:hover:bg-amber-800',
-    2: 'bg-amber-400 dark:bg-amber-700 hover:bg-amber-500 dark:hover:bg-amber-600',
-    3: 'bg-amber-500 dark:bg-amber-600 hover:bg-amber-600 dark:hover:bg-amber-500',
-    4: 'bg-amber-600 dark:bg-amber-500 hover:bg-amber-700 dark:hover:bg-amber-400',
+    1: 'bg-amber-600 dark:bg-amber-900 hover:bg-amber-700 dark:hover:bg-amber-800',
+    2: 'bg-amber-500 dark:bg-amber-700 hover:bg-amber-600 dark:hover:bg-amber-600',
+    3: 'bg-amber-400 dark:bg-amber-600 hover:bg-amber-500 dark:hover:bg-amber-500',
+    4: 'bg-amber-200 dark:bg-amber-500 hover:bg-amber-300 dark:hover:bg-amber-400',
   };
 
   return classes[intensity] || classes[0];
