@@ -42,7 +42,7 @@ interface StoreContextType {
   reloadAllData: () => Promise<void>;
   currentSession: StudySession | null;
   startSession: (bookId?: string) => void;
-  submitReview: (cardId: string, quality: number, previousCard: StudyCard) => Promise<void>;
+  submitReview: (cardId: string, quality: number, previousCard: StudyCard, durationMs?: number) => Promise<void>;
   resetSession: () => void;
   undoLastReview: () => Promise<void>;
   sessionStats: { reviewed: number; correct: number; streak: number };
@@ -1096,7 +1096,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     }
   };
 
-  const submitReview = async (cardId: string, quality: number, previousCard: StudyCard) => {
+  const submitReview = async (cardId: string, quality: number, previousCard: StudyCard, durationMs?: number) => {
     if (!currentSession || !user) return;
 
     const isCorrect = quality >= 3;
@@ -1139,7 +1139,8 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       quality,
       reviewedAt: new Date().toISOString(),
       interval: previousCard.interval,
-      easeFactor: previousCard.easeFactor
+      easeFactor: previousCard.easeFactor,
+      durationMs: durationMs || null  // Add duration to log (null if not provided)
     };
 
     // Optimistic update
