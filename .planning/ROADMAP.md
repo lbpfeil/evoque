@@ -121,9 +121,9 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-- [ ] 14-01-PLAN.md — Fix settings bugs (ease factor cascade, daily limit check, constants) (SETT-01, SETT-02)
-- [ ] 14-02-PLAN.md — Set up Vitest testing infrastructure (SETT-03 foundation)
-- [ ] 14-03-PLAN.md — Write tests for SM-2 and settings logic (SETT-03)
+- [x] 14-01-PLAN.md — Fix settings bugs (ease factor cascade, daily limit check, constants) (SETT-01, SETT-02)
+- [x] 14-02-PLAN.md — Set up Vitest testing infrastructure (SETT-03 foundation)
+- [x] 14-03-PLAN.md — Write tests for SM-2 and settings logic (SETT-03)
 
 ---
 

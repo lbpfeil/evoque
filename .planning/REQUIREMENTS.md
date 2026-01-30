@@ -46,9 +46,9 @@ Requirements for v3.0 release. Each maps to roadmap phases.
 
 ### Settings Audit
 
-- [ ] **SETT-01**: Lógica de Opções de Estudo está validada e funcionando corretamente
-- [ ] **SETT-02**: Limites diários de revisão por livro funcionam conforme esperado
-- [ ] **SETT-03**: Testes automatizados cobrem funcionalidades críticas de Settings
+- [x] **SETT-01**: Lógica de Opções de Estudo está validada e funcionando corretamente
+- [x] **SETT-02**: Limites diários de revisão por livro funcionam conforme esperado
+- [x] **SETT-03**: Testes automatizados cobrem funcionalidades críticas de Settings
 
 ### Landing Page
 
@@ -113,9 +113,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ANLYT-01 | Phase 13 | Complete |
 | ANLYT-02 | Phase 13 | Complete |
 | ANLYT-03 | Phase 13 | Complete |
-| SETT-01 | Phase 14 | Pending |
-| SETT-02 | Phase 14 | Pending |
-| SETT-03 | Phase 14 | Pending |
+| SETT-01 | Phase 14 | Complete |
+| SETT-02 | Phase 14 | Complete |
+| SETT-03 | Phase 14 | Complete |
 | AUTH-01 | Phase 15 | Pending |
 | AUTH-02 | Phase 15 | Pending |
 | AUTH-03 | Phase 15 | Pending |
@@ -130,4 +130,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-29*
-*Last updated: 2026-01-30 after Phase 13 completion*
+*Last updated: 2026-01-30 after Phase 14 completion*
