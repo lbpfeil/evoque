@@ -8,6 +8,7 @@ import { Button } from '../components/ui/button';
 import { ArrowLeft, CheckCircle, Edit2, Clock, Trash2, Tag as TagIcon, Copy } from 'lucide-react';
 import { calculateNextReview } from '../services/sm2';
 import { StudyCard } from '../types';
+import { DEFAULT_DAILY_LIMIT } from '../lib/constants';
 
 // Determine card status for visual indicator (aligned with getDeckStats)
 function getCardStatus(card: StudyCard, t: (key: string) => string): { status: 'new' | 'learning' | 'review'; color: string; label: string } {
@@ -31,6 +32,7 @@ const StudySession = () => {
         highlights,
         books,
         tags,
+        settings,
         updateCard,
         updateHighlight,
         currentSession,
@@ -278,9 +280,11 @@ ${currentHighlight.text}`;
 
     // No cards available
     if (!currentSession || queueIds.length === 0) {
-        // Check if daily limit was reached
+        // Check if daily limit was reached - use actual book/global limit
         const reviewsToday = deckId ? getReviewsToday(deckId) : 0;
-        const isDailyLimitReached = deckId && reviewsToday >= 10;
+        const book = deckId ? books.find(b => b.id === deckId) : null;
+        const dailyLimit = book?.settings?.dailyReviewLimit || settings.maxReviewsPerDay || DEFAULT_DAILY_LIMIT;
+        const isDailyLimitReached = deckId && reviewsToday >= dailyLimit;
 
         return (
             <div className="h-screen flex flex-col items-center justify-center text-center space-y-lg">
