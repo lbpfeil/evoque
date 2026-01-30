@@ -147,6 +147,8 @@ const Dashboard = () => {
 
     // Top books this month
     const thisMonthCounts = countBookReviews(thisMonth.start, thisMonth.end);
+    const totalReviewsThisMonth = Array.from(thisMonthCounts.values()).reduce((a, b) => a + b, 0);
+    const booksStudiedThisMonth = thisMonthCounts.size;
     const topBooksThisMonth = Array.from(thisMonthCounts.entries())
       .sort((a, b) => b[1] - a[1])
       .slice(0, 3)
@@ -181,7 +183,16 @@ const Dashboard = () => {
     const dateCountMap = aggregateReviewsByDate(reviewLogs);
     const streaks = calculateStreaks(dateCountMap);
 
-    return { reviewsToday, avgTimeSeconds, topBooksThisMonth, maxReviewsThisMonth, topBookLastMonth, currentStreak: streaks.current };
+    return {
+      reviewsToday,
+      avgTimeSeconds,
+      topBooksThisMonth,
+      maxReviewsThisMonth,
+      topBookLastMonth,
+      currentStreak: streaks.current,
+      totalReviewsThisMonth,
+      booksStudiedThisMonth
+    };
   }, [reviewLogs, studyCards, highlights, books]);
 
   // Cards due count
@@ -220,7 +231,7 @@ const Dashboard = () => {
     <div className="p-md sm:p-lg">
       <PageHeader title={t('title')} description={t('subtitle')} size="compact" actions={streakDisplay} />
 
-      <div className="space-y-lg max-w-4xl">
+      <div className="space-y-lg">
         {/* Quick Study CTA */}
         <QuickStudyButton
           cardsDue={cardsDue}
@@ -260,47 +271,39 @@ const Dashboard = () => {
           </section>
         )}
 
-        {/* Top Books Section - This Month + Last Month Featured */}
+        {/* Top Books Section - This Month + Last Month Featured + Monthly Stats */}
         {(analytics.topBooksThisMonth.length > 0 || analytics.topBookLastMonth) && (
-          <section className="grid grid-cols-1 sm:grid-cols-2 gap-md">
-            {/* This Month */}
+          <section className="grid grid-cols-1 md:grid-cols-3 gap-md">
+            {/* This Month - wider on large screens */}
             {analytics.topBooksThisMonth.length > 0 && (
-              <div>
+              <div className="md:col-span-2">
                 <div className="flex items-baseline justify-between mb-md">
                   <h2 className="text-body font-semibold text-foreground">{t('topBooks.title')}</h2>
                   <span className="text-caption text-muted-foreground">{t('topBooks.thisMonth')}</span>
                 </div>
                 <Card size="sm" className="h-full">
-                  <CardContent className="p-md space-y-md">
-                    {analytics.topBooksThisMonth.map((book) => (
-                      <div key={book.id} className="flex items-center gap-md">
-                        <div className="w-12 h-[4.5rem] rounded bg-muted flex-shrink-0 overflow-hidden shadow-sm">
-                          {book.coverUrl ? (
-                            <img src={book.coverUrl} alt="" className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <BookOpen className="w-6 h-6 text-muted-foreground/50" />
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-caption font-medium text-foreground truncate mb-1">
+                  <CardContent className="p-md">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-md">
+                      {analytics.topBooksThisMonth.map((book) => (
+                        <div key={book.id} className="flex flex-col items-center text-center">
+                          <div className="w-16 h-24 rounded bg-muted overflow-hidden shadow-sm mb-sm">
+                            {book.coverUrl ? (
+                              <img src={book.coverUrl} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <BookOpen className="w-6 h-6 text-muted-foreground/50" />
+                              </div>
+                            )}
+                          </div>
+                          <p className="text-caption font-medium text-foreground line-clamp-2 mb-1">
                             {book.title}
                           </p>
-                          <div className="flex items-center gap-sm">
-                            <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                              <div
-                                className="h-full bg-primary rounded-full transition-all"
-                                style={{ width: `${(book.reviews / analytics.maxReviewsThisMonth) * 100}%` }}
-                              />
-                            </div>
-                            <span className="text-caption text-muted-foreground w-8 text-right">
-                              {book.reviews}
-                            </span>
-                          </div>
+                          <p className="text-caption text-primary font-semibold">
+                            {book.reviews} {t('topBooks.reviews')}
+                          </p>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </CardContent>
                 </Card>
               </div>
@@ -315,7 +318,7 @@ const Dashboard = () => {
                 </div>
                 <Card size="sm" className="h-full">
                   <CardContent className="p-md flex flex-col items-center text-center">
-                    <div className="w-24 h-36 rounded bg-muted overflow-hidden shadow-md mb-md">
+                    <div className="w-20 h-28 rounded bg-muted overflow-hidden shadow-md mb-sm">
                       {analytics.topBookLastMonth.coverUrl ? (
                         <img
                           src={analytics.topBookLastMonth.coverUrl}
@@ -324,7 +327,7 @@ const Dashboard = () => {
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <BookOpen className="w-10 h-10 text-muted-foreground/50" />
+                          <BookOpen className="w-8 h-8 text-muted-foreground/50" />
                         </div>
                       )}
                     </div>
