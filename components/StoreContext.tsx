@@ -791,10 +791,19 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
 
     highlightIds.forEach(highlightId => {
       if (!existingHighlightIds.has(highlightId)) {
+        // Find the highlight's book to get its settings
+        const highlight = highlights.find(h => h.id === highlightId);
+        const book = highlight ? books.find(b => b.id === highlight.bookId) : null;
+
+        // Settings cascade: book override > global > default
+        const initialEaseFactor = book?.settings?.initialEaseFactor
+          || settings.defaultInitialEaseFactor
+          || DEFAULT_EASE_FACTOR;
+
         newCards.push({
           id: generateUUID(),
           highlightId,
-          easeFactor: 2.5,
+          easeFactor: initialEaseFactor,
           interval: 0,
           repetitions: 0,
           nextReviewDate: new Date().toISOString()
