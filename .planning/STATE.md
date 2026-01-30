@@ -11,8 +11,8 @@ See: .planning/PROJECT.md (updated 2026-01-29)
 
 Phase: 14 (Settings Audit) — In Progress
 Plan: 2/3 complete
-Status: Plan 14-02 (Test Infrastructure) complete
-Last activity: 2026-01-30 — Completed 14-02-PLAN.md
+Status: Plans 14-01 (Settings Bugs) and 14-02 (Test Infrastructure) complete
+Last activity: 2026-01-30 — Completed 14-01-PLAN.md
 
 Progress: █████░░░░░ 50% (3/6 phases complete)
 
@@ -70,6 +70,8 @@ See `.planning/MILESTONES.md` for full history.
 - Vitest globals enabled for cleaner test syntax (no imports for describe/it/expect)
 - jsdom environment for DOM testing (React component support)
 - ResizeObserver and matchMedia mocked for Radix UI compatibility in tests
+- lib/constants.ts for study defaults (DEFAULT_DAILY_LIMIT, DEFAULT_EASE_FACTOR)
+- Settings cascade pattern: book?.settings > settings.global > DEFAULT_CONSTANT
 
 ### Pending Todos
 
@@ -82,5 +84,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-30
-Stopped at: Completed 14-02-PLAN.md (Test Infrastructure)
+Stopped at: Completed 14-01-PLAN.md (Settings Bug Fixes)
 Resume with: `/gsd:execute-phase 14` (plan 14-03)
