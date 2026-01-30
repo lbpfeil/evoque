@@ -26,8 +26,8 @@ function formatLocalDate(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-// Aggregate reviews by date (using local timezone)
-function aggregateReviewsByDate(reviewLogs: ReviewLog[]): Map<string, number> {
+// Aggregate reviews by date (using local timezone) - exported for Dashboard
+export function aggregateReviewsByDate(reviewLogs: ReviewLog[]): Map<string, number> {
   const dateMap = new Map<string, number>();
 
   for (const log of reviewLogs) {
@@ -105,8 +105,8 @@ function generateHeatmapData(dateCountMap: Map<string, number>, numWeeks: number
   return weeks;
 }
 
-// Calculate current and longest streaks
-function calculateStreaks(dateCountMap: Map<string, number>): { current: number; longest: number } {
+// Calculate current and longest streaks (exported for Dashboard)
+export function calculateStreaks(dateCountMap: Map<string, number>): { current: number; longest: number } {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -217,13 +217,13 @@ function getIntensityClass(intensity: number, date: string): string {
     return 'bg-muted/50 cursor-default';
   }
 
-  /* data-viz: intentional raw color - heatmap gradient specific to data visualization */
+  /* data-viz: intentional raw color - heatmap gradient using primary/amber tones */
   const classes: Record<number, string> = {
     0: 'bg-muted hover:bg-muted/80',
-    1: 'bg-green-200 dark:bg-green-900 hover:bg-green-300 dark:hover:bg-green-800',
-    2: 'bg-green-400 dark:bg-green-700 hover:bg-green-500 dark:hover:bg-green-600',
-    3: 'bg-green-500 dark:bg-green-600 hover:bg-green-600 dark:hover:bg-green-500',
-    4: 'bg-green-600 dark:bg-green-500 hover:bg-green-700 dark:hover:bg-green-400',
+    1: 'bg-amber-200 dark:bg-amber-900 hover:bg-amber-300 dark:hover:bg-amber-800',
+    2: 'bg-amber-400 dark:bg-amber-700 hover:bg-amber-500 dark:hover:bg-amber-600',
+    3: 'bg-amber-500 dark:bg-amber-600 hover:bg-amber-600 dark:hover:bg-amber-500',
+    4: 'bg-amber-600 dark:bg-amber-500 hover:bg-amber-700 dark:hover:bg-amber-400',
   };
 
   return classes[intensity] || classes[0];

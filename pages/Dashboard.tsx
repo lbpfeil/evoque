@@ -2,9 +2,9 @@ import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useStore } from '../components/StoreContext';
-import { StudyHeatmap } from '../components/StudyHeatmap';
+import { StudyHeatmap, aggregateReviewsByDate, calculateStreaks } from '../components/StudyHeatmap';
 import { PageHeader } from '../components/patterns/PageHeader';
-import { Target, Clock, BookOpen, TrendingUp, Play, Import } from 'lucide-react';
+import { Target, Clock, BookOpen, TrendingUp, Play, Import, Flame } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 
@@ -177,7 +177,11 @@ const Dashboard = () => {
         };
       })[0] || null;
 
-    return { reviewsToday, avgTimeSeconds, topBooksThisMonth, maxReviewsThisMonth, topBookLastMonth };
+    // Streak calculation
+    const dateCountMap = aggregateReviewsByDate(reviewLogs);
+    const streaks = calculateStreaks(dateCountMap);
+
+    return { reviewsToday, avgTimeSeconds, topBooksThisMonth, maxReviewsThisMonth, topBookLastMonth, currentStreak: streaks.current };
   }, [reviewLogs, studyCards, highlights, books]);
 
   // Cards due count
@@ -201,9 +205,20 @@ const Dashboard = () => {
     );
   }
 
+  // Streak display component for header
+  const streakDisplay = (
+    <div className="flex items-center gap-sm bg-primary/10 rounded-lg px-md py-sm">
+      <Flame className="w-6 h-6 text-primary" />
+      <div className="text-right">
+        <p className="text-heading font-bold text-primary leading-none">{analytics.currentStreak}</p>
+        <p className="text-caption text-muted-foreground">{t('streak.days')}</p>
+      </div>
+    </div>
+  );
+
   return (
     <div className="p-md sm:p-lg">
-      <PageHeader title={t('title')} description={t('subtitle')} size="compact" />
+      <PageHeader title={t('title')} description={t('subtitle')} size="compact" actions={streakDisplay} />
 
       <div className="space-y-lg max-w-4xl">
         {/* Quick Study CTA */}
@@ -259,12 +274,12 @@ const Dashboard = () => {
                   <CardContent className="p-md space-y-md">
                     {analytics.topBooksThisMonth.map((book) => (
                       <div key={book.id} className="flex items-center gap-md">
-                        <div className="w-10 h-14 rounded bg-muted flex-shrink-0 overflow-hidden">
+                        <div className="w-12 h-[4.5rem] rounded bg-muted flex-shrink-0 overflow-hidden shadow-sm">
                           {book.coverUrl ? (
                             <img src={book.coverUrl} alt="" className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
-                              <BookOpen className="w-5 h-5 text-muted-foreground/50" />
+                              <BookOpen className="w-6 h-6 text-muted-foreground/50" />
                             </div>
                           )}
                         </div>
@@ -300,7 +315,7 @@ const Dashboard = () => {
                 </div>
                 <Card size="sm" className="h-full">
                   <CardContent className="p-md flex flex-col items-center text-center">
-                    <div className="w-20 h-28 rounded bg-muted overflow-hidden shadow-md mb-md">
+                    <div className="w-24 h-36 rounded bg-muted overflow-hidden shadow-md mb-md">
                       {analytics.topBookLastMonth.coverUrl ? (
                         <img
                           src={analytics.topBookLastMonth.coverUrl}
@@ -309,7 +324,7 @@ const Dashboard = () => {
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <BookOpen className="w-8 h-8 text-muted-foreground/50" />
+                          <BookOpen className="w-10 h-10 text-muted-foreground/50" />
                         </div>
                       )}
                     </div>

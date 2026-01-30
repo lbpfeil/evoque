@@ -1,7 +1,10 @@
 {
   "_meta": "Dashboard page strings (stats, charts, recent books, KPIs)",
   "title": "Dashboard",
-  "subtitle": "Visao geral do seu progresso de leitura e aprendizado",
+  "subtitle": "Visão geral do seu progresso de leitura e aprendizado",
+  "streak": {
+    "days": "dias seguidos"
+  },
   "stats": {
     "books": "Livros",
     "highlights": "Destaques",
