@@ -27,16 +27,16 @@ Requirements for v3.0 release. Each maps to roadmap phases.
 
 ### Dashboard
 
-- [ ] **DASH-01**: Dashboard é a página inicial após login
-- [ ] **DASH-02**: Dashboard tem atalho proeminente para iniciar estudo
-- [ ] **DASH-03**: Dashboard exibe KPIs inteligentes (livro mais revisado, tempo médio, etc)
-- [ ] **DASH-04**: Heatmap de atividade é exibido no Dashboard com design melhorado
+- [x] **DASH-01**: Dashboard é a página inicial após login
+- [x] **DASH-02**: Dashboard tem atalho proeminente para iniciar estudo
+- [x] **DASH-03**: Dashboard exibe KPIs inteligentes (livro mais revisado, tempo médio, etc)
+- [x] **DASH-04**: Heatmap de atividade é exibido no Dashboard com design melhorado
 
 ### Analytics
 
-- [ ] **ANLYT-01**: Tempo gasto em cada card é registrado em review_logs (duration_ms)
-- [ ] **ANLYT-02**: Dashboard mostra métrica de tempo médio de revisão por livro
-- [ ] **ANLYT-03**: Dashboard mostra ranking de livros mais revisados
+- [x] **ANLYT-01**: Tempo gasto em cada card é registrado em review_logs (duration_ms)
+- [x] **ANLYT-02**: Dashboard mostra métrica de tempo médio de revisão por livro
+- [x] **ANLYT-03**: Dashboard mostra ranking de livros mais revisados
 
 ### Auth
 
@@ -106,13 +106,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | STUDY-02 | Phase 12 | Complete |
 | STUDY-03 | Phase 12 | Complete |
 | STUDY-04 | Phase 12 | Complete |
-| DASH-01 | Phase 13 | Pending |
-| DASH-02 | Phase 13 | Pending |
-| DASH-03 | Phase 13 | Pending |
-| DASH-04 | Phase 13 | Pending |
-| ANLYT-01 | Phase 13 | Pending |
-| ANLYT-02 | Phase 13 | Pending |
-| ANLYT-03 | Phase 13 | Pending |
+| DASH-01 | Phase 13 | Complete |
+| DASH-02 | Phase 13 | Complete |
+| DASH-03 | Phase 13 | Complete |
+| DASH-04 | Phase 13 | Complete |
+| ANLYT-01 | Phase 13 | Complete |
+| ANLYT-02 | Phase 13 | Complete |
+| ANLYT-03 | Phase 13 | Complete |
 | SETT-01 | Phase 14 | Pending |
 | SETT-02 | Phase 14 | Pending |
 | SETT-03 | Phase 14 | Pending |
@@ -130,4 +130,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-29*
-*Last updated: 2026-01-29 after initial definition*
+*Last updated: 2026-01-30 after Phase 13 completion*

@@ -95,10 +95,10 @@ Plans:
 **Plans:** 4 plans
 
 Plans:
-- [ ] 13-01-PLAN.md — Database schema + types for duration_ms (ANLYT-01 foundation)
-- [ ] 13-02-PLAN.md — Dashboard page with KPIs, heatmap, top books (DASH-02, DASH-03, DASH-04, ANLYT-02, ANLYT-03)
-- [ ] 13-03-PLAN.md — Time tracking in StudySession (ANLYT-01)
-- [ ] 13-04-PLAN.md — Routing and navigation update (DASH-01)
+- [x] 13-01-PLAN.md — Database schema + types for duration_ms (ANLYT-01 foundation)
+- [x] 13-02-PLAN.md — Dashboard page with KPIs, heatmap, top books (DASH-02, DASH-03, DASH-04, ANLYT-02, ANLYT-03)
+- [x] 13-03-PLAN.md — Time tracking in StudySession (ANLYT-01)
+- [x] 13-04-PLAN.md — Routing and navigation update (DASH-01)
 
 ---
 
@@ -184,4 +184,4 @@ v3.0 is complete when:
 
 ---
 *Roadmap created: 2026-01-29*
-*Last updated: 2026-01-29*
+*Last updated: 2026-01-30*
