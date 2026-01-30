@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-29)
 
 **Core value:** Revisao eficiente de highlights — ajudar usuarios a reter conhecimento dos livros que leem atraves de repeticao espacada (SM-2).
-**Current focus:** v3.0 Features & Polish — Phase 14 (Settings Audit)
+**Current focus:** v3.0 Features & Polish — Phase 15 (Auth Infrastructure)
 
 ## Current Position
 
-Phase: 14 (Settings Audit) — In Progress
-Plan: 2/3 complete
-Status: Plans 14-01 (Settings Bugs) and 14-02 (Test Infrastructure) complete
-Last activity: 2026-01-30 — Completed 14-01-PLAN.md
+Phase: 15 (Auth Infrastructure) — Pending
+Plan: 0/? complete
+Status: Phase 14 (Settings Audit) complete, ready for Phase 15
+Last activity: 2026-01-30 — Completed 14-03-PLAN.md (Settings Logic Tests)
 
-Progress: █████░░░░░ 50% (3/6 phases complete)
+Progress: ██████░░░░ 60% (4/6 phases complete)
 
 ## Milestones
 
@@ -31,7 +31,7 @@ See `.planning/MILESTONES.md` for full history.
 | 11 | Quick Fixes | 8 | Verified |
 | 12 | StudySession UX | 4 | Verified |
 | 13 | Dashboard & Analytics | 7 | Verified |
-| 14 | Settings Audit | 3 | In Progress (2/3 plans) |
+| 14 | Settings Audit | 3 | Complete |
 | 15 | Auth Infrastructure | 3 | Pending |
 | 16 | Landing Page | 3 | Pending |
 
@@ -72,6 +72,8 @@ See `.planning/MILESTONES.md` for full history.
 - ResizeObserver and matchMedia mocked for Radix UI compatibility in tests
 - lib/constants.ts for study defaults (DEFAULT_DAILY_LIMIT, DEFAULT_EASE_FACTOR)
 - Settings cascade pattern: book?.settings > settings.global > DEFAULT_CONSTANT
+- Pure functions for testability - no side effects in settingsLogic.ts
+- toBeCloseTo() for float comparisons to avoid floating-point precision issues
 
 ### Pending Todos
 
@@ -84,5 +86,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-30
-Stopped at: Completed 14-01-PLAN.md (Settings Bug Fixes)
-Resume with: `/gsd:execute-phase 14` (plan 14-03)
+Stopped at: Completed 14-03-PLAN.md (Settings Logic Tests)
+Resume with: `/gsd:execute-phase 15`
