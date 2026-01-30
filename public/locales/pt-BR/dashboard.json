@@ -47,7 +47,7 @@
     "reviewCount_one": "{{count}} revisão"
   },
   "empty": {
-    "title": "Bem-vindo ao Evoque!",
+    "title": "Bem-vindo ao Revision!",
     "message": "Importe seus highlights do Kindle para comecar a estudar.",
     "importButton": "Importar Highlights"
   }

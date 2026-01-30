@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Target, Settings, BookOpen, Highlighter, LogOut, ChevronUp, ChevronLeft, LayoutDashboard } from 'lucide-react';
+import { Target, Settings, Highlighter, LogOut, ChevronUp, ChevronLeft, LayoutDashboard } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from './AuthContext';
@@ -8,6 +8,10 @@ import { useStore } from './StoreContext';
 import { useSidebarContext } from './SidebarContext';
 import { ThemeToggle } from './ThemeToggle';
 import { Button } from './ui/button';
+
+// Fixed icon slot width - matches collapsed sidebar content area
+// Collapsed: w-14 (56px) - px-xs*2 (16px) = 40px
+const ICON_SLOT = "w-10 flex items-center justify-center shrink-0";
 
 const Sidebar = () => {
   const { t } = useTranslation('common');
@@ -37,46 +41,50 @@ const Sidebar = () => {
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 ${isExpanded ? 'w-56' : 'w-14'} bg-sidebar border-r border-sidebar-border text-sidebar-foreground hidden md:flex flex-col z-50 transition-[width] duration-300 ease-in-out overflow-hidden`}
+      className={cn(
+        "fixed inset-y-0 left-0 bg-sidebar border-r border-sidebar-border text-sidebar-foreground hidden md:flex flex-col z-50 transition-[width] duration-300 ease-in-out overflow-hidden",
+        isExpanded ? "w-56" : "w-14"
+      )}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div className={cn(
-        "flex items-center h-14 border-b border-sidebar-border relative",
-        !isExpanded && "justify-center"
-      )}>
-        {/* Logo - centered when collapsed, left-aligned when expanded */}
-        <div className={cn(
-          "p-xs bg-black dark:bg-white text-white dark:text-black rounded-md shrink-0",
-          isExpanded && "ml-sm"
-        )}>
-          <BookOpen className="w-4 h-4" />
+      {/* Header */}
+      <div className="flex items-center h-14 px-xs border-b border-sidebar-border">
+        {/* Logo - fixed slot */}
+        <div className={ICON_SLOT}>
+          <img
+            src="/favicon-evq/favicon-96x96.png"
+            alt="Revision"
+            className="w-7 h-7"
+          />
         </div>
 
-        {/* Texto - fade com opacity, w-0 quando invisível */}
-        <span
-          className={`font-bold text-base tracking-tight ml-sm whitespace-nowrap transition-opacity duration-200 ${isExpanded ? 'opacity-100 delay-75' : 'opacity-0 w-0 overflow-hidden pointer-events-none'}`}
+        {/* App Name + Toggle - fade in/out */}
+        <div
+          className={cn(
+            "flex items-center flex-1 min-w-0 transition-opacity duration-300",
+            isExpanded ? "opacity-100" : "opacity-0 pointer-events-none"
+          )}
         >
-          Kindle Mgr.
-        </span>
-
-        {/* Spacer para empurrar toggle button para direita */}
-        <div className="flex-1" />
-
-        {/* Toggle Button - fade quando collapsed */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleCollapsed}
-          className={`p-xs mr-sm transition-opacity duration-200 shrink-0 ${isExpanded ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-          aria-label={isExpanded ? t('sidebar.collapse') : t('sidebar.expand')}
-          title={isExpanded ? t('sidebar.collapse') : t('sidebar.expand')}
-        >
-          <ChevronLeft className="w-3.5 h-3.5 text-muted-foreground" />
-        </Button>
+          <span className="font-bold text-base tracking-tight whitespace-nowrap">
+            Revision
+          </span>
+          <div className="flex-1" />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleCollapsed}
+            className="p-xs shrink-0"
+            aria-label={t('sidebar.collapse')}
+            title={t('sidebar.collapse')}
+          >
+            <ChevronLeft className="w-3.5 h-3.5 text-muted-foreground" />
+          </Button>
+        </div>
       </div>
 
-      <nav className="flex-1 py-lg px-sm space-y-0.5">
+      {/* Navigation */}
+      <nav className="flex-1 py-lg px-xs space-y-0.5">
         {navItems.map((item) => (
           <NavLink
             key={item.name}
@@ -84,19 +92,23 @@ const Sidebar = () => {
             className={({ isActive }) =>
               cn(
                 "flex items-center py-sm rounded-md text-body font-medium transition-colors duration-200",
-                isExpanded ? "px-sm" : "justify-center w-full",
                 isActive
                   ? "bg-sidebar-accent text-sidebar-accent-foreground"
                   : "text-muted-foreground hover:text-sidebar-accent-foreground hover:bg-sidebar-accent"
               )
             }
           >
-            {/* Ícone - SEMPRE na mesma posição, centralizado quando colapsado */}
-            <item.icon className="w-4 h-4 shrink-0" />
+            {/* Icon - fixed slot */}
+            <div className={ICON_SLOT}>
+              <item.icon className="w-4 h-4" />
+            </div>
 
-            {/* Label - fade com opacity, w-0 quando invisível */}
+            {/* Label - fade in/out */}
             <span
-              className={`ml-sm whitespace-nowrap transition-opacity duration-200 ${isExpanded ? 'opacity-100 delay-75' : 'opacity-0 w-0 overflow-hidden pointer-events-none'}`}
+              className={cn(
+                "whitespace-nowrap transition-opacity duration-300",
+                isExpanded ? "opacity-100" : "opacity-0"
+              )}
             >
               {item.name}
             </span>
@@ -104,24 +116,35 @@ const Sidebar = () => {
         ))}
       </nav>
 
-      {/* Theme Toggle - fade com opacity */}
+      {/* Theme Toggle - only visible when expanded */}
       <div
-        className={`px-sm py-sm border-t border-sidebar-border transition-opacity duration-200 ${isExpanded ? 'opacity-100 delay-75' : 'opacity-0 pointer-events-none'}`}
+        className={cn(
+          "px-xs border-t border-sidebar-border overflow-hidden transition-all duration-300",
+          isExpanded ? "py-sm opacity-100 max-h-20" : "py-0 opacity-0 max-h-0"
+        )}
       >
-        <ThemeToggle />
+        <div className="pl-1">
+          <ThemeToggle />
+        </div>
       </div>
 
       {/* User Menu */}
       <div className="border-t border-sidebar-border">
-        {/* Logout Menu - fade com opacity */}
+        {/* Logout Menu - only visible when expanded and open */}
         <div
-          className={`overflow-hidden transition-all duration-200 ${isExpanded && showLogout ? 'max-h-20 opacity-100' : 'max-h-0 opacity-0'}`}
+          className={cn(
+            "overflow-hidden transition-all duration-300",
+            isExpanded && showLogout ? "max-h-20 opacity-100" : "max-h-0 opacity-0"
+          )}
         >
-          <div className="p-sm border-b border-sidebar-border">
+          <div className="px-xs py-sm border-b border-sidebar-border">
+            <div className={ICON_SLOT}>
+              {/* Empty slot for alignment */}
+            </div>
             <Button
               variant="ghost"
               onClick={handleLogout}
-              className="w-full justify-start gap-sm px-sm py-sm text-caption text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+              className="flex-1 justify-start gap-sm px-sm py-sm text-caption text-muted-foreground hover:text-destructive hover:bg-destructive/10"
             >
               <LogOut className="w-3 h-3" />
               {t('sidebar.logout')}
@@ -130,19 +153,12 @@ const Sidebar = () => {
         </div>
 
         {/* User Info Button */}
-        <Button
-          variant="ghost"
-          onClick={() => setShowLogout(!showLogout)}
-          className={cn(
-            "w-full h-auto py-md transition-colors",
-            isExpanded ? "px-sm justify-start" : "justify-center px-0"
-          )}
+        <button
+          onClick={() => isExpanded && setShowLogout(!showLogout)}
+          className="w-full flex items-center py-md px-xs hover:bg-sidebar-accent/50 transition-colors"
         >
-          <div className={cn(
-            "flex items-center",
-            isExpanded ? "w-full" : "justify-center"
-          )}>
-            {/* Avatar - centered when collapsed */}
+          {/* Avatar - fixed slot */}
+          <div className={ICON_SLOT}>
             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold text-caption shrink-0 overflow-hidden">
               {settings.avatarUrl ? (
                 <img src={settings.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
@@ -150,23 +166,29 @@ const Sidebar = () => {
                 user?.email ? getUserInitials(user.email) : 'U'
               )}
             </div>
+          </div>
 
-            {/* User info - fade com opacity, ml-3 fixo */}
-            <div
-              className={`flex-1 min-w-0 ml-sm transition-opacity duration-200 ${isExpanded ? 'opacity-100 delay-75' : 'opacity-0 w-0 overflow-hidden pointer-events-none'}`}
-            >
-              <p className="text-caption font-medium text-sidebar-foreground truncate whitespace-nowrap">
+          {/* User info - fade in/out */}
+          <div
+            className={cn(
+              "flex items-center flex-1 min-w-0 transition-opacity duration-300",
+              isExpanded ? "opacity-100" : "opacity-0 pointer-events-none"
+            )}
+          >
+            <div className="flex-1 min-w-0 text-left">
+              <p className="text-caption font-medium text-sidebar-foreground truncate">
                 {settings.fullName || user?.email || t('sidebar.defaultUser')}
               </p>
-              <p className="text-overline text-muted-foreground whitespace-nowrap">{t('sidebar.freePlan')}</p>
+              <p className="text-overline text-muted-foreground">{t('sidebar.freePlan')}</p>
             </div>
-
-            {/* ChevronUp - fade com opacity */}
             <ChevronUp
-              className={`w-3.5 h-3.5 text-muted-foreground transition-all duration-200 ${showLogout ? '' : 'rotate-180'} ${isExpanded ? 'opacity-100 ml-sm' : 'opacity-0 w-0 overflow-hidden pointer-events-none'}`}
+              className={cn(
+                "w-3.5 h-3.5 text-muted-foreground transition-transform duration-200 ml-sm",
+                showLogout ? "" : "rotate-180"
+              )}
             />
           </div>
-        </Button>
+        </button>
       </div>
     </aside>
   );

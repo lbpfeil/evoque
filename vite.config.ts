@@ -23,8 +23,8 @@ export default defineConfig(({ mode }) => {
             'favicon-evq/web-app-manifest-512x512.png'
           ],
           manifest: {
-            name: 'EVOQUE - Kindle Highlights',
-            short_name: 'EVOQUE',
+            name: 'Revision - Kindle Highlights',
+            short_name: 'Revision',
             description: 'Study your Kindle highlights with spaced repetition',
             theme_color: '#000000',
             background_color: '#FAFAFA',
