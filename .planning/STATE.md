@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-01-29)
 
 **Core value:** Revisao eficiente de highlights — ajudar usuarios a reter conhecimento dos livros que leem atraves de repeticao espacada (SM-2).
-**Current focus:** v3.0 Features & Polish — Phase 13 (Dashboard & Analytics)
+**Current focus:** v3.0 Features & Polish — Phase 14 (Settings Audit)
 
 ## Current Position
 
-Phase: 13 (Dashboard & Analytics) — VERIFIED ✓
-Plan: 4/4 complete
-Status: Phase verified, 7/7 requirements verified
-Last activity: 2026-01-30 — Phase 13 verified
+Phase: 14 (Settings Audit) — In Progress
+Plan: 2/3 complete
+Status: Plan 14-02 (Test Infrastructure) complete
+Last activity: 2026-01-30 — Completed 14-02-PLAN.md
 
 Progress: █████░░░░░ 50% (3/6 phases complete)
 
@@ -28,10 +28,10 @@ See `.planning/MILESTONES.md` for full history.
 
 | Phase | Name | Reqs | Status |
 |-------|------|------|--------|
-| 11 | Quick Fixes | 8 | ✓ Verified |
-| 12 | StudySession UX | 4 | ✓ Verified |
-| 13 | Dashboard & Analytics | 7 | ✓ Verified |
-| 14 | Settings Audit | 3 | Pending |
+| 11 | Quick Fixes | 8 | Verified |
+| 12 | StudySession UX | 4 | Verified |
+| 13 | Dashboard & Analytics | 7 | Verified |
+| 14 | Settings Audit | 3 | In Progress (2/3 plans) |
 | 15 | Auth Infrastructure | 3 | Pending |
 | 16 | Landing Page | 3 | Pending |
 
@@ -67,6 +67,9 @@ See `.planning/MILESTONES.md` for full history.
 - Sidebar: footer (ThemeToggle + User) absolutely positioned at bottom with fixed height (114px)
 - Sidebar: all elements have explicit heights (h-14 header, h-10 nav items, h-12 theme toggle, h-16 user)
 - Sidebar: only opacity transitions for text, never position/height changes for icons
+- Vitest globals enabled for cleaner test syntax (no imports for describe/it/expect)
+- jsdom environment for DOM testing (React component support)
+- ResizeObserver and matchMedia mocked for Radix UI compatibility in tests
 
 ### Pending Todos
 
@@ -79,5 +82,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-30
-Stopped at: Phase 13 verified, ready for Phase 14
-Resume with: `/gsd:discuss-phase 14`
+Stopped at: Completed 14-02-PLAN.md (Test Infrastructure)
+Resume with: `/gsd:execute-phase 14` (plan 14-03)
