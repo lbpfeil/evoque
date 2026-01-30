@@ -90,6 +90,7 @@ export interface ReviewLog {
   reviewedAt: string;
   interval: number;
   easeFactor: number;
+  durationMs?: number;  // Time taken to respond in milliseconds
 }
 
 export interface DeckStats {
