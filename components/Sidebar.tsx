@@ -83,48 +83,50 @@ const Sidebar = () => {
         </div>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 py-lg px-xs space-y-0.5">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.name}
-            to={item.path}
-            className={({ isActive }) =>
-              cn(
-                "flex items-center py-sm rounded-md text-body font-medium transition-colors duration-200",
-                isActive
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "text-muted-foreground hover:text-sidebar-accent-foreground hover:bg-sidebar-accent"
-              )
-            }
-          >
-            {/* Icon - fixed slot */}
-            <div className={ICON_SLOT}>
-              <item.icon className="w-4 h-4" />
-            </div>
-
-            {/* Label - fade in/out */}
-            <span
-              className={cn(
-                "whitespace-nowrap transition-opacity duration-300",
-                isExpanded ? "opacity-100" : "opacity-0"
-              )}
+      {/* Navigation + Theme Toggle container */}
+      <div className="flex-1 flex flex-col">
+        <nav className="flex-1 py-lg px-xs space-y-0.5">
+          {navItems.map((item) => (
+            <NavLink
+              key={item.name}
+              to={item.path}
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center py-sm rounded-md text-body font-medium transition-colors duration-200",
+                  isActive
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    : "text-muted-foreground hover:text-sidebar-accent-foreground hover:bg-sidebar-accent"
+                )
+              }
             >
-              {item.name}
-            </span>
-          </NavLink>
-        ))}
-      </nav>
+              {/* Icon - fixed slot */}
+              <div className={ICON_SLOT}>
+                <item.icon className="w-4 h-4" />
+              </div>
 
-      {/* Theme Toggle - only visible when expanded */}
-      <div
-        className={cn(
-          "px-xs border-t border-sidebar-border overflow-hidden transition-all duration-300",
-          isExpanded ? "py-sm opacity-100 max-h-20" : "py-0 opacity-0 max-h-0"
-        )}
-      >
-        <div className="pl-1">
-          <ThemeToggle />
+              {/* Label - fade in/out */}
+              <span
+                className={cn(
+                  "whitespace-nowrap transition-opacity duration-300",
+                  isExpanded ? "opacity-100" : "opacity-0"
+                )}
+              >
+                {item.name}
+              </span>
+            </NavLink>
+          ))}
+        </nav>
+
+        {/* Theme Toggle - inside flex container so it doesn't push user menu */}
+        <div
+          className={cn(
+            "px-xs py-sm transition-opacity duration-300",
+            isExpanded ? "opacity-100" : "opacity-0 pointer-events-none"
+          )}
+        >
+          <div className="pl-1">
+            <ThemeToggle />
+          </div>
         </div>
       </div>
 
