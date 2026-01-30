@@ -3,6 +3,7 @@ import { Book, Highlight, StudyCard, StudyStatus, UserSettings, StudySession, Re
 import { generateUUID } from '../services/idUtils';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
+import { DEFAULT_DAILY_LIMIT, DEFAULT_EASE_FACTOR } from '../lib/constants';
 import {
   fromSupabaseBook,
   fromSupabaseHighlight,
@@ -365,7 +366,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
           nextCards.push({
             id: generateUUID(),
             highlightId: correctedHighlight.id,
-            easeFactor: 2.5,
+            easeFactor: DEFAULT_EASE_FACTOR,
             interval: 0,
             repetitions: 0,
             nextReviewDate: new Date().toISOString()
@@ -721,7 +722,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     const book = books.find(b => b.id === highlight.bookId);
     const initialEaseFactor = book?.settings?.initialEaseFactor
       || settings.defaultInitialEaseFactor
-      || 2.5;
+      || DEFAULT_EASE_FACTOR;
 
     // Create new study card
     const newCard: StudyCard = {
@@ -1001,7 +1002,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     // Check daily limit for specific book
     if (bookId) {
       const book = books.find(b => b.id === bookId);
-      const dailyLimit = book?.settings?.dailyReviewLimit || settings.maxReviewsPerDay || 10;
+      const dailyLimit = book?.settings?.dailyReviewLimit || settings.maxReviewsPerDay || DEFAULT_DAILY_LIMIT;
 
       const reviewsToday = dailyProgress.bookReviews[bookId] || 0;
       if (reviewsToday >= dailyLimit) {
@@ -1038,7 +1039,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
 
       // For each book, get cards available today (respecting per-book daily limit)
       books.forEach(book => {
-        const dailyLimit = book.settings?.dailyReviewLimit || settings.maxReviewsPerDay || 10;
+        const dailyLimit = book.settings?.dailyReviewLimit || settings.maxReviewsPerDay || DEFAULT_DAILY_LIMIT;
         const bookCards = getBookCardsDue(book.id);
         const reviewsToday = dailyProgress.bookReviews[book.id] || 0;
 
@@ -1193,7 +1194,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     if (bookId) {
       // Individual book: show remaining cards for today (respecting per-book daily limit)
       const book = books.find(b => b.id === bookId);
-      const dailyLimit = book?.settings?.dailyReviewLimit || settings.maxReviewsPerDay || 10;
+      const dailyLimit = book?.settings?.dailyReviewLimit || settings.maxReviewsPerDay || DEFAULT_DAILY_LIMIT;
       const cards = getBookCardsDue(bookId);
       const today = new Date().toISOString().split('T')[0];
       const reviewsToday = dailyProgress.bookReviews[bookId] || 0;
