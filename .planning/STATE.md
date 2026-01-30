@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-01-29)
 
 **Core value:** Revisao eficiente de highlights — ajudar usuarios a reter conhecimento dos livros que leem atraves de repeticao espacada (SM-2).
-**Current focus:** v3.0 Features & Polish — Phase 12 (StudySession UX)
+**Current focus:** v3.0 Features & Polish — Phase 13 (Dashboard & Analytics)
 
 ## Current Position
 
-Phase: 12 (StudySession UX) — VERIFIED ✓
-Plan: 2/2 complete
-Status: Phase verified, 4/4 requirements verified
-Last activity: 2026-01-29 — Phase 12 verified
+Phase: 13 (Dashboard & Analytics)
+Plan: 1/4 complete
+Status: In progress
+Last activity: 2026-01-30 — Completed 13-01-PLAN.md
 
 Progress: ███░░░░░░░ 33% (2/6 phases complete)
 
@@ -30,7 +30,7 @@ See `.planning/MILESTONES.md` for full history.
 |-------|------|------|--------|
 | 11 | Quick Fixes | 8 | ✓ Verified |
 | 12 | StudySession UX | 4 | ✓ Verified |
-| 13 | Dashboard & Analytics | 7 | Pending |
+| 13 | Dashboard & Analytics | 7 | 1/4 plans |
 | 14 | Settings Audit | 3 | Pending |
 | 15 | Auth Infrastructure | 3 | Pending |
 | 16 | Landing Page | 3 | Pending |
@@ -55,6 +55,7 @@ See `.planning/MILESTONES.md` for full history.
 - Seamless inline editing: bg-transparent + border-dashed border-border/50
 - Auto-resize textareas: height='auto' then scrollHeight on change/focus
 - minHeight: 3rem for empty textarea usability
+- durationMs optional (nullable) for backward compatibility with existing review logs
 
 ### Pending Todos
 
@@ -66,6 +67,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-01-29
-Stopped at: Phase 12 verified, ready for Phase 13
-Resume with: `/gsd:discuss-phase 13`
+Last session: 2026-01-30
+Stopped at: Completed 13-01-PLAN.md (Add Duration Field)
+Resume with: `/gsd:execute-phase 13` (plan 02)
