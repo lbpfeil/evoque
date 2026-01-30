@@ -13,6 +13,7 @@ import { Loader2 } from 'lucide-react';
 import { SpeedInsights } from "@vercel/speed-insights/react"
 
 // Lazy load pages for better performance (code splitting)
+const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Highlights = lazy(() => import('./pages/Highlights'));
 const Study = lazy(() => import('./pages/Study'));
 const Settings = lazy(() => import('./pages/Settings'));
@@ -80,7 +81,8 @@ const ProtectedApp = () => {
         <StoreProvider>
           <AppLayout>
             <Routes>
-              <Route path="/" element={<Navigate to="/study" replace />} />
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/highlights" element={<Highlights />} />
               <Route path="/study" element={<Study />} />
               <Route path="/study/session" element={<StudySession />} />
@@ -88,7 +90,7 @@ const ProtectedApp = () => {
               {/* Redirects for old routes */}
               <Route path="/import" element={<Navigate to="/settings" replace />} />
               <Route path="/library" element={<Navigate to="/settings" replace />} />
-              <Route path="*" element={<Navigate to="/study" replace />} />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </AppLayout>
         </StoreProvider>
