@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { useStore } from '../components/StoreContext';
 import { StudyHeatmap } from '../components/StudyHeatmap';
 import { PageHeader } from '../components/patterns/PageHeader';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Target, Clock, BookOpen, TrendingUp, Play, Import } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
@@ -129,16 +128,21 @@ const Dashboard = () => {
 
     const topBooks = Array.from(bookReviewCounts.entries())
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 5)
+      .slice(0, 3)
       .map(([bookId, count]) => {
         const book = books.find(b => b.id === bookId);
         return {
-          name: book ? (book.title.length > 25 ? book.title.slice(0, 25) + '...' : book.title) : 'Unknown',
+          id: bookId,
+          title: book?.title || 'Unknown',
+          coverUrl: book?.coverUrl,
           reviews: count
         };
       });
 
-    return { reviewsToday, avgTimeSeconds, topBooks };
+    // Calculate max reviews for percentage bars
+    const maxReviews = topBooks.length > 0 ? topBooks[0].reviews : 0;
+
+    return { reviewsToday, avgTimeSeconds, topBooks, maxReviews };
   }, [reviewLogs, studyCards, highlights, books]);
 
   // Cards due count
@@ -209,36 +213,47 @@ const Dashboard = () => {
         {/* Top Books Section */}
         {analytics.topBooks.length > 0 && (
           <section>
-            <h2 className="text-body font-semibold text-foreground mb-md">{t('topBooks.title')}</h2>
+            <div className="flex items-baseline justify-between mb-md">
+              <h2 className="text-body font-semibold text-foreground">{t('topBooks.title')}</h2>
+              <span className="text-caption text-muted-foreground">{t('topBooks.period')}</span>
+            </div>
             <Card size="sm">
-              <CardContent className="p-md">
-                <ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={analytics.topBooks} layout="vertical" margin={{ left: 0, right: 16 }}>
-                    <XAxis type="number" tick={{ fontSize: 12 }} />
-                    <YAxis
-                      type="category"
-                      dataKey="name"
-                      width={150}
-                      tick={{ fontSize: 12 }}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--card))',
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px',
-                        fontSize: '12px'
-                      }}
-                    />
-                    <Bar
-                      dataKey="reviews"
-                      radius={[0, 4, 4, 0]}
-                    >
-                      {analytics.topBooks.map((_, index) => (
-                        <Cell key={`cell-${index}`} fill="hsl(var(--primary))" />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
+              <CardContent className="p-md space-y-md">
+                {analytics.topBooks.map((book) => (
+                  <div key={book.id} className="flex items-center gap-md">
+                    {/* Book Cover */}
+                    <div className="w-10 h-14 rounded bg-muted flex-shrink-0 overflow-hidden">
+                      {book.coverUrl ? (
+                        <img
+                          src={book.coverUrl}
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <BookOpen className="w-5 h-5 text-muted-foreground/50" />
+                        </div>
+                      )}
+                    </div>
+                    {/* Title and Bar */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-caption font-medium text-foreground truncate mb-1">
+                        {book.title}
+                      </p>
+                      <div className="flex items-center gap-sm">
+                        <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-primary rounded-full transition-all"
+                            style={{ width: `${(book.reviews / analytics.maxReviews) * 100}%` }}
+                          />
+                        </div>
+                        <span className="text-caption text-muted-foreground w-8 text-right">
+                          {book.reviews}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </CardContent>
             </Card>
           </section>

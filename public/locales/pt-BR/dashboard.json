@@ -35,7 +35,8 @@
     "noData": "sem dados"
   },
   "topBooks": {
-    "title": "Livros Mais Revisados"
+    "title": "Livros Mais Revisados",
+    "period": "todos os tempos"
   },
   "empty": {
     "title": "Bem-vindo ao Evoque!",
