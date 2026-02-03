@@ -418,6 +418,7 @@ ${currentHighlight.text}`;
                         <div className="flex items-center gap-2.5 flex-1 min-w-0">
                             {currentBook.coverUrl && (
                                 <img
+                                    key={currentBook.id}
                                     src={currentBook.coverUrl}
                                     alt={currentBook.title}
                                     className="w-10 h-14 object-cover rounded-sm shadow-sm flex-shrink-0"
