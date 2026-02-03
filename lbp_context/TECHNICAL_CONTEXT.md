@@ -401,7 +401,7 @@ interval: min 1 day
 
 ## 🎨 UI/UX CONVENTIONS
 
-**⚠️ FULL GUIDELINES:** See `lbp_diretrizes/compact-ui-design-guidelines.md` (550 lines)
+**⚠️ FULL GUIDELINES:** See `lbp_diretrizes/design-system-guide.md` (~600 lines)
 
 ### **Quick Reference: Design System**
 
@@ -438,7 +438,7 @@ Icons: w-3 h-3 (standard), w-2.5 h-2.5 (buttons)
 
 // See lbp_diretrizes/ for full patterns:
 // - modal-pattern.md
-// - compact-ui-design-guidelines.md
+// - design-system-guide.md
 ```
 
 ---
@@ -691,7 +691,7 @@ lbp_context/
 └── HighlightTab-context.md          # ⚠️ Deep dive: Highlights page features (483 lines)
 
 lbp_diretrizes/
-├── compact-ui-design-guidelines.md  # ⚠️ UI/UX standards (550 lines) - v1.1 (2025-12-30)
+├── design-system-guide.md           # ⚠️ UI/UX standards (~600 lines) - v2.0 (2026-01-28)
 └── modal-pattern.md                 # Modal implementation guide
 
 lbp_implementation/
@@ -703,7 +703,7 @@ lbp_implementation/
 - `TECHNICAL_CONTEXT.md`: ✅ **ALWAYS** (primary reference)
 - `spaced-repetition-system.md`: ✅ When working on study system, SM-2, cards, intervals
 - `HighlightTab-context.md`: ✅ When working on Highlights page, filters, tags, stats
-- `compact-ui-design-guidelines.md`: ✅ When working on UI components, styling, layout
+- `design-system-guide.md`: ✅ When working on UI components, styling, layout
 - `id-stability-improvement-options.md`: ✅ When working on import system, deduplication, IDs
 - `prd.md`: ⚠️ **RARELY** - only for product/market context (avoid technical specs)
 
@@ -761,7 +761,7 @@ lbp_implementation/
 2. **UPDATE StoreContext** - add CRUD methods with optimistic UI
 3. **ADD SUPABASE HELPERS** - toSupabase*/fromSupabase* converters
 4. **UPDATE UI** - components consume from useStore() hook
-5. **FOLLOW UI GUIDELINES** - include @lbp_diretrizes/compact-ui-design-guidelines.md for styling
+5. **FOLLOW UI GUIDELINES** - include @lbp_diretrizes/design-system-guide.md for styling
 6. **DOCUMENT EDGE CASES** - add comments for complex logic
 
 ### **When debugging:**

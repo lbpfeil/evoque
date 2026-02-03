@@ -3,6 +3,7 @@ import { Book, Highlight, StudyCard, StudyStatus, UserSettings, StudySession, Re
 import { generateUUID } from '../services/idUtils';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
+import { DEFAULT_DAILY_LIMIT, DEFAULT_EASE_FACTOR } from '../lib/constants';
 import {
   fromSupabaseBook,
   fromSupabaseHighlight,
@@ -42,7 +43,7 @@ interface StoreContextType {
   reloadAllData: () => Promise<void>;
   currentSession: StudySession | null;
   startSession: (bookId?: string) => void;
-  submitReview: (cardId: string, quality: number, previousCard: StudyCard) => Promise<void>;
+  submitReview: (cardId: string, quality: number, previousCard: StudyCard, durationMs?: number) => Promise<void>;
   resetSession: () => void;
   undoLastReview: () => Promise<void>;
   sessionStats: { reviewed: number; correct: number; streak: number };
@@ -365,7 +366,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
           nextCards.push({
             id: generateUUID(),
             highlightId: correctedHighlight.id,
-            easeFactor: 2.5,
+            easeFactor: DEFAULT_EASE_FACTOR,
             interval: 0,
             repetitions: 0,
             nextReviewDate: new Date().toISOString()
@@ -721,7 +722,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     const book = books.find(b => b.id === highlight.bookId);
     const initialEaseFactor = book?.settings?.initialEaseFactor
       || settings.defaultInitialEaseFactor
-      || 2.5;
+      || DEFAULT_EASE_FACTOR;
 
     // Create new study card
     const newCard: StudyCard = {
@@ -790,10 +791,19 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
 
     highlightIds.forEach(highlightId => {
       if (!existingHighlightIds.has(highlightId)) {
+        // Find the highlight's book to get its settings
+        const highlight = highlights.find(h => h.id === highlightId);
+        const book = highlight ? books.find(b => b.id === highlight.bookId) : null;
+
+        // Settings cascade: book override > global > default
+        const initialEaseFactor = book?.settings?.initialEaseFactor
+          || settings.defaultInitialEaseFactor
+          || DEFAULT_EASE_FACTOR;
+
         newCards.push({
           id: generateUUID(),
           highlightId,
-          easeFactor: 2.5,
+          easeFactor: initialEaseFactor,
           interval: 0,
           repetitions: 0,
           nextReviewDate: new Date().toISOString()
@@ -1001,7 +1011,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     // Check daily limit for specific book
     if (bookId) {
       const book = books.find(b => b.id === bookId);
-      const dailyLimit = book?.settings?.dailyReviewLimit || settings.maxReviewsPerDay || 10;
+      const dailyLimit = book?.settings?.dailyReviewLimit || settings.maxReviewsPerDay || DEFAULT_DAILY_LIMIT;
 
       const reviewsToday = dailyProgress.bookReviews[bookId] || 0;
       if (reviewsToday >= dailyLimit) {
@@ -1038,7 +1048,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
 
       // For each book, get cards available today (respecting per-book daily limit)
       books.forEach(book => {
-        const dailyLimit = book.settings?.dailyReviewLimit || settings.maxReviewsPerDay || 10;
+        const dailyLimit = book.settings?.dailyReviewLimit || settings.maxReviewsPerDay || DEFAULT_DAILY_LIMIT;
         const bookCards = getBookCardsDue(book.id);
         const reviewsToday = dailyProgress.bookReviews[book.id] || 0;
 
@@ -1096,7 +1106,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     }
   };
 
-  const submitReview = async (cardId: string, quality: number, previousCard: StudyCard) => {
+  const submitReview = async (cardId: string, quality: number, previousCard: StudyCard, durationMs?: number) => {
     if (!currentSession || !user) return;
 
     const isCorrect = quality >= 3;
@@ -1139,7 +1149,8 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       quality,
       reviewedAt: new Date().toISOString(),
       interval: previousCard.interval,
-      easeFactor: previousCard.easeFactor
+      easeFactor: previousCard.easeFactor,
+      durationMs: durationMs || null  // Add duration to log (null if not provided)
     };
 
     // Optimistic update
@@ -1192,7 +1203,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
     if (bookId) {
       // Individual book: show remaining cards for today (respecting per-book daily limit)
       const book = books.find(b => b.id === bookId);
-      const dailyLimit = book?.settings?.dailyReviewLimit || settings.maxReviewsPerDay || 10;
+      const dailyLimit = book?.settings?.dailyReviewLimit || settings.maxReviewsPerDay || DEFAULT_DAILY_LIMIT;
       const cards = getBookCardsDue(bookId);
       const today = new Date().toISOString().split('T')[0];
       const reviewsToday = dailyProgress.bookReviews[bookId] || 0;

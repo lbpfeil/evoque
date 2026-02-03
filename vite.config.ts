@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
@@ -14,10 +15,17 @@ export default defineConfig(({ mode }) => {
         react(),
         VitePWA({
           registerType: 'autoUpdate',
-          includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+          includeAssets: [
+            'favicon-evq/favicon.ico',
+            'favicon-evq/favicon.svg',
+            'favicon-evq/apple-touch-icon.png',
+            'favicon-evq/favicon-96x96.png',
+            'favicon-evq/web-app-manifest-192x192.png',
+            'favicon-evq/web-app-manifest-512x512.png'
+          ],
           manifest: {
-            name: 'EVOQUE - Kindle Highlights',
-            short_name: 'EVOQUE',
+            name: 'Revision - Kindle Highlights',
+            short_name: 'Revision',
             description: 'Study your Kindle highlights with spaced repetition',
             theme_color: '#000000',
             background_color: '#FAFAFA',
@@ -27,12 +35,12 @@ export default defineConfig(({ mode }) => {
             start_url: '/',
             icons: [
               {
-                src: 'pwa-192x192.png',
+                src: '/favicon-evq/web-app-manifest-192x192.png',
                 sizes: '192x192',
                 type: 'image/png'
               },
               {
-                src: 'pwa-512x512.png',
+                src: '/favicon-evq/web-app-manifest-512x512.png',
                 sizes: '512x512',
                 type: 'image/png',
                 purpose: 'any maskable'
@@ -87,6 +95,19 @@ export default defineConfig(({ mode }) => {
             dead_code: true,
             unused: true,
           }
+        }
+      },
+      test: {
+        globals: true,
+        environment: 'jsdom',
+        setupFiles: './setupTests.ts',
+        include: ['**/*.{test,spec}.{ts,tsx}'],
+        exclude: ['node_modules', 'dist'],
+        coverage: {
+          provider: 'v8',
+          reporter: ['text', 'html'],
+          include: ['services/**', 'components/StoreContext.tsx', 'lib/**'],
+          exclude: ['**/*.d.ts', '**/*.test.{ts,tsx}']
         }
       }
     };

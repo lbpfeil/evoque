@@ -1,12 +1,15 @@
 {
-  "_meta": "Dashboard page strings (stats, charts, recent books)",
+  "_meta": "Dashboard page strings (stats, charts, recent books, KPIs)",
   "title": "Dashboard",
   "subtitle": "Visão geral do seu progresso de leitura e aprendizado",
+  "streak": {
+    "days": "dias seguidos"
+  },
   "stats": {
     "books": "Livros",
     "highlights": "Destaques",
     "toReview": "Para Revisar",
-    "streak": "Sequência",
+    "streak": "Sequencia",
     "streakValue": "{{count}} dias",
     "streakValue_one": "{{count}} dia"
   },
@@ -16,7 +19,36 @@
     "highlightsCount_one": "{{count}} destaque"
   },
   "charts": {
-    "importActivity": "Atividade de Importação",
+    "importActivity": "Atividade de Importacao",
     "highlightsPerBook": "Destaques por Livro"
+  },
+  "quickStudy": {
+    "title": "Pronto para estudar?",
+    "cardsDue": "{{count}} cards para revisar",
+    "cardsDue_one": "{{count}} card para revisar",
+    "noCards": "Nenhum card para revisar hoje",
+    "button": "Estudar"
+  },
+  "kpi": {
+    "cardsDue": "Cards Pendentes",
+    "reviewsToday": "Revisados Hoje",
+    "avgTime": "Tempo Medio",
+    "totalBooks": "Livros",
+    "perCard": "por card",
+    "noData": "sem dados"
+  },
+  "topBooks": {
+    "title": "Mais Revisados",
+    "thisMonth": "este mês",
+    "lastMonthTitle": "Destaque",
+    "lastMonth": "mês passado",
+    "reviews": "revisões",
+    "reviewCount": "{{count}} revisões",
+    "reviewCount_one": "{{count}} revisão"
+  },
+  "empty": {
+    "title": "Bem-vindo ao Revision!",
+    "message": "Importe seus highlights do Kindle para comecar a estudar.",
+    "importButton": "Importar Highlights"
   }
 }

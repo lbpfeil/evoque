@@ -379,7 +379,7 @@ Criar uma ferramenta indispensável para leitores Kindle que valorizam aprendiza
 - `TECHNICAL_CONTEXT.md` - Arquitetura, stack, padrões
 - `spaced-repetition-system.md` - Deep dive no SM-2
 - `HighlightTab-context.md` - Features da aba Highlights
-- `lbp_diretrizes/compact-ui-design-guidelines.md` - UI/UX standards
+- `lbp_diretrizes/design-system-guide.md` - UI/UX standards
 
 ---
 

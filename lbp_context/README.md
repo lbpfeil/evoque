@@ -28,7 +28,7 @@ lbp_context/
 └── prd.md                           📋 Product context (visão, mercado, objetivos)
 
 ../lbp_diretrizes/
-├── compact-ui-design-guidelines.md  🎨 UI/UX Guidelines (550 linhas)
+├── design-system-guide.md           🎨 UI/UX Guidelines (~600 lines) - v2.0 (2026-01-28)
 └── modal-pattern.md                 📦 Padrão de implementação de modais
 ```
 
@@ -44,7 +44,7 @@ lbp_context/
 **Incluir quando relevante:**
 - `spaced-repetition-system.md` - Se trabalhar em study system/SM-2
 - `HighlightTab-context.md` - Se trabalhar em Highlights page
-- `compact-ui-design-guidelines.md` - Se trabalhar em UI/styling
+- `design-system-guide.md` - Se trabalhar em UI/styling
 - `prd.md` - **Raramente** (apenas para contexto de produto/mercado)
 
 **Exemplo de prompt:**
@@ -192,10 +192,10 @@ Documentação específica das features da aba Highlights.
 
 ---
 
-### **🎨 ../lbp_diretrizes/compact-ui-design-guidelines.md**
+### **🎨 ../lbp_diretrizes/design-system-guide.md**
 
 **O QUE É:**
-Guia completo de UI/UX para criar interfaces compactas e consistentes (550 linhas).
+Guia completo de UI/UX para criar interfaces consistentes (~600 lines, v2.0).
 
 **CONTÉM:**
 - Sistema de espaçamento (4px base scale)
@@ -233,7 +233,7 @@ Guia completo de UI/UX para criar interfaces compactas e consistentes (550 linha
 
 **Implementar feature:** `@TECHNICAL_CONTEXT.md` + deep dive se relevante  
 **Bugfix:** `@TECHNICAL_CONTEXT.md` (ver Known Issues)  
-**UI/Styling:** `@TECHNICAL_CONTEXT.md` + `@compact-ui-design-guidelines.md`  
+**UI/Styling:** `@TECHNICAL_CONTEXT.md` + `@design-system-guide.md`  
 **Onboarding:** Leia TECHNICAL_CONTEXT.md + prd.md (visão geral)
 
 ---

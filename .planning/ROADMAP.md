@@ -1,149 +1,192 @@
-# Roadmap: Evoque v2.0 Design System Overhaul
+# Roadmap: Evoque v3.0
 
-## Milestones
-
-- v1.0 UI Overhaul - Phases 1-3 (shipped 2026-01-23) -- see `.planning/milestones/v1.0-ROADMAP.md`
-- v2.0 Design System Overhaul - Phases 4-7 (shipped 2026-01-28)
-- v2.0 Gap Closure - Phases 8-10 (audit-driven)
+**Created:** 2026-01-29
+**Milestone:** v3.0 Features & Polish
+**Phases:** 11-16 (6 phases)
 
 ## Overview
 
-v1.0 shipped a working theme system but no governing design system -- the result is two design languages coexisting accidentally (Compact vs Generous). v2.0 resolves this by picking the winner (Generous), encoding it into rigid design tokens, standardizing every component against those tokens, migrating all 7 pages to canonical patterns, and documenting the final system in a single concise guide. The goal is Apple-level visual uniformity: zero surprises across any page.
+| Phase | Name | Requirements | Goal |
+|-------|------|--------------|------|
+| 11 | Quick Fixes | FIX-01 → FIX-08 | Limpar terreno com fixes rápidos |
+| 12 | StudySession UX | STUDY-01 → STUDY-04 | UX refinada na sessão de estudo |
+| 13 | Dashboard & Analytics | DASH-01 → DASH-04, ANLYT-01 → ANLYT-03 | Nova home com KPIs inteligentes |
+| 14 | Settings Audit | SETT-01 → SETT-03 | Validar e testar configurações |
+| 15 | Auth Infrastructure | AUTH-01 → AUTH-03 | Auth production-ready |
+| 16 | Landing Page | LAND-01 → LAND-03 | Marketing para aquisição |
 
-## Phases
+## Phase 11: Quick Fixes
 
-- [x] **Phase 4: Token Foundation** - Define the rigid design vocabulary (typography, spacing, radius, shadows, motion, icons, z-index, color rules)
-- [x] **Phase 5: Component Standardization** - Audit and align all components to the token system
-- [x] **Phase 6: Page Migration** - Migrate all 7 pages + modals to canonical patterns
-- [x] **Phase 7: Design Guide** - Document the living design system in a single concise guide
-- [x] **Phase 8: Token Consumption** - Migrate all pages from raw values to semantic spacing, typography, and color tokens
-- [x] **Phase 9: Component Adoption** - Replace raw HTML elements with standardized shadcn components across all pages
-- [ ] **Phase 10: Bug Fixes & Guide Accuracy** - Fix color rendering bugs, update guide to match reality, clean up stale references
+**Goal:** Resolver todos os quick fixes e bugs pendentes para limpar o terreno antes das features maiores.
 
-## Phase Details
+**Requirements:**
+- FIX-01: Badge "Aprendendo" tem contraste adequado
+- FIX-02: Título/autor na tabela Study maiores
+- FIX-03: Heatmap mais largo + círculos maiores
+- FIX-04: Heatmap conta datas corretamente (timezone fix)
+- FIX-05: Ícones sidebar centralizados quando retraída
+- FIX-06: Favicon atualizado (favicon-evq)
+- FIX-07: Settings com largura mais estreita
+- FIX-08: hooks/useTheme.ts removido
 
-### Phase 4: Token Foundation
-**Goal**: Every visual decision has exactly one correct answer encoded in the design system
-**Depends on**: v1.0 complete (Phases 1-3)
-**Requirements**: TOKENS-01, TOKENS-02, TOKENS-03, TOKENS-04, TOKENS-05, TOKENS-06, TOKENS-07, TOKENS-08
-**Success Criteria** (what must be TRUE):
-  1. Typography uses exactly 6 named sizes -- applying any text style is a lookup, not a judgment call
-  2. Spacing uses semantic tokens on a 4px grid -- no arbitrary pixel values for padding/gaps/margins
-  3. Border-radius, shadows, and icon sizes each have exactly 3 allowed values
-  4. Motion tokens (durations + easings) exist as CSS custom properties usable in any transition
-  5. Raw color classes (text-zinc-*, bg-gray-*) are identified and mapped to semantic replacements
-**Plans**: 2 plans
+**Success Criteria:**
+1. Badge amarelo legível em ambos os temas (light/dark)
+2. Títulos de livros na tabela Study são facilmente legíveis
+3. Heatmap ocupa largura generosa e círculos são visualmente distintos
+4. Revisões de hoje aparecem na data correta no heatmap
+5. Sidebar retraída tem ícones perfeitamente centralizados
+
+**Depends on:** None
+**Plans:** 3 plans
+
 Plans:
-- [x] 04-01-PLAN.md -- Define CSS custom properties and Tailwind config for all token scales (typography, spacing, radius, shadows, motion, icons, z-index)
-- [x] 04-02-PLAN.md -- Audit raw color classes and define semantic replacements (status tokens + migration map)
-
-### Phase 5: Component Standardization
-**Goal**: Every shadcn component has one canonical way to be used, and new composition components exist for repeated patterns
-**Depends on**: Phase 4
-**Requirements**: COMP-01, COMP-02, COMP-03, COMP-04
-**Success Criteria** (what must be TRUE):
-  1. All shadcn component defaults (button height, input height, card radius, badge size) match the token system
-  2. A PageHeader component provides the canonical page layout template (title, description, actions)
-  3. A data table pattern exists as a reusable structure with consistent header, row, and hover styles
-  4. CVA variants for Button, Input, Badge, and Card reflect the token system (no arbitrary overrides needed)
-**Plans**: 2 plans
-Plans:
-- [x] 05-01-PLAN.md -- Fix shadcn component CVA defaults (Button compact variant, Input h-8, Badge verification)
-- [x] 05-02-PLAN.md -- Create PageHeader and DataTable composition patterns
-
-### Phase 6: Page Migration
-**Goal**: Every page in the app looks like it was designed by the same person on the same day
-**Depends on**: Phase 5
-**Requirements**: PAGE-01, PAGE-02, PAGE-03, PAGE-04, PAGE-05, PAGE-06, PAGE-07, PAGE-08
-**Success Criteria** (what must be TRUE):
-  1. All 7 pages use PageHeader with consistent title size, spacing, and layout
-  2. All tables use token-aligned typography and consistent header/hover styling
-  3. StudySession preserves its serif font and intentional deviations while using system tokens for everything else
-  4. All modals share consistent header style (DialogTitle text-heading) and button placement
-  5. No arbitrary typography values (text-[Xpx]) remain in any page or component file
-**Plans**: 7 plans
-Plans:
-- [x] 06-01-PLAN.md -- Migrate Login and Dashboard to token typography and PageHeader
-- [x] 06-02-PLAN.md -- Migrate Study, DeckTable, and StudyStatusBadge to token patterns
-- [x] 06-03-PLAN.md -- Migrate Settings to PageHeader and eliminate 15+ arbitrary values
-- [x] 06-04-PLAN.md -- Migrate StudySession while preserving intentional deviations
-- [x] 06-05-PLAN.md -- Migrate Highlights and HighlightTableRow to PageHeader and token typography
-- [x] 06-06-PLAN.md -- Migrate modals, sidebar, bottom nav, and tag selector to token typography
-- [x] 06-07-PLAN.md -- Comprehensive audit and visual verification
-
-### Phase 7: Design Guide
-**Goal**: A new developer (or future Claude) can build a page that looks identical to existing ones without asking questions
-**Depends on**: Phase 6
-**Requirements**: DOC-01, DOC-02
-**Success Criteria** (what must be TRUE):
-  1. A single design guide document exists with token tables, component usage rules, and page layout patterns
-  2. The old compact-ui-design-guidelines.md is replaced/updated to reflect the actual system (no contradictions with codebase)
-**Plans**: 1 plan
-Plans:
-- [x] 07-01-PLAN.md -- Write comprehensive design system guide and replace outdated compact-ui-design-guidelines.md
-
-### Phase 8: Token Consumption
-**Goal**: Every page uses semantic tokens for spacing, typography, and color -- no raw numeric values remain
-**Depends on**: Phase 7 (all original phases complete)
-**Requirements**: TOKENS-02 (full satisfaction), TOKENS-08 (full satisfaction)
-**Gap Closure**: Closes audit gaps -- spacing tokens BROKEN, color tokens BROKEN, typography flow PARTIAL
-**Success Criteria** (what must be TRUE):
-  1. All pages use semantic spacing tokens (p-sm, gap-md, mb-lg) instead of raw numeric values (p-4, gap-6, mb-3)
-  2. All status/tag/success colors use semantic tokens (bg-status-new, bg-tag-global, text-success) instead of raw Tailwind colors
-  3. All remaining raw text-sm/text-xs usages are replaced with text-body/text-caption tokens
-  4. Zero raw numeric spacing, raw color, or raw typography values in page files
-**Plans**: 5 plans
-Plans:
-- [x] 08-01-PLAN.md -- Migrate Settings and Login to semantic spacing, typography, and color tokens
-- [x] 08-02-PLAN.md -- Migrate StudySession and Study to semantic tokens (with deviation preservation)
-- [x] 08-03-PLAN.md -- Migrate Highlights and Dashboard to semantic tokens
-- [x] 08-04-PLAN.md -- Migrate tag, deck, status, and highlight components to semantic tokens
-- [x] 08-05-PLAN.md -- Migrate remaining components (nav, modals, popovers, error, data-viz) and run final audit
-
-### Phase 9: Component Adoption
-**Goal**: Every interactive element uses the standardized shadcn component -- no raw HTML buttons or inputs remain
-**Depends on**: Phase 8
-**Requirements**: COMP-01 (full adoption), COMP-03 (adopt or remove DataTable)
-**Gap Closure**: Closes audit gaps -- Button BROKEN, DataTable ORPHANED
-**Success Criteria** (what must be TRUE):
-  1. All pages use `<Button>` component instead of raw `<button>` elements
-  2. All pages use `<Input>` component instead of raw `<input>` elements where applicable
-  3. DataTable is either adopted by DeckTable/other tables or removed if unnecessary
-  4. No raw `<button>` with manual styling remains in any page file
-**Plans**: 5 plans
-Plans:
-- [x] 09-01-PLAN.md — Migrate Login, Sidebar, ThemeToggle, ErrorBoundary to Button/Input
-- [x] 09-02-PLAN.md — Migrate Settings to Button/Input (file inputs, checkboxes)
-- [x] 09-03-PLAN.md — Migrate StudySession and Study (preserve rating button deviations)
-- [x] 09-04-PLAN.md — Migrate Highlights to Button/Input (comboboxes, filters, bulk actions)
-- [x] 09-05-PLAN.md — Complete component Button adoption + remove orphaned DataTable
-
-### Phase 10: Bug Fixes & Guide Accuracy
-**Goal**: The design guide accurately describes the codebase and all functional bugs are fixed
-**Depends on**: Phase 9
-**Requirements**: DOC-01 (accuracy update)
-**Gap Closure**: Closes audit gaps -- hsl/oklch bug, guide aspirational rules, stale references
-**Success Criteria** (what must be TRUE):
-  1. hsl() wrapping of oklch() values fixed in DashboardCharts, HighlightEditModal, HighlightHistoryModal
-  2. Design guide "Rules and Anti-Patterns" section reflects actual codebase state (not aspirational)
-  3. Secondary reference files (lbp_context/) no longer reference deleted compact-ui-design-guidelines.md
-  4. Motion/z-index/icon tokens documented as "infrastructure-ready" in guide (not forced consumption)
-Plans: TBD
-
-## Progress
-
-**Execution Order:** Phase 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
-
-| Phase | Milestone | Plans Complete | Status | Completed |
-|-------|-----------|----------------|--------|-----------|
-| 4. Token Foundation | v2.0 | 2/2 | Complete | 2026-01-27 |
-| 5. Component Standardization | v2.0 | 2/2 | Complete | 2026-01-28 |
-| 6. Page Migration | v2.0 | 7/7 | Complete | 2026-01-28 |
-| 7. Design Guide | v2.0 | 1/1 | Complete | 2026-01-28 |
-| 8. Token Consumption | v2.0 | 5/5 | Complete | 2026-01-28 |
-| 9. Component Adoption | v2.0 | 5/5 | Complete | 2026-01-28 |
-| 10. Bug Fixes & Guide Accuracy | v2.0 | 0/? | Not Started | -- |
+- [x] 11-01-PLAN.md — Badge contrast, deck table text, Settings width (FIX-01, FIX-02, FIX-07)
+- [x] 11-02-PLAN.md — Heatmap size increase and timezone fix (FIX-03, FIX-04)
+- [x] 11-03-PLAN.md — Sidebar centering, favicon update, dead code removal (FIX-05, FIX-06, FIX-08)
 
 ---
-*Created: 2026-01-27*
-*Milestone: v2.0 Design System Overhaul*
+
+## Phase 12: StudySession UX
+
+**Goal:** Refinar a experiência de estudo com edição inline clean e navegação melhorada.
+
+**Requirements:**
+- STUDY-01: Capa do livro maior
+- STUDY-02: Botão voltar como seta primária
+- STUDY-03: Botões editar padronizados
+- STUDY-04: Edição inline clean (mesma fonte, tamanho, posição)
+
+**Success Criteria:**
+1. Capa do livro é visualmente proeminente na sessão
+2. Navegação de volta é intuitiva (seta) sem texto redundante
+3. Botões de editar destaque e nota têm aparência consistente
+4. Ao editar, texto permanece no mesmo lugar com mesma fonte — experiência seamless
+
+**Depends on:** Phase 11 (clean slate)
+**Plans:** 2 plans
+
+Plans:
+- [x] 12-01-PLAN.md — Book cover, back button, edit button styling (STUDY-01, STUDY-02, STUDY-03)
+- [x] 12-02-PLAN.md — Seamless inline editing for highlight and note (STUDY-04)
+
+---
+
+## Phase 13: Dashboard & Analytics
+
+**Goal:** Criar Dashboard como página inicial com KPIs inteligentes e time tracking.
+
+**Requirements:**
+- DASH-01: Dashboard como home
+- DASH-02: Atalho para estudar
+- DASH-03: KPIs inteligentes
+- DASH-04: Heatmap melhorado
+- ANLYT-01: Time tracking (duration_ms em review_logs)
+- ANLYT-02: Tempo médio por livro
+- ANLYT-03: Livros mais revisados
+
+**Success Criteria:**
+1. Após login, usuário vê Dashboard (não Study)
+2. Botão proeminente permite iniciar estudo com 1 clique
+3. KPIs mostram insights acionáveis (não apenas números)
+4. Time tracking funciona: cada review registra duração
+5. Métricas de tempo e ranking de livros são calculadas corretamente
+
+**Depends on:** Phase 12 (Study UX finalized)
+**Plans:** 4 plans
+
+Plans:
+- [x] 13-01-PLAN.md — Database schema + types for duration_ms (ANLYT-01 foundation)
+- [x] 13-02-PLAN.md — Dashboard page with KPIs, heatmap, top books (DASH-02, DASH-03, DASH-04, ANLYT-02, ANLYT-03)
+- [x] 13-03-PLAN.md — Time tracking in StudySession (ANLYT-01)
+- [x] 13-04-PLAN.md — Routing and navigation update (DASH-01)
+
+---
+
+## Phase 14: Settings Audit
+
+**Goal:** Validar e testar todas as funcionalidades de configurações.
+
+**Requirements:**
+- SETT-01: Lógica de Opções de Estudo validada
+- SETT-02: Limites diários por livro funcionam
+- SETT-03: Testes automatizados
+
+**Success Criteria:**
+1. Opções de Estudo aplicam corretamente às sessões
+2. Limites diários por livro respeitados (não revisa mais que o limite)
+3. Testes cobrem casos críticos e passam consistentemente
+4. Nenhuma regressão nas funcionalidades existentes
+
+**Depends on:** Phase 13 (Dashboard done, app stable)
+**Plans:** 3 plans
+
+Plans:
+- [x] 14-01-PLAN.md — Fix settings bugs (ease factor cascade, daily limit check, constants) (SETT-01, SETT-02)
+- [x] 14-02-PLAN.md — Set up Vitest testing infrastructure (SETT-03 foundation)
+- [x] 14-03-PLAN.md — Write tests for SM-2 and settings logic (SETT-03)
+
+---
+
+## Phase 15: Auth Infrastructure
+
+**Goal:** Implementar auth production-ready com Google OAuth e password flows.
+
+**Requirements:**
+- AUTH-01: Reset password via email
+- AUTH-02: Login com Google
+- AUTH-03: Alterar senha nas configurações
+
+**Success Criteria:**
+1. "Esqueci senha" envia email funcional com link de reset
+2. Botão "Entrar com Google" funciona end-to-end
+3. Usuário logado consegue alterar senha nas Settings
+4. Todos os flows funcionam em produção (não só local)
+
+**Depends on:** Phase 14 (Settings stable)
+**Estimated plans:** 3-4
+
+---
+
+## Phase 16: Landing Page
+
+**Goal:** Criar landing page de marketing para aquisição de novos usuários.
+
+**Requirements:**
+- LAND-01: Hero section com CTA
+- LAND-02: Features showcase
+- LAND-03: Footer com links
+
+**Success Criteria:**
+1. Visitante não logado vê landing page atraente
+2. CTA leva para cadastro/login
+3. Features do app são apresentadas de forma clara
+4. Footer tem links funcionais (mesmo que placeholder para termos/privacidade)
+
+**Depends on:** Phase 15 (Auth complete for signup flow)
+**Estimated plans:** 2-3
+
+---
+
+## Milestone Completion Criteria
+
+v3.0 is complete when:
+1. All 28 requirements marked complete in REQUIREMENTS.md
+2. All 6 phases verified
+3. App functions as: Landing → Login/Signup → Dashboard → Study
+4. Auth flows work in production
+5. No critical bugs or regressions
+
+---
+
+## Risk Assessment
+
+| Risk | Mitigation |
+|------|------------|
+| Supabase Auth complexity | Use official docs, test each flow individually |
+| Time tracking accuracy | Start timer on card show, stop on rating submit |
+| Heatmap timezone bug | Use UTC consistently, convert only for display |
+| Inline edit complexity | Prototype in isolation before integrating |
+
+---
+*Roadmap created: 2026-01-29*
+*Last updated: 2026-01-30*

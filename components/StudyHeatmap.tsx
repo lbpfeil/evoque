@@ -17,17 +17,23 @@ interface StudyHeatmapProps {
   reviewLogs: ReviewLog[];
 }
 
-// Aggregate reviews by date (using local timezone)
-function aggregateReviewsByDate(reviewLogs: ReviewLog[]): Map<string, number> {
+// Format date to YYYY-MM-DD using local timezone (not UTC)
+// This is critical for streak calculations - toISOString() uses UTC which causes timezone bugs
+function formatLocalDate(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+// Aggregate reviews by date (using local timezone) - exported for Dashboard
+export function aggregateReviewsByDate(reviewLogs: ReviewLog[]): Map<string, number> {
   const dateMap = new Map<string, number>();
 
   for (const log of reviewLogs) {
     // Convert to local date (JavaScript Date uses browser's timezone)
     const localDate = new Date(log.reviewedAt);
-    const year = localDate.getFullYear();
-    const month = String(localDate.getMonth() + 1).padStart(2, '0');
-    const day = String(localDate.getDate()).padStart(2, '0');
-    const dateKey = `${year}-${month}-${day}`;
+    const dateKey = formatLocalDate(localDate);
 
     dateMap.set(dateKey, (dateMap.get(dateKey) || 0) + 1);
   }
@@ -99,16 +105,16 @@ function generateHeatmapData(dateCountMap: Map<string, number>, numWeeks: number
   return weeks;
 }
 
-// Calculate current and longest streaks
-function calculateStreaks(dateCountMap: Map<string, number>): { current: number; longest: number } {
+// Calculate current and longest streaks (exported for Dashboard)
+export function calculateStreaks(dateCountMap: Map<string, number>): { current: number; longest: number } {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // Get today and yesterday keys
-  const todayKey = today.toISOString().split('T')[0];
+  // Get today and yesterday keys using local timezone (not UTC)
+  const todayKey = formatLocalDate(today);
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayKey = yesterday.toISOString().split('T')[0];
+  const yesterdayKey = formatLocalDate(yesterday);
 
   // Calculate current streak
   let currentStreak = 0;
@@ -211,13 +217,14 @@ function getIntensityClass(intensity: number, date: string): string {
     return 'bg-muted/50 cursor-default';
   }
 
-  /* data-viz: intentional raw color - heatmap gradient specific to data visualization */
+  /* data-viz: intentional raw color - heatmap gradient using primary/amber tones */
+  /* Inverted: lighter = more reviews (in both light and dark modes) */
   const classes: Record<number, string> = {
     0: 'bg-muted hover:bg-muted/80',
-    1: 'bg-green-200 dark:bg-green-900 hover:bg-green-300 dark:hover:bg-green-800',
-    2: 'bg-green-400 dark:bg-green-700 hover:bg-green-500 dark:hover:bg-green-600',
-    3: 'bg-green-500 dark:bg-green-600 hover:bg-green-600 dark:hover:bg-green-500',
-    4: 'bg-green-600 dark:bg-green-500 hover:bg-green-700 dark:hover:bg-green-400',
+    1: 'bg-amber-600 dark:bg-amber-900 hover:bg-amber-700 dark:hover:bg-amber-800',
+    2: 'bg-amber-500 dark:bg-amber-700 hover:bg-amber-600 dark:hover:bg-amber-600',
+    3: 'bg-amber-400 dark:bg-amber-600 hover:bg-amber-500 dark:hover:bg-amber-500',
+    4: 'bg-amber-200 dark:bg-amber-500 hover:bg-amber-300 dark:hover:bg-amber-400',
   };
 
   return classes[intensity] || classes[0];
@@ -231,10 +238,10 @@ function formatDate(dateStr: string): string {
 
 // Calculate number of weeks based on container width
 function calculateNumWeeks(containerWidth: number): number {
-  // Cell size (10px) + gap (2px) = 12px per week column
-  // Day labels take ~14px, padding ~24px
-  const availableWidth = containerWidth - 38; // 14px labels + 24px padding
-  const weekWidth = 12; // 10px cell + 2px gap
+  // Cell size (14px) + gap (2px) = 16px per week column
+  // Day labels take ~18px, padding ~24px
+  const availableWidth = containerWidth - 42; // 18px labels + 24px padding
+  const weekWidth = 16; // 14px cell + 2px gap
   const maxWeeks = Math.floor(availableWidth / weekWidth);
 
   // Clamp between 14 and 52 weeks (3-12 months)
@@ -336,7 +343,7 @@ export const StudyHeatmap: React.FC<StudyHeatmapProps> = ({ reviewLogs }) => {
               {dayLabels.map((day, i) => (
                 <div
                   key={i}
-                  className="w-2.5 h-2.5 text-[8px] text-muted-foreground flex items-center justify-center"
+                  className="w-3.5 h-3.5 text-[10px] text-muted-foreground flex items-center justify-center"
                 >
                   {i % 2 === 1 ? day : ''}
                 </div>
@@ -349,7 +356,7 @@ export const StudyHeatmap: React.FC<StudyHeatmapProps> = ({ reviewLogs }) => {
                 {week.days.map((day, dayIndex) => (
                   <div
                     key={dayIndex}
-                    className={`w-2.5 h-2.5 rounded-sm cursor-pointer transition-colors ${getIntensityClass(day.intensity, day.date)}`}
+                    className={`w-3.5 h-3.5 rounded-sm cursor-pointer transition-colors ${getIntensityClass(day.intensity, day.date)}`}
                     onMouseEnter={(e) => handleCellHover(e, day)}
                     onMouseLeave={() => setTooltip(null)}
                   />
@@ -363,8 +370,8 @@ export const StudyHeatmap: React.FC<StudyHeatmapProps> = ({ reviewLogs }) => {
             {monthLabels.map((label, i) => (
               <div
                 key={i}
-                className="text-[8px] text-muted-foreground"
-                style={{ width: `${label.span * 12}px` }}
+                className="text-[10px] text-muted-foreground"
+                style={{ width: `${label.span * 16}px` }}
               >
                 {label.name}
               </div>

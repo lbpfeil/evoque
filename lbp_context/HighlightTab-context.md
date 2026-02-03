@@ -443,12 +443,12 @@ const filteredAndSortedHighlights = useMemo(() => {
 - `components/HighlightHistoryModal.tsx` - Study stats
 
 ### Context Files
-- `context/compact-ui-design-guidelines.md` - Design system
+- `lbp_diretrizes/design-system-guide.md` - Design system
 - `types.ts` - TypeScript definitions
 - `components/StoreContext.tsx` - Data management
 
 ### Style References
-- Follow patterns from `compact-ui-design-guidelines.md`
+- Follow patterns from `design-system-guide.md`
 - Maintain consistency with other tabs (Dashboard, Study, Books)
 
 ---

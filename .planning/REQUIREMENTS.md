@@ -1,106 +1,133 @@
-# Requirements: Evoque v2.0 Design System Overhaul
+# Requirements: Evoque v3.0
 
-**Defined:** 2026-01-27
-**Core Value:** Consistencia obsessiva -- cada elemento visual identico ao equivalente em qualquer pagina. Zero surpresas visuais.
-**Design Language:** Generous (Dashboard/Highlights style -- titulos grandes, espacamento generoso, containers arredondados)
+**Defined:** 2026-01-29
+**Core Value:** Revisão eficiente de highlights — ajudar usuários a reter conhecimento dos livros que leem através de repetição espaçada (SM-2).
 
 ## v1 Requirements
 
-### Design Tokens (TOKENS)
+Requirements for v3.0 release. Each maps to roadmap phases.
 
-- [ ] **TOKENS-01**: Escala tipografica com 6 tamanhos nomeados e regras estritas por contexto (display, title, heading, body, caption, overline)
-- [x] **TOKENS-02**: Escala de espacamento com 8 tokens semanticos em grid de 4px
-- [ ] **TOKENS-03**: Escala de border-radius com exatamente 3 valores (sm, md, lg)
-- [ ] **TOKENS-04**: Escala de shadows com exatamente 3 elevacoes
-- [ ] **TOKENS-05**: Motion tokens -- 3 duracoes + 3 easings como CSS custom properties
-- [ ] **TOKENS-06**: Escala de icones com exatamente 3 tamanhos (14px, 16px, 20px)
-- [ ] **TOKENS-07**: Sistema de z-index com 7 camadas semanticas
-- [x] **TOKENS-08**: Regras de uso de cor -- banir classes raw (text-zinc-*), forcar uso semantico (text-foreground, text-muted-foreground)
+### Quick Fixes
 
-### Components (COMP)
+- [x] **FIX-01**: Badge "Aprendendo" tem contraste adequado contra o fundo do botão
+- [x] **FIX-02**: Título e autor dos livros na tabela Study têm tamanho legível
+- [x] **FIX-03**: Heatmap é mais largo e círculos são maiores
+- [x] **FIX-04**: Heatmap conta datas corretamente (fix timezone bug)
+- [x] **FIX-05**: Ícones da sidebar ficam centralizados quando retraída
+- [x] **FIX-06**: Favicon atualizado para novo design (favicon-evq)
+- [x] **FIX-07**: Páginas de Settings têm largura mais estreita
+- [x] **FIX-08**: Arquivo hooks/useTheme.ts removido (não usado)
 
-- [x] **COMP-01**: Auditar todos os componentes shadcn e corrigir defaults para match com design system (altura de botoes, inputs, etc.)
-- [x] **COMP-02**: Criar componente PageHeader -- template canonico de layout de pagina
-- [x] **COMP-03**: Criar padrao de data table padronizado -- estrutura de tabela reutilizavel unica
-- [x] **COMP-04**: Ajustar variantes CVA dos componentes (Button, Input, Badge, Card) para refletir tokens
+### StudySession UX
 
-### Page Migration (PAGE)
+- [x] **STUDY-01**: Capa do livro é exibida em tamanho maior
+- [x] **STUDY-02**: Botão "Voltar aos decks" é uma seta com cor primária
+- [x] **STUDY-03**: Botões de editar destaque e nota são padronizados (mesmo estilo)
+- [x] **STUDY-04**: Edição de destaque/nota é inline clean (mesma fonte, tamanho, posição)
 
-- [x] **PAGE-01**: Migrar Dashboard para padroes canonicos (tokens, PageHeader, estilo Generous)
-- [x] **PAGE-02**: Migrar Highlights para padroes canonicos
-- [x] **PAGE-03**: Migrar Study para padroes canonicos
-- [x] **PAGE-04**: Migrar StudySession para padroes canonicos (preservar fonte serif e desvios intencionais)
-- [x] **PAGE-05**: Migrar BookDetails para padroes canonicos
-- [x] **PAGE-06**: Migrar Settings para padroes canonicos
-- [x] **PAGE-07**: Migrar Login para padroes canonicos
-- [x] **PAGE-08**: Padronizar todos os modais e popovers para padroes consistentes
+### Dashboard
 
-### Documentation (DOC)
+- [x] **DASH-01**: Dashboard é a página inicial após login
+- [x] **DASH-02**: Dashboard tem atalho proeminente para iniciar estudo
+- [x] **DASH-03**: Dashboard exibe KPIs inteligentes (livro mais revisado, tempo médio, etc)
+- [x] **DASH-04**: Heatmap de atividade é exibido no Dashboard com design melhorado
 
-- [x] **DOC-01**: Criar guia de design system enxuto (documento unico: tokens + uso de componentes + padroes de pagina)
-- [x] **DOC-02**: Substituir/atualizar compact-ui-design-guidelines.md existente com guia atualizado
+### Analytics
+
+- [x] **ANLYT-01**: Tempo gasto em cada card é registrado em review_logs (duration_ms)
+- [x] **ANLYT-02**: Dashboard mostra métrica de tempo médio de revisão por livro
+- [x] **ANLYT-03**: Dashboard mostra ranking de livros mais revisados
+
+### Auth
+
+- [ ] **AUTH-01**: Usuário pode resetar senha via link enviado por email
+- [ ] **AUTH-02**: Usuário pode fazer login com conta Google
+- [ ] **AUTH-03**: Usuário logado pode alterar senha nas configurações
+
+### Settings Audit
+
+- [x] **SETT-01**: Lógica de Opções de Estudo está validada e funcionando corretamente
+- [x] **SETT-02**: Limites diários de revisão por livro funcionam conforme esperado
+- [x] **SETT-03**: Testes automatizados cobrem funcionalidades críticas de Settings
+
+### Landing Page
+
+- [ ] **LAND-01**: Landing page tem hero section com título chamativo e CTA de cadastro
+- [ ] **LAND-02**: Landing page mostra principais funcionalidades do app
+- [ ] **LAND-03**: Landing page tem footer com links (contato, termos, privacidade)
 
 ## v2 Requirements
 
-### Enforcement (ENFORCE)
+Deferred to future release. Tracked but not in current roadmap.
 
-- **ENFORCE-01**: ESLint com eslint-plugin-tailwindcss e regra no-arbitrary-value para banir valores arbitrarios
-- **ENFORCE-02**: Restricao do tailwind.config.js (theme.fontSize override) para expor apenas tokens permitidos
-- **ENFORCE-03**: Extensao do tailwind-merge para reconhecer classes de font-size customizadas
+### Social
 
-### Advanced Patterns (ADV)
+- **SOCL-01**: Landing page tem seção de testimonials/social proof
+- **SOCL-02**: Usuário pode compartilhar estatísticas de estudo
 
-- **ADV-01**: Interactive state matrix -- todos os estados definidos para cada elemento interativo
-- **ADV-02**: Empty state pattern -- template canonico para estados vazios
-- **ADV-03**: Density context system para excecoes (Study compacto vs Dashboard generoso)
+### Auth Extended
+
+- **AUTH-04**: Login com Apple
+- **AUTH-05**: Login com GitHub
+
+### Export
+
+- **EXPRT-01**: Usuário pode exportar highlights como JSON
+- **EXPRT-02**: Usuário pode exportar highlights como CSV
 
 ## Out of Scope
 
+Explicitly excluded. Documented to prevent scope creep.
+
 | Feature | Reason |
 |---------|--------|
-| Storybook | Desnecessario para developer solo -- guia markdown e suficiente |
-| W3C Design Tokens | Over-engineering para 7 paginas |
-| Tailwind v4 migration | Risco desnecessario -- v3 atende perfeitamente |
-| @tailwindcss/typography | App e data-dense, nao content-heavy |
-| Responsive typography com clamp() | Tamanhos fixos sao apropriados para app data-dense |
-| Token pipeline automation | Manual e suficiente para este tamanho de projeto |
-| Redesign da estetica | Warm/friendly ja definido no v1.0 -- foco e consistencia |
-| Novas features funcionais | Escopo e visual/padroes, nao funcionalidades |
+| Parsers de importação | Já funcionam, não mexer |
+| Lógica SM-2 | Já funciona, algoritmo estável |
+| OAuth além de Google | Google cobre 90% dos usuários |
+| Mobile app nativo | Web-first, PWA já funciona |
+| Redesign estético | warm/friendly definido no v1.0 |
+| Real-time sync | Complexidade desnecessária para app single-user |
 
 ## Traceability
 
+Which phases cover which requirements. Updated during roadmap creation.
+
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TOKENS-01 | Phase 4 | Complete |
-| TOKENS-02 | Phase 4 + Phase 8 | Complete |
-| TOKENS-03 | Phase 4 | Complete |
-| TOKENS-04 | Phase 4 | Complete |
-| TOKENS-05 | Phase 4 | Complete |
-| TOKENS-06 | Phase 4 | Complete |
-| TOKENS-07 | Phase 4 | Complete |
-| TOKENS-08 | Phase 4 + Phase 8 | Complete |
-| COMP-01 | Phase 5 + Phase 9 | Complete |
-| COMP-02 | Phase 5 | Complete |
-| COMP-03 | Phase 5 + Phase 9 | Complete (removed -- orphaned, YAGNI) |
-| COMP-04 | Phase 5 | Complete |
-| PAGE-01 | Phase 6 | Complete |
-| PAGE-02 | Phase 6 | Complete |
-| PAGE-03 | Phase 6 | Complete |
-| PAGE-04 | Phase 6 | Complete |
-| PAGE-05 | Phase 6 | Complete |
-| PAGE-06 | Phase 6 | Complete |
-| PAGE-07 | Phase 6 | Complete |
-| PAGE-08 | Phase 6 | Complete |
-| DOC-01 | Phase 7 + **Phase 10** | Partial (guide documents aspirational state) |
-| DOC-02 | Phase 7 | Complete |
+| FIX-01 | Phase 11 | Complete |
+| FIX-02 | Phase 11 | Complete |
+| FIX-03 | Phase 11 | Complete |
+| FIX-04 | Phase 11 | Complete |
+| FIX-05 | Phase 11 | Complete |
+| FIX-06 | Phase 11 | Complete |
+| FIX-07 | Phase 11 | Complete |
+| FIX-08 | Phase 11 | Complete |
+| STUDY-01 | Phase 12 | Complete |
+| STUDY-02 | Phase 12 | Complete |
+| STUDY-03 | Phase 12 | Complete |
+| STUDY-04 | Phase 12 | Complete |
+| DASH-01 | Phase 13 | Complete |
+| DASH-02 | Phase 13 | Complete |
+| DASH-03 | Phase 13 | Complete |
+| DASH-04 | Phase 13 | Complete |
+| ANLYT-01 | Phase 13 | Complete |
+| ANLYT-02 | Phase 13 | Complete |
+| ANLYT-03 | Phase 13 | Complete |
+| SETT-01 | Phase 14 | Complete |
+| SETT-02 | Phase 14 | Complete |
+| SETT-03 | Phase 14 | Complete |
+| AUTH-01 | Phase 15 | Pending |
+| AUTH-02 | Phase 15 | Pending |
+| AUTH-03 | Phase 15 | Pending |
+| LAND-01 | Phase 16 | Pending |
+| LAND-02 | Phase 16 | Pending |
+| LAND-03 | Phase 16 | Pending |
 
 **Coverage:**
-- v1 requirements: 22 total
-- Mapped to phases: 22
-- Fully satisfied: 21
-- Partial (gap closure needed): 1 (DOC-01)
-- Unmapped: 0
+- v1 requirements: 28 total
+- Mapped to phases: 28
+- Unmapped: 0 ✓
 
 ---
-*Requirements defined: 2026-01-27*
-*Last updated: 2026-01-28 -- Phase 9 complete (COMP-01, COMP-03 fully satisfied)*
+*Requirements defined: 2026-01-29*
+*Last updated: 2026-01-30 after Phase 14 completion*

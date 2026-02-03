@@ -46,13 +46,13 @@ export const DeckTable: React.FC<DeckTableProps> = ({ decks, onDeckClick }) => {
                         {/* Deck Name */}
                         <div className="min-w-0">
                             <div className={cn(
-                                "text-body sm:text-caption text-foreground truncate",
+                                "text-body text-foreground truncate",
                                 deck.isAllBooks && "font-semibold"
                             )}>
                                 {deck.title}
                             </div>
                             {deck.author && (
-                                <div className="text-caption sm:text-overline text-muted-foreground truncate">
+                                <div className="text-caption text-muted-foreground truncate">
                                     {deck.author}
                                 </div>
                             )}

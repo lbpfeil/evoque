@@ -8,6 +8,7 @@ import { Button } from '../components/ui/button';
 import { ArrowLeft, CheckCircle, Edit2, Clock, Trash2, Tag as TagIcon, Copy } from 'lucide-react';
 import { calculateNextReview } from '../services/sm2';
 import { StudyCard } from '../types';
+import { DEFAULT_DAILY_LIMIT } from '../lib/constants';
 
 // Determine card status for visual indicator (aligned with getDeckStats)
 function getCardStatus(card: StudyCard, t: (key: string) => string): { status: 'new' | 'learning' | 'review'; color: string; label: string } {
@@ -31,6 +32,7 @@ const StudySession = () => {
         highlights,
         books,
         tags,
+        settings,
         updateCard,
         updateHighlight,
         currentSession,
@@ -54,6 +56,7 @@ const StudySession = () => {
     const [showAllTags, setShowAllTags] = useState(false);
     const [showTagSelector, setShowTagSelector] = useState(false);
     const [justCopied, setJustCopied] = useState(false);
+    const [cardShowTime, setCardShowTime] = useState<number>(Date.now());
 
     // Derived state from session
     const queueIds = currentSession ? currentSession.cardIds : [];
@@ -85,11 +88,12 @@ const StudySession = () => {
         }
     }, [isLoaded, deckId]);
 
-    // Reset showAnswer when card changes (prevents flashing next card's answer)
+    // Reset showAnswer and timer when card changes (prevents flashing next card's answer)
     useEffect(() => {
         setShowAnswer(false);
         setIsEditingHighlight(false);
         setIsEditingNote(false);
+        setCardShowTime(Date.now());  // Reset timer for new card
     }, [currentCardId]);
 
     const handleResponse = useCallback(async (quality: number) => {
@@ -97,6 +101,9 @@ const StudySession = () => {
         if (!currentCard || isSubmittingResponse) return;
 
         setIsSubmittingResponse(true);
+
+        // Calculate duration for this card
+        const durationMs = Date.now() - cardShowTime;
 
         // Save previous state BEFORE updating
         const previousCard = { ...currentCard };
@@ -108,7 +115,7 @@ const StudySession = () => {
         // Both functions do optimistic updates internally, so UI updates immediately
         Promise.allSettled([
             updateCard(updatedCard),
-            submitReview(currentCard.id, quality, previousCard)
+            submitReview(currentCard.id, quality, previousCard, durationMs)
         ]).then(results => {
             // Log failures but don't block UI
             results.forEach((result, idx) => {
@@ -123,7 +130,7 @@ const StudySession = () => {
 
         // Note: showAnswer reset handled by useEffect on currentCardId change
         // UI continues immediately - next card loads without waiting for DB
-    }, [currentCard, isSubmittingResponse, updateCard, submitReview]);
+    }, [currentCard, isSubmittingResponse, updateCard, submitReview, cardShowTime]);
 
     const handleSaveHighlight = useCallback(async () => {
         if (!currentHighlight) return;
@@ -273,9 +280,11 @@ ${currentHighlight.text}`;
 
     // No cards available
     if (!currentSession || queueIds.length === 0) {
-        // Check if daily limit was reached
+        // Check if daily limit was reached - use actual book/global limit
         const reviewsToday = deckId ? getReviewsToday(deckId) : 0;
-        const isDailyLimitReached = deckId && reviewsToday >= 10;
+        const book = deckId ? books.find(b => b.id === deckId) : null;
+        const dailyLimit = book?.settings?.dailyReviewLimit || settings.maxReviewsPerDay || DEFAULT_DAILY_LIMIT;
+        const isDailyLimitReached = deckId && reviewsToday >= dailyLimit;
 
         return (
             <div className="h-screen flex flex-col items-center justify-center text-center space-y-lg">
@@ -357,11 +366,12 @@ ${currentHighlight.text}`;
                 <div className="flex items-center justify-between">
                     <Button
                         variant="ghost"
+                        size="icon"
                         onClick={handleBack}
-                        className="flex items-center gap-xxs min-h-[40px] sm:min-h-0"
+                        className="min-h-[40px] min-w-[40px]"
+                        title={t('actions.backToDecks')}
                     >
-                        <ArrowLeft className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-muted-foreground" />
-                        <span className="text-caption text-muted-foreground hidden sm:inline">{t('actions.backToDecks')}</span>
+                        <ArrowLeft className="w-5 h-5 text-primary" />
                     </Button>
 
                     <div className="text-caption text-muted-foreground">
@@ -421,7 +431,7 @@ ${currentHighlight.text}`;
                                     key={currentBook.id}
                                     src={currentBook.coverUrl}
                                     alt={currentBook.title}
-                                    className="w-10 h-14 object-cover rounded-sm shadow-sm flex-shrink-0"
+                                    className="w-16 h-24 object-cover rounded-sm shadow-sm flex-shrink-0"
                                 />
                             )}
                             {/* Card Status Indicator */}
@@ -526,22 +536,30 @@ ${currentHighlight.text}`;
 
                     {/* Highlight Text - Editable */}
                     {isEditingHighlight ? (
-                        <div className="bg-muted border border-border rounded-md p-md">
-                            <div className="flex items-center justify-between mb-xs">
-                                <span className="text-overline uppercase tracking-wider text-muted-foreground font-semibold">
-                                    {t('edit.highlightLabel')}
-                                </span>
-                                {isSaving && <Clock className="w-3 h-3 text-muted-foreground animate-spin" />}
-                            </div>
+                        <div className="relative">
                             <textarea
                                 value={editedHighlight}
-                                onChange={(e) => setEditedHighlight(e.target.value)}
+                                onChange={(e) => {
+                                    setEditedHighlight(e.target.value);
+                                    // Auto-resize
+                                    e.target.style.height = 'auto';
+                                    e.target.style.height = `${e.target.scrollHeight}px`;
+                                }}
                                 onBlur={handleSaveHighlight}
-                                className="w-full bg-background border border-input rounded-sm p-sm text-base text-foreground focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring resize-none font-serif"
-                                rows={6}
+                                className="w-full text-lg md:text-xl font-serif italic text-foreground leading-relaxed text-justify bg-transparent border border-dashed border-border/50 rounded-sm resize-none focus:outline-none focus:ring-0 -m-1 p-1"
+                                style={{ minHeight: '3rem' }}
                                 autoFocus
+                                onFocus={(e) => {
+                                    // Set initial height on focus
+                                    e.target.style.height = 'auto';
+                                    e.target.style.height = `${e.target.scrollHeight}px`;
+                                }}
                             />
-                            <p className="text-overline text-muted-foreground mt-xs">{t('edit.saveHint')}</p>
+                            {isSaving && (
+                                <div className="absolute top-0 right-0">
+                                    <Clock className="w-3 h-3 text-muted-foreground animate-spin" />
+                                </div>
+                            )}
                         </div>
                     ) : (
                         <div className="relative group">
@@ -566,23 +584,38 @@ ${currentHighlight.text}`;
                     {showAnswer && (
                         <div className="animate-fade-in-up">
                             {isEditingNote ? (
-                                <div className="bg-muted border border-border rounded-md p-md">
-                                    <div className="flex items-center justify-between mb-xs">
-                                        <span className="text-overline uppercase tracking-wider text-muted-foreground font-semibold">
-                                            {t('edit.noteLabel')}
-                                        </span>
-                                        {isSaving && <Clock className="w-3 h-3 text-muted-foreground animate-spin" />}
+                                <div className="mt-xl">
+                                    <div className="flex items-center justify-center gap-md mb-xl select-none">
+                                        <div className="h-px flex-1 bg-border"></div>
+                                        <span className="font-serif italic text-lg text-border">~</span>
+                                        <div className="h-px flex-1 bg-border"></div>
                                     </div>
-                                    <textarea
-                                        value={editedNote}
-                                        onChange={(e) => setEditedNote(e.target.value)}
-                                        onBlur={handleSaveNote}
-                                        className="w-full bg-background border border-input rounded-sm p-sm text-body text-foreground focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring resize-none"
-                                        rows={6}
-                                        placeholder={t('edit.notePlaceholder')}
-                                        autoFocus
-                                    />
-                                    <p className="text-overline text-muted-foreground mt-xs">{t('edit.saveHint')}</p>
+                                    <div className="relative">
+                                        <textarea
+                                            value={editedNote}
+                                            onChange={(e) => {
+                                                setEditedNote(e.target.value);
+                                                // Auto-resize
+                                                e.target.style.height = 'auto';
+                                                e.target.style.height = `${e.target.scrollHeight}px`;
+                                            }}
+                                            onBlur={handleSaveNote}
+                                            placeholder={t('edit.notePlaceholder')}
+                                            className="w-full text-lg md:text-xl font-serif text-foreground leading-relaxed text-justify whitespace-pre-wrap bg-transparent border border-dashed border-border/50 rounded-sm resize-none focus:outline-none focus:ring-0 -m-1 p-1"
+                                            style={{ minHeight: '3rem' }}
+                                            autoFocus
+                                            onFocus={(e) => {
+                                                // Set initial height on focus
+                                                e.target.style.height = 'auto';
+                                                e.target.style.height = `${e.target.scrollHeight}px`;
+                                            }}
+                                        />
+                                        {isSaving && (
+                                            <div className="absolute top-0 right-0">
+                                                <Clock className="w-3 h-3 text-muted-foreground animate-spin" />
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             ) : (
                                 <div className="mt-xl">
@@ -613,12 +646,12 @@ ${currentHighlight.text}`;
                                         {currentHighlight.note && (
                                             <Button
                                                 variant="ghost"
+                                                size="icon"
                                                 onClick={handleEditNote}
-                                                className="absolute -top-lg right-0 p-xxs opacity-0 group-hover:opacity-100 flex items-center gap-1.5 h-auto"
-                                                title={t('note.editHint')}
+                                                className="absolute -top-xxs -right-xxs p-xxs opacity-0 group-hover:opacity-100"
+                                                title={t('note.edit')}
                                             >
-                                                <span className="text-overline uppercase tracking-wider font-medium">{t('note.edit')}</span>
-                                                <Edit2 className="w-3 h-3" />
+                                                <Edit2 className="w-3.5 h-3.5" />
                                             </Button>
                                         )}
                                     </div>
@@ -639,7 +672,7 @@ ${currentHighlight.text}`;
                                 onClick={() => setShowAnswer(true)}
                                 className="w-full py-3.5 sm:py-sm min-h-[48px] active:scale-[0.99]"
                             >
-                                {t('actions.revealAnswer')} <span className="hidden sm:inline text-caption text-muted-foreground ml-xs">{t('keyboard.revealHint')}</span>
+                                {t('actions.revealAnswer')} <span className="hidden sm:inline text-caption text-primary-foreground/60 ml-xs">{t('keyboard.revealHint')}</span>
                             </Button>
                         ) : (
                             <>

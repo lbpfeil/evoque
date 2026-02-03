@@ -29,7 +29,7 @@ export const StudyStatusBadge: React.FC<StudyStatusBadgeProps> = ({ status, clas
             );
         case 'new':
             return (
-                <span className={cn("inline-flex items-center gap-xxs px-xs py-0.5 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 text-overline uppercase font-bold tracking-wider rounded-full border border-yellow-100 dark:border-yellow-800/50", className)}>
+                <span className={cn("inline-flex items-center gap-xxs px-xs py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-900 dark:text-amber-200 text-overline uppercase font-bold tracking-wider rounded-full border border-amber-200 dark:border-amber-700/50", className)}>
                     <Circle className="w-3 h-3 fill-current" />
                     {t('status.new')}
                 </span>
