@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-01-29)
 
 **Core value:** Revisao eficiente de highlights — ajudar usuarios a reter conhecimento dos livros que leem atraves de repeticao espacada (SM-2).
-**Current focus:** v3.0 Features & Polish — Phase 15 (Auth Infrastructure)
+**Current focus:** v4.0 Quality of Life & Physical Books
 
 ## Current Position
 
-Phase: 14 (Settings Audit) — VERIFIED ✓
-Plan: 3/3 complete
-Status: Phase verified, 3/3 requirements verified
-Last activity: 2026-01-30 — Phase 14 verified
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-02-03 — Milestone v4.0 started
 
-Progress: ██████░░░░ 67% (4/6 phases complete)
+Progress: ░░░░░░░░░░ 0%
 
 ## Milestones
 
@@ -24,16 +24,13 @@ Progress: ██████░░░░ 67% (4/6 phases complete)
 
 See `.planning/MILESTONES.md` for full history.
 
-## v3.0 Phase Summary
+## v4.0 Phase Summary
 
 | Phase | Name | Reqs | Status |
 |-------|------|------|--------|
-| 11 | Quick Fixes | 8 | Verified |
-| 12 | StudySession UX | 4 | Verified |
-| 13 | Dashboard & Analytics | 7 | Verified |
-| 14 | Settings Audit | 3 | ✓ Verified |
-| 15 | Auth Infrastructure | 3 | Pending |
-| 16 | Landing Page | 3 | Pending |
+| 17 | TBD | — | Pending |
+
+(Phases will be defined after requirements and roadmap creation)
 
 ## Accumulated Context
 
@@ -85,6 +82,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-01-30
-Stopped at: Phase 14 verified, ready for Phase 15
-Resume with: `/gsd:discuss-phase 15`
+Last session: 2026-02-03
+Stopped at: Milestone v4.0 initialized, defining requirements
+Resume with: Continue with requirements definition

@@ -4,17 +4,17 @@
 
 Um app de flashcards para revisão de highlights de leitura (React 19 + TypeScript + Tailwind + shadcn/ui + Supabase). App funcional com design system completo (v2.0). Próximo foco: Dashboard inteligente, auth robusto, e landing page de marketing.
 
-## Current Milestone: v3.0 Features & Polish
+## Current Milestone: v4.0 Quality of Life & Physical Books
 
-**Goal:** Transformar o app de funcional para completo — Dashboard como home com KPIs inteligentes, auth production-ready, UX refinada no StudySession, e landing page para aquisição de usuários.
+**Goal:** Melhorar performance geral da aplicação, adicionar sistema de notificações push para engajamento, e implementar OCR para importação de highlights de livros físicos.
 
 **Target features:**
-- Dashboard como página inicial com KPIs disruptivos e atalho para estudar
-- Time tracking por card persistido no banco para analytics
-- Edição inline clean no StudySession (mesma fonte/posição)
-- Auth completo: esqueci senha, login Google, alterar senha
-- Landing page de marketing para visitantes não logados
-- Quick fixes: contraste, heatmap, sidebar, favicon, settings width
+- Performance optimization: profiling extenso, lazy loading, code splitting
+- Skeletons para loading states em todas as páginas
+- Push notifications (PWA): lembrete diário se não estudou, resumo semanal
+- OCR de livros físicos: tirar fotos de páginas com marca-texto → extrair highlights
+- Detecção automática de texto marcado por cor de marca-texto
+- Fluxo batch de captura de fotos com revisão opcional
 
 ## Core Value
 
@@ -45,22 +45,22 @@ Um app de flashcards para revisão de highlights de leitura (React 19 + TypeScri
 
 ### Active
 
-- [ ] Quick fixes: contraste badge, título tabela Study, heatmap, sidebar, favicon, settings width
-- [ ] Bug fix: contagem de data do heatmap (timezone issue)
-- [ ] StudySession UX: capa maior, botão voltar como seta, edição inline clean
-- [ ] Dashboard como home com KPIs inteligentes e atalho para estudar
-- [ ] Time tracking por card persistido em review_logs
-- [ ] Settings audit: validar lógica de Opções de Estudo, escrever testes
-- [ ] Auth infrastructure: esqueci senha, login Google, alterar senha
-- [ ] Landing page de marketing para visitantes não logados
+- [ ] Performance optimization: profiling, lazy loading, code splitting, memoization
+- [ ] Skeleton components para loading states fluidos
+- [ ] Push notifications (PWA): lembrete diário, resumo semanal
+- [ ] OCR de livros físicos: captura de fotos, detecção de marca-texto, extração de texto
+- [ ] Fluxo de importação para livros físicos (novo ou existente)
+- [ ] Tela de revisão de highlights extraídos por OCR
 
 ### Out of Scope
 
-- Parsers de importação (My Clippings, PDF, Anki) — já funcionam, não mexer
+- Parsers de importação existentes (My Clippings, PDF, Anki) — já funcionam, não mexer
 - Lógica do SM-2 (algoritmo de repetição espaçada) — já funciona
 - Redesign da estética — warm/friendly já está definido pelo v1.0
 - OAuth além de Google (Apple, GitHub) — Google cobre 90% dos usuários
 - Mobile app nativo — web-first, PWA já funciona
+- Notificações por email — push notifications são suficientes para v4.0
+- Seleção manual de texto em fotos — detecção por cor é o foco
 
 ## Context
 
@@ -88,11 +88,16 @@ Um app de flashcards para revisão de highlights de leitura (React 19 + TypeScri
 - Settings.tsx — importação, preferências
 - Login.tsx — autenticação
 
-**v3.0 additions:**
+**v3.0 additions (shipped):**
 - Dashboard.tsx — nova home com KPIs e atalho para estudar
-- LandingPage.tsx — marketing para visitantes não logados
 - Nova coluna `duration_ms` em `review_logs` para time tracking
-- Supabase Auth: Google OAuth, password reset flow
+- Vitest testing infrastructure
+
+**v4.0 additions (planned):**
+- OCR service integration para extração de texto de fotos
+- Push notification service worker
+- Skeleton components para loading states
+- PhysicalBookImport.tsx — fluxo de importação de livros físicos
 
 ## Constraints
 
@@ -116,12 +121,13 @@ Um app de flashcards para revisão de highlights de leitura (React 19 + TypeScri
 | "Generous" design language wins | Dashboard/Highlights style (big titles, generous spacing) | ✓ Good |
 | Button 'compact' (h-8) como default | Todos os usages existentes especificam size explícito | ✓ Good |
 | DataTable removido (YAGNI) | 0 imports após 3+ semanas | ✓ Good |
-| Dashboard removido | Será recriado com novas features no próximo milestone | — Pending |
-| Dashboard como home | Usuário vê KPIs primeiro, atalho rápido para estudar | — Pending |
-| Time tracking persistido | Analytics de longo prazo, métricas inteligentes | — Pending |
-| Edição inline clean | Mesma fonte/posição, UX seamless durante revisão | — Pending |
-| Só Google OAuth | Cobre 90% dos usuários, mais simples | — Pending |
-| Landing page separada | Marketing para aquisição, não mistura com app | — Pending |
+| Dashboard como home | Usuário vê KPIs primeiro, atalho rápido para estudar | ✓ Good |
+| Time tracking persistido | Analytics de longo prazo, métricas inteligentes | ✓ Good |
+| Edição inline clean | Mesma fonte/posição, UX seamless durante revisão | ✓ Good |
+| Performance primeiro | Base sólida antes de features novas | — Pending |
+| Push notifications (não email) | PWA-native, funciona offline | — Pending |
+| OCR por cor de marca-texto | Detecção automática, sem seleção manual | — Pending |
+| Batch photo capture | Tira várias fotos, processa no final | — Pending |
 
 ---
-*Last updated: 2026-01-29 after v3.0 milestone initialization*
+*Last updated: 2026-02-03 after v4.0 milestone initialization*
