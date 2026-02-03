@@ -1,79 +1,72 @@
-# Requirements: Evoque v3.0
+# Requirements: Revision v4.0
 
-**Defined:** 2026-01-29
+**Defined:** 2026-02-03
 **Core Value:** Revisão eficiente de highlights — ajudar usuários a reter conhecimento dos livros que leem através de repetição espaçada (SM-2).
 
 ## v1 Requirements
 
-Requirements for v3.0 release. Each maps to roadmap phases.
+Requirements for v4.0 release. Each maps to roadmap phases.
 
-### Quick Fixes
+### Performance
 
-- [x] **FIX-01**: Badge "Aprendendo" tem contraste adequado contra o fundo do botão
-- [x] **FIX-02**: Título e autor dos livros na tabela Study têm tamanho legível
-- [x] **FIX-03**: Heatmap é mais largo e círculos são maiores
-- [x] **FIX-04**: Heatmap conta datas corretamente (fix timezone bug)
-- [x] **FIX-05**: Ícones da sidebar ficam centralizados quando retraída
-- [x] **FIX-06**: Favicon atualizado para novo design (favicon-evq)
-- [x] **FIX-07**: Páginas de Settings têm largura mais estreita
-- [x] **FIX-08**: Arquivo hooks/useTheme.ts removido (não usado)
+- [ ] **PERF-01**: Páginas são carregadas via lazy loading (code splitting por rota)
+- [ ] **PERF-02**: Dashboard exibe skeleton loader enquanto dados carregam
+- [ ] **PERF-03**: Highlights exibe skeleton loader enquanto dados carregam
+- [ ] **PERF-04**: Modais pesados (OCR, TagManager) são carregados via lazy loading
+- [ ] **PERF-05**: Rotas adjacentes são pré-carregadas no hover de links de navegação
 
-### StudySession UX
+### Service Worker
 
-- [x] **STUDY-01**: Capa do livro é exibida em tamanho maior
-- [x] **STUDY-02**: Botão "Voltar aos decks" é uma seta com cor primária
-- [x] **STUDY-03**: Botões de editar destaque e nota são padronizados (mesmo estilo)
-- [x] **STUDY-04**: Edição de destaque/nota é inline clean (mesma fonte, tamanho, posição)
+- [ ] **SW-01**: PWA migrada para estratégia injectManifest (custom service worker)
+- [ ] **SW-02**: Funcionalidade offline existente preservada após migração
 
-### Dashboard
+### Push Notifications
 
-- [x] **DASH-01**: Dashboard é a página inicial após login
-- [x] **DASH-02**: Dashboard tem atalho proeminente para iniciar estudo
-- [x] **DASH-03**: Dashboard exibe KPIs inteligentes (livro mais revisado, tempo médio, etc)
-- [x] **DASH-04**: Heatmap de atividade é exibido no Dashboard com design melhorado
+- [ ] **PUSH-01**: Usuário pode habilitar notificações com fluxo de permissão suave (soft ask)
+- [ ] **PUSH-02**: Usuário recebe lembrete diário em horário configurável (default 18:00)
+- [ ] **PUSH-03**: Notificação diária mostra contagem de cards pendentes
+- [ ] **PUSH-04**: Usuário recebe alerta de streak quando está prestes a quebrar sequência
+- [ ] **PUSH-05**: Usuário recebe resumo semanal com estatísticas
+- [ ] **PUSH-06**: Configurações de notificação disponíveis na página Settings
+- [ ] **PUSH-07**: Badge count atualizado no ícone PWA com cards pendentes
 
-### Analytics
+### OCR Infrastructure
 
-- [x] **ANLYT-01**: Tempo gasto em cada card é registrado em review_logs (duration_ms)
-- [x] **ANLYT-02**: Dashboard mostra métrica de tempo médio de revisão por livro
-- [x] **ANLYT-03**: Dashboard mostra ranking de livros mais revisados
+- [ ] **OCR-01**: Usuário pode acessar importação de livro físico via Settings
+- [ ] **OCR-02**: Usuário pode selecionar livro existente ou criar novo para importação
+- [ ] **OCR-03**: Câmera abre para captura de fotos (com fallback para file picker)
+- [ ] **OCR-04**: Usuário pode capturar múltiplas fotos em batch
+- [ ] **OCR-05**: Texto é extraído das fotos via Tesseract.js
+- [ ] **OCR-06**: Usuário pode revisar e editar texto extraído antes de salvar
 
-### Auth
+### OCR Enhancement
 
-- [ ] **AUTH-01**: Usuário pode resetar senha via link enviado por email
-- [ ] **AUTH-02**: Usuário pode fazer login com conta Google
-- [ ] **AUTH-03**: Usuário logado pode alterar senha nas configurações
-
-### Settings Audit
-
-- [x] **SETT-01**: Lógica de Opções de Estudo está validada e funcionando corretamente
-- [x] **SETT-02**: Limites diários de revisão por livro funcionam conforme esperado
-- [x] **SETT-03**: Testes automatizados cobrem funcionalidades críticas de Settings
-
-### Landing Page
-
-- [ ] **LAND-01**: Landing page tem hero section com título chamativo e CTA de cadastro
-- [ ] **LAND-02**: Landing page mostra principais funcionalidades do app
-- [ ] **LAND-03**: Landing page tem footer com links (contato, termos, privacidade)
+- [ ] **OCR-07**: Sistema detecta automaticamente texto marcado com marca-texto amarelo
+- [ ] **OCR-08**: Sistema detecta automaticamente texto marcado com marca-texto verde
+- [ ] **OCR-09**: Sistema detecta automaticamente texto marcado com marca-texto rosa
+- [ ] **OCR-10**: Preview dos highlights detectados antes de confirmar importação
 
 ## v2 Requirements
 
 Deferred to future release. Tracked but not in current roadmap.
 
-### Social
+### OCR Advanced
 
-- **SOCL-01**: Landing page tem seção de testimonials/social proof
-- **SOCL-02**: Usuário pode compartilhar estatísticas de estudo
+- **OCR-11**: Detecção de número de página das fotos
+- **OCR-12**: Reconhecimento de capa/código de barras para metadata automático
+- **OCR-13**: Reconhecimento de escrita à mão (além de texto impresso)
+- **OCR-14**: Auto-detecção de idioma do texto
 
-### Auth Extended
+### Notifications Advanced
 
-- **AUTH-04**: Login com Apple
-- **AUTH-05**: Login com GitHub
+- **PUSH-08**: Timing inteligente baseado em padrões de estudo do usuário
+- **PUSH-09**: Notificação por email como fallback para iOS/EU
+- **PUSH-10**: Centro de notificações in-app
 
-### Export
+### Performance Advanced
 
-- **EXPRT-01**: Usuário pode exportar highlights como JSON
-- **EXPRT-02**: Usuário pode exportar highlights como CSV
+- **PERF-06**: Virtualização de lista de highlights (para bibliotecas muito grandes)
+- **PERF-07**: Service worker com cache inteligente de dados
 
 ## Out of Scope
 
@@ -81,12 +74,12 @@ Explicitly excluded. Documented to prevent scope creep.
 
 | Feature | Reason |
 |---------|--------|
-| Parsers de importação | Já funcionam, não mexer |
-| Lógica SM-2 | Já funciona, algoritmo estável |
-| OAuth além de Google | Google cobre 90% dos usuários |
-| Mobile app nativo | Web-first, PWA já funciona |
-| Redesign estético | warm/friendly definido no v1.0 |
-| Real-time sync | Complexidade desnecessária para app single-user |
+| Firebase Cloud Messaging | Conflita com service worker existente; usar Web Push nativo |
+| Google Vision API | Custo por uso; client-side OCR é suficiente para texto impresso |
+| Seleção manual de texto em fotos | Detecção por cor é mais intuitiva |
+| Notificação por email | Push nativo é suficiente para v4.0 |
+| StoreContext refactoring | Complexo demais; criar contextos isolados para novas features |
+| Handwriting recognition | Significativamente mais difícil que texto impresso |
 
 ## Traceability
 
@@ -94,40 +87,36 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FIX-01 | Phase 11 | Complete |
-| FIX-02 | Phase 11 | Complete |
-| FIX-03 | Phase 11 | Complete |
-| FIX-04 | Phase 11 | Complete |
-| FIX-05 | Phase 11 | Complete |
-| FIX-06 | Phase 11 | Complete |
-| FIX-07 | Phase 11 | Complete |
-| FIX-08 | Phase 11 | Complete |
-| STUDY-01 | Phase 12 | Complete |
-| STUDY-02 | Phase 12 | Complete |
-| STUDY-03 | Phase 12 | Complete |
-| STUDY-04 | Phase 12 | Complete |
-| DASH-01 | Phase 13 | Complete |
-| DASH-02 | Phase 13 | Complete |
-| DASH-03 | Phase 13 | Complete |
-| DASH-04 | Phase 13 | Complete |
-| ANLYT-01 | Phase 13 | Complete |
-| ANLYT-02 | Phase 13 | Complete |
-| ANLYT-03 | Phase 13 | Complete |
-| SETT-01 | Phase 14 | Complete |
-| SETT-02 | Phase 14 | Complete |
-| SETT-03 | Phase 14 | Complete |
-| AUTH-01 | Phase 15 | Pending |
-| AUTH-02 | Phase 15 | Pending |
-| AUTH-03 | Phase 15 | Pending |
-| LAND-01 | Phase 16 | Pending |
-| LAND-02 | Phase 16 | Pending |
-| LAND-03 | Phase 16 | Pending |
+| PERF-01 | Phase 17 | Pending |
+| PERF-02 | Phase 17 | Pending |
+| PERF-03 | Phase 17 | Pending |
+| PERF-04 | Phase 17 | Pending |
+| PERF-05 | Phase 17 | Pending |
+| SW-01 | Phase 17 | Pending |
+| SW-02 | Phase 17 | Pending |
+| PUSH-01 | Phase 18 | Pending |
+| PUSH-02 | Phase 18 | Pending |
+| PUSH-03 | Phase 18 | Pending |
+| PUSH-04 | Phase 18 | Pending |
+| PUSH-05 | Phase 18 | Pending |
+| PUSH-06 | Phase 18 | Pending |
+| PUSH-07 | Phase 18 | Pending |
+| OCR-01 | Phase 19 | Pending |
+| OCR-02 | Phase 19 | Pending |
+| OCR-03 | Phase 19 | Pending |
+| OCR-04 | Phase 19 | Pending |
+| OCR-05 | Phase 19 | Pending |
+| OCR-06 | Phase 19 | Pending |
+| OCR-07 | Phase 20 | Pending |
+| OCR-08 | Phase 20 | Pending |
+| OCR-09 | Phase 20 | Pending |
+| OCR-10 | Phase 20 | Pending |
 
 **Coverage:**
-- v1 requirements: 28 total
-- Mapped to phases: 28
+- v1 requirements: 24 total
+- Mapped to phases: 24
 - Unmapped: 0 ✓
 
 ---
-*Requirements defined: 2026-01-29*
-*Last updated: 2026-01-30 after Phase 14 completion*
+*Requirements defined: 2026-02-03*
+*Last updated: 2026-02-03 after initial definition*
