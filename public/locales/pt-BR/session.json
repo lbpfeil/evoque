@@ -10,7 +10,9 @@
   "status": {
     "new": "Novo",
     "learning": "Aprendendo",
-    "review": "Revisão"
+    "review": "Revisão",
+    "lastSeen": "Visto pela última vez em {{date}}",
+    "firstReview": "Primeira revisão"
   },
   "rating": {
     "again": "De novo",

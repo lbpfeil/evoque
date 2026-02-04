@@ -5,10 +5,21 @@ import { useStore } from '../components/StoreContext';
 import { DeleteCardPopover } from '../components/DeleteCardPopover';
 import { TagSelector } from '../components/TagSelector';
 import { Button } from '../components/ui/button';
+import { Tooltip, TooltipTrigger, TooltipContent } from '../components/ui/tooltip';
 import { ArrowLeft, CheckCircle, Edit2, Clock, Trash2, Tag as TagIcon, Copy } from 'lucide-react';
 import { calculateNextReview } from '../services/sm2';
 import { StudyCard } from '../types';
 import { DEFAULT_DAILY_LIMIT } from '../lib/constants';
+
+// Format date for display (e.g., "3 de fevereiro de 2026")
+function formatDateForDisplay(dateString: string): string {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('pt-BR', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+    });
+}
 
 // Determine card status for visual indicator (aligned with getDeckStats)
 function getCardStatus(card: StudyCard, t: (key: string) => string): { status: 'new' | 'learning' | 'review'; color: string; label: string } {
@@ -436,10 +447,24 @@ ${currentHighlight.text}`;
                             )}
                             {/* Card Status Indicator */}
                             {currentCard && (
-                                <div
-                                    className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${getCardStatus(currentCard, t).color}`}
-                                    title={getCardStatus(currentCard, t).label}
-                                />
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <div
+                                            className={`w-2.5 h-2.5 rounded-full flex-shrink-0 cursor-help ${getCardStatus(currentCard, t).color}`}
+                                        />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <div className="text-center">
+                                            <div className="font-medium">{getCardStatus(currentCard, t).label}</div>
+                                            <div className="text-[10px] opacity-80">
+                                                {currentCard.lastReviewedAt
+                                                    ? t('status.lastSeen', { date: formatDateForDisplay(currentCard.lastReviewedAt) })
+                                                    : t('status.firstReview')
+                                                }
+                                            </div>
+                                        </div>
+                                    </TooltipContent>
+                                </Tooltip>
                             )}
                             <div className="min-w-0">
                                 <h3 className="text-body font-semibold text-foreground">{currentBook.title}</h3>
