@@ -77,7 +77,7 @@ See `.planning/MILESTONES.md` for full history.
 
 ### Pending Todos
 
-None.
+1. `ui` — Add "last seen" tooltip to study session status circle
 
 ### Blockers/Concerns
 
