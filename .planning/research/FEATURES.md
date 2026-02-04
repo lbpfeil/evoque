@@ -1,508 +1,405 @@
-# Feature Landscape: Design System Standardization
+# Feature Landscape: v4.0 (OCR, Notifications, Performance)
 
-**Domain:** Rigid design system for a small/medium React + Tailwind + shadcn/ui app
-**Researched:** 2026-01-27
-**Confidence:** HIGH (cross-referenced Apple HIG, industry design systems, Tailwind/shadcn docs, and codebase audit)
-
----
-
-## Current State: Evidence of Inconsistency
-
-Before defining what to build, here is the concrete evidence of inconsistency in the Evoque codebase that this design system must eliminate:
-
-**Title sizes across pages (currently):**
-- Dashboard: `text-3xl font-bold` (30px)
-- Highlights: `text-3xl font-bold` (30px)
-- Study: `text-base font-semibold` (16px)
-- Settings: `text-base font-semibold` (16px)
-- Login: `text-2xl font-bold` (24px)
-- StudySession completion: `text-2xl font-bold` (24px)
-
-**Border radius across pages:**
-- Login card: `rounded-2xl` (16px)
-- Highlights table: `rounded-xl` (12px)
-- Highlights filter bar: `rounded-xl` (12px)
-- Dashboard book cards: `rounded-md` (6px)
-- Settings sections: `rounded` (4px)
-- Study button: `rounded-md` (6px)
-
-**Spacing patterns:**
-- Dashboard: `space-y-12` (48px between sections)
-- Highlights: `space-y-4` (16px between sections)
-- Settings: `space-y-3` to `space-y-4` (12-16px)
-- Study: `mb-3` to `mb-4` (12-16px)
-
-**Button height defaults (from shadcn Button component):**
-- Default: `h-10` (40px)
-- sm: `h-9` (36px)
-- But pages manually override with `h-7` (28px), `py-3` (various), `py-2.5`, etc.
-
-This is what "zero design system" looks like. Every page was designed independently.
+**Domain:** Spaced repetition flashcard app with physical book import, push notifications, and performance improvements
+**Researched:** 2026-02-03
+**Confidence:** HIGH for notifications/performance, MEDIUM for OCR highlight detection
 
 ---
 
-## Table Stakes Features
+## Executive Summary
 
-These are non-negotiable. Without them, you do not have a design system -- you have a style guide document nobody reads.
+v4.0 adds three capability areas to Revision:
 
-### 1. Typography Scale: Exactly 6 Named Sizes with Strict Context Rules
+1. **OCR Physical Book Import** - Capture highlighted passages from physical books using device camera. The key differentiator is automatic highlight detection (yellow/green/pink markers), reducing manual selection. Browser-based OCR via Tesseract.js is feasible but requires careful UX to handle ~15MB library download and processing time.
 
-**What it is:** A closed set of font size + weight + line-height + letter-spacing combinations. Each has a name and a rule for when to use it.
+2. **PWA Push Notifications** - Daily study reminders when user hasn't reviewed. iOS support requires PWA to be installed to home screen (iOS 16.4+). Firebase Cloud Messaging is the standard solution. Notification fatigue is the primary anti-pattern to avoid.
 
-**Concrete specification:**
+3. **Performance & Skeletons** - Route-based code splitting, skeleton loaders for perceived performance, and bundle optimization. Vite handles most of this automatically with dynamic imports. Focus on LCP < 2.5s and bundle size awareness.
 
-| Token Name | Size | Weight | Line Height | Letter Spacing | Usage Rule |
-|------------|------|--------|-------------|----------------|------------|
-| `display` | 24px (`text-2xl`) | 700 (bold) | 1.2 | -0.025em | Login/splash page title ONLY. Max 1 per app. |
-| `title` | 18px (`text-lg`) | 600 (semibold) | 1.3 | -0.015em | Page title. Exactly 1 per page. |
-| `heading` | 14px (`text-sm`) | 600 (semibold) | 1.4 | 0 | Section headers within a page. Cards, groups, sidebar sections. |
-| `body` | 14px (`text-sm`) | 400 (normal) | 1.5 | 0 | Default text. Table cells, form labels, descriptions. |
-| `caption` | 12px (`text-xs`) | 500 (medium) | 1.4 | 0.01em | Metadata, timestamps, counts, badges, secondary info. |
-| `overline` | 10px (`text-[10px]`) | 600 (semibold) | 1.4 | 0.05em | Uppercase labels, table headers, category markers. Minimum 10px. |
+**Key recommendation:** Start with Performance (unblocks better UX), then Notifications (simpler), then OCR (most complex).
 
-**Enforcement rule:** No other font size may appear in the codebase. If a developer writes `text-3xl`, `text-2xl` (outside login), `text-xl`, `text-base`, or `text-lg` outside a page title -- it is a violation.
+---
 
-**Why exactly these 6:** Research shows 5-7 sizes is the sweet spot. Salesforce Lightning uses 4 headings + 2 body. IBM Carbon uses far more (19) and suffers inconsistency. Our compact UI needs density, so sizes cluster at the small end. The `display` size exists only for the login/branding moment.
+## OCR Physical Book Import
 
-**Confidence:** HIGH -- based on Nathan Curtis (EightShapes) typography in design systems, Design Systems typography guide, and Apple HIG principles of limited, purposeful scale.
+### Table Stakes
 
-### 2. Spacing Scale: Named Semantic Tokens on a 4px Grid
+Features users expect from a physical book highlight capture feature.
 
-**What it is:** A closed set of spacing values with semantic names that describe their purpose, not their pixel value.
+| Feature | Description | Complexity | Notes |
+|---------|-------------|------------|-------|
+| Camera capture | Open device camera, take photo of book page | Low | Use `navigator.mediaDevices.getUserMedia()` or simpler `<input type="file" accept="image/*" capture>` |
+| Basic OCR text extraction | Extract all text from captured image | Medium | Tesseract.js v6.0 is the standard. ~15MB download on first use. |
+| Manual text selection | User highlights/selects the passage they want after OCR | Low | Text overlay on image with selectable regions |
+| Book metadata entry | Title + Author for new books, or select existing book | Low | Reuse existing book selection UI from import flow |
+| Edit before save | Review and correct OCR errors before saving | Low | Simple textarea with original image reference |
+| Batch capture mode | Take multiple photos in sequence for a reading session | Medium | Queue images, process sequentially or in parallel |
+| Progress indicator | Show OCR processing status (can take 2-5 seconds per image) | Low | Essential UX for perceived performance |
+| Error handling | Graceful handling of blurry images, poor lighting | Low | Show retry option with tips for better capture |
 
-**Concrete specification:**
+### Differentiators
 
-| Token Name | Value | Tailwind | Usage Rule |
-|------------|-------|----------|------------|
-| `space-0` | 0px | `gap-0` / `p-0` | No space. Tight element grouping. |
-| `space-xs` | 2px | `gap-0.5` / `p-0.5` | Between tightly related items (icon + label within a button). |
-| `space-sm` | 4px | `gap-1` / `p-1` | Between related items in a group (list items, form field + label). |
-| `space-md` | 8px | `gap-2` / `p-2` | Between components in a section (card padding, button groups). |
-| `space-lg` | 12px | `gap-3` / `p-3` | Between sections within a card or panel. |
-| `space-xl` | 16px | `gap-4` / `p-4` | Between major sections on a page. Page content padding. |
-| `space-2xl` | 24px | `gap-6` / `p-6` | Between top-level page sections (header-to-content, content-to-footer). |
-| `space-3xl` | 32px | `gap-8` / `p-8` | Page-level vertical breathing room (rare, intentional). |
+Features that set Revision apart from generic OCR apps like Readwise.
 
-**Enforcement rule:** No spacing value outside this scale. Specifically: `space-y-12` (48px, used in Dashboard) is banned. `gap-5`, `gap-12`, `space-y-8` arbitrarily -- banned. Every spacing decision must map to a semantic token.
+| Feature | Description | Complexity | Notes |
+|---------|-------------|------------|-------|
+| Automatic highlight detection | Detect yellow/green/pink highlighted regions and only OCR those | High | Uses HSV color thresholding + contour detection. OpenCV.js or custom Canvas API manipulation. Most competitors require manual selection. |
+| Multi-color highlight support | Detect different highlighter colors (yellow, green, pink, blue, orange) | Medium | HSV ranges for each color. Could map colors to tags. |
+| Highlight preview before OCR | Show detected highlight regions visually before running full OCR | Medium | Faster feedback loop than running OCR on entire page |
+| Offline OCR capability | Process images without network connection | Medium | Tesseract.js runs entirely client-side once language data is cached |
+| Page number extraction | Auto-detect and save page numbers from captured images | High | Requires additional OCR region detection, page number formats vary |
+| Book cover recognition | Scan book cover/barcode to auto-populate metadata | Medium | Use ISBN barcode scanning library or Google Books API lookup |
+| Smart cropping | Auto-detect book page boundaries, correct perspective | Medium | OpenCV.js or similar. Handles tilted photos. |
 
-**Why this scale:** 4px base grid is the standard for compact/dense UIs (Linear, Notion, Figma all use it). The existing Evoque guidelines already recommend 4px base. We keep it but add semantic names so developers think "what is the relationship between these elements?" not "how many pixels should this be?"
+### Anti-Features (Don't Build)
 
-**Confidence:** HIGH -- 4px grid is universally recommended for compact UIs. Semantic naming is standard practice in Carbon, Polaris, and Material.
+| Feature | Why Avoid | What to Do Instead |
+|---------|-----------|-------------------|
+| Full page OCR by default | Wastes processing time, extracts unwanted text (page numbers, headers, footnotes) | Default to highlight detection; full page is opt-in |
+| Continuous camera scanning | Complex implementation, battery drain, unnecessary for reading session use case | Take discrete photos, batch mode is sufficient |
+| Cloud OCR processing | Adds latency, requires API costs, privacy concerns for book content | Tesseract.js is sufficient quality for highlighted text, runs locally |
+| Handwriting recognition | Significantly harder than printed text, different model requirements, low accuracy | Focus on printed book highlights only; notes can be typed manually |
+| Real-time OCR preview | CPU intensive, creates laggy experience, unnecessary since batch capture works | Show processing indicator after capture, not during |
+| Multi-language auto-detection | Adds complexity, Tesseract accuracy varies by language, most users read in 1-2 languages | User selects language in settings; default to Portuguese |
+| Export to other apps | Scope creep; focus on Revision's own study system | Highlights are for study sessions, not general export |
 
-### 3. Color Semantic Tokens: Already-Built Foundation + Usage Rules
+### User Flow (Recommended)
 
-**What it is:** The existing OKLCH CSS variable system (`--primary`, `--foreground`, `--muted`, etc.) is already solid. What is missing is strict usage rules documenting when each token applies.
+```
+1. Import > "Physical Book" tab
+2. Select existing book OR create new (title/author entry)
+3. Camera opens (or file picker on desktop)
+4. Capture photo(s) of highlighted pages
+   - "Add another" button for batch mode
+   - Preview thumbnails of queued images
+5. Process button triggers OCR pipeline:
+   a. Detect highlighted regions (if enabled)
+   b. Run Tesseract.js on detected regions (or full page)
+   c. Show extracted text with confidence indicator
+6. Review screen:
+   - List of extracted highlights
+   - Edit button for each
+   - Delete button for unwanted extractions
+   - Optional: add page number, add note
+7. Save all > Creates highlights in database
+```
 
-**Concrete specification:**
+### Technical Considerations
 
-| Token | Light Mode | Usage Rule |
-|-------|------------|------------|
-| `foreground` | Near-black warm | Primary text, page titles, active labels |
-| `muted-foreground` | Mid warm gray | Secondary text, descriptions, placeholders, disabled text |
-| `primary` | Warm amber | Interactive elements: buttons, links, focus rings, active states |
-| `primary-foreground` | Cream white | Text on primary-colored backgrounds only |
-| `destructive` | Warm red | Delete actions, error messages. Never for emphasis. |
-| `border` | Light warm | All borders, dividers, separators |
-| `input` | Same as border | Input field borders specifically |
-| `background` | Warm off-white | Page background |
-| `card` | Slightly warmer | Card/panel surfaces |
-| `muted` | Warm light gray | Disabled backgrounds, subtle fills, hover states |
-| `accent` | Warm accent | Selected items, hover backgrounds |
+**OCR Library Choice:**
+- **Tesseract.js v6.0** - Standard choice for browser OCR. ~15MB initial download (language data + WASM). Supports 100+ languages. Runs entirely client-side.
+- **tesseract-wasm** - Lighter alternative (~2.1MB with Brotli). Better for apps where OCR is optional feature (like Revision). Uses WebAssembly SIMD when available.
 
-**Enforcement rule:** No raw color classes like `text-zinc-400`, `bg-zinc-50`, `text-blue-600`, `border-zinc-200` anywhere in page or component code. Every color must reference a semantic token (`text-muted-foreground`, `bg-muted`, `text-primary`, `border-border`). The only exception is the study session rating buttons which use semantic color (red/amber/blue/green for Again/Hard/Good/Easy) -- these get their own tokens.
+**Highlight Detection Algorithm:**
+1. Convert image from RGB to HSV color space
+2. Apply color threshold for highlight color (e.g., yellow: H=22-45, S=30-255, V=30-255)
+3. Find contours of highlighted regions
+4. Extract bounding boxes for each contour
+5. Crop original image to bounding boxes
+6. Run OCR only on cropped regions
 
-**What needs to be added:** Study rating color tokens:
-- `--rating-again` / `--rating-hard` / `--rating-good` / `--rating-easy`
+**Lazy Loading Strategy:**
+- OCR libraries should be dynamically imported only when user accesses Physical Book import
+- Show download progress indicator (~15MB can take 5-10 seconds on slower connections)
+- Cache language data in IndexedDB for subsequent uses
 
-**Confidence:** HIGH -- the CSS variable foundation already exists and works. The gap is documentation and enforcement, not implementation.
+**Sources:**
+- [Tesseract.js GitHub](https://github.com/naptha/tesseract.js) - Performance docs show lazy loading patterns
+- [Extract Highlighted Text from a Book using Python](https://dev.to/zirkelc/extract-highlighted-text-from-a-book-using-python-e15) - HSV thresholding approach
+- [Readwise OCR Docs](https://docs.readwise.io/readwise/docs/importing-highlights/ocr) - Competitor workflow reference
+- [Highlighted App](https://apps.apple.com/us/app/highlighted-book-highlights/id1480216009) - iOS competitor with excellent UX
 
-### 4. Border Radius Scale: Exactly 3 Values
+---
 
-**What it is:** A closed set of border radius values with clear rules.
+## PWA Push Notifications
 
-**Concrete specification:**
+### Table Stakes
 
-| Token | Value | Tailwind | Usage Rule |
-|-------|-------|----------|------------|
-| `radius-sm` | 4px | `rounded` | Small inline elements: badges, chips, tags, inline inputs |
-| `radius-md` | 8px | `rounded-lg` | Standard components: buttons, cards, inputs, dropdowns, modals |
-| `radius-lg` | 12px | `rounded-xl` | Large containers: page-level cards, hero sections, login card |
+Features users expect from study reminder notifications.
 
-**Enforcement rule:** No `rounded-2xl` (16px), no `rounded-full` except for avatar circles and pill badges, no `rounded-sm` (which is 2px and too subtle), no `rounded-md` (6px -- it falls between our tokens). The current codebase uses `rounded`, `rounded-md`, `rounded-lg`, `rounded-xl`, and `rounded-2xl` across different pages. This must collapse to exactly 3.
+| Feature | Description | Complexity | Notes |
+|---------|-------------|------------|-------|
+| Daily reminder at configurable time | "Time to review!" notification if user hasn't studied today | Medium | Firebase Cloud Messaging + scheduled Cloud Function |
+| Permission request flow | Soft ask before hard browser permission | Low | "Enable notifications?" UI before `Notification.requestPermission()` |
+| Notification settings page | Enable/disable, set preferred time | Low | Add to existing Settings page |
+| Click-through to app | Notification opens Revision study page | Low | Service worker `notificationclick` handler |
+| Respect user preferences | Only send if user opted in, honor quiet hours | Low | Store preference in user settings |
+| HTTPS requirement | PWA notifications require secure context | N/A | Already using HTTPS via Vercel/Supabase |
 
-**Confidence:** HIGH -- 3-level radius scale is standard practice. Apple uses primarily 2 radii (small for controls, large for containers).
+### Differentiators
 
-### 5. Shadow Scale: Exactly 3 Elevations
+Features that improve notification effectiveness for spaced repetition.
 
-**What it is:** Consistent shadow system for visual hierarchy.
+| Feature | Description | Complexity | Notes |
+|---------|-------------|------------|-------|
+| Smart timing based on study patterns | Send notification when user typically studies, not fixed time | Medium | Analyze review_logs for user's usual study times |
+| Cards due count in notification | "You have 15 cards due today" instead of generic reminder | Low | Query due cards count in Cloud Function before sending |
+| Book-specific reminders | "Continue studying 'Atomic Habits'" for partially-reviewed books | Medium | Adds personalization, requires tracking session state |
+| Streak preservation alerts | "Don't break your 7-day streak! Review now." | Low | Effective engagement mechanic from Duolingo |
+| Weekly summary notification | "This week: 47 cards reviewed, 3 books studied" | Low | Scheduled weekly push with stats |
+| Skip today acknowledgment | User can dismiss today's reminder without disabling all notifications | Medium | Requires tracking "snoozed" state per day |
+| Badge count on PWA icon | Show number of due cards on home screen icon | Low | `navigator.setAppBadge()` API (supported on most platforms) |
 
-**Concrete specification:**
+### Anti-Features (Don't Build)
 
-| Token | Usage Rule | Tailwind |
-|-------|------------|----------|
-| `shadow-sm` | Subtle surface separation. Cards at rest, inputs. | `shadow-sm` |
-| `shadow-md` | Elevated interactive elements. Dropdowns, popovers, hover cards. | `shadow-md` |
-| `shadow-lg` | High-prominence overlays. Modals, dialogs, toasts. | `shadow-lg` or `shadow-xl` |
+| Feature | Why Avoid | What to Do Instead |
+|---------|-----------|-------------------|
+| Multiple daily notifications | Notification fatigue leads to opt-out. Research shows <5/week optimal. | Single daily reminder is sufficient |
+| Notification for every card due | Would spam users with 20+ notifications per day | Aggregate into single "X cards due" notification |
+| Aggressive re-engagement | "You haven't studied in 3 days!" guilt-trip notifications | Gentle, positive framing only |
+| Sound/vibration customization | Over-engineering for minimal benefit | Use system defaults |
+| Notification channels/categories | Android-specific complexity, overkill for a PWA | Single notification type is sufficient |
+| In-app notification center | Duplicates browser notification history | Link to Settings for preferences, trust OS notification center |
+| SMS/Email fallback | Different infrastructure, different consent requirements | Push notifications only; email is separate concern |
 
-**Enforcement rule:** No `shadow-2xl`. No custom shadow values. If a component needs to feel "elevated," pick from these 3. The current codebase uses `shadow-sm`, `shadow-md`, `shadow-xl` inconsistently.
+### iOS-Specific Considerations
 
-**Confidence:** HIGH -- 3-level elevation is standard (Material Design uses 5 but 3 is sufficient for a small app).
+**Requirements for iOS PWA Push Notifications:**
+1. iOS 16.4 or later (released March 2023)
+2. PWA must be installed to home screen (Safari-only browsing doesn't support push)
+3. Manifest must have `"display": "standalone"`
+4. User must grant notification permission after a user gesture
 
-### 6. Icon Size Scale: Exactly 3 Sizes
+**Detection and Guidance:**
+- Detect if running in Safari vs. installed PWA
+- If Safari on iOS, show "Add to Home Screen" instructions before notification prompt
+- Check `navigator.userActivation` to detect iOS 16.4+ capability
 
-**What it is:** Fixed icon sizes to prevent visual noise from inconsistent icons.
+**EU Considerations:**
+- Apple briefly removed PWA support in EU (iOS 17.4 beta) but reversed the decision
+- Full PWA support including push notifications is available in EU as of 2025
 
-**Concrete specification:**
+### Technical Implementation
 
-| Token | Size | Tailwind | Usage Rule |
-|-------|------|----------|------------|
-| `icon-sm` | 14px | `w-3.5 h-3.5` | Inside buttons, inline with body text, action icons |
-| `icon-md` | 16px | `w-4 h-4` | Section headers, standalone icons, navigation |
-| `icon-lg` | 20px | `w-5 h-5` | Page header icons, empty state illustrations, stat cards |
+**Firebase Cloud Messaging Setup:**
+1. Create Firebase project, enable Cloud Messaging
+2. Add `firebase-messaging-sw.js` service worker to `/public`
+3. Generate VAPID keys for web push
+4. Store FCM tokens in Supabase user record
+5. Cloud Function to send notifications based on user timezone and preferences
 
-**Enforcement rule:** No `w-2.5 h-2.5` (10px), no `w-3 h-3` (12px unless adjusted), no `w-6 h-6`. The current codebase uses at least 5 different icon sizes: 10px, 12px, 14px, 16px, 20px. This must collapse.
+**Service Worker Pattern:**
+```javascript
+// firebase-messaging-sw.js
+importScripts('https://www.gstatic.com/firebasejs/9.x.x/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/9.x.x/firebase-messaging-compat.js');
 
-**Note:** The existing compact guidelines recommend `w-3 h-3` (12px) as standard, but this is too small for the warm/friendly design direction. Bumping to 14px minimum improves touch/click targets and readability.
+firebase.initializeApp({ /* config */ });
+const messaging = firebase.messaging();
 
-**Confidence:** MEDIUM -- icon sizing is often debated. The 3-tier approach is opinionated but aligns with Apple's 3-size approach (compact/regular/large).
-
-### 7. Component Variant System (CVA Contracts)
-
-**What it is:** Every shared component (Button, Input, Badge, Card) exposes a typed variant API via Class Variance Authority. No ad-hoc className overrides for size/appearance.
-
-**Concrete specification for Button (example):**
-
-```typescript
-const buttonVariants = cva(base, {
-  variants: {
-    variant: {
-      default: "...",     // Primary action
-      secondary: "...",   // Secondary action
-      ghost: "...",       // Tertiary/icon action
-      destructive: "...", // Delete/danger
-      link: "...",        // Inline text link
-    },
-    size: {
-      default: "h-8 px-3 text-sm",    // Standard button (32px)
-      sm: "h-7 px-2.5 text-xs",       // Compact button (28px)
-      lg: "h-10 px-4 text-sm",        // Prominent CTA (40px)
-      icon: "h-8 w-8",                // Icon-only button (32px)
-      "icon-sm": "h-7 w-7",           // Small icon button (28px)
-    },
-  },
-  defaultVariants: {
-    variant: "default",
-    size: "default",
-  },
+messaging.onBackgroundMessage((payload) => {
+  const { title, body, icon } = payload.notification;
+  self.registration.showNotification(title, { body, icon });
 });
 ```
 
-**Enforcement rule:** Pages must not apply raw sizing classes to buttons. `<Button className="h-7 px-3 text-sm">` is banned. Use `<Button size="sm">` instead. The Button component is the contract -- pages consume the contract.
-
-**This must be done for:** Button, Input, Badge, Card, Dialog/Modal, Select. These are the 6 components that appear on every page.
-
-**Confidence:** HIGH -- CVA is the de facto standard for React + Tailwind component APIs in 2025. Already partially in use (Button has variants), but the variants don't match the design system's actual sizes.
-
-### 8. Z-Index Layer System
-
-**What it is:** A fixed layering system so overlapping elements always stack correctly.
-
-**Concrete specification:**
-
-| Token | Value | Usage |
-|-------|-------|-------|
-| `z-base` | 0 | Page content |
-| `z-sticky` | 10 | Sticky headers, fixed table headers |
-| `z-sidebar` | 20 | Navigation sidebar |
-| `z-dropdown` | 30 | Dropdowns, popovers, tooltips |
-| `z-backdrop` | 40 | Modal/sheet backdrop overlay |
-| `z-modal` | 50 | Modal/sheet/dialog content |
-| `z-toast` | 60 | Toast notifications (always on top) |
-
-**Enforcement rule:** No arbitrary z-index values. The existing guidelines already define this scale. Enforcement is the gap.
-
-**Confidence:** HIGH -- already documented in existing guidelines. Just needs to be formalized as tokens and enforced.
+**Sources:**
+- [Push Notification Best Practices 2026](https://reteno.com/blog/push-notification-best-practices-ultimate-guide-for-2026) - Frequency and timing recommendations
+- [PWA Push Notifications on iOS](https://www.magicbell.com/blog/best-practices-for-ios-pwa-push-notifications) - iOS-specific requirements
+- [Firebase Cloud Messaging Web Docs](https://firebase.google.com/docs/cloud-messaging/web/get-started) - Official implementation guide
+- [Web Push Notifications with React and FCM](https://dev.to/emmanuelayinde/web-push-notifications-with-react-and-firebase-cloud-messaging-fcm-18kb) - React integration tutorial
 
 ---
 
-## Differentiators
+## Performance & Skeletons
 
-These features separate a "has a design system" app from an "Apple-level consistent" app. They are what make users subconsciously feel "this app is polished."
+### Table Stakes
 
-### 9. Page Layout Template: Single Canonical Structure
+Performance optimizations expected in a modern React application.
 
-**What it is:** Every page follows the exact same layout skeleton. No page is a special snowflake.
+| Feature | Description | Complexity | Notes |
+|---------|-------------|------------|-------|
+| Route-based code splitting | Lazy load page components, reduce initial bundle | Low | Vite handles automatically with `React.lazy()` + dynamic imports |
+| Skeleton loaders for data fetching | Show content structure while loading instead of spinner | Medium | Replace loading spinners with layout-matching skeletons |
+| Bundle size monitoring | Track JS bundle size, prevent regressions | Low | `vite-bundle-visualizer` or `rollup-plugin-visualizer` |
+| Image optimization | Lazy load images, use appropriate sizes | Low | Native `loading="lazy"`, consider book cover thumbnails |
+| Vendor chunk separation | Separate React/dependencies from app code | Low | Vite `manualChunks` config for better caching |
 
-**Concrete specification:**
+### Differentiators
 
-```
-[Page Container: px-4 sm:px-6, max-width constraint]
-  [Page Header: fixed structure]
-    [Title: exactly `title` token, exactly 1 per page]
-    [Subtitle: exactly `body` token + muted-foreground, optional]
-  [space-2xl gap]
-  [Page Content: flexible area]
-    [Section: heading token + space-xl internal gap]
-    [Section: heading token + space-xl internal gap]
-  [Page Footer: optional, fixed-bottom for study]
-```
+Performance patterns that create perceived speed.
 
-**Rules:**
-- Every page starts with the same `<PageHeader title="..." subtitle="..." />` component
-- Page padding is always `px-4 sm:px-6` (never `p-4 sm:p-6`, never no padding)
-- Header-to-content gap is always `space-2xl` (24px)
-- Section-to-section gap is always `space-xl` (16px)
-- No page may define its own title styling inline
+| Feature | Description | Complexity | Notes |
+|---------|-------------|------------|-------|
+| Optimistic UI (already implemented) | Show changes immediately, sync in background | N/A | Already in StoreContext, maintain pattern |
+| Suspense boundaries per section | Allow parts of page to load independently | Medium | Wrap independent sections in Suspense |
+| Prefetch adjacent routes | Load likely-next pages before user clicks | Low | `<link rel="prefetch">` or React Router `prefetch` |
+| Service worker caching | Cache static assets for instant repeat loads | Low | vite-plugin-pwa already configured, verify strategy |
+| LCP optimization | Ensure largest element loads quickly | Low | Preload critical fonts, optimize hero images |
+| Component-level skeletons | Match skeleton to exact component shape | Medium | More work than generic skeletons but better perceived performance |
 
-**Current violations:**
-- Dashboard uses inline `<h1 className="text-3xl font-bold">` -- should use PageHeader
-- Highlights uses inline `<h1 className="text-3xl font-bold">` -- should use PageHeader
-- Study uses inline `<h1 className="text-base font-semibold">` -- should use PageHeader
-- Settings uses inline `<h1 className="text-base font-semibold">` -- should use PageHeader
+### Anti-Features (Don't Build)
 
-**Confidence:** HIGH -- layout components are a foundational React pattern. Apple enforces identical page structure across every app screen.
+| Feature | Why Avoid | What to Do Instead |
+|---------|-----------|-------------------|
+| Over-aggressive code splitting | Too many small chunks create request waterfalls | Split by route, not by component. Keep chunks > 30KB. |
+| SSR/Server Components | Major architecture change, unnecessary for this app size | Keep client-side SPA; focus on initial load optimization |
+| Complex caching strategies | Stale-while-revalidate patterns add complexity | Simple cache-first for static, network-first for API |
+| Virtualization everywhere | Only needed for very long lists (1000+ items) | Highlights table with pagination doesn't need virtualization |
+| Micro-frontend architecture | Massive over-engineering for single-developer app | Keep monolithic React app structure |
+| Custom bundler configuration | Vite defaults are well-optimized | Only customize if measurements show specific problems |
+| Performance monitoring SaaS | LogRocket, Sentry performance, etc. add cost and complexity | Browser DevTools + Lighthouse are sufficient for this app |
 
-### 10. Transition/Motion Tokens: 3 Durations, 3 Easings
+### Skeleton Design Patterns
 
-**What it is:** Every animation in the app uses a named duration + easing pair. No arbitrary timing.
+**Principles:**
+1. Match skeleton shape to actual content structure
+2. Use subtle animation (pulse or wave) to indicate loading
+3. Maintain same dimensions to prevent layout shift (CLS)
+4. Respect user motion preferences (`prefers-reduced-motion`)
 
-**Concrete specification:**
+**Component-Specific Skeletons:**
 
-| Token | Duration | Easing | Usage |
-|-------|----------|--------|-------|
-| `motion-fast` | 100ms | ease-out | Micro-feedback: button press, checkbox toggle, icon swap |
-| `motion-normal` | 150ms | ease-out | Standard interactions: hover states, color changes, focus rings |
-| `motion-slow` | 250ms | ease-in-out | Layout changes: modal open/close, accordion, page transitions |
+| Component | Skeleton Pattern |
+|-----------|-----------------|
+| Page header | Rectangle for title (18px height, 200px width) |
+| Book card | Rectangle for cover (150x200px) + 2 text lines |
+| Highlights table | 5 rows of rectangles matching column widths |
+| Dashboard KPI | Circle/rectangle for number + small text line |
+| Heatmap | Grid of small squares matching actual cell layout |
+| Study card | Large rectangle for highlight text area |
 
-**As CSS custom properties:**
-```css
-:root {
-  --duration-fast: 100ms;
-  --duration-normal: 150ms;
-  --duration-slow: 250ms;
-  --ease-out: cubic-bezier(0.33, 1, 0.68, 1);
-  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-}
-```
+**Implementation Options:**
+- **react-loading-skeleton** - Automatically sizes to parent, minimal config
+- **Custom CSS** - Simple `bg-muted animate-pulse rounded` pattern with Tailwind
 
-**Enforcement rule:** No `duration-200`, `duration-300`, or `transition-all duration-150` scattered across components. The current codebase uses `duration-200` in some places and `transition-colors` (default 150ms) in others with no reasoning.
+### Performance Targets
 
-**Confidence:** HIGH -- motion tokens are standard in Carbon (IBM), Fluent (Microsoft), and Seeds (Sprout Social). Three durations is the minimum viable motion system.
+| Metric | Target | Current (estimate) | Notes |
+|--------|--------|-------------------|-------|
+| LCP | < 2.5s | Unknown | Measure with Lighthouse |
+| FCP | < 1.8s | Unknown | Should be achievable with code splitting |
+| CLS | < 0.1 | Unknown | Skeletons help prevent layout shift |
+| TTI | < 3.5s | Unknown | Route splitting will help |
+| Bundle size (initial) | < 150KB gzipped | Unknown | Audit current state first |
 
-### 11. Interactive State Matrix: Complete Coverage
+**Measurement Approach:**
+1. Run Lighthouse audit on current production build
+2. Identify specific bottlenecks
+3. Apply targeted optimizations
+4. Measure again to verify improvement
 
-**What it is:** Every interactive element (button, input, link, card, table row) has defined styles for ALL states. No state may be undefined.
-
-**Concrete specification:**
-
-| State | Visual Treatment | Applies To |
-|-------|-----------------|------------|
-| `default` | Base appearance | All elements |
-| `hover` | `bg-accent` or subtle background shift | Buttons, cards, table rows, links |
-| `focus-visible` | `ring-2 ring-ring ring-offset-2` | All focusable elements (keyboard navigation) |
-| `active` / `pressed` | Slightly darker than hover, `scale-[0.98]` for buttons | Buttons, clickable cards |
-| `disabled` | `opacity-50 cursor-not-allowed pointer-events-none` | Buttons, inputs, links |
-| `selected` | `bg-accent text-accent-foreground` | Table rows, list items, tabs |
-| `loading` | Spinner icon replacing content, maintain dimensions | Buttons (async actions) |
-
-**Enforcement rule:** Before a component ships, every state in this matrix must be defined. If a button has no `disabled` style, it is incomplete. If a table row has no `hover` style, it is incomplete.
-
-**Confidence:** HIGH -- Apple HIG explicitly requires all states be designed. This is the most common gap in web apps.
-
-### 12. Density Modes: Compact-Only with Documented Exceptions
-
-**What it is:** The entire app operates in compact density. But specific contexts (StudySession reading area) explicitly use relaxed density for readability.
-
-**Concrete specification:**
-
-| Context | Density | Button Height | Text Size | Padding |
-|---------|---------|---------------|-----------|---------|
-| Default (all pages) | Compact | 32px (`h-8`) | 14px (`text-sm`) | `p-2` to `p-3` |
-| Study reading area | Relaxed | N/A | 18-20px (`text-lg`/`text-xl`) | `p-4` to `p-6` |
-| Login page | Relaxed | 44px (touch target) | 14px (`text-sm`) | `p-6` to `p-8` |
-
-**Enforcement rule:** The relaxed context is opt-in and explicit. You must wrap content in a density context component (e.g., `<DensityProvider mode="relaxed">`) or document why a specific page deviates. No accidental mixing.
-
-**Confidence:** MEDIUM -- density modes are used by Fluent UI and Material Design. For a small app, documenting the 2 exceptions explicitly is simpler than a full density system.
-
-### 13. Empty State Pattern: Single Canonical Template
-
-**What it is:** Every empty state (no books, no highlights, no study cards, no search results) follows the same visual template.
-
-**Concrete specification:**
-
-```
-[Container: centered, max-w-sm, py-12]
-  [Icon: icon-lg, muted-foreground, mb-3]
-  [Title: heading token, foreground]
-  [Description: body token, muted-foreground, max-w-xs, text-center]
-  [Action button: optional, size="default", variant="default"]
-```
-
-**Rules:**
-- Icon is always from the same icon set (Lucide)
-- Text is always centered
-- Action button is always below the description
-- No custom empty states with different layouts
-
-**Confidence:** HIGH -- empty states are a known consistency gap. One template eliminates the problem.
-
-### 14. Data Table Pattern: Single Reusable Structure
-
-**What it is:** Every table in the app (Highlights table, Settings library table, Study deck table) uses the same base structure.
-
-**Concrete specification:**
-
-| Element | Style |
-|---------|-------|
-| Table container | `rounded-lg border border-border overflow-hidden` |
-| Header row | `bg-muted text-overline uppercase tracking-wider` |
-| Header cell padding | `px-4 py-3` |
-| Body cell padding | `px-4 py-3` |
-| Row hover | `hover:bg-accent/50 transition-colors` |
-| Row border | `border-b border-border last:border-b-0` |
-| Sort indicator | `icon-sm` chevron, `text-foreground` when active, `text-muted-foreground` when inactive |
-
-**Enforcement rule:** No table may define its own cell padding, header styling, or hover behavior. All tables share a single `<DataTable>` component or at minimum follow this exact pattern.
-
-**Confidence:** HIGH -- the Highlights table already has good patterns. Standardize and reuse.
-
----
-
-## Anti-Features
-
-These are things to deliberately NOT build, even though they might seem like "good design system practices." They are over-engineering for an app of this size.
-
-### DO NOT: Build a Storybook
-
-**Why avoid:** Storybook is valuable for teams of 5+ developers sharing components across multiple apps. Evoque has 1 developer and 16 UI components. The maintenance cost of Storybook (keeping stories in sync, configuring addons, updating versions) outweighs the benefit. The design system document IS the documentation.
-
-**What to do instead:** Document component variants in the design system spec file. Use the app itself as the visual reference.
-
-### DO NOT: Create Figma-to-Code Token Pipeline
-
-**Why avoid:** Token export tooling (Style Dictionary, Tokens Studio, Terrazzo) is designed for organizations where designers and developers are different people working in different tools. Evoque has no Figma file. The CSS custom properties ARE the source of truth.
-
-**What to do instead:** Define tokens directly in `index.css` and `tailwind.config.js`. That's the pipeline.
-
-### DO NOT: Build Responsive Typography with clamp()
-
-**Why avoid:** `clamp()` fluid typography is for content-heavy marketing sites where headings need to scale dramatically between mobile and desktop. Evoque is a data-dense app where text sizes should be consistent across breakpoints. A 14px label should be 14px everywhere.
-
-**What to do instead:** Use fixed font sizes from the typography scale. Only the page container width changes responsively, not the text sizes.
-
-### DO NOT: Build a Theme Switcher (Beyond Light/Dark)
-
-**Why avoid:** Supporting arbitrary color themes (like "Ocean Blue," "Forest Green") requires token abstraction that doubles CSS complexity. The warm OKLCH palette IS the brand. Light and dark modes are sufficient.
-
-**What to do instead:** Keep exactly 2 themes: light and dark. Both use the warm OKLCH palette. Done.
-
-### DO NOT: Add CSS-in-JS or Styled Components
-
-**Why avoid:** The project already uses Tailwind + CVA + cn(). Adding another styling layer (Emotion, styled-components, vanilla-extract) creates competing systems and increases bundle size. Tailwind utility classes + CSS custom properties is the complete solution.
-
-**What to do instead:** Use Tailwind classes exclusively. Use CSS custom properties for tokens. Use CVA for component variant APIs.
-
-### DO NOT: Create Wrapper Components for Every HTML Element
-
-**Why avoid:** Wrapping `<h1>`, `<p>`, `<span>` in `<Typography variant="h1">` components is a pattern from Material UI that adds indirection without value in a Tailwind project. Tailwind classes already ARE the abstraction.
-
-**What to do instead:** Define the typography tokens as documented CSS classes or Tailwind `@apply` utilities (e.g., `.text-title { @apply text-lg font-semibold leading-tight tracking-tight; }`). Use them directly on HTML elements. The PageHeader component handles the most common case (page title).
-
-### DO NOT: Build a Design Token JSON File
-
-**Why avoid:** W3C Design Token format and JSON token files are for cross-platform systems (web + iOS + Android). Evoque is web-only. The `index.css` file with CSS custom properties IS the token file, and Tailwind consumes it natively.
-
-**What to do instead:** CSS custom properties in `index.css` for colors/motion. Tailwind config for spacing/typography/radius. These two files ARE the token system.
+**Sources:**
+- [React Performance Optimization Best Practices 2025](https://dev.to/alex_bobes/react-performance-optimization-15-best-practices-for-2025-17l9)
+- [Core Web Vitals](https://web.dev/articles/vitals) - Target metrics
+- [Vite Code Splitting](https://sambitsahoo.com/blog/vite-code-splitting-that-works.html) - Implementation patterns
+- [Skeleton Loader Best Practices](https://ironeko.com/posts/the-dos-and-donts-of-skeleton-loading-in-react) - UX patterns
+- [React Loading Skeleton](https://www.npmjs.com/package/react-loading-skeleton) - Library docs
 
 ---
 
 ## Feature Dependencies
 
+| Feature | Depends On | Notes |
+|---------|-----------|-------|
+| OCR highlight detection | Tesseract.js loaded | Must lazy-load OCR library |
+| OCR batch capture | Camera API permissions | Request on first use |
+| Push notifications | Service worker registered | vite-plugin-pwa handles this |
+| Push notifications | User permission granted | Soft ask before hard ask |
+| Push notifications (iOS) | PWA installed to home screen | Show installation guidance |
+| Daily reminder | Firebase Cloud Functions | Backend scheduling required |
+| Cards due count in notification | Supabase query | Cloud Function needs DB access |
+| Skeleton loaders | Component structure defined | Design skeletons after final layouts |
+| Route code splitting | React.lazy + Suspense | Refactor page imports |
+| Bundle monitoring | Build pipeline | Add to CI/CD |
+
+### Dependency Graph
+
 ```
-Typography Scale ──────────────────────┐
-                                       ├──> Page Layout Template
-Spacing Scale ─────────────────────────┤
-                                       ├──> Data Table Pattern
-Color Semantic Tokens (exists) ────────┤
-                                       ├──> Empty State Pattern
-Border Radius Scale ───────────────────┤
-                                       ├──> Interactive State Matrix
-Shadow Scale ──────────────────────────┘
-
-Icon Size Scale ───────────────────────> Component Variants (CVA)
-
-Z-Index System (exists) ───────────────> Modal/Dialog Pattern
-
-Motion Tokens ─────────────────────────> Interactive State Matrix
+Performance Foundation (do first)
+  |
+  +-- Route code splitting
+  +-- Vendor chunk separation
+  +-- Bundle size audit
+  +-- Skeleton components
+  |
+  v
+Push Notifications (medium complexity)
+  |
+  +-- Firebase setup
+  +-- Service worker enhancement
+  +-- Permission flow UI
+  +-- Settings integration
+  +-- Cloud Function for scheduling
+  |
+  v
+OCR Import (highest complexity)
+  |
+  +-- Camera/file capture UI
+  +-- Tesseract.js integration
+  +-- Highlight detection algorithm
+  +-- Review/edit flow
+  +-- Integration with existing import
 ```
-
-**Dependency reading:** You must define typography + spacing + color + radius + shadow scales BEFORE you can build page layout templates, data tables, or empty states -- because those compositions reference the primitive tokens.
 
 ---
 
-## MVP Recommendation
+## MVP Recommendations
 
-For the design system milestone, prioritize in this order:
+### Phase Order Recommendation
 
-**Phase 1 -- Token Foundation (must be first):**
-1. Typography scale (6 sizes with usage rules)
-2. Spacing scale (8 named semantic tokens)
-3. Border radius scale (3 values)
-4. Shadow scale (3 elevations)
-5. Icon size scale (3 sizes)
-6. Motion tokens (3 durations + easings)
+**Start with Performance** because:
+1. Lowest risk, immediate user benefit
+2. Establishes patterns (Suspense, lazy loading) used by OCR feature
+3. Measurable improvement in Lighthouse scores
+4. No new infrastructure required
 
-**Phase 2 -- Component Contracts (depends on Phase 1):**
-7. Button variant update (align CVA to new scale)
-8. Input variant update
-9. Card variant update
-10. Badge variant update
+**Then Notifications** because:
+1. Clear scope, well-documented patterns
+2. Firebase is a one-time setup that enables future features
+3. High engagement value for retention
 
-**Phase 3 -- Composition Patterns (depends on Phase 2):**
-11. PageHeader component + Page Layout template
-12. Data Table pattern
-13. Empty State pattern
-14. Interactive State Matrix enforcement
+**Finally OCR** because:
+1. Highest complexity, most unknown risk (highlight detection accuracy)
+2. Benefits from patterns established in earlier phases
+3. Can be shipped as "beta" feature if accuracy isn't perfect
 
-**Phase 4 -- Migration (depends on Phase 3):**
-15. Migrate all 6-7 pages to use the system
-16. Audit and remove all non-token values
+### MVP Scope per Feature
 
-**Defer to post-milestone:**
-- Density context system (just document the 2 exceptions instead)
-- Storybook (unnecessary for 1-person team)
-- Token pipeline automation (manual is fine)
+**Performance MVP:**
+- [ ] Route-based code splitting (all 6 pages)
+- [ ] Skeleton loaders for Dashboard and Highlights
+- [ ] Bundle size audit and vendor chunk separation
+- [ ] Lighthouse baseline and target metrics
+
+**Notifications MVP:**
+- [ ] Daily reminder at user-configured time
+- [ ] Simple permission flow with soft ask
+- [ ] Settings page toggle and time picker
+- [ ] Cards due count in notification body
+- [ ] iOS installation guidance
+
+**OCR MVP:**
+- [ ] Camera capture (single photo mode first)
+- [ ] Tesseract.js text extraction (full page)
+- [ ] Manual text selection from extracted text
+- [ ] Save to existing book
+- [ ] Defer: Automatic highlight detection (can add in v4.1)
+
+### What to Explicitly Defer
+
+| Feature | Defer Until | Reason |
+|---------|-------------|--------|
+| Automatic highlight detection | v4.1 or user feedback | Complex algorithm, uncertain accuracy |
+| Batch OCR capture | After single capture works | Ensure core flow is solid first |
+| Smart notification timing | After basic notifications work | Need usage data to optimize |
+| Weekly summary notification | v4.1 | Nice-to-have, not essential |
+| Book cover barcode scanning | v4.1 | Separate library, adds complexity |
 
 ---
 
-## Sources
+## Confidence Assessment
 
-**Typography Scale:**
-- [Typography in Design Systems -- Nathan Curtis / EightShapes](https://medium.com/eightshapes-llc/typography-in-design-systems-6ed771432f1e)
-- [The 2025 Guide to Responsive Typography Sizing and Scales -- Design Shack](https://designshack.net/articles/typography/guide-to-responsive-typography-sizing-and-scales/)
-- [Mastering Typography in Design Systems -- UX Collective](https://uxdesign.cc/mastering-typography-in-design-systems-with-semantic-tokens-and-responsive-scaling-6ccd598d9f21)
-- [Design Systems Typography Guide -- DesignSystems.com](https://www.designsystems.com/typography-guides/)
+| Area | Confidence | Reason |
+|------|------------|--------|
+| Performance patterns | HIGH | Well-documented, Vite has excellent defaults |
+| Push notification implementation | HIGH | Firebase + FCM is standard, many React tutorials |
+| iOS notification requirements | HIGH | Well-documented Apple requirements since iOS 16.4 |
+| Tesseract.js OCR | HIGH | Mature library, extensive documentation |
+| Highlight detection algorithm | MEDIUM | Algorithm is known but accuracy in real-world conditions varies |
+| User behavior for OCR | MEDIUM | Based on competitor analysis (Readwise, Highlighted app) |
 
-**Spacing and Layout:**
-- [Tailwind CSS Best Practices 2025 -- FrontendTools](https://www.frontendtools.tech/blog/tailwind-css-best-practices-design-system-patterns)
-- [How to Build a Design Token System for Tailwind -- Medium](https://hexshift.medium.com/how-to-build-a-design-token-system-for-tailwind-that-scales-forever-84c4c0873e6d)
+---
 
-**Component Variants (CVA):**
-- [Enterprise Component Architecture with CVA -- thedanielmark.com](https://www.thedanielmark.com/blog/enterprise-component-architecture-type-safe-design-systems-with-class-variance-authority)
-- [CVA Official Docs](https://cva.style/docs)
-- [CVA API Reference](https://cva.style/docs/api-reference)
-
-**Motion Tokens:**
-- [Animation/Motion Design Tokens -- Oscar Gonzalez / Prototypr](https://prototypr.io/post/animation-design-tokens)
-- [Motion -- Carbon Design System (IBM)](https://carbondesignsystem.com/elements/motion/overview/)
-- [Motion -- Fluent 2 Design System (Microsoft)](https://fluent2.microsoft.design/motion)
-- [Motion -- Seeds Design System (Sprout Social)](https://seeds.sproutsocial.com/visual/motion/)
-
-**Design System Architecture:**
-- [Building a Scalable Design System with shadcn/ui -- Shadi Sbaih](https://shadisbaih.medium.com/building-a-scalable-design-system-with-shadcn-ui-tailwind-css-and-design-tokens-031474b03690)
-- [An Opinionated Guide to Building a Scalable React Component System in 2025 -- Medium](https://iamshadi.medium.com/an-opinionated-guide-to-building-a-scalable-react-component-system-in-2025-cdffb77c36a2)
-
-**Apple HIG / Consistency Principles:**
-- [Human Interface Guidelines -- Apple](https://developer.apple.com/design/human-interface-guidelines/)
-- [Apple HIG Design System -- designsystems.surf](https://designsystems.surf/design-systems/apple)
+*Research completed: 2026-02-03*
+*Sources: Web searches verified against official documentation where available*

@@ -1,183 +1,200 @@
 # Project Research Summary
 
-**Project:** Evoque v2.0 -- Design System Overhaul
-**Domain:** Design system standardization for a React/Tailwind/shadcn app
-**Researched:** 2026-01-27
+**Project:** Revision v4.0 — Quality of Life & Physical Books
+**Domain:** OCR, PWA notifications, performance optimization
+**Researched:** 2026-02-03
 **Confidence:** HIGH
 
 ## Executive Summary
 
-Evoque v1.0 shipped a working theme system (OKLCH colors, semantic CSS variables, shadcn/ui primitives) but no governing design system. The result is two coherent design languages coexisting accidentally: a "Compact" language (Study, Settings -- `text-base` titles, `h-7` buttons, tight spacing) and a "Generous" language (Dashboard, Highlights -- `text-3xl` titles, `rounded-xl` containers, `space-y-12` sections). The existing design guide documents Compact but the codebase drifted Generous on the most visible pages. This is the central problem: not missing infrastructure, but an unresolved identity split. The first action must be picking a winner.
+Revision v4.0 adds three capability pillars to the existing React/Supabase spaced repetition app: (1) OCR for importing highlights from physical books via camera capture with automatic highlighter color detection, (2) PWA push notifications for daily study reminders and weekly summaries, and (3) performance optimizations including skeleton loaders and lazy loading. The recommended stack keeps all processing client-side where possible — Tesseract.js + OpenCV.js for OCR (zero API costs, user privacy), custom service worker with Supabase Edge Functions + pg_cron for notifications, and React 19's built-in code splitting with shadcn/ui skeletons for performance.
 
-The recommended approach is direct, low-infrastructure standardization. The existing Tailwind v3 + CVA + shadcn/ui stack already has enforcement mechanisms -- what is missing is configuration tightening (restrict Tailwind's theme to exact scales), ESLint enforcement (ban arbitrary values), and systematic page-by-page migration. No new runtime dependencies are needed. The only new dev dependency is `eslint-plugin-tailwindcss` for automated enforcement. No Storybook, no W3C Design Tokens, no Tailwind v4 migration, no component library package.
+The central technical challenge is integrating these features without breaking the existing architecture. The app's 1280-line StoreContext is already a re-render bottleneck; adding OCR state or notification state there would cause cascading performance issues. The recommended approach is to create isolated contexts for new features (OCRContext, NotificationContext) rather than expanding the monolithic StoreContext. For push notifications, the critical first step is migrating vite-plugin-pwa from `generateSW` to `injectManifest` strategy — adding a separate Firebase service worker (the standard tutorial approach) will conflict with the existing PWA setup.
 
-The key risk is breaking working, user-approved UI in pursuit of uniformity. Dashboard, Highlights, and StudySession were all approved during v1.0. Aggressive mechanical find-and-replace could regress these pages. Every page change needs visual verification. The second risk is over-engineering: spending weeks on token pipelines and abstractions when the actual fix is 59 arbitrary font-size values and 56 arbitrary spacing values that need to map to named tokens, plus 5 page headers that need the same component.
+The key risks are: (1) Tesseract.js memory leaks on mobile if workers are not explicitly terminated, (2) highlighted text color interference causing OCR failures without proper image preprocessing, (3) iOS/EU users cannot receive push notifications due to DMA restrictions, and (4) service worker conflicts breaking the existing PWA. All of these have documented prevention strategies. The recommended phase order is Performance first (unblocks better UX patterns), then Notifications (simpler, establishes service worker pattern), then OCR (most complex, benefits from patterns established earlier).
 
 ## Key Findings
 
 ### Recommended Stack
 *Full detail: `.planning/research/STACK.md`*
 
-No new runtime dependencies. The fix is configuration, not libraries.
+Client-side OCR using Tesseract.js v7.0 + OpenCV.js for highlight detection. This approach provides zero API costs, full privacy (images never leave device), and offline capability after initial library load. Cloud OCR (Google Vision at $1.50/1000 images) is explicitly deferred unless client-side accuracy proves insufficient for printed book text.
 
-**Three enforcement layers:**
-- **Tailwind config restriction:** Override `theme.fontSize` and `theme.fontWeight` to expose ONLY the allowed design tokens. This eliminates wrong choices from IntelliSense and reduces generated CSS.
-- **ESLint enforcement:** `eslint-plugin-tailwindcss` with `no-arbitrary-value` rule bans all `text-[10px]`, `w-[400px]` bracket syntax, forcing migration to named tokens.
-- **tailwind-merge extension:** Extend `cn()` to recognize custom font-size classes (`text-2xs`, `text-sm-caption`) so class conflict resolution works correctly.
+**Core technologies:**
+- **tesseract.js ^7.0.0:** OCR engine — mature, well-documented, v7 fixed memory leaks from earlier versions
+- **@techstark/opencv-js ^4.12.0:** Image processing — HSV color detection for highlighter regions, use minimal build (~2MB vs 8MB full)
+- **web-push ^3.6.7:** Push notification delivery — VAPID key generation, server-side sending via Supabase Edge Functions
+- **vite-plugin-pwa (injectManifest):** Custom service worker — must switch from current `generateSW` strategy
+- **pg_cron (Supabase):** Notification scheduling — already available, triggers Edge Functions on schedule
+- **shadcn/ui skeleton:** Loading states — already in project, add via CLI if missing
 
-**Critical configuration changes:**
-- `tailwind.config.js`: Override `theme.fontSize` (9 named sizes replacing Tailwind's 13 defaults), `theme.fontWeight` (4 values), `theme.zIndex` (7 semantic layers)
-- `lib/utils.ts`: Extend `tailwind-merge` with custom font-size class group
-- `eslint.config.js`: New file, flat config with Tailwind rules
-- `package.json`: Add `lint` and `lint:fix` scripts
-
-**What NOT to do:** Do not upgrade to Tailwind v4, do not adopt W3C Design Tokens, do not add Storybook, do not add `@tailwindcss/typography`.
+**New npm dependencies:**
+```bash
+npm install tesseract.js@^7.0.0 @techstark/opencv-js@^4.12.0
+npm install -D rollup-plugin-visualizer@^5.14.0
+```
 
 ### Expected Features
 *Full detail: `.planning/research/FEATURES.md`*
 
 **Must have (table stakes):**
-1. Typography scale -- 6 named sizes with strict context rules (display, title, heading, body, caption, overline)
-2. Spacing scale -- 8 semantic tokens on a 4px grid
-3. Color usage rules -- ban raw `text-zinc-*`, enforce semantic-only usage
-4. Border radius scale -- collapse 5+ values to exactly 3 (sm/md/lg)
-5. Shadow scale -- exactly 3 elevations
-6. Icon size scale -- exactly 3 sizes (sm=14px, md=16px, lg=20px)
-7. CVA component contracts -- Button, Input, Badge, Card with tightened variants
-8. Z-index layer system -- 7 semantic layers
+1. Camera capture with file picker fallback
+2. Basic OCR text extraction from photos
+3. Manual text selection/editing after OCR
+4. Daily reminder notification at configurable time
+5. Permission request flow with soft ask before browser prompt
+6. Notification settings in existing Settings page
+7. Route-based code splitting (lazy page loads)
+8. Skeleton loaders for Dashboard and Highlights
 
 **Should have (differentiators):**
-9. PageHeader component -- single canonical page layout template
-10. Motion tokens -- 3 durations + 3 easings as CSS custom properties
-11. Interactive state matrix -- all states defined for every interactive element
-12. Empty state pattern -- single canonical template
-13. Data table pattern -- single reusable table structure
+9. Automatic highlight detection by color (yellow/green/pink)
+10. Multi-color highlight support with color-to-tag mapping
+11. Cards due count in notification body ("You have 15 cards due")
+12. Streak preservation alerts ("Don't break your 7-day streak!")
+13. Weekly summary notification with stats
+14. Badge count on PWA icon (`navigator.setAppBadge()`)
+15. Prefetch adjacent routes on hover
 
 **Defer (post-milestone):**
-- Density context system (document the 2 exceptions instead)
-- Storybook (unnecessary for solo developer)
-- Token pipeline automation (manual is fine)
-- Responsive typography with `clamp()` (fixed sizes appropriate for data-dense app)
+- Batch OCR capture (ensure single capture works first)
+- Smart notification timing based on study patterns (needs usage data)
+- Page number extraction from images (complex layout detection)
+- Book cover/barcode recognition (separate library, adds complexity)
+- Handwriting recognition (significantly harder than printed text)
+- Multi-language auto-detection (user selects language in settings)
 
 ### Architecture Approach
-*Full detail: `.planning/research/ARCHITECTURE.md`*
+*Full detail: `.planning/research/ARCHITECTURE-V4.md`*
 
-Five-layer architecture: CSS Variables (colors in `index.css`) -> Tailwind Config (bindings) -> shadcn Components (primitives with correct defaults) -> App Components (compositions) -> Documentation (governance). Colors stay as CSS variables because they change between themes. Typography and spacing go in Tailwind config because they do not change between themes.
+The existing architecture is well-suited for these additions. Key decisions: (1) Client-side OCR with Tesseract.js WASM workers, (2) Push notifications via custom service worker + Supabase Edge Functions + pg_cron, (3) Isolated contexts for new features to avoid StoreContext bloat.
 
 **Major components:**
-1. **Token layer** (`index.css` + `tailwind.config.js`) -- restricted theme with only allowed values
-2. **Component layer** (`components/ui/*.tsx`) -- shadcn primitives with defaults matching the design system (h-8 buttons, h-8 inputs)
-3. **Composition layer** (`PageHeader` + page patterns) -- one new component, documented layout conventions
-4. **Governance layer** (`.planning/design-system/`) -- TOKENS.md, COMPONENTS.md, PATTERNS.md, AUDIT-CHECKLIST.md
+
+1. **OCR Module**
+   - `OCRImportModal.tsx` — Photo capture UI, preview, cropping
+   - `ocrService.ts` — Tesseract.js wrapper, worker lifecycle management
+   - `PhotoCapture.tsx` — Camera access, image capture/upload
+   - `TextPreview.tsx` — Edit extracted text before saving
+
+2. **Push Notification Module**
+   - `sw.ts` — Custom service worker with push handlers
+   - `pushService.ts` — Subscription management client-side
+   - `NotificationSettings.tsx` — Permission request UI, preferences
+   - `check-due-cards/` — Supabase Edge Function for sending pushes
+
+3. **Performance Module**
+   - Component-level lazy loading for heavy modals (OCRImportModal, TagManagerSidebar)
+   - Skeleton components matching page layouts
+   - React 19 compiler for automatic memoization
+
+**Data flow pattern:** OCR terminates by calling existing `importData` function via a new adapter. Push notifications store subscriptions in new `push_subscriptions` table, triggered by pg_cron calling Edge Functions.
 
 ### Critical Pitfalls
+*Full detail: `.planning/research/PITFALLS.md`*
 
-1. **Guide-Reality Divergence** -- The existing guide contradicts the codebase in 5+ dimensions. Must reconcile BEFORE writing any code. Audit every rule against actual usage.
-2. **Breaking Working UI** -- Dashboard and StudySession were user-approved. Visual verification after every page change. Maintain a "DO NOT TOUCH" list for intentional deviations.
-3. **Cascading Base Component Changes** -- Changing `button.tsx` default from `h-10` to `h-8` affects every Button usage. Audit all usages before changing any base component.
-4. **Over-Engineering** -- Building token infrastructure for 7 pages instead of making direct CSS fixes. Prefer `className` changes over new abstractions.
-5. **Two Title Systems** -- `text-3xl` (Dashboard/Highlights) vs `text-base` (Study/Settings). Must pick one before any execution starts.
+1. **Service Worker Conflict (CRITICAL)** — Do NOT create separate firebase-messaging-sw.js. Switch to `injectManifest` strategy and merge push handlers into existing service worker. Adding a second SW causes constant reloads and subscription failures.
+
+2. **Tesseract.js Memory Leaks (HIGH)** — Workers must be explicitly terminated with `await worker.terminate()`. Without await, termination may not complete. Create fresh workers periodically; limit to 2 concurrent workers on mobile.
+
+3. **Highlighted Text Color Interference (HIGH)** — Colored highlighter marks interfere with Tesseract's internal binarization. Implement preprocessing: convert to grayscale, apply adaptive thresholding, use color segmentation to neutralize highlights.
+
+4. **StoreContext Re-render Cascade (CRITICAL)** — The 1280-line monolithic context will cause mass re-renders if OCR/notification state is added. Create separate OCRContext and NotificationContext instead.
+
+5. **iOS/EU Push Exclusion (HIGH)** — iOS requires PWA installed to Home Screen (iOS 16.4+). EU users on iOS cannot receive push notifications due to DMA restrictions. Implement graceful degradation: detect iOS + EU, offer alternative (email reminders, in-app notification center).
+
+**Prevention summary:** Architect worker management from the start, implement image preprocessing pipeline, migrate to injectManifest before any Firebase code, create isolated contexts for new features, build permission flow with soft opt-in before hard browser prompt.
 
 ## Implications for Roadmap
 
-### Phase 0: Design Decision Resolution
-**Rationale:** The single biggest risk is starting execution without resolving the Compact-vs-Generous split. This is a design DECISION, not a code change.
-**Delivers:** Updated design guide with explicit decisions on title size, spacing convention, border radius policy, and a "DO NOT TOUCH" list.
-**Addresses:** Pitfall 1 (Guide-Reality Divergence), Pitfall 5 (Two Title Systems)
-**Avoids:** Building on an unresolved foundation
+Based on research, suggested phase structure:
 
-### Phase 1: Token Foundation + Tooling
-**Rationale:** All enforcement depends on a restricted Tailwind config and ESLint setup. No page migration can be validated until the tooling exists.
-**Delivers:** Restricted `tailwind.config.js`, `eslint.config.js`, extended `tailwind-merge`, `lib/design-tokens.ts`.
-**Addresses:** Features 1-6 (token scales), Stack Layer 1 + Layer 2
-**Avoids:** Pitfall 4 (Over-Engineering) -- only 3 dev dependencies added, zero runtime additions
+### Phase 1: Performance Foundation + Service Worker Migration
+**Rationale:** Performance patterns (lazy loading, Suspense boundaries) are prerequisites for OCR module which is 10MB+. Service worker migration to `injectManifest` is required before push notifications and is low-risk if done first.
+**Delivers:** Route-level lazy loading for all pages, component-level lazy loading pattern established, skeleton components for Dashboard/Highlights, custom service worker with existing PWA functionality preserved.
+**Addresses:** Features 7-8 (code splitting, skeletons), unblocks Phase 2 + Phase 3
+**Avoids:** PERF-3 (Code Splitting Done Wrong), PUSH-1 (Service Worker Conflict)
 
-### Phase 2: Component Defaults + PageHeader
-**Rationale:** Component defaults must be fixed before page migration, otherwise every page change fights incorrect defaults.
-**Delivers:** Updated `button.tsx`, `input.tsx`, new `page-header.tsx`, normalized import paths.
-**Addresses:** Feature 7 (CVA contracts), Feature 9 (PageHeader)
-**Avoids:** Pitfall 3 (Cascading Changes) -- audit all usages before changing each component
+### Phase 2: Push Notifications
+**Rationale:** Simpler than OCR, high engagement value, builds on service worker migration from Phase 1. Clear scope with well-documented patterns.
+**Delivers:** Daily study reminders, notification settings UI, permission flow, cards due count in notification body. Supabase infrastructure (push_subscriptions table, Edge Function, pg_cron job).
+**Uses:** Custom service worker from Phase 1, Supabase Edge Functions, pg_cron
+**Implements:** Push notification module (pushService.ts, NotificationSettings.tsx)
+**Avoids:** PUSH-2 (iOS/EU exclusion via graceful degradation), PUSH-3 (permission timing via soft opt-in)
 
-### Phase 3: Page Migration (Core Pages)
-**Rationale:** Pages are the user-facing surface. With tokens defined and components fixed, pages can be migrated systematically.
-**Delivers:** Dashboard, Highlights, Study, Settings using canonical typography, spacing, PageHeader, semantic colors. All 59 arbitrary font-sizes replaced.
-**Addresses:** Feature 9 (Page Layout Template), arbitrary value elimination
-**Avoids:** Pitfall 2 (Breaking Working UI) -- one page per plan, visual verification after each
+### Phase 3: OCR Infrastructure
+**Rationale:** Most complex feature, benefits from patterns established in Phase 1-2. Can ship as "beta" feature if highlight detection accuracy isn't perfect.
+**Delivers:** Camera capture, Tesseract.js text extraction, manual text selection, integration with existing import flow. Proper worker lifecycle management.
+**Uses:** Lazy loading patterns from Phase 1, tesseract.js v7.0, @techstark/opencv-js
+**Implements:** OCR module (ocrService.ts, OCRImportModal.tsx, PhotoCapture.tsx)
+**Avoids:** OCR-1 (memory leaks via explicit termination), OCR-2 (highlight interference via preprocessing), PERF-4 (bundle size via dynamic import)
 
-### Phase 4: Page Migration (Special Pages) + Component Audit
-**Rationale:** StudySession and Login have intentional deviations. Modals and complex components depend on page decisions being final.
-**Delivers:** StudySession (minimal, preserve touch targets), Login (may keep branding), all modals/popovers aligned.
-**Addresses:** Feature 11 (Interactive State Matrix), Feature 13 (Empty State Pattern)
-**Avoids:** Pitfall 2 (Breaking Working UI), Pitfall 8 (Accessibility Costs)
-
-### Phase 5: Polish + Documentation + Governance
-**Rationale:** Documentation must describe reality, not aspiration. Writing docs last ensures accuracy.
-**Delivers:** Motion tokens, TOKENS.md, COMPONENTS.md, PATTERNS.md, AUDIT-CHECKLIST.md. ESLint `no-arbitrary-value` upgraded to `error`.
-**Addresses:** Feature 10 (Motion Tokens), Feature 14 (Data Table Pattern)
-**Avoids:** Pitfall 7 (Stale Documentation)
+### Phase 4: OCR Enhancement + Polish
+**Rationale:** Automatic highlight detection is the key differentiator but complex. Defer until basic OCR flow is validated.
+**Delivers:** Automatic highlight detection by color (yellow/green/pink), multi-color support, highlight preview before OCR, weekly summary notification.
+**Uses:** OpenCV.js HSV color thresholding, contour detection
+**Addresses:** Features 9-10 (highlight detection), Feature 13 (weekly summary)
+**Avoids:** Shipping broken highlight detection by validating basic flow first
 
 ### Phase Ordering Rationale
 
-- Phase 0 before everything: the Compact-vs-Generous decision gates all subsequent work
-- Phase 1 before Phase 2: token definitions must exist before components reference them
-- Phase 2 before Phase 3: component defaults must be correct before pages consume them
-- Phase 3 before Phase 4: core pages establish the pattern; special pages adapt
-- Phase 5 last: documentation describes what IS, not what WILL BE
-- Grouping follows FEATURES dependency chain: primitive tokens -> component contracts -> page compositions -> governance
+- **Phase 1 before Phase 2:** Service worker migration must happen before push notification handlers are added
+- **Phase 1 before Phase 3:** Lazy loading patterns established for OCR module (10MB+)
+- **Phase 2 before Phase 3:** Simpler feature first reduces risk; notifications are independent of OCR
+- **Phase 3 before Phase 4:** Basic OCR must work before adding highlight detection complexity
+- **Grouping follows dependency chain:** Infrastructure -> Simpler feature -> Complex feature -> Enhancement
 
 ### Research Flags
 
-Phases likely needing deeper research during planning:
-- **Phase 2 (Component Defaults):** Needs full cascade audit of every `button.tsx`, `input.tsx`, and `card.tsx` usage before changing defaults
-- **Phase 3 (Dashboard Migration):** Chart components and stat cards with custom layouts may need research into standardization approach
+**Phases likely needing deeper research during planning:**
+- **Phase 3 (OCR Infrastructure):** Image preprocessing for highlighted text needs algorithm refinement; capture UI guidance for image quality; worker lifecycle patterns
+- **Phase 4 (OCR Enhancement):** HSV color thresholds for different highlighter brands; contour detection tuning; real-world accuracy testing
 
-Phases with standard patterns (skip research-phase):
-- **Phase 0 (Design Decisions):** Pure decision-making, no technical research needed
-- **Phase 1 (Token Foundation):** STACK research provides exact config code; mechanical implementation
-- **Phase 5 (Documentation):** Standard markdown authoring, no technical complexity
+**Phases with standard patterns (skip research-phase):**
+- **Phase 1 (Performance):** React lazy loading well-documented; vite-plugin-pwa injectManifest has official docs; shadcn skeleton is one CLI command
+- **Phase 2 (Push Notifications):** Standard Web Push API; Supabase has official push notification guide; Firebase FCM patterns widely documented
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | All recommendations verified against official Tailwind v3 docs, eslint-plugin-tailwindcss GitHub, tailwind-merge npm |
-| Features | HIGH | Cross-referenced Apple HIG, Carbon, Polaris, Material Design; grounded in codebase audit |
-| Architecture | HIGH | Based on direct file-by-file codebase audit; conservative recommendations |
-| Pitfalls | HIGH | Every pitfall backed by specific file:line evidence from codebase |
+| Stack | HIGH | All libraries verified with official docs and npm; Tesseract.js v7 confirmed, web-push well-documented |
+| Features | HIGH for notifications/performance, MEDIUM for OCR highlight detection | Notification patterns standard; OCR accuracy in real-world conditions varies |
+| Architecture | HIGH | Reviewed actual codebase; patterns follow existing conventions; no breaking changes |
+| Pitfalls | HIGH | Verified with GitHub issues, official documentation, and 2025-2026 community practices |
 
 **Overall confidence:** HIGH
 
 ### Gaps to Address
 
-- **Which title size wins:** ARCHITECTURE recommends `text-lg font-semibold`. FEATURES recommends 18px. PITFALLS suggests `text-xl` or `text-2xl` as compromise. Must resolve in Phase 0 with user input.
-- **Button default height:** STACK says `h-7`, ARCHITECTURE says `h-8` (better touch targets), PITFALLS warns against changing defaults at all. Recommendation: `h-8` with full usage audit first.
-- **Config restriction vs documentation:** STACK recommends overriding `theme.fontSize` (restrictive). ARCHITECTURE recommends documentation-only (simpler). Recommendation: go with STACK's restrictive approach -- more durable, zero runtime cost.
-- **shadcn generation mismatch:** Two component generations use different patterns (forwardRef vs function, relative vs alias imports). Low-priority cleanup, normalize imports opportunistically.
+- **Highlight detection accuracy:** Algorithm is documented but real-world accuracy with different highlighter brands, lighting conditions, and paper types needs validation during Phase 4. Plan for "beta" label if accuracy is below 80%.
+- **iOS/EU user experience:** Cannot receive push notifications. Need to design in-app alternative (notification center, email digest) and detect this condition to avoid showing broken features.
+- **StoreContext migration:** Research recommends isolated contexts for new features. Long-term, the monolithic StoreContext should be split, but this is out of scope for v4.0. Document as technical debt.
+- **Tesseract language data hosting:** Need to decide between CDN (faster initial load) vs local hosting (offline reliability). Recommend local in `/public/tessdata` for PWA offline support.
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- [Tailwind CSS v3 Theme Configuration](https://v3.tailwindcss.com/docs/theme)
-- [Tailwind CSS v3 Font Size](https://v3.tailwindcss.com/docs/font-size)
-- [eslint-plugin-tailwindcss](https://github.com/francoismassart/eslint-plugin-tailwindcss)
-- [CVA Official Docs](https://cva.style/docs)
-- [shadcn/ui Theming](https://ui.shadcn.com/docs/theming)
-- [tailwind-merge npm](https://www.npmjs.com/package/tailwind-merge)
-- [Apple Human Interface Guidelines](https://developer.apple.com/design/human-interface-guidelines/)
-- Evoque codebase audit (direct file reads, all pages and components)
+- [Tesseract.js GitHub](https://github.com/naptha/tesseract.js) — v7.0.0, memory leak fixes, worker patterns
+- [Tesseract.js npm](https://www.npmjs.com/package/tesseract.js) — 473k weekly downloads, verified active maintenance
+- [Supabase Push Notifications Guide](https://supabase.com/docs/guides/functions/examples/push-notifications) — official Edge Function pattern
+- [vite-plugin-pwa injectManifest](https://vite-pwa-org.netlify.app/workbox/inject-manifest.html) — custom service worker strategy
+- [web-push npm](https://www.npmjs.com/package/web-push) — VAPID key generation, notification delivery
+- [Supabase pg_cron](https://supabase.com/docs/guides/database/extensions/pg_cron) — scheduled function triggers
+- [MDN Push API](https://developer.mozilla.org/en-US/docs/Web/API/Push_API) — Web Push specification
+- [shadcn/ui Skeleton](https://ui.shadcn.com/docs/components/skeleton) — component implementation
 
 ### Secondary (MEDIUM confidence)
-- [Typography in Design Systems (EightShapes)](https://medium.com/eightshapes-llc/typography-in-design-systems-6ed771432f1e)
-- [Building Scalable Design System with shadcn/ui](https://shadisbaih.medium.com/building-a-scalable-design-system-with-shadcn-ui-tailwind-css-and-design-tokens-031474b03690)
-- [Tailwind CSS Best Practices 2025](https://www.frontendtools.tech/blog/tailwind-css-best-practices-design-system-patterns)
-- [Carbon Design System Motion](https://carbondesignsystem.com/elements/motion/overview/)
-- [Adopting Design Systems (EightShapes)](https://medium.com/eightshapes-llc/adopting-design-systems-71e599ff660a)
-- Existing guide: `lbp_diretrizes/compact-ui-design-guidelines.md` v1.1
+- [@techstark/opencv-js npm](https://www.npmjs.com/package/@techstark/opencv-js) — v4.12.0, HSV color detection
+- [zirkelc/highlights GitHub](https://github.com/zirkelc/highlights) — reference implementation for highlight detection algorithm
+- [MagicBell iOS PWA Push](https://www.magicbell.com/blog/best-practices-for-ios-pwa-push-notifications) — iOS-specific requirements
+- [Push Notification Best Practices 2026](https://reteno.com/blog/push-notification-best-practices-ultimate-guide-for-2026) — frequency and timing recommendations
+- [React Performance Optimization 2025](https://dev.to/alex_bobes/react-performance-optimization-15-best-practices-for-2025-17l9) — lazy loading patterns
 
-### Tertiary (LOW confidence)
-- [W3C Design Tokens Specification](https://www.w3.org/community/design-tokens/) -- referenced for why NOT to adopt
-- Storybook vs Ladle comparison -- opinion-based, project-size dependent
+### Tertiary (needs validation)
+- OCR accuracy benchmarks for highlighted text — limited real-world data, need Phase 4 testing
+- Multi-highlighter color detection thresholds — documented ranges may need adjustment for specific brands
 
 ---
-*Research completed: 2026-01-27*
+*Research completed: 2026-02-03*
 *Ready for roadmap: yes*

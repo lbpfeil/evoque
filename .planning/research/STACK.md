@@ -1,512 +1,419 @@
-# Stack Research: Design System Standardization
+# Stack Research: v4.0 (Performance, Notifications, OCR)
 
-**Project:** EVOQUE (Kindle Highlights Manager)
-**Researched:** 2026-01-27
-**Mode:** Stack dimension for rigid design system enforcement (v2.0 milestone)
+**Project:** Revision
+**Researched:** 2026-02-03
 **Overall Confidence:** HIGH
-
----
 
 ## Executive Summary
 
-Your v1.0 shipped a warm OKLCH color palette and theme system. The next step is enforcing obsessive consistency across typography, spacing, and component usage. This research identifies what tools and configuration approaches will lock down your design tokens so that every visual element is identical to its equivalent on any page.
-
-The core insight: **you do not need new libraries.** Your existing Tailwind v3 + CVA + shadcn/ui stack already has the enforcement mechanisms. What you need is configuration tightening (restrict the Tailwind theme to your exact scales), linting enforcement (ESLint plugin to ban arbitrary values), and documentation (lightweight design guide, not Storybook).
+For OCR, use **Tesseract.js v7.0** for client-side processing (free, private, no API costs) combined with **OpenCV.js** for highlight color detection. This approach keeps all image processing in the browser, avoiding cloud API costs and privacy concerns. For PWA push notifications, extend the existing vite-plugin-pwa setup with a custom service worker using `injectManifest` strategy, paired with **Supabase Edge Functions** and **pg_cron** for scheduled delivery. Performance optimization requires minimal new dependencies since React 19's compiler handles most memoization automatically.
 
 ---
 
-## Current State Assessment
+## OCR/Text Extraction
 
-### What You Have
+### Recommended: Tesseract.js + OpenCV.js (Client-Side)
 
-| Technology | Version | Status |
-|------------|---------|--------|
-| Tailwind CSS | 3.4.17 | Stable, well-configured |
-| class-variance-authority | 0.7.1 | Used by all shadcn components |
-| tailwind-merge | 3.4.0 | Used via `cn()` utility |
-| clsx | 2.1.1 | Used via `cn()` utility |
-| shadcn/ui components | 16 components | button, dialog, input, popover, command, sheet, card, tabs, badge, select, switch, tooltip, scroll-area, dropdown-menu, alert-dialog, checkbox |
-| Outfit Variable font | @fontsource-variable/outfit | Primary sans-serif |
+| Component | Library | Version | Purpose |
+|-----------|---------|---------|---------|
+| OCR Engine | tesseract.js | ^7.0.0 | Extract text from images |
+| Image Processing | @techstark/opencv-js | ^4.12.0 | Detect highlighted regions by color |
 
-### What Needs Fixing
+**Why this over alternatives:**
 
-**59 arbitrary font-size values** scattered across 14 files (`text-[8px]`, `text-[9px]`, `text-[10px]`, `text-[11px]`). These are exactly the kind of values that erode design system consistency. They need to be absorbed into named token sizes.
+1. **Privacy**: Images never leave the user's device - critical for personal book photos
+2. **Cost**: Zero API costs vs $1.50/1000 images for cloud OCR
+3. **Offline**: Works without internet after initial load
+4. **Good enough accuracy**: 95%+ for printed text (the primary use case)
 
-**56 arbitrary spacing/dimension values** across 18 files (`w-[400px]`, `max-h-[300px]`, `h-[80px]`, etc.). Some are legitimate layout constraints; others should become tokens.
-
-**No ESLint configuration** exists at the project root -- there is no mechanism to prevent new arbitrary values from being introduced.
-
-**Typography guidelines exist only in prose** (`compact-ui-design-guidelines.md`) but are not enforced by tooling. The Tailwind config still exposes Tailwind's full default `fontSize` scale plus `fontFamily` extensions, allowing devs to use any size.
-
----
-
-## Recommended Approach: Token Enforcement via Tailwind Config + ESLint
-
-### Strategy: Three Layers
-
-```
-Layer 1: RESTRICT  -- Override Tailwind theme to only expose allowed tokens
-Layer 2: ENFORCE   -- ESLint plugin bans arbitrary values in utility classes
-Layer 3: DOCUMENT  -- In-code design guide with usage examples
-```
-
-This approach does not add weight to the runtime bundle. Layer 1 actually reduces CSS output (fewer utility classes generated). Layer 2 is dev-only tooling. Layer 3 is documentation.
-
----
-
-## Layer 1: Tailwind Config Token Restriction
-
-### Typography Scale
-
-**Approach:** Override `theme.fontSize` (not `theme.extend.fontSize`) to completely replace Tailwind's 13 default sizes with your exact design system scale.
-
-**Rationale:** When you place font sizes under `theme.fontSize` instead of `theme.extend.fontSize`, Tailwind eliminates all defaults. Only your defined sizes generate utility classes. The VS Code IntelliSense only suggests your allowed sizes. This is the strongest enforcement mechanism.
-
-**Confidence:** HIGH -- verified from [Tailwind v3 Font Size docs](https://v3.tailwindcss.com/docs/font-size) and [Theme Configuration docs](https://v3.tailwindcss.com/docs/theme).
-
-**Recommended scale (based on existing compact-ui-design-guidelines.md v1.1):**
-
-```javascript
-// tailwind.config.js -- theme.fontSize (replaces defaults)
-fontSize: {
-  // Micro -- heatmap cells, extreme metadata
-  "2xs": ["8px", { lineHeight: "1.2" }],
-
-  // Caption -- tag pills, labels, keyboard hints, stats labels
-  "xs": ["10px", { lineHeight: "1.3" }],
-
-  // Small caption -- table headers, metadata, secondary info
-  "sm-caption": ["11px", { lineHeight: "1.35" }],
-
-  // Body small -- default text, list items, descriptions
-  "sm": ["12px", { lineHeight: "1.5" }],
-
-  // Body -- normal text, input text (compact-ui v1.1)
-  "base": ["14px", { lineHeight: "1.5" }],
-
-  // Heading 3 / Section title
-  "lg": ["16px", { lineHeight: "1.4" }],
-
-  // Heading 2 / Page subtitle
-  "xl": ["18px", { lineHeight: "1.3" }],
-
-  // Heading 1 / Page title
-  "2xl": ["20px", { lineHeight: "1.3" }],
-
-  // Display -- hero stats, large numbers
-  "3xl": ["24px", { lineHeight: "1.2" }],
-}
-```
-
-**Why this scale and not a modular ratio:** Your app is a compact productivity tool, not a marketing site. The existing design guidelines specify exact pixel values (8px, 9px, 10px, 11px, 12px, 14px, 16px, 18px, 20px). A modular ratio (e.g., 1.25x) would produce sizes like 10, 12.5, 15.6, 19.5 -- none of which match your current guidelines. Use a hand-tuned scale that matches what you already use.
-
-**Migration note:** The existing `text-[9px]` and `text-[10px]` usages (59 occurrences across 14 files) map to `text-xs`. The `text-[8px]` usages map to `text-2xs`. The `text-[11px]` usages map to `text-sm-caption`. This is a mechanical find-and-replace migration.
-
-### Font Weight Scale
-
-**Approach:** Override `theme.fontWeight` to restrict to three weights only.
-
-```javascript
-fontWeight: {
-  normal: "400",
-  medium: "500",
-  semibold: "600",
-  bold: "700",
-}
-```
-
-**Rationale:** Outfit Variable supports the full 100-900 range but your design guidelines only use normal, medium, semibold, and bold. Restricting prevents `font-thin`, `font-extralight`, `font-light`, `font-extrabold`, `font-black` from ever appearing in code.
-
-### Spacing Scale
-
-**Approach:** Keep Tailwind's default spacing scale but add semantic aliases. Do NOT override `theme.spacing` -- Tailwind's 4px-based default scale already matches your compact-ui-design-guidelines (which explicitly states "4px base unit").
-
-```javascript
-// theme.extend.spacing -- add semantic aliases only
-spacing: {
-  "section": "12px",   // gap-section = 12px (between sections)
-  "group": "8px",      // gap-group = 8px (between related items)
-  "item": "4px",       // gap-item = 4px (between list items)
-  "tight": "2px",      // gap-tight = 2px (minimal gaps)
-}
-```
-
-**Why NOT override spacing:** Unlike typography, where you have 13 unused defaults cluttering autocomplete, the spacing scale's values (0.5=2px, 1=4px, 1.5=6px, 2=8px, 3=12px, 4=16px) are ALL used in your guidelines. Overriding would break existing code for no benefit.
-
-**Why add semantic aliases:** Semantic names (`gap-section`, `gap-group`, `gap-item`) make intent explicit. A developer choosing between `gap-2` and `gap-3` might guess wrong. A developer choosing `gap-group` cannot. But this is optional polish, not required for enforcement.
-
-### Border Radius Scale
-
-**Approach:** Keep CSS variable approach (already in place).
-
-Your config already has:
-```javascript
-borderRadius: {
-  lg: "var(--radius)",
-  md: "calc(var(--radius) - 2px)",
-  sm: "calc(var(--radius) - 4px)",
-}
-```
-
-This is correct. `--radius: 0.75rem` produces a consistent 3-step scale. No changes needed.
-
-### Z-Index Scale
-
-**Approach:** Override `theme.zIndex` to match the layer system documented in compact-ui-design-guidelines.md.
-
-```javascript
-zIndex: {
-  "base": "0",
-  "header": "10",
-  "sidebar": "20",
-  "dropdown": "30",
-  "backdrop": "40",
-  "modal": "50",
-  "toast": "60",
-}
-```
-
-**Rationale:** Your guidelines define this exact layer system. Making it the only available z-index scale prevents `z-[999]` and `z-50` competing in the same codebase. Semantic names make the layer hierarchy self-documenting.
-
----
-
-## Layer 2: ESLint Enforcement
-
-### Tool: eslint-plugin-tailwindcss
-
-**Install:**
-```bash
-npm install -D eslint eslint-plugin-tailwindcss @eslint/js
-```
-
-**Why this plugin:** It is the most mature ESLint plugin for Tailwind CSS v3. It provides the `no-arbitrary-value` rule which bans all `[bracket]` syntax in Tailwind utility classes. This is the single most impactful rule for design system enforcement.
-
-**Confidence:** HIGH -- verified from [eslint-plugin-tailwindcss GitHub](https://github.com/francoismassart/eslint-plugin-tailwindcss) and [npm](https://www.npmjs.com/package/eslint-plugin-tailwindcss).
-
-**Configuration (flat config, ESLint v9+):**
-
-```javascript
-// eslint.config.js
-import tailwind from "eslint-plugin-tailwindcss";
-
-export default [
-  ...tailwind.configs["flat/recommended"],
-  {
-    settings: {
-      tailwindcss: {
-        callees: ["cn", "cva", "clsx"],
-        config: "tailwind.config.js",
-      },
-    },
-    rules: {
-      // CRITICAL: Ban arbitrary values -- forces use of design tokens
-      "tailwindcss/no-arbitrary-value": "warn",
-
-      // Auto-fixable: Replace arbitrary values that match config
-      // e.g., m-[1.25rem] -> m-5
-      "tailwindcss/no-unnecessary-arbitrary-value": "error",
-
-      // Order classes consistently
-      "tailwindcss/classnames-order": "warn",
-
-      // Prevent contradictions like p-2 p-3
-      "tailwindcss/no-contradicting-classname": "error",
-
-      // Use shorthand (e.g., mx-2 instead of ml-2 mr-2)
-      "tailwindcss/enforces-shorthand": "warn",
-    },
-  },
-];
-```
-
-**Key rules explained:**
-
-| Rule | Severity | What It Does |
-|------|----------|-------------|
-| `no-arbitrary-value` | `warn` | Flags ANY `text-[10px]`, `w-[400px]`, etc. Forces migration to tokens. Start as `warn` during migration, upgrade to `error` when clean. |
-| `no-unnecessary-arbitrary-value` | `error` | Auto-fixes `m-[1.25rem]` to `m-5` when a config match exists. Safe to error immediately. |
-| `no-contradicting-classname` | `error` | Catches `p-2 p-3` (conflicting padding). Always error. |
-| `classnames-order` | `warn` | Consistent class ordering. Quality of life. |
-| `enforces-shorthand` | `warn` | Prefers `mx-2` over `ml-2 mr-2`. Quality of life. |
-
-**Migration strategy for `no-arbitrary-value`:** Start as `warn` because you have 59+ arbitrary font sizes and 56+ arbitrary spacing values. Migrate file by file. Once all arbitrary values use tokens, upgrade to `error` to prevent regression.
-
-**Script additions:**
-```json
-{
-  "scripts": {
-    "lint": "eslint . --ext .ts,.tsx",
-    "lint:fix": "eslint . --ext .ts,.tsx --fix"
-  }
-}
-```
-
-### What NOT to Install
-
-**Do NOT install `@poupe/eslint-plugin-tailwindcss`:** It targets Tailwind CSS v4 specifically. You are on v3. The original `eslint-plugin-tailwindcss` has full v3 support.
-
-**Do NOT install Stylelint:** Your CSS is minimal (just `index.css` with Tailwind directives and CSS variables). Stylelint would add complexity for no benefit. ESLint handles the utility class enforcement.
-
-**Do NOT install `eslint-plugin-better-tailwindcss`:** It is newer and less battle-tested. Stick with the established plugin.
-
----
-
-## Layer 3: Documentation Approach
-
-### Recommendation: In-Code Design Guide (NOT Storybook)
-
-**Why NOT Storybook:**
-- Your app is a solo/small-team project with 16 shadcn components
-- Storybook adds ~66MB of dependencies and ~8s cold start
-- The overhead of maintaining stories for 16 components exceeds the documentation value
-- Your design guidelines already exist in markdown (`compact-ui-design-guidelines.md`)
-
-**Why NOT Ladle:**
-- Ladle is faster (1.2s cold start, 388KB) but still adds build infrastructure
-- For 16 components with clear CVA variants, the cost-benefit ratio is unfavorable
-- Better suited for teams with 50+ custom components
-
-**Confidence:** MEDIUM -- this is an opinion based on project size. Storybook becomes valuable at ~30+ custom components or when multiple developers need a shared visual reference.
-
-**Recommended approach: Enhanced markdown design guide + TypeScript constants file**
-
-Create a design tokens TypeScript file that serves as both documentation and enforcement:
+**Integration Approach:**
 
 ```typescript
-// lib/design-tokens.ts
-
-/**
- * EVOQUE Design System Tokens
- *
- * Single source of truth for all design decisions.
- * These constants are used for documentation and runtime reference.
- * The actual enforcement happens in tailwind.config.js and eslint.
- */
-
-export const typography = {
-  "2xs": { size: "8px", lineHeight: "1.2", use: "Heatmap cells, extreme metadata" },
-  "xs": { size: "10px", lineHeight: "1.3", use: "Tag pills, labels, keyboard hints" },
-  "sm-caption": { size: "11px", lineHeight: "1.35", use: "Table headers, metadata" },
-  "sm": { size: "12px", lineHeight: "1.5", use: "Body small, list items" },
-  "base": { size: "14px", lineHeight: "1.5", use: "Body text, inputs" },
-  "lg": { size: "16px", lineHeight: "1.4", use: "Section titles (H3)" },
-  "xl": { size: "18px", lineHeight: "1.3", use: "Page subtitles (H2)" },
-  "2xl": { size: "20px", lineHeight: "1.3", use: "Page titles (H1)" },
-  "3xl": { size: "24px", lineHeight: "1.2", use: "Display, hero stats" },
-} as const;
-
-export const spacing = {
-  tight: { value: "2px", tailwind: "gap-0.5", use: "Between related items in a row" },
-  item: { value: "4px", tailwind: "gap-1", use: "Between list items" },
-  group: { value: "8px", tailwind: "gap-2", use: "Between groups of related items" },
-  section: { value: "12px", tailwind: "gap-3", use: "Between major sections" },
-} as const;
-
-export const elevation = {
-  base: { z: "0", use: "Page content" },
-  header: { z: "10", use: "Fixed headers" },
-  sidebar: { z: "20", use: "Sidebars, navigation" },
-  dropdown: { z: "30", use: "Dropdowns, tooltips" },
-  backdrop: { z: "40", use: "Modal backdrop" },
-  modal: { z: "50", use: "Modal content" },
-  toast: { z: "60", use: "Toast notifications" },
-} as const;
+// 1. Load image from camera/file
+// 2. Use OpenCV.js to create color mask (yellow/green/pink highlighter)
+// 3. Extract bounding boxes of highlighted regions
+// 4. Pass cropped regions to Tesseract.js for OCR
+// 5. Return extracted text for each highlight
 ```
 
-This file is importable, greppable, and serves as living documentation. It does not add runtime cost (tree-shaken if unused) but gives developers a single place to check "what size should I use for X?"
+**Color Detection Strategy (OpenCV.js):**
+- Convert image to HSV color space
+- Apply `cv.inRange()` with highlighter color thresholds
+- Yellow: HSV(20-40, 100-255, 100-255)
+- Green: HSV(35-85, 100-255, 100-255)
+- Pink: HSV(140-170, 100-255, 100-255)
+- Find contours to get bounding boxes
+- Crop original image to highlighted regions
 
-### Update Existing Guidelines
+**Bundle Size Considerations:**
+- Tesseract.js: ~2MB (WASM + English trained data)
+- OpenCV.js: ~8MB (full build) or ~2MB (custom minimal build)
+- Total: 4-10MB - load lazily only when OCR feature is used
 
-The existing `compact-ui-design-guidelines.md` should be updated to:
-1. Reference the Tailwind token names instead of raw pixel values
-2. Add a mapping table: "If you previously used `text-[10px]`, now use `text-xs`"
-3. Remove any guidance that contradicts the restricted Tailwind config
+**Confidence:** HIGH (Tesseract.js is industry-standard for browser OCR)
+
+### Alternatives Considered
+
+| Option | Pros | Cons | Verdict |
+|--------|------|------|---------|
+| **Google Cloud Vision** | 99%+ accuracy, handles handwriting | $1.50/1000 images, requires backend, privacy concerns | REJECTED: Cost adds up for active users |
+| **AWS Textract** | Great for forms/tables | Same cost issues, AWS lock-in | REJECTED: Overkill for book highlights |
+| **Azure Computer Vision** | Slightly cheaper | Still cloud-based, requires keys | REJECTED: Same issues |
+| **Scribe.js** | Improved Tesseract model, PDF support | Less mature (newer project) | CONSIDER: If accuracy issues arise with Tesseract.js |
+| **zirkelc/highlights** | Purpose-built for highlighted text | Only 4 GitHub stars, not production-ready | REJECTED: Too immature, but good reference implementation |
+
+**When to reconsider cloud OCR:**
+- If user feedback shows Tesseract.js accuracy is insufficient
+- If handwriting recognition becomes a requirement
+- Consider hybrid: client-side first, cloud fallback for failures
 
 ---
 
-## Component Standardization with CVA
+## PWA Push Notifications
 
-### Current State
+### Recommended Approach
 
-Your shadcn `Button` component already uses CVA with four size variants (`default`, `sm`, `lg`, `icon`) and six style variants. This is the correct pattern.
-
-### Recommendation: Tighten Existing Component Sizes
-
-The default shadcn button sizes (`h-10`, `h-9`, `h-11`) do not match your compact guidelines (`h-7` for buttons). Rather than overriding with `className` on every usage, update the CVA definitions in the component source:
-
-```typescript
-// components/ui/button.tsx -- update size variants
-size: {
-  default: "h-7 px-3 text-xs",      // was h-10 px-4 py-2
-  sm: "h-6 rounded-md px-2 text-xs", // was h-9 px-3
-  lg: "h-9 rounded-md px-6",         // was h-11 px-8
-  icon: "h-7 w-7",                   // was h-10 w-10
-  "icon-sm": "h-5 w-5",             // new: compact icon buttons
-},
+**Architecture:**
+```
+[User Device]           [Supabase]              [Push Service]
+     |                      |                        |
+     |-- Subscribe -------->|                        |
+     |   (VAPID public key) |                        |
+     |<-- Subscription -----|                        |
+     |   (endpoint, keys)   |                        |
+     |                      |                        |
+     |                      |-- pg_cron triggers --->|
+     |                      |   Edge Function        |
+     |                      |                        |
+     |<------------------- Push Notification --------|
+     |   (via FCM/APNs)     |                        |
 ```
 
-Apply the same approach to all 16 shadcn components: make the default variants match your compact design guidelines so that bare `<Button>` renders correctly without className overrides.
+| Component | Technology | Notes |
+|-----------|------------|-------|
+| Service Worker | Custom (injectManifest) | Extend existing vite-plugin-pwa setup |
+| VAPID Keys | web-push CLI | Generate once, store in Supabase Vault |
+| Backend | Supabase Edge Functions | Deno-based, handle push delivery |
+| Scheduling | pg_cron (Supabase) | Trigger daily/weekly notification jobs |
+| Subscription Storage | Supabase Database | New `push_subscriptions` table |
 
-### Do NOT Fork shadcn Components Further
-
-shadcn components are meant to be modified (they are copied into your project). However, limit changes to:
-1. Size/spacing adjustments (tighten to compact guidelines)
-2. Default variant changes
-3. Adding new variants when needed
-
-Do NOT restructure the component internals, change the Radix primitive usage, or rewrite the component API. This keeps future shadcn updates easy to merge.
-
----
-
-## tailwind-merge Configuration
-
-### Current State
-
-Your `cn()` utility uses `twMerge(clsx(...))` which is correct. However, `tailwind-merge` does not know about custom font size names like `text-2xs` or `text-sm-caption`.
-
-### Recommendation: Extend tailwind-merge
+**Required Changes to vite.config.ts:**
 
 ```typescript
-// lib/utils.ts
-import { type ClassValue, clsx } from "clsx"
-import { extendTailwindMerge } from "tailwind-merge"
-
-const twMerge = extendTailwindMerge({
-  extend: {
-    classGroups: {
-      "font-size": [
-        { text: ["2xs", "xs", "sm-caption", "sm", "base", "lg", "xl", "2xl", "3xl"] },
-      ],
-    },
-  },
+// Current: strategies: 'generateSW' (default)
+// Change to: strategies: 'injectManifest'
+VitePWA({
+  strategies: 'injectManifest',
+  srcDir: 'src',
+  filename: 'sw.ts',
+  // ... rest of config
 })
+```
 
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+**Custom Service Worker (sw.ts):**
+
+```typescript
+import { precacheAndRoute } from 'workbox-precaching';
+
+// Workbox precaching (existing functionality)
+precacheAndRoute(self.__WB_MANIFEST);
+
+// Push notification handler
+self.addEventListener('push', (event) => {
+  const data = event.data?.json() ?? {};
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: '/favicon-evq/web-app-manifest-192x192.png',
+      badge: '/favicon-evq/favicon-96x96.png',
+      data: data.url,
+    })
+  );
+});
+
+// Notification click handler
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(clients.openWindow(event.notification.data || '/'));
+});
+```
+
+**Edge Function for Sending Notifications:**
+
+```typescript
+// supabase/functions/send-push/index.ts
+import webpush from 'npm:web-push@3.6.7';
+
+webpush.setVapidDetails(
+  'mailto:your-email@example.com',
+  Deno.env.get('VAPID_PUBLIC_KEY')!,
+  Deno.env.get('VAPID_PRIVATE_KEY')!
+);
+
+Deno.serve(async (req) => {
+  const { userId, title, body, url } = await req.json();
+  // Fetch subscription from database, send notification
+});
+```
+
+**pg_cron Schedule Examples:**
+
+```sql
+-- Daily study reminder at 9 AM user's timezone
+SELECT cron.schedule(
+  'daily-study-reminder',
+  '0 9 * * *',
+  $$SELECT net.http_post(...edge_function_url...)$$
+);
+
+-- Weekly summary every Sunday at 6 PM
+SELECT cron.schedule(
+  'weekly-summary',
+  '0 18 * * 0',
+  $$SELECT net.http_post(...edge_function_url...)$$
+);
+```
+
+**Browser Support:**
+- iOS: Supported since iOS 16.4 (PWA must be added to home screen)
+- Android: Full support via Chrome, Firefox
+- Desktop: Full support in Chrome, Edge, Firefox
+
+**Confidence:** HIGH (well-documented pattern, Supabase has official guides)
+
+---
+
+## Performance Optimization
+
+### Recommended Tools
+
+| Category | Approach | Library/Tool | Notes |
+|----------|----------|--------------|-------|
+| **Profiling** | React DevTools Profiler | Built-in | Already available, no install needed |
+| **Bundle Analysis** | rollup-plugin-visualizer | ^5.14.0 | Add to vite.config.ts for bundle visualization |
+| **Code Splitting** | React.lazy + Suspense | Built-in | Already in React 19 |
+| **Memoization** | React 19 compiler | Built-in | Auto-memoizes, manual hooks rarely needed |
+
+**Key Insight:** React 19's compiler automatically handles most memoization. The existing project already has good code splitting in vite.config.ts with manual chunks for supabase, router, radix, and lucide.
+
+### Recommended Lazy Loading Patterns
+
+**Route-Based (Primary Strategy):**
+
+```typescript
+// pages/index.ts (lazy exports)
+export const Dashboard = lazy(() => import('./Dashboard'));
+export const StudySession = lazy(() => import('./StudySession'));
+export const Settings = lazy(() => import('./Settings'));
+
+// App.tsx
+<Suspense fallback={<PageSkeleton />}>
+  <Routes>
+    <Route path="/dashboard" element={<Dashboard />} />
+    <Route path="/study/:id" element={<StudySession />} />
+    <Route path="/settings" element={<Settings />} />
+  </Routes>
+</Suspense>
+```
+
+**Component-Based (For Heavy Components):**
+
+```typescript
+// Lazy load OCR module only when needed
+const OCRImporter = lazy(() => import('./components/OCRImporter'));
+
+// In Settings or wherever OCR is triggered
+{showOCR && (
+  <Suspense fallback={<Spinner />}>
+    <OCRImporter />
+  </Suspense>
+)}
+```
+
+### When to Use Manual Memoization (React 19)
+
+React 19's compiler handles most cases automatically. Use manual hooks only for:
+
+1. **useCallback**: When passing callbacks to native DOM event listeners (not React components)
+2. **useMemo**: For genuinely expensive computations (>10ms)
+3. **React.memo**: For components receiving primitive props from unoptimized parents
+
+**The project likely needs:**
+- Lazy loading for pages (Dashboard, Settings, StudySession)
+- Lazy loading for OCR module (10MB+ bundle)
+- Lazy loading for Recharts (only used on Dashboard)
+
+**Confidence:** HIGH (React 19 patterns well-established)
+
+---
+
+## Skeleton Components
+
+### Recommended Approach: Use Existing shadcn/ui Skeleton
+
+The project already has shadcn/ui configured. Use the built-in Skeleton component.
+
+**Installation (if not already present):**
+
+```bash
+npx shadcn@latest add skeleton
+```
+
+**Component Implementation:**
+
+```typescript
+// components/ui/skeleton.tsx
+import { cn } from "@/lib/utils"
+
+function Skeleton({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      className={cn("animate-pulse rounded-md bg-muted", className)}
+      {...props}
+    />
+  )
+}
+
+export { Skeleton }
+```
+
+**Usage Patterns:**
+
+```typescript
+// Card skeleton
+export function BookCardSkeleton() {
+  return (
+    <div className="flex flex-col gap-sm">
+      <Skeleton className="h-[180px] w-full rounded-xl" />
+      <Skeleton className="h-4 w-3/4" />
+      <Skeleton className="h-4 w-1/2" />
+    </div>
+  );
+}
+
+// Table row skeleton
+export function HighlightRowSkeleton() {
+  return (
+    <div className="flex items-center gap-md p-md">
+      <Skeleton className="h-10 w-10 rounded-full" />
+      <div className="flex-1 space-y-2">
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-2/3" />
+      </div>
+    </div>
+  );
 }
 ```
 
-**Why this matters:** Without this extension, `cn("text-sm", "text-xs")` might not correctly resolve the conflict, keeping both classes in the output. The custom config tells tailwind-merge that `text-2xs` through `text-3xl` are all in the same conflict group.
+**Best Practices:**
+- Match skeleton dimensions to actual content (prevents layout shift)
+- Use semantic design tokens: `bg-muted`, `rounded-md`
+- Keep animation subtle (default `animate-pulse` is good)
+- Create reusable skeleton components for cards, rows, headers
 
-**Confidence:** HIGH -- verified from [tailwind-merge npm docs](https://www.npmjs.com/package/tailwind-merge) and [custom config guide](https://www.adamleithp.com/blog/tailwind-merge-and-custom-classes).
-
----
-
-## What NOT to Do
-
-### Do NOT Upgrade to Tailwind CSS v4
-
-Tailwind v4 introduces `@theme` (CSS-first configuration) which is elegant for design tokens. However:
-- Your project is stable on v3.4.17
-- The shadcn component library still primarily targets v3
-- `eslint-plugin-tailwindcss` has full v3 support but only beta v4 support
-- The migration is non-trivial (config file format change, PostCSS changes)
-- No feature in v4 is required for your design system goals
-
-**When to upgrade:** After Tailwind v4 reaches broader ecosystem support (eslint plugin stable, shadcn fully migrated). Not during a design system standardization milestone.
-
-### Do NOT Adopt W3C Design Tokens Format
-
-The W3C Design Tokens specification reached stable v1.0 in October 2025. It is a JSON-based format for cross-tool interoperability. It is relevant if you:
-- Share tokens between Figma and code
-- Maintain multiple brands/themes
-- Use tools like Style Dictionary or Tokens Studio
-
-You do none of these. Your tokens live in `tailwind.config.js` and `index.css`. Adding a JSON token pipeline would be overengineering for a single-app, single-brand project.
-
-### Do NOT Use `@tailwindcss/typography` Plugin
-
-The `@tailwindcss/typography` plugin (`prose` classes) is for styling uncontrolled HTML (e.g., CMS content, markdown output). Your app renders controlled React components where you explicitly set every text style. The plugin would add unused CSS and confuse the design system by introducing a parallel typography scale.
-
-### Do NOT Create a Shared Component Library Package
-
-Your project is a single app, not a monorepo. Extracting components into a package would add build complexity (Vite library mode, package.json exports, versioning) for zero benefit. Keep components in `components/ui/`.
+**Confidence:** HIGH (shadcn/ui is already in the project)
 
 ---
 
-## Installation Summary
+## What NOT to Add
 
-### New Dependencies
+| Library/Service | Reason to Avoid |
+|-----------------|-----------------|
+| **Cloud OCR APIs (Google, AWS, Azure)** | Unnecessary cost and complexity for book photos with printed text |
+| **Firebase Cloud Messaging** | Adds Firebase dependency when Supabase + web-push is sufficient |
+| **OneSignal** | Third-party service adds cost and dependency |
+| **react-loadable** | Deprecated; use native React.lazy instead |
+| **@loadable/component** | Only needed for SSR; this is a client-side SPA |
+| **million.js** | React 19 compiler handles virtualization better |
+| **why-did-you-render** | Debugging tool, not needed for production optimization |
+| **Full OpenCV.js build** | Use minimal/custom build - full is 8MB |
+| **Multiple OCR engines** | Start with Tesseract.js only; add complexity if needed |
+
+---
+
+## Integration Summary
+
+| Feature | Library/Service | Version | Integration Notes |
+|---------|----------------|---------|-------------------|
+| **OCR Engine** | tesseract.js | ^7.0.0 | Lazy load, ~2MB |
+| **Image Processing** | @techstark/opencv-js | ^4.12.0 | Lazy load, use minimal build |
+| **Push Subscriptions** | web-push (CLI only) | ^3.6.7 | Generate VAPID keys, backend sends |
+| **Push Backend** | Supabase Edge Functions | N/A | New function: send-push |
+| **Push Scheduling** | pg_cron (Supabase) | 1.6.4 | Already available in Supabase |
+| **Service Worker** | vite-plugin-pwa | ^1.2.0 | Already installed, switch to injectManifest |
+| **Skeleton** | shadcn/ui skeleton | N/A | Add component via CLI |
+| **Bundle Analysis** | rollup-plugin-visualizer | ^5.14.0 | Dev dependency only |
+
+### New npm Dependencies
 
 ```bash
-# Linting (dev only)
-npm install -D eslint eslint-plugin-tailwindcss @eslint/js
+# Production dependencies
+npm install tesseract.js@^7.0.0 @techstark/opencv-js@^4.12.0
+
+# Development dependencies (optional)
+npm install -D rollup-plugin-visualizer@^5.14.0
 ```
 
-Total new dependencies: 3 packages (dev only). Zero runtime additions.
+### Backend Setup Required
 
-### Files to Create
+1. **Supabase Database:**
+   - New table: `push_subscriptions` (user_id, endpoint, keys, created_at)
+   - Enable pg_cron extension if not already
 
-| File | Purpose |
-|------|---------|
-| `eslint.config.js` | ESLint flat config with Tailwind rules |
-| `lib/design-tokens.ts` | Design token constants + documentation |
+2. **Supabase Edge Functions:**
+   - New function: `send-push` for delivering notifications
+   - New function: `daily-reminder` triggered by pg_cron
+   - New function: `weekly-summary` triggered by pg_cron
 
-### Files to Modify
-
-| File | Change |
-|------|--------|
-| `tailwind.config.js` | Override `theme.fontSize`, `theme.fontWeight`, `theme.zIndex`; add semantic spacing |
-| `lib/utils.ts` | Extend `tailwind-merge` with custom font-size classes |
-| `components/ui/button.tsx` | Tighten size variants to compact defaults |
-| `components/ui/*.tsx` | Tighten all shadcn component size defaults |
-| `compact-ui-design-guidelines.md` | Update to reference token names |
-| `package.json` | Add `lint` and `lint:fix` scripts |
-
-### Files to Migrate (59+ arbitrary values)
-
-| File | Arbitrary Values | Migration |
-|------|-----------------|-----------|
-| `pages/Settings.tsx` | 14 occurrences | `text-[10px]` -> `text-xs`, `text-[9px]` -> `text-xs`, `text-[11px]` -> `text-sm-caption` |
-| `pages/StudySession.tsx` | 13 occurrences | `text-[9px]` -> `text-xs`, `text-[10px]` -> `text-xs` |
-| `components/HighlightEditModal.tsx` | 6 occurrences | `text-[9px]` -> `text-xs` |
-| `pages/Study.tsx` | 5 occurrences | `text-[10px]` -> `text-xs` |
-| Other files | ~21 occurrences | Same pattern |
+3. **Supabase Vault:**
+   - Store VAPID_PUBLIC_KEY
+   - Store VAPID_PRIVATE_KEY
 
 ---
 
-## Alternatives Considered
+## Cost Analysis
 
-| Concern | Recommended | Alternative | Why Not |
-|---------|-------------|-------------|---------|
-| Token enforcement | Tailwind config override | CSS-only custom properties | Tailwind override restricts IntelliSense + generated CSS; CSS vars alone still allow arbitrary utility classes |
-| Lint enforcement | eslint-plugin-tailwindcss | Manual code review | Humans miss things; automated enforcement is consistent |
-| Component docs | In-code tokens file + markdown | Storybook | Overkill for 16 components, solo/small team |
-| Component docs (alt) | -- | Ladle | Still adds build infra for minimal component count |
-| Typography scale | Hand-tuned pixel scale | Modular ratio (1.25x) | Modular ratio produces sizes that don't match existing guidelines |
-| Token format | Tailwind config JS | W3C Design Tokens JSON | Single app, single brand, no cross-tool sharing needed |
+| Feature | Cost Model | Estimated Monthly Cost |
+|---------|------------|----------------------|
+| **OCR (Tesseract.js)** | Free (client-side) | $0 |
+| **Push Notifications** | Supabase Edge Functions | ~$0 (within free tier for most usage) |
+| **pg_cron** | Included in Supabase | $0 |
+| **Cloud OCR (if needed later)** | Google Vision | $1.50/1000 images after free tier |
+
+**Total additional cost:** $0 for typical usage patterns
 
 ---
 
 ## Sources
 
-**HIGH Confidence (Official Documentation):**
-- [Tailwind CSS v3 Font Size](https://v3.tailwindcss.com/docs/font-size) -- custom fontSize configuration, tuple syntax
-- [Tailwind CSS v3 Theme Configuration](https://v3.tailwindcss.com/docs/theme) -- override vs extend distinction
-- [eslint-plugin-tailwindcss GitHub](https://github.com/francoismassart/eslint-plugin-tailwindcss) -- plugin rules and configuration
-- [eslint-plugin-tailwindcss no-arbitrary-value rule](https://github.com/francoismassart/eslint-plugin-tailwindcss/blob/master/docs/rules/no-arbitrary-value.md) -- rule documentation
-- [CVA official docs](https://cva.style/docs) -- variant patterns and best practices
-- [tailwind-merge npm](https://www.npmjs.com/package/tailwind-merge) -- custom config for extended merge
+### OCR
+- [Tesseract.js GitHub](https://github.com/naptha/tesseract.js) - Version 7.0.0, December 2025
+- [Tesseract.js npm](https://www.npmjs.com/package/tesseract.js) - 473k weekly downloads
+- [@techstark/opencv-js npm](https://www.npmjs.com/package/@techstark/opencv-js) - Version 4.12.0
+- [zirkelc/highlights](https://github.com/zirkelc/highlights) - Reference implementation for highlight detection
+- [Google Cloud Vision Pricing](https://cloud.google.com/vision/pricing) - $1.50/1000 units
+- [OCR Accuracy Benchmark 2026](https://research.aimultiple.com/ocr-accuracy/)
 
-**MEDIUM Confidence (Verified Community Sources):**
-- [Subframe: Creating a Type Scale in Tailwind](https://www.subframe.com/blog/creating-a-type-scale-in-tailwind-css) -- custom type scale approach
-- [Tailwind-merge custom classes guide](https://www.adamleithp.com/blog/tailwind-merge-and-custom-classes) -- extending twMerge
-- [Shadi Sbaih: Building a Scalable Design System with shadcn/ui](https://shadisbaih.medium.com/building-a-scalable-design-system-with-shadcn-ui-tailwind-css-and-design-tokens-031474b03690) -- layered token architecture
-- [Storybook 10 vs Ladle comparison](https://dev.to/saswatapal/storybook-10-why-i-chose-it-over-ladle-and-histoire-for-component-documentation-2omn) -- component documentation tool comparison
+### Push Notifications
+- [Supabase Push Notifications Guide](https://supabase.com/docs/guides/functions/examples/push-notifications)
+- [vite-plugin-pwa injectManifest](https://vite-pwa-org.netlify.app/workbox/inject-manifest.html)
+- [web-push npm](https://www.npmjs.com/package/web-push) - Version 3.6.7
+- [Supabase pg_cron](https://supabase.com/docs/guides/database/extensions/pg_cron)
+- [MDN Push API Tutorial](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Tutorials/js13kGames/Re-engageable_Notifications_Push)
+- [MagicBell PWA Push Guide](https://www.magicbell.com/blog/using-push-notifications-in-pwas)
 
-**LOW Confidence (Single Source / Unverified):**
-- [W3C Design Tokens Specification](https://www.w3.org/community/design-tokens/2025/10/28/design-tokens-specification-reaches-first-stable-version/) -- referenced for context on why NOT to adopt yet
+### Performance
+- [React Code Splitting](https://legacy.reactjs.org/docs/code-splitting.html)
+- [Kent C. Dodds - When to useMemo and useCallback](https://kentcdodds.com/blog/usememo-and-usecallback)
+- [shadcn/ui Skeleton](https://ui.shadcn.com/docs/components/skeleton)
+- [DebugBear - React useMemo and useCallback](https://www.debugbear.com/blog/react-usememo-usecallback)
+
+### Image Processing
+- [OpenCV.js Color Detection Tutorial](https://randomnerdtutorials.com/esp32-cam-opencv-js-color-detection-tracking/)
+- [OpenCV.js Official Tutorials](https://docs.opencv.org/3.4/d5/d10/tutorial_js_root.html)
+- [DigitalOcean OpenCV.js Introduction](https://www.digitalocean.com/community/tutorials/introduction-to-computer-vision-in-javascript-using-opencvjs)
 
 ---
 
-## Confidence Assessment
-
-| Area | Level | Reason |
-|------|-------|--------|
-| Tailwind config override approach | HIGH | Documented in official Tailwind v3 docs |
-| ESLint plugin rules | HIGH | Verified from plugin source and npm docs |
-| Typography scale values | HIGH | Derived from existing compact-ui-design-guidelines.md |
-| tailwind-merge extension | HIGH | Documented in tailwind-merge npm API |
-| Storybook/Ladle recommendation | MEDIUM | Opinion based on project size; larger teams may disagree |
-| CVA component tightening | HIGH | Standard shadcn customization pattern |
-| Migration effort estimate | MEDIUM | Based on grep counts, not tested |
+*Research completed: 2026-02-03*
+*Confidence: HIGH - All recommendations verified with current documentation*

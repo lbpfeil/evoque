@@ -1,432 +1,594 @@
-# Pitfalls Research: Design System Standardization
+# Pitfalls Research: v4.0 (Performance, Notifications, OCR)
 
-**Domain:** Enforcing consistency in an existing React/Tailwind/shadcn app
-**Researched:** 2026-01-27
-**Confidence:** HIGH (verified against codebase analysis + community sources)
-**Context:** v2.0 milestone -- Evoque already shipped v1.0 (theme system, semantic tokens). Now standardizing typography, spacing, component usage, and layout patterns across 7 pages and ~30 components.
+**Project:** Revision (Kindle Highlights)
+**Researched:** 2026-02-03
+**Confidence:** HIGH (Context7-verified for libraries, official docs for patterns)
+
+## Executive Summary
+
+Adding OCR, push notifications, and performance optimizations to an existing React/Supabase app presents five critical pitfalls to watch:
+
+1. **Tesseract.js Memory Leaks** - Workers must be explicitly terminated; failure causes app crashes on mobile
+2. **Service Worker Conflicts** - vite-plugin-pwa uses one service worker; push notifications require merging, not adding a second one
+3. **StoreContext Re-render Cascade** - 1280+ line context will trigger mass re-renders when adding new OCR/notification state
+4. **iOS Push Notification Limitations** - EU users cannot receive push notifications due to DMA restrictions; must implement fallback
+5. **OCR Preprocessing Requirements** - Highlighted text with colored backgrounds causes recognition failures without proper image preprocessing
 
 ---
 
-## Critical Pitfalls
+## OCR Pitfalls
 
-Mistakes that cause regressions, wasted effort, or undermine the entire standardization goal.
+### OCR-1: Tesseract.js Memory Leaks and Worker Termination
 
-### Pitfall 1: The Guide-Reality Divergence (Already Present)
+**Risk:** HIGH | **Likelihood:** HIGH
 
-**What goes wrong:** The existing design guide (compact-ui-design-guidelines.md, 726 lines) specifies rules that the codebase already violates. New work follows the guide while old code follows its own patterns, creating TWO sources of inconsistency instead of one.
+**What goes wrong:** Using Tesseract.js workers without proper cleanup causes memory to grow linearly with each image processed. On mobile devices, this leads to "WebAssembly.Memory(): could not allocate memory" errors after processing just a few images. The app becomes unresponsive or crashes entirely.
 
-**Evidence from codebase (verified):**
-
-| Guide says | Codebase actually does | Files |
-|------------|----------------------|-------|
-| Page titles: `text-lg font-semibold` | Dashboard: `text-3xl font-bold`, Highlights: `text-3xl font-bold`, Study: `text-base font-semibold`, Settings: `text-base font-semibold` | Dashboard.tsx:46, Highlights.tsx:225, Study.tsx:44, Settings.tsx:283 |
-| Buttons: `h-7 px-3 text-xs` | Button.tsx defaults to `h-10 px-4 py-2` | components/ui/button.tsx:23 |
-| Inputs: `h-7 text-sm` | Input.tsx defaults to `h-10 px-3 py-2 text-sm` | components/ui/input.tsx:14 |
-| Border radius: `rounded` (4px) | Login: `rounded-2xl`, `rounded-lg`; Card.tsx: `rounded-xl`; Highlights: `rounded-xl`, `rounded-lg` | Login.tsx:44, card.tsx:14, Highlights.tsx:241 |
-| Icons: `w-3 h-3` (12px) | Many places use `w-4 h-4`, `w-3.5 h-3.5` | Various |
-
-**Why it happens:** The guide was written from TagManagerSidebar and Study page (two compact components), then generalized as the standard. But Dashboard, Highlights, and Login were designed with completely different spacing philosophy (generous, modern). Nobody reconciled the two.
-
-**Consequences:**
-- Developers see both patterns and pick whichever feels right
-- Any AI agent given the guide will produce code that clashes with existing pages
-- The guide becomes "aspirational" rather than "descriptive"
+**Warning Signs:**
+- Memory usage grows after each OCR operation (check DevTools Performance Monitor)
+- Mobile Safari/Chrome becomes sluggish after 3-4 image scans
+- "Out of memory" errors in console
+- Page refresh doesn't fully clear memory (worker persists)
 
 **Prevention:**
-1. BEFORE writing any code: decide whether the guide should change to match the codebase, or the codebase should change to match the guide. Do not proceed without this decision.
-2. Update the guide FIRST to reflect the ACTUAL target state
-3. For any value where "compact guide" and "current pages" disagree, make an explicit decision and document it
+1. **Upgrade to Tesseract.js v6** (January 2025) - This version explicitly fixed memory leaks documented in issue #977
+2. **Always await worker termination**: `await worker.terminate()` - Without await, termination may not complete
+3. **Don't reuse workers indefinitely** - Create fresh workers periodically; workers "learn" incorrectly over time when processing diverse documents
+4. **Limit concurrent workers on mobile** - Max 2 workers even on 8-core devices with 4GB RAM
+5. **Only request needed output formats** - v6 defaults to text-only; requesting all formats adds 0.25-0.50s per image and increases memory
 
-**Detection:** Run a comparison audit: for each rule in the guide, grep for violations. If more than 50% of instances violate the rule, the rule is wrong, not the code.
+**Phase to Address:** Phase 1 (OCR Infrastructure) - Must be architected correctly from the start
 
-**Which phase should address:** Phase 0 / Pre-work -- this must be resolved before any execution starts
+**Sources:**
+- [Fix memory leaks - Tesseract.js #977](https://github.com/naptha/tesseract.js/issues/977)
+- [Version 6 Changes - Tesseract.js #993](https://github.com/naptha/tesseract.js/issues/993)
+- [Memory leak after page refresh - Tesseract.js #677](https://github.com/naptha/tesseract.js/issues/677)
 
 ---
 
-### Pitfall 2: Breaking Working UI to Achieve Consistency
+### OCR-2: Highlighted Text Color Interference
 
-**What goes wrong:** Standardizing spacing/typography on a page that already looks and works well, introducing visual regressions that users notice. The app gets WORSE during a "polish" milestone.
+**Risk:** HIGH | **Likelihood:** HIGH
 
-**Evidence from codebase (verified):**
-- Highlights.tsx has a polished toolbar with `rounded-xl`, `shadow-sm`, hover effects, animation -- it works beautifully as-is
-- StudySession.tsx has 710 lines of carefully tuned layout with user-approved sizing for touch targets (`min-h-[48px]`), SRS color coding, and font-serif preservation
-- Dashboard.tsx uses `text-3xl` headers with `space-y-12` -- generous and readable
-- All these were USER APPROVED in v1.0 phases (documented in verification reports)
+**What goes wrong:** Tesseract OCR performs binarization (converting to black/white) internally. Colored highlighter marks (yellow, pink, blue) interfere with this process, causing partial or complete text recognition failure. Users will scan highlighted passages from physical books and expect the text to be recognized.
 
-**Why it happens:**
-- Obsessive consistency treats "uniformity" as the goal, not "quality"
-- Mechanical find-and-replace changes without visual review
-- The developer cannot see the page while making CSS changes in an agent workflow
-
-**Consequences:**
-- User says "it looked better before" -- now you need to revert and re-do
-- Touch targets shrink below usable size (h-7 = 28px, but WCAG recommends 44px minimum for mobile)
-- Study session card display loses its carefully balanced typography
-- Time spent making things worse, then fixing them back
+**Warning Signs:**
+- OCR returns empty or partial results for highlighted sections
+- Same text works unhighlighted but fails when highlighted
+- Recognition accuracy varies wildly between images
+- Different highlighter colors produce different error patterns
 
 **Prevention:**
-1. "If it ain't broke, don't fix it" as a gating principle -- for each page, ask: is the current state actually bad?
-2. Take visual screenshots BEFORE any changes (or require the user to confirm the target)
-3. Never change more than one page per plan without user review
-4. Preserve intentional deviations: StudySession touch targets, SRS colors, font-serif on cards
-5. Make a "DO NOT TOUCH" list for elements that were explicitly user-approved
+1. **Implement custom preprocessing pipeline using OpenCV/Canvas API**:
+   - Convert to grayscale first (prerequisite for thresholding)
+   - Apply adaptive thresholding to handle varying highlight intensities
+   - Use color segmentation to identify and neutralize highlight colors
+2. **Document supported highlighter colors** - Yellow (RGB ~251,226,152) works better than darker colors
+3. **Provide real-time preview** - Show user what Tesseract "sees" after preprocessing
+4. **Allow manual correction** - Always provide edit capability for OCR results
 
-**Detection:** After any change, the user should visually verify before proceeding to the next page. Any "batch apply" approach without verification is a red flag.
+**Phase to Address:** Phase 1 (OCR Infrastructure) - Part of preprocessing module
 
-**Which phase should address:** Every phase -- verification after each plan
+**Sources:**
+- [Improve OCR of highlighted text - OCRmyPDF #371](https://github.com/jbarlow83/OCRmyPDF/issues/371)
+- [Extract Highlighted Text from a Book](https://dev.to/zirkelc/extract-highlighted-text-from-a-book-using-python-e15)
+- [Tesseract documentation - Improving Quality](https://tesseract-ocr.github.io/tessdoc/ImproveQuality.html)
 
 ---
 
-### Pitfall 3: Modifying shadcn Base Components Without Understanding Cascade
+### OCR-3: Image Quality Variance from Mobile Cameras
 
-**What goes wrong:** Changing `button.tsx` defaults from `h-10` to `h-7` to match the design guide, which breaks every existing Button usage that relies on the default size.
+**Risk:** MEDIUM | **Likelihood:** HIGH
 
-**Evidence from codebase (verified):**
-- `button.tsx` default size: `h-10 px-4 py-2` (shadcn standard)
-- `input.tsx` default height: `h-10` (shadcn standard)
-- Card.tsx uses `rounded-xl`, `gap-6`, `py-6` (shadcn v2 standard)
-- These defaults are used by: BookContextModal, HighlightEditModal, HighlightHistoryModal, DeleteBookModal, ErrorBoundary, Login, and others
-- Some components (Settings, TagManagerSidebar) override with `h-7` via className
+**What goes wrong:** Users photograph book pages with phone cameras under variable conditions. Poor lighting, camera shake, low resolution, and lens smudges all degrade OCR accuracy. Tesseract works best at 300+ DPI; phone photos often don't meet this threshold.
 
-**Why it happens:**
-- Guide says "buttons are h-7" so developer changes the base component
-- Seems efficient: change once, fix everywhere
-- No automated tests to catch visual regressions
-
-**Consequences:**
-- Login page buttons shrink to tiny size
-- Modal action buttons become cramped
-- ErrorBoundary "Refresh Page" button becomes hard to click
-- Every place that relied on default sizing breaks at once
+**Warning Signs:**
+- Accuracy varies dramatically between users/environments
+- Same book page produces different results at different times
+- Users report "it doesn't work" but can't explain why
+- Shadows and glare visible in captured images
 
 **Prevention:**
-1. NEVER modify shadcn base component defaults to match the "compact" guide
-2. Instead, add new size variants: `xs: "h-7 px-3 text-xs"` in button.tsx
-3. Apply the compact variant per-use-site, not globally
-4. Or: create wrapper components like `<CompactButton>` that apply the compact classes
-5. Audit all usages of a component BEFORE changing its defaults
+1. **Implement capture guidance UI**:
+   - Show viewfinder overlay indicating optimal framing
+   - Detect low light and prompt for flash/better lighting
+   - Detect blur before accepting image
+   - Show "cleaner lens" prompt when haze detected
+2. **Apply preprocessing corrections**:
+   - Auto-rotation/deskew for tilted images
+   - Brightness/contrast normalization
+   - Sharpening edges before OCR
+3. **Require minimum image dimensions** - Reject images below 1000px width
+4. **Allow retake before processing** - Don't immediately start OCR; let user confirm image quality
 
-**Detection:** Before modifying any ui/ component, grep for all imports and usages. Count them. If more than 3 files import it, modifying defaults is high-risk.
+**Phase to Address:** Phase 1 (OCR Infrastructure) - Capture UI component
 
-**Which phase should address:** Phase addressing component standardization -- add variants, do not change defaults
+**Sources:**
+- [7 Tips to Improve Quality of Scans from Phones - ABBYY](https://pdf.abbyy.com/blog/mobile/seven-tips-for-creating-ideal-scans/)
+- [Guide to better mobile images for higher quality OCR - WiseTrend](https://www.wisetrend.com/guide-to-better-mobile-images-from-cell-phone-camera-for-higher-quality-ocr/)
 
 ---
 
-### Pitfall 4: Over-Engineering a Token System for 7 Pages
+### OCR-4: Skewed and Two-Page Book Scans
 
-**What goes wrong:** Spending weeks building a sophisticated design token pipeline, Tailwind plugin, CSS custom property hierarchy, or component variant matrix for an app with 7 pages and one developer.
+**Risk:** MEDIUM | **Likelihood:** MEDIUM
 
-**Evidence of risk:**
-- The existing `compact-ui-design-guidelines.md` is already 726 lines for a 7-page app
-- The tailwind.config.js already has semantic color tokens, font families, and animation definitions
-- CSS custom properties already handle theming (v1.0 shipped this)
-- The app has ~30 components, not 300
+**What goes wrong:** When users photograph open books, the image often contains two facing pages with a curve at the spine. Tesseract misinterprets the structure, mixing text from both pages or reading lines incorrectly due to the curve distortion.
 
-**Why it happens:**
-- Design system literature is written for large teams (10+ developers) and large apps (50+ pages)
-- "Best practices" from IBM Carbon, Material Design, or Atlassian don't scale DOWN
-- Over-engineering feels productive: you're building infrastructure instead of fixing inconsistencies
-- AI agents will happily build elaborate abstractions if not constrained
-
-**Consequences:**
-- Weeks of work that doesn't visually change anything
-- Abstraction layers that only one person uses
-- More code to maintain, not less
-- The actual inconsistencies (title sizes, spacing) remain unfixed
+**Warning Signs:**
+- OCR output contains jumbled words from alternating pages
+- Line order is scrambled
+- Text near the book spine is consistently wrong
+- Users report "gibberish" results
 
 **Prevention:**
-1. Set a strict budget: the entire v2.0 should take LESS time than v1.0 (which was 66 minutes total)
-2. Prefer direct CSS changes over new abstractions
-3. No new Tailwind plugins, no new CSS custom property layers, no Storybook setup
-4. The test: "Can I fix this with a className change?" If yes, do that. Don't create infrastructure.
-5. Only build abstractions when you find yourself fixing the SAME inconsistency in 5+ places
+1. **Guide single-page capture** - Prompt users to photograph one page at a time
+2. **Implement page detection** - Detect when two pages are visible and warn user
+3. **Apply deskew correction** - Use Leptonica/OpenCV to straighten skewed text
+4. **Consider page segmentation** - Use `--psm` modes for complex layouts
 
-**Detection:** If a plan involves creating new files (utilities, helpers, config extensions) rather than editing existing components, question whether it's necessary.
+**Phase to Address:** Phase 1 (OCR Infrastructure) - Preprocessing module
 
-**Which phase should address:** Roadmap design -- keep phases focused on direct fixes, not infrastructure
+**Sources:**
+- [Tesseract --psm Impact on Scanned Books #4389](https://github.com/tesseract-ocr/tesseract/issues/4389)
+- [Tesseract OCR Guide - Unstract](https://unstract.com/blog/guide-to-optical-character-recognition-with-tesseract-ocr/)
 
 ---
 
-## Moderate Pitfalls
+## Push Notification Pitfalls
 
-Mistakes that cause delays, confusion, or accumulated technical debt.
+### PUSH-1: Service Worker Conflict with vite-plugin-pwa
 
-### Pitfall 5: Two Title Systems Coexisting Without Resolution
+**Risk:** CRITICAL | **Likelihood:** HIGH
 
-**What goes wrong:** Some pages use "compact" titles (text-base, Study/Settings) and some use "generous" titles (text-3xl, Dashboard/Highlights). Standardization picks one but doesn't convert all, leaving a permanent split.
+**What goes wrong:** The app already uses vite-plugin-pwa with `registerType: 'autoUpdate'`. Adding a separate Firebase Messaging service worker creates conflicts - only one service worker can control a scope at a time. Result: constant page reloads, missed subscriptions, or complete notification failure.
 
-**Evidence from codebase (verified):**
-```
-Dashboard.tsx:46   text-3xl font-bold tracking-tight
-Highlights.tsx:225 text-3xl font-bold tracking-tight
-Study.tsx:44       text-base font-semibold
-Settings.tsx:283   text-base font-semibold
-Login.tsx:40       text-2xl font-bold tracking-tight (brand, different context)
-```
-
-Two distinct camps: "generous" pages (Dashboard, Highlights) and "compact" pages (Study, Settings). Both look intentional. The existing guide says `text-lg font-semibold` -- which matches NEITHER camp.
-
-**Why it happens:**
-- Dashboard and Highlights were redesigned with modern generous spacing
-- Study and Settings follow the compact sidebar aesthetic
-- The guide was written from the compact components
-- Nobody reconciled after Dashboard/Highlights got their redesign
-
-**Consequences:**
-- Navigating from Dashboard (text-3xl) to Study (text-base) feels jarring
-- New pages: which pattern to follow?
-- Guide is useless as reference because neither camp follows it
+**Warning Signs:**
+- App constantly reloads after update deployment
+- Console shows service worker registration errors
+- Push subscriptions silently fail
+- Works in development, breaks in production
 
 **Prevention:**
-1. Pick ONE title scale for ALL pages. Recommend: `text-xl font-semibold` as a compromise, or `text-2xl font-bold` if the generous style is preferred
-2. Apply it to all 5 non-login pages in a single plan
-3. Update the guide to match the decision
-4. Login is exempt (brand page, different context)
+1. **Do NOT create a separate firebase-messaging-sw.js** - This is the standard Firebase tutorial approach but wrong for existing PWAs
+2. **Switch to `strategies: 'injectManifest'`** - This lets you create a custom service worker that merges both concerns
+3. **Add push event listeners to existing service worker**:
+   ```javascript
+   // In custom service worker (sw.ts)
+   import { precacheAndRoute } from 'workbox-precaching';
 
-**Detection:** Grep `<h1` in pages/ -- all results should show the same pattern.
+   precacheAndRoute(self.__WB_MANIFEST);
 
-**Which phase should address:** Early phase -- this is the single most visible inconsistency
+   self.addEventListener('push', (event) => {
+     // Handle push notification
+   });
+
+   self.addEventListener('notificationclick', (event) => {
+     // Handle notification click
+   });
+   ```
+4. **Test service worker registration in DevTools** - Applications > Service Workers should show ONE worker
+
+**Phase to Address:** Phase 2 (Push Notifications) - Must be first step before any Firebase integration
+
+**Sources:**
+- [Adding a second service worker breaks the app - vite-plugin-pwa #777](https://github.com/vite-pwa/vite-plugin-pwa/issues/777)
+- [Webpush support in service workers - vite-plugin-pwa #84](https://github.com/vite-pwa/vite-plugin-pwa/issues/84)
+- [Firebase + Vite: Push Notifications Simplified](https://dmelo.eu/blog/vite_pwa/)
 
 ---
 
-### Pitfall 6: Inconsistent Border Radius Creating Visual Noise
+### PUSH-2: iOS and EU User Exclusion
 
-**What goes wrong:** Adjacent elements use different border radii, creating subtle visual discord. The eye notices shapes that don't match.
+**Risk:** HIGH | **Likelihood:** HIGH (for EU users)
 
-**Evidence from codebase (verified):**
-```
-Login.tsx:        rounded-2xl (card), rounded-lg (inputs, buttons, error box)
-Card.tsx:         rounded-xl (base component)
-Highlights.tsx:   rounded-xl (toolbar, table container), rounded-lg (search, dropdowns)
-StudySession.tsx: rounded-md (buttons, edit containers), rounded-sm (book cover)
-Settings.tsx:     rounded (buttons), rounded-full (avatar)
-Dashboard.tsx:    rounded-md (book cards, charts)
-```
+**What goes wrong:** iOS PWA push notifications only work from iOS 16.4+ AND only when installed to Home Screen. More critically, Apple removed Home Screen web app functionality for EU users in iOS 17.4 to comply with the Digital Markets Act. EU users on iOS cannot receive push notifications at all.
 
-At least 5 different border radius values used: `rounded` (4px), `rounded-md` (6px), `rounded-lg` (8px), `rounded-xl` (12px), `rounded-2xl` (16px). The guide says `rounded` (4px) only.
-
-**Why it happens:**
-- shadcn components bring their own radius preferences (card.tsx uses rounded-xl)
-- Different radius feels "right" for different element sizes
-- Login page uses generous radius for the auth card (intentional warmth)
-- No enforcement mechanism
-
-**Consequences:**
-- Subtle but real visual inconsistency
-- "Something feels off" but hard to pinpoint
-- Every new component requires a radius decision
+**Warning Signs:**
+- EU users report notifications "don't work"
+- iOS user engagement metrics are lower than expected
+- Push subscription success rate varies by region
+- Users confused about "install to Home Screen" requirement
 
 **Prevention:**
-1. Define 2-3 allowed radii with semantic meaning:
-   - `rounded-md` for small elements (buttons, inputs, badges)
-   - `rounded-lg` or `rounded-xl` for containers (cards, panels, modals)
-   - `rounded-full` for avatars/pills only
-2. Do NOT force everything to `rounded` (4px) -- it works for compact items but looks cheap on large containers
-3. Update the guide with the actual policy
+1. **Implement graceful degradation**:
+   - Detect iOS + EU combination
+   - Offer alternative: in-app notification center, email reminders
+   - Don't show "Enable Notifications" to users who can't use them
+2. **Track notification capability at signup**:
+   - Store `notificationCapable: boolean` in user settings
+   - Use for analytics segmentation
+3. **Design notification features as enhancement, not requirement**:
+   - Spaced repetition reminders should work without push
+   - Consider daily email digest as fallback
+4. **Detect Home Screen installation on iOS**:
+   ```javascript
+   const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+   ```
 
-**Detection:** Grep `rounded-` across all page files. Group by file and check for consistency within each page, then across pages.
+**Phase to Address:** Phase 2 (Push Notifications) - Architecture decision before implementation
 
-**Which phase should address:** Mid-phase -- after title/spacing decisions are made
+**Sources:**
+- [4 Best Practices for iOS PWA Push Notifications - MagicBell](https://www.magicbell.com/blog/best-practices-for-ios-pwa-push-notifications)
+- [How to Set Up Push Notifications for Your PWA - MobiLoud](https://www.mobiloud.com/blog/pwa-push-notifications)
 
 ---
 
-### Pitfall 7: Updating the Guide Without Updating the Code (or Vice Versa)
+### PUSH-3: Permission Request Timing (Immediate Request Trap)
 
-**What goes wrong:** The guide gets rewritten to reflect the new standards, but nobody applies those standards to the actual code. Or: code gets fixed but the guide still shows old patterns.
+**Risk:** HIGH | **Likelihood:** MEDIUM
 
-**Evidence of risk:**
-- The existing guide (v1.1, updated 2025-12-30) already doesn't match the codebase (see Pitfall 1)
-- The guide's "Examples of Reference" section mentions TagManagerSidebar and Study page only
-- No automated validation between guide and code exists
+**What goes wrong:** Requesting notification permission immediately on page load or login triggers an automatic deny from most users. Once denied, the browser remembers this choice and there's no programmatic way to recover - users must manually enable in browser settings.
 
-**Why it happens:**
-- Documentation and implementation are different tasks, often done by different agents/sessions
-- "We'll update the guide later" -- later never comes
-- The guide is a markdown file with no connection to the codebase
-
-**Consequences:**
-- Guide becomes stale within one milestone
-- New features/pages built to wrong spec
-- AI agents given the guide produce inconsistent code
-- Trust in documentation erodes
+**Warning Signs:**
+- Very low notification opt-in rates (<20%)
+- Users report they "never saw" the permission prompt
+- Notification permission state is permanently "denied"
+- No second chance to enable notifications
 
 **Prevention:**
-1. Update guide AND code in the SAME plan -- never separately
-2. Keep the guide short and machine-verifiable where possible (e.g., "H1: text-xl font-semibold" not prose)
-3. Add a "last verified against codebase" date to the guide header
-4. At milestone end: run a verification pass comparing guide rules to actual code
-5. Consider: should the guide shrink rather than grow? A 200-line guide that's accurate beats a 726-line guide that's aspirational
+1. **Use soft opt-in before hard opt-in**:
+   - Show custom UI explaining value: "Get reminded when cards are due"
+   - Only trigger browser prompt after user clicks "Enable"
+2. **Delay permission request until value is demonstrated**:
+   - After first successful study session: "Want to be reminded tomorrow?"
+   - After streak milestone: "Don't break your 7-day streak!"
+3. **Provide clear recovery instructions**:
+   - If denied, show how to enable in browser settings
+   - Don't show notification features to denied users
+4. **Track permission state**:
+   ```javascript
+   const permission = Notification.permission; // 'default', 'granted', 'denied'
+   ```
 
-**Detection:** At the end of each phase, spot-check 3 rules from the guide against the code. If any are wrong, the guide needs updating.
+**Phase to Address:** Phase 2 (Push Notifications) - UX design before implementation
 
-**Which phase should address:** Final phase -- guide update as part of milestone completion
+**Sources:**
+- [Using Push Notifications in PWAs - MagicBell](https://www.magicbell.com/blog/using-push-notifications-in-pwas)
+- [14 Push Notification Best Practices for 2026 - Reteno](https://reteno.com/blog/push-notification-best-practices-ultimate-guide-for-2026)
 
 ---
 
-### Pitfall 8: Ignoring That Compact Design Has Accessibility Costs
+### PUSH-4: VAPID Key and FCM Configuration Mismatches
 
-**What goes wrong:** Aggressively compact spacing creates accessibility failures, especially on mobile where the app is a PWA.
+**Risk:** MEDIUM | **Likelihood:** MEDIUM
 
-**Evidence from codebase (verified):**
-- Design guide specifies `h-5 w-5` (20px) for icon buttons -- below WCAG 44px minimum
-- Guide specifies `text-xs` (12px) for metadata -- at the edge of readability
-- Guide specifies `py-0.5 px-1.5` (2px/6px) for list items -- extremely tight
-- StudySession already deviates with `min-h-[48px]` on response buttons (correct for mobile)
+**What goes wrong:** Push notifications work locally but fail in production. Common causes: wrong VAPID key environment, mixing Firebase projects between dev/prod, or hardcoding credentials in service worker.
 
-**Why it happens:**
-- Compact density is the aesthetic goal ("Linear, Notion" inspiration)
-- Desktop-first thinking: compact works fine with a mouse
-- The app is a PWA used on phones for study sessions
-- Guide was written for desktop density, not mobile PWA
-
-**Consequences:**
-- Mobile users struggle to tap buttons
-- Small text hard to read on phone screens
-- Violates WCAG 2.1 Success Criterion 2.5.5 (target size)
-- User frustration during study sessions (the primary use case)
+**Warning Signs:**
+- Works on localhost, fails on deployed site
+- Push subscriptions succeed but notifications never arrive
+- Different behavior between developers' machines
+- Firebase console shows no registered devices
 
 **Prevention:**
-1. Any compact sizing applied to interactive elements must include mobile overrides
-2. Pattern: `h-7 sm:h-7` for desktop, but `min-h-[44px] sm:min-h-0` for mobile
-3. Never reduce StudySession touch targets -- they were sized intentionally
-4. Keep `text-xs` (12px) as the absolute minimum, not the default
-5. Test on actual phone, not just browser resize
+1. **Use environment variables for all Firebase config** - Never hardcode in service worker
+2. **Verify VAPID key matches across**:
+   - Firebase Console (Cloud Messaging > Web configuration)
+   - Frontend code (`getToken(messaging, {vapidKey: "..."})`)
+   - Backend notification sender (if using Edge Functions)
+3. **Test on staging environment before production**:
+   - Use separate Firebase project for staging
+   - Verify full flow: subscribe > send > receive
+4. **Implement subscription validation**:
+   - Periodically test subscriptions
+   - Remove failed endpoints from database
 
-**Detection:** Grep for `h-5 w-5` or `h-6 w-6` on interactive elements. Check if mobile overrides exist.
+**Phase to Address:** Phase 2 (Push Notifications) - Configuration setup
 
-**Which phase should address:** Any phase that changes sizing -- include mobile check in verification
-
----
-
-## Minor Pitfalls
-
-Mistakes that cause annoyance or minor inconsistency but are easily fixable.
-
-### Pitfall 9: Inconsistent Spacing Between Page Header and Content
-
-**What goes wrong:** Each page uses different spacing between the page title and the first content section.
-
-**Evidence from codebase (verified):**
-```
-Dashboard.tsx:   space-y-12 (48px gap between all sections)
-Highlights.tsx:  space-y-4 (16px gap between sections)
-Study.tsx:       mb-4 on "All Books" button, then inline spacing
-Settings.tsx:    mb-3 after tab bar, then per-section
-StudySession.tsx: p-4/p-6 on container, inline spacing
-```
-
-**Prevention:** Define one `space-y` value for page-level section spacing and apply it to all page containers.
-
-**Which phase should address:** Same phase as title standardization
+**Sources:**
+- [Get started with Firebase Cloud Messaging](https://firebase.google.com/docs/cloud-messaging/web/get-started)
+- [Complete Guide to Firebase Web Push Notifications - MagicBell](https://www.magicbell.com/blog/firebase-web-push-notifications)
+- [Supabase Push Notifications Documentation](https://supabase.com/docs/guides/functions/examples/push-notifications)
 
 ---
 
-### Pitfall 10: Raw HTML Buttons vs. shadcn Button Component
+## Performance Pitfalls
 
-**What goes wrong:** Some interactive elements use `<button className="...">` with hand-crafted classes, while others use `<Button>` from shadcn. Both exist in the same page.
+### PERF-1: StoreContext Re-render Cascade
 
-**Evidence from codebase (verified):**
-- Settings.tsx: uses raw `<button>` elements with `h-7 px-3 text-xs bg-secondary` classes (lines 686, 690, 749)
-- Settings.tsx also uses `<Button>` component in TagManagerSidebar
-- Highlights.tsx: raw `<button>` for toolbar actions, filter buttons, pagination
-- Study.tsx: raw `<button>` for the "All Books" CTA
-- Login.tsx: raw `<button>` for sign-in
+**Risk:** CRITICAL | **Likelihood:** HIGH
 
-**Why it happens:**
-- shadcn Button defaults (h-10) don't match desired compact size
-- Easier to write raw button with exact classes than configure variants
-- Some buttons need very custom styling (SRS response buttons)
+**What goes wrong:** The existing StoreContext is 1280+ lines with 30+ methods and all app state. Adding OCR state (processing status, results queue) or notification state to this context will cause ALL consuming components to re-render on any state change. This is already a performance concern that will become critical with more state.
 
-**Consequences:**
-- No central place to change button styling
-- Inconsistent hover/focus/disabled states
-- Harder to enforce consistency
+**Warning Signs:**
+- Visible UI lag when OCR processes
+- Components re-render when unrelated state changes (React DevTools Profiler)
+- Mobile performance degrades noticeably
+- "Statistics reveal that around 20-30% of component updates can lead to significant performance degradation when large contexts are used"
 
 **Prevention:**
-1. Add compact variants to Button component (`size="xs"` = `h-7 px-3 text-xs`)
-2. Gradually migrate raw buttons to use `<Button>` with appropriate variant
-3. Accept that some buttons (SRS response buttons, CTAs) are intentionally custom
-4. Don't try to force 100% adoption -- aim for 80%
+1. **Split StoreContext into focused contexts** (incremental migration):
+   ```
+   Current: StoreContext (1280 lines, everything)
 
-**Which phase should address:** Early phase -- add variants first, then migrate incrementally
+   Target:
+   - DataContext: books, highlights, studyCards, tags
+   - SessionContext: currentSession, sessionStats, reviewLogs
+   - SettingsContext: settings, dailyProgress
+   - OCRContext: NEW - processing state, results queue
+   - NotificationContext: NEW - permission state, preferences
+   ```
+2. **Separate state from actions**:
+   - State consumers shouldn't re-render when only actions change
+   - Use pattern: `<StateContext>` + `<ActionsContext>`
+3. **Apply useMemo/useCallback to context values**:
+   ```javascript
+   const value = useMemo(() => ({ books, highlights }), [books, highlights]);
+   ```
+4. **Consider migration to Zustand for new features**:
+   - Zustand's selective subscriptions prevent 40-70% more re-renders vs Context
+   - Can coexist with existing Context during migration
 
----
+**Phase to Address:** Phase 3 (Performance) - But should be considered in OCR/Notification phases to avoid adding state to monolithic context
 
-### Pitfall 11: Changing font-weight Conventions Without Checking All Headings
-
-**What goes wrong:** Deciding "all headings should be font-semibold" but some are font-bold and the difference matters visually.
-
-**Evidence from codebase (verified):**
-```
-font-bold:     Dashboard h1, Highlights h1, Login h1/h2, BookContextModal title,
-               StudySession "Session Complete", stat numbers
-font-semibold: Study h1, Settings h1, Dialog/Sheet titles, section headings
-font-medium:   Card title (card.tsx), StudySession loading/error messages
-```
-
-Three different font weights used for titles/headings. Changing them all to one value would either make bold pages feel weak or semibold pages feel heavy.
-
-**Prevention:** Map font-weight to semantic role: page titles (bold), section headings (semibold), component titles (medium). Don't flatten to one value.
-
-**Which phase should address:** Same phase as title size standardization
-
----
-
-## Phase-Specific Warnings
-
-| Phase Topic | Likely Pitfall | Mitigation |
-|-------------|---------------|------------|
-| Guide update / pre-work | Guide-reality divergence (#1) | Audit and reconcile guide BEFORE any code changes |
-| Page header standardization | Two title systems (#5), font-weight confusion (#11) | Pick one scale, apply to all pages in one pass, user review |
-| Component variant addition | Breaking base components (#3) | Add variants, never modify defaults |
-| Spacing standardization | Breaking working UI (#2), accessibility costs (#8) | Per-page review, preserve mobile touch targets |
-| Border radius cleanup | Visual noise (#6) | Define 2-3 semantic radius values, not one |
-| Button migration | Raw vs. shadcn (#10) | Add xs variant first, migrate incrementally |
-| Guide finalization | Stale documentation (#7) | Update guide and code in same plan |
-| Infrastructure | Over-engineering (#4) | No new abstractions unless needed 5+ places |
+**Sources:**
+- [Optimizing React Context for Performance - 10X Developer](https://www.tenxdeveloper.com/blog/optimizing-react-context-performance)
+- [Pitfalls of overusing React Context - LogRocket](https://blog.logrocket.com/pitfalls-of-overusing-react-context/)
+- [React Context: Performance Challenges - DEV.to](https://dev.to/jackm_345442a09fb53b/react-context-performance-challenges-and-optimizations-14nd)
 
 ---
 
-## Anti-Pattern Summary
+### PERF-2: Optimistic UI Rollback Failures with New Features
 
-| Anti-Pattern | Do This Instead |
-|--------------|----------------|
-| Change shadcn defaults to match guide | Add new variants; apply per-use-site |
-| Apply compact sizing globally | Apply per-page with mobile overrides |
-| Rewrite the guide first, code later | Update guide and code in the same plan |
-| Build token infrastructure | Make direct className fixes |
-| Batch-apply changes without review | One page per plan, user verifies each |
-| Force everything to one border radius | Define 2-3 semantic radius levels |
-| Treat the guide as immutable truth | Reconcile guide with reality first |
+**Risk:** HIGH | **Likelihood:** MEDIUM
+
+**What goes wrong:** The app uses optimistic UI pattern throughout (30+ async methods). Adding new features (OCR imports, notification preferences) that also use optimistic updates can create "windows of inconsistency" - brief moments where UI shows incorrect state. For OCR specifically, rollback from failed imports could lose user's painstakingly scanned data.
+
+**Warning Signs:**
+- State "flickers" back and forth during updates
+- Concurrent mutations overwrite each other
+- User data disappears after network errors
+- Undo functionality behaves unexpectedly
+
+**Prevention:**
+1. **Never apply optimistic updates for OCR imports**:
+   - OCR processing is slow and error-prone
+   - Show explicit "Saving..." state instead
+   - Only add to local state after Supabase confirms
+2. **Implement proper cancellation for concurrent mutations**:
+   ```javascript
+   // Cancel in-flight queries before optimistic update
+   queryClient.cancelQueries({ queryKey: ['highlights'] });
+   ```
+3. **Store previous state before ANY optimistic update** (existing pattern, maintain it)
+4. **Add error boundaries around new features**:
+   - OCR failure shouldn't crash the whole app
+   - Notification subscription failure should be recoverable
+
+**Phase to Address:** Each phase as new features are added - OCR (Phase 1), Notifications (Phase 2)
+
+**Sources:**
+- [Understanding optimistic UI and React's useOptimistic Hook - LogRocket](https://blog.logrocket.com/understanding-optimistic-ui-react-useoptimistic-hook/)
+- [Concurrent Optimistic Updates in React Query - TkDodo](https://tkdodo.eu/blog/concurrent-optimistic-updates-in-react-query)
 
 ---
 
-## Key Insight: The Real Problem is Not What It Seems
+### PERF-3: Code Splitting Done Wrong
 
-The project description says "inconsistent title sizes, different table styles, irregular spacing." But the codebase analysis reveals something more nuanced:
+**Risk:** MEDIUM | **Likelihood:** MEDIUM
 
-**There are actually TWO coherent design languages coexisting:**
+**What goes wrong:** Lazy loading is applied to critical path components (Study page, card rendering), causing visible loading states during core workflows. Alternatively, excessive splitting creates too many HTTP requests, negating bundle size benefits.
 
-1. **"Compact" language** (Study, Settings, TagManagerSidebar): text-base titles, h-7 buttons, gap-1 spacing, rounded corners. Dense, tool-like, Linear-inspired.
+**Warning Signs:**
+- Suspense fallback visible during normal app usage
+- Network tab shows many small chunk requests
+- Time to Interactive increases despite smaller initial bundle
+- Study session flow has loading spinners between cards
 
-2. **"Generous" language** (Dashboard, Highlights, Login): text-3xl titles, rounded-xl containers, space-y-12 sections, shadow effects. Spacious, modern, Apple-inspired.
+**Prevention:**
+1. **DO lazy load**:
+   - OCR capture component (large dependency: Tesseract.js)
+   - Settings page (accessed infrequently)
+   - Dashboard/analytics (not critical path)
+2. **DO NOT lazy load**:
+   - StudySession.tsx (core flow - 550 lines but critical)
+   - StoreContext (needed immediately)
+   - Auth flow components
+3. **Preload anticipated routes**:
+   ```javascript
+   // On hover over Study nav link
+   const StudySession = lazy(() => import('./pages/StudySession'));
+   ```
+4. **Use Webpack Bundle Analyzer** to find actual heavy chunks:
+   - Current manual chunks: supabase, router, radix, lucide (good)
+   - Add OCR as its own chunk: tesseract.js is ~5MB
 
-The existing design guide documents language #1 but the user seems to WANT language #2 ("Apple-level consistency"). The real decision is: which language wins? Or can they be reconciled into a coherent hybrid?
+**Phase to Address:** Phase 3 (Performance) - After features are complete
 
-This decision must happen BEFORE any code changes. Otherwise, every plan will be guessing.
+**Sources:**
+- [Code-Splitting - React](https://legacy.reactjs.org/docs/code-splitting.html)
+- [Code splitting with React.lazy and Suspense - web.dev](https://web.dev/code-splitting-suspense/)
 
 ---
+
+### PERF-4: Tesseract.js Bundle Size Impact
+
+**Risk:** MEDIUM | **Likelihood:** HIGH
+
+**What goes wrong:** Tesseract.js with language data is ~5MB+ uncompressed. Including it in the main bundle will significantly increase initial load time for ALL users, even those who never use OCR. Build warnings trigger: `chunkSizeWarningLimit: 600` already set in vite.config.ts.
+
+**Warning Signs:**
+- Build warnings about chunk size
+- Initial page load time increases
+- Lighthouse performance score drops
+- Users on slow connections experience timeouts
+
+**Prevention:**
+1. **Dynamic import Tesseract.js only when needed**:
+   ```javascript
+   const startOCR = async () => {
+     const Tesseract = await import('tesseract.js');
+     // Use Tesseract
+   };
+   ```
+2. **Add tesseract to manual chunks** in vite.config.ts:
+   ```javascript
+   manualChunks: {
+     'tesseract': ['tesseract.js'],
+     // ... existing chunks
+   }
+   ```
+3. **Consider language data loading**:
+   - Load only Portuguese (por) and English (eng) by default
+   - Host language files locally vs. CDN for reliability
+4. **Show loading progress** during Tesseract initialization (~2-3 seconds on mobile)
+
+**Phase to Address:** Phase 1 (OCR Infrastructure) - Architecture decision
+
+**Sources:**
+- [Integrating OCR in the browser with tesseract.js - Transloadit](https://transloadit.com/devtips/integrating-ocr-in-the-browser-with-tesseract-js/)
+- [Image To Text Conversion With React And Tesseract.js - Smashing Magazine](https://www.smashingmagazine.com/2021/06/image-text-conversion-react-tesseract-js-ocr/)
+
+---
+
+## Integration Pitfalls
+
+### INT-1: Breaking SM-2 Algorithm with New Data Sources
+
+**Risk:** HIGH | **Likelihood:** LOW
+
+**What goes wrong:** OCR-imported highlights create StudyCards that feed into the SM-2 spaced repetition system. If OCR produces garbage text or truncated content, the algorithm will schedule reviews for unusable cards. User loses trust in the study system.
+
+**Warning Signs:**
+- Users see garbled text in study sessions
+- Review quality ratings are consistently low for OCR cards
+- Users delete OCR-imported content frequently
+- SM-2 statistics become skewed
+
+**Prevention:**
+1. **Require user confirmation of OCR text before creating cards**:
+   - Show extracted text
+   - Allow editing
+   - Explicit "Add to Study" action
+2. **Set flag on OCR-imported highlights**: `source: 'ocr'`
+   - Enables filtering in Highlights page
+   - Allows analytics segmentation
+3. **Don't auto-create StudyCards from OCR imports**:
+   - Unlike Kindle imports which have clean text
+   - User must explicitly add to study
+4. **Implement confidence scoring**:
+   - Tesseract provides confidence per word
+   - Flag low-confidence results for review
+
+**Phase to Address:** Phase 1 (OCR Infrastructure) - Data model design
+
+---
+
+### INT-2: Notification Permissions Breaking Auth Flow
+
+**Risk:** MEDIUM | **Likelihood:** LOW
+
+**What goes wrong:** Requesting notification permission during auth/onboarding flow creates confusion. If permission prompt appears while Supabase auth redirect is processing, the auth can fail or user gets stuck.
+
+**Warning Signs:**
+- Users report getting "stuck" after login
+- Auth errors increase after notification feature deployment
+- Mobile users have more auth issues than desktop
+
+**Prevention:**
+1. **Never request permissions during auth flow**
+2. **Wait for full app load before any permission requests**:
+   ```javascript
+   useEffect(() => {
+     if (isLoaded && user && !hasPromptedNotifications) {
+       // Safe to prompt
+     }
+   }, [isLoaded, user]);
+   ```
+3. **Store permission prompt state in localStorage**:
+   - Avoid re-prompting on every session
+   - Respect "remind me later" choice
+
+**Phase to Address:** Phase 2 (Push Notifications) - UX implementation
+
+---
+
+### INT-3: Translation/i18n Gaps for New Features
+
+**Risk:** LOW | **Likelihood:** HIGH
+
+**What goes wrong:** New OCR and notification UI text is added in English only, breaking the Portuguese-first experience. Translation files in `public/locales/pt-BR/` are not updated.
+
+**Warning Signs:**
+- Mixed language UI
+- Translation function `t()` returns keys instead of values
+- Users report "some parts are in English"
+
+**Prevention:**
+1. **Add all new strings to translation files FIRST**:
+   - OCR: capture prompts, error messages, success states
+   - Notifications: permission requests, preference labels
+2. **Use proper Portuguese accents**:
+   - "configuracoes" vs "configuracoes" (accents matter)
+3. **Test with Portuguese locale forced**
+4. **Add to PR checklist**: "All user-visible strings are translated"
+
+**Phase to Address:** All phases - Ongoing requirement
+
+---
+
+## Pitfall Summary Matrix
+
+| Pitfall | Severity | Likelihood | Phase | Detection Difficulty |
+|---------|----------|-----------|-------|---------------------|
+| OCR-1: Memory Leaks | HIGH | HIGH | 1 | Easy (DevTools) |
+| OCR-2: Highlighted Text | HIGH | HIGH | 1 | Medium |
+| OCR-3: Image Quality | MEDIUM | HIGH | 1 | Medium |
+| OCR-4: Two-Page Scans | MEDIUM | MEDIUM | 1 | Easy |
+| PUSH-1: Service Worker Conflict | CRITICAL | HIGH | 2 | Easy |
+| PUSH-2: iOS/EU Exclusion | HIGH | HIGH | 2 | Hard (regional) |
+| PUSH-3: Permission Timing | HIGH | MEDIUM | 2 | Medium |
+| PUSH-4: VAPID Mismatch | MEDIUM | MEDIUM | 2 | Medium |
+| PERF-1: Context Re-renders | CRITICAL | HIGH | 1,2,3 | Medium (Profiler) |
+| PERF-2: Optimistic UI Rollback | HIGH | MEDIUM | 1,2 | Hard |
+| PERF-3: Code Splitting | MEDIUM | MEDIUM | 3 | Easy (Lighthouse) |
+| PERF-4: Bundle Size | MEDIUM | HIGH | 1 | Easy (Build) |
+| INT-1: SM-2 Data Quality | HIGH | LOW | 1 | Easy |
+| INT-2: Auth + Permissions | MEDIUM | LOW | 2 | Hard |
+| INT-3: i18n Gaps | LOW | HIGH | All | Easy |
+
+---
+
+## Priority Actions by Phase
+
+### Phase 1: OCR Infrastructure
+1. **First:** Architect worker management to prevent memory leaks (OCR-1)
+2. **Second:** Implement preprocessing pipeline for highlighted text (OCR-2)
+3. **Third:** Build capture UI with quality guidance (OCR-3)
+4. **Throughout:** Create separate OCRContext, don't add to StoreContext (PERF-1)
+
+### Phase 2: Push Notifications
+1. **First:** Switch to `injectManifest` strategy before any Firebase code (PUSH-1)
+2. **Second:** Design graceful degradation for iOS/EU (PUSH-2)
+3. **Third:** Implement soft opt-in UX (PUSH-3)
+4. **Throughout:** Create separate NotificationContext (PERF-1)
+
+### Phase 3: Performance
+1. **First:** Split StoreContext (PERF-1) - biggest impact
+2. **Second:** Audit code splitting decisions (PERF-3)
+3. **Third:** Implement lazy loading for OCR module (PERF-4)
+
+---
+
+*Research completed: 2026-02-03*
+*Confidence: HIGH - Verified with official documentation, GitHub issues, and current (2025-2026) community practices*
 
 ## Sources
 
-- Codebase analysis: direct grep/read of all components and pages in Evoque repository
-- [Building a Scalable Design System with Shadcn/UI](https://shadisbaih.medium.com/building-a-scalable-design-system-with-shadcn-ui-tailwind-css-and-design-tokens-031474b03690) -- token architecture patterns
-- [Adopting Design Systems (EightShapes)](https://medium.com/eightshapes-llc/adopting-design-systems-71e599ff660a) -- incremental adoption strategy
-- [Design System Documentation Best Practices (Backlight)](https://backlight.dev/blog/design-system-documentation-best-practices) -- preventing stale documentation
-- [Design Systems Pitfalls (Jeff Pelletier)](https://medium.com/@withinsight1/design-systems-pitfalls-6b3113fa0898) -- general design system mistakes
-- [Design System in React with Tailwind, Shadcn/ui and Storybook](https://dev.to/shaikathaque/design-system-in-react-with-tailwind-shadcnui-and-storybook-17f) -- shadcn standardization patterns
-- [Don't use Tailwind for your Design System (sancho.dev)](https://sancho.dev/blog/tailwind-and-design-systems) -- Tailwind abstraction tradeoffs
-- [Tailwind CSS Best Practices 2025-2026](https://www.frontendtools.tech/blog/tailwind-css-best-practices-design-system-patterns) -- token centralization patterns
-- [Maintaining Design Systems (Brad Frost)](https://atomicdesign.bradfrost.com/chapter-5/) -- long-term maintenance
-- [Design System Maintenance Checklist (UXPin)](https://www.uxpin.com/studio/blog/design-system-maintenance-checklist/) -- audit and review cycles
-- [Tips for design system documentation (LogRocket)](https://blog.logrocket.com/ux-design/design-system-documentation/) -- preventing documentation rot
+**OCR:**
+- [Tesseract.js Memory Leak Fix #977](https://github.com/naptha/tesseract.js/issues/977)
+- [Tesseract Documentation - Improving Quality](https://tesseract-ocr.github.io/tessdoc/ImproveQuality.html)
+- [OCR Accuracy Benchmarks 2026 - AI Multiple](https://research.aimultiple.com/ocr-accuracy/)
+- [Smashing Magazine - OCR with React](https://www.smashingmagazine.com/2021/06/image-text-conversion-react-tesseract-js-ocr/)
+
+**Push Notifications:**
+- [vite-plugin-pwa Service Worker Conflicts #777](https://github.com/vite-pwa/vite-plugin-pwa/issues/777)
+- [Firebase + Vite Push Notifications](https://dmelo.eu/blog/vite_pwa/)
+- [iOS PWA Push Notification Best Practices](https://www.magicbell.com/blog/best-practices-for-ios-pwa-push-notifications)
+- [Supabase Push Notifications Docs](https://supabase.com/docs/guides/functions/examples/push-notifications)
+
+**Performance:**
+- [React Context Performance Pitfalls - 10X Developer](https://www.tenxdeveloper.com/blog/optimizing-react-context-performance)
+- [Pitfalls of Overusing React Context - LogRocket](https://blog.logrocket.com/pitfalls-of-overusing-react-context/)
+- [TkDodo - Concurrent Optimistic Updates](https://tkdodo.eu/blog/concurrent-optimistic-updates-in-react-query)
