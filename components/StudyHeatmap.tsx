@@ -26,6 +26,14 @@ function formatLocalDate(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+// Parse YYYY-MM-DD string as local date (not UTC)
+// new Date("YYYY-MM-DD") interprets as UTC midnight, causing wrong day for users west of UTC
+// This function parses as local midnight to avoid timezone offset issues
+function parseLocalDate(dateStr: string): Date {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+
 // Aggregate reviews by date (using local timezone) - exported for Dashboard
 export function aggregateReviewsByDate(reviewLogs: ReviewLog[]): Map<string, number> {
   const dateMap = new Map<string, number>();
@@ -185,7 +193,7 @@ function generateMonthLabels(weeks: HeatmapWeek[], monthNames: string[]): Array<
   let currentSpan = 0;
 
   for (const week of weeks) {
-    const weekMonth = new Date(week.days[0].date).getMonth();
+    const weekMonth = parseLocalDate(week.days[0].date).getMonth();
 
     if (weekMonth !== currentMonth) {
       if (currentSpan > 0) {
@@ -210,7 +218,7 @@ function generateMonthLabels(weeks: HeatmapWeek[], monthNames: string[]): Array<
 function getIntensityClass(intensity: number, date: string): string {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const cellDate = new Date(date);
+  const cellDate = parseLocalDate(date);
   const isFuture = cellDate > today;
 
   if (isFuture) {
@@ -232,7 +240,7 @@ function getIntensityClass(intensity: number, date: string): string {
 
 // Format date for tooltip
 function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
+  const date = parseLocalDate(dateStr);
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
@@ -304,7 +312,7 @@ export const StudyHeatmap: React.FC<StudyHeatmapProps> = ({ reviewLogs }) => {
   const handleCellHover = (event: React.MouseEvent, day: HeatmapDay) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const cellDate = new Date(day.date);
+    const cellDate = parseLocalDate(day.date);
     if (cellDate > today) return;
 
     const rect = event.currentTarget.getBoundingClientRect();
