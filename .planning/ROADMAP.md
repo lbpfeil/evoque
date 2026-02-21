@@ -30,12 +30,12 @@ Revision v4.0 delivers three capability pillars: performance optimization (lazy 
   3. User hovering navigation links triggers prefetch of target route bundle
   4. Heavy modals (OCR, TagManager) load their code only when opened
   5. PWA continues to work offline after service worker migration (existing functionality preserved)
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 17-01: Route lazy loading and code splitting
-- [ ] 17-02: Skeleton components for Dashboard and Highlights
-- [ ] 17-03: Service worker migration to injectManifest
+- [ ] 17-01-PLAN.md — Route lazy loading with prefetch, skeleton primitives, and useSkeletonDelay hook
+- [ ] 17-02-PLAN.md — High-fidelity skeleton components for all data-fetching pages
+- [ ] 17-03-PLAN.md — Service worker migration to injectManifest with offline sync
 
 ### Phase 18: Push Notifications
 **Goal**: Users receive timely reminders to study, preserving engagement and streaks.
@@ -103,4 +103,4 @@ Phases execute in numeric order: 17 -> 18 -> 19 -> 20
 
 ---
 *Roadmap created: 2026-02-03*
-*Last updated: 2026-02-03*
+*Last updated: 2026-02-21*
