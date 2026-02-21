@@ -210,20 +210,30 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       if (tagsError) console.error('Failed to load tags:', tagsError);
       else if (tagsData) setTags(tagsData.map(fromSupabaseTag));
 
-      // Load review logs
-      // Note: .limit(10000) prevents silent truncation by Supabase's default 1000-row cap.
-      // Without this limit, users with >1000 review logs would see random gaps in the heatmap.
-      const { data: logsData, error: logsError } = await supabase
-        .from('review_logs')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('reviewed_at', { ascending: true })
-        .limit(10000);
+      // Load ALL review logs using pagination to bypass Supabase's 1000-row default cap.
+      // PostgREST silently truncates at 1000 rows; users with months of reviews exceed this.
+      const allLogs: any[] = [];
+      let logsError: any = null;
+      let from = 0;
+      const pageSize = 1000;
+      while (true) {
+        const { data, error } = await supabase
+          .from('review_logs')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('reviewed_at', { ascending: true })
+          .range(from, from + pageSize - 1);
+        if (error) { logsError = error; break; }
+        if (data) allLogs.push(...data);
+        if (!data || data.length < pageSize) break;
+        from += pageSize;
+      }
+      const logsData = allLogs;
 
-      console.log('DEBUG: Review Logs Load', { count: logsData?.length, error: logsError, userId: user.id });
+      console.log('DEBUG: Review Logs Load', { count: logsData.length, error: logsError, userId: user.id });
 
       if (logsError) console.error('Failed to load review logs:', logsError);
-      else if (logsData) setReviewLogs(logsData.map(fromSupabaseReviewLog));
+      else setReviewLogs(logsData.map(fromSupabaseReviewLog));
     } catch (error) {
       console.error('Failed to load non-critical data:', error);
     }
@@ -1520,17 +1530,32 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       console.error('Failed to delete book from Supabase:', error);
 
       // Rollback: recarregar todos os dados
-      const [booksData, highlightsData, cardsData, logsData] = await Promise.all([
+      const [booksData, highlightsData, cardsData] = await Promise.all([
         supabase.from('books').select('*').eq('user_id', user.id),
         supabase.from('highlights').select('*').eq('user_id', user.id),
         supabase.from('study_cards').select('*').eq('user_id', user.id),
-        supabase.from('review_logs').select('*').eq('user_id', user.id).order('reviewed_at', { ascending: true }).limit(10000)
       ]);
+
+      // Paginate review_logs to bypass 1000-row cap
+      const rollbackLogs: any[] = [];
+      let rollbackFrom = 0;
+      while (true) {
+        const { data, error } = await supabase
+          .from('review_logs')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('reviewed_at', { ascending: true })
+          .range(rollbackFrom, rollbackFrom + 999);
+        if (error || !data || data.length === 0) break;
+        rollbackLogs.push(...data);
+        if (data.length < 1000) break;
+        rollbackFrom += 1000;
+      }
 
       if (booksData.data) setBooks(booksData.data.map(fromSupabaseBook));
       if (highlightsData.data) setHighlights(highlightsData.data.map(fromSupabaseHighlight));
       if (cardsData.data) setStudyCards(cardsData.data.map(fromSupabaseStudyCard));
-      if (logsData.data) setReviewLogs(logsData.data.map(fromSupabaseReviewLog));
+      setReviewLogs(rollbackLogs.map(fromSupabaseReviewLog));
     }
   };
 
