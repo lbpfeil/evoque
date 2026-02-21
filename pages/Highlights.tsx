@@ -1,6 +1,8 @@
 import React, { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStore } from '../components/StoreContext';
+import { HighlightsSkeleton } from '../components/skeletons/HighlightsSkeleton';
+import { useSkeletonDelay } from '../hooks/useSkeletonDelay';
 import { Search, Tag as TagIcon, ChevronUp, ChevronDown, ChevronsUpDown, Book, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import { SortOption, Highlight } from '../types';
 import HighlightEditModal from '../components/HighlightEditModal';
@@ -25,7 +27,8 @@ export const Highlights = () => {
     tags,
     bulkDeleteHighlights,
     bulkAssignTag,
-    getHighlightStudyStatus
+    getHighlightStudyStatus,
+    isLoaded
   } = useStore();
 
   // Local state for filters
@@ -81,6 +84,8 @@ export const Highlights = () => {
       }
     }
   }, [selectedBookId, selectedTagId, tags]);
+
+  const { showSkeleton, showContent } = useSkeletonDelay(isLoaded);
 
   // Calculate stats for header
   const stats = useMemo(() => {
@@ -224,7 +229,12 @@ export const Highlights = () => {
     return sortConfig.direction === 'asc' ? <ChevronUp className="w-3 h-3 ml-xxs" /> : <ChevronDown className="w-3 h-3 ml-xxs" />;
   };
 
+  if (!isLoaded || showSkeleton) {
+    return <HighlightsSkeleton />;
+  }
+
   return (
+    <div className={showContent ? 'animate-in fade-in duration-150' : 'opacity-0'}>
     <div className="space-y-md relative h-full flex flex-col w-full px-md sm:px-lg">
       {/* Header */}
       <PageHeader
@@ -579,6 +589,7 @@ export const Highlights = () => {
           <TagManagerSidebar open={isTagManagerOpen} onOpenChange={setIsTagManagerOpen} />
         </Suspense>
       )}
+    </div>
     </div>
   );
 };

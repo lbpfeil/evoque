@@ -7,6 +7,8 @@ import { PageHeader } from '../components/patterns/PageHeader';
 import { Target, Clock, BookOpen, TrendingUp, Play, Import, Flame } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
+import { DashboardSkeleton } from '../components/skeletons/DashboardSkeleton';
+import { useSkeletonDelay } from '../hooks/useSkeletonDelay';
 
 // Format date to YYYY-MM-DD using local timezone
 function formatLocalDate(date: Date): string {
@@ -198,12 +200,10 @@ const Dashboard = () => {
   // Cards due count
   const cardsDue = useMemo(() => getCardsDue().length, [getCardsDue]);
 
-  if (!isLoaded) {
-    return (
-      <div className="flex items-center justify-center h-full text-muted-foreground">
-        {t('loading', { ns: 'common' })}
-      </div>
-    );
+  const { showSkeleton, showContent } = useSkeletonDelay(isLoaded);
+
+  if (!isLoaded || showSkeleton) {
+    return <DashboardSkeleton />;
   }
 
   // Show empty state if no books
@@ -228,6 +228,7 @@ const Dashboard = () => {
   );
 
   return (
+    <div className={showContent ? 'animate-in fade-in duration-150' : 'opacity-0'}>
     <div className="p-md sm:p-lg">
       <PageHeader title={t('title')} description={t('subtitle')} size="compact" actions={streakDisplay} />
 
@@ -349,6 +350,7 @@ const Dashboard = () => {
           </section>
         )}
       </div>
+    </div>
     </div>
   );
 };

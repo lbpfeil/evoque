@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useStore } from '../components/StoreContext';
+import { SettingsSkeleton } from '../components/skeletons/SettingsSkeleton';
+import { useSkeletonDelay } from '../hooks/useSkeletonDelay';
 import { useAuth } from '../components/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Upload, Library, User, Sliders, FileText, CheckCircle, AlertCircle, Download, Trash2, Loader2, Camera, ChevronDown, ChevronUp, Settings as SettingsIcon } from 'lucide-react';
@@ -17,7 +19,7 @@ const Settings = () => {
   const { t } = useTranslation(['settings', 'errors']);
   const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
-  const { books, highlights, studyCards, importData, settings, updateSettings, deleteBook, updateBookSettings, resetAllBooksToDefaults, updateBookCover } = useStore();
+  const { books, highlights, studyCards, importData, settings, updateSettings, deleteBook, updateBookSettings, resetAllBooksToDefaults, updateBookCover, isLoaded } = useStore();
   const [activeTab, setActiveTab] = useState<TabId>((searchParams.get('tab') as TabId) || 'import');
 
   // Import tab state
@@ -46,6 +48,8 @@ const Settings = () => {
   useEffect(() => {
     setSearchParams({ tab: activeTab }, { replace: true });
   }, [activeTab, setSearchParams]);
+
+  const { showSkeleton, showContent } = useSkeletonDelay(isLoaded);
 
   const tabs = [
     { id: 'import' as TabId, name: t('tabs.import'), icon: Upload },
@@ -281,7 +285,12 @@ const Settings = () => {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
+  if (!isLoaded || showSkeleton) {
+    return <SettingsSkeleton />;
+  }
+
   return (
+    <div className={showContent ? 'animate-in fade-in duration-150' : 'opacity-0'}>
     <div className="p-lg max-w-2xl">
       {/* Header */}
       <PageHeader title={t('title')} description={t('subtitle')} size="compact" />
@@ -802,6 +811,7 @@ const Settings = () => {
           onCancel={() => setBookToDelete(null)}
         />
       )}
+    </div>
     </div>
   );
 };

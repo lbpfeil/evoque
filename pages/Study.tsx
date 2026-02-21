@@ -7,6 +7,8 @@ import { EmptyDeckPopover } from '../components/EmptyDeckPopover';
 import { StudyHeatmap } from '../components/StudyHeatmap';
 import { PageHeader } from '../components/patterns/PageHeader';
 import { Button } from '../components/ui/button';
+import { StudySkeleton } from '../components/skeletons/StudySkeleton';
+import { useSkeletonDelay } from '../hooks/useSkeletonDelay';
 
 const Study = () => {
   const navigate = useNavigate();
@@ -14,12 +16,10 @@ const Study = () => {
   const { books, getDeckStats, isLoaded, reviewLogs } = useStore();
   const [showEmptyPopover, setShowEmptyPopover] = useState(false);
 
-  if (!isLoaded) {
-    return (
-      <div className="flex items-center justify-center h-full text-muted-foreground">
-        {t('loading')}
-      </div>
-    );
+  const { showSkeleton, showContent } = useSkeletonDelay(isLoaded);
+
+  if (!isLoaded || showSkeleton) {
+    return <StudySkeleton />;
   }
 
   // Calculate total stats for "All Books"
@@ -42,6 +42,7 @@ const Study = () => {
   };
 
   return (
+    <div className={showContent ? 'animate-in fade-in duration-150' : 'opacity-0'}>
     <div className="p-md sm:p-lg">
       {/* Header */}
       <PageHeader title={t('title')} description={t('subtitle')} size="compact" />
@@ -126,6 +127,7 @@ const Study = () => {
       {showEmptyPopover && (
         <EmptyDeckPopover onClose={() => setShowEmptyPopover(false)} />
       )}
+    </div>
     </div>
   );
 };
