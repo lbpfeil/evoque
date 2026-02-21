@@ -10,34 +10,35 @@ See: .planning/PROJECT.md (updated 2026-02-03)
 ## Current Position
 
 Phase: 17 of 20 (Performance Foundation)
-Plan: 3 of 3 in current phase
+Plan: 3 of 3 in current phase (17-02 complete, 17-03 next)
 Status: In Progress
-Last activity: 2026-02-21 — Completed 17-01: Code splitting infrastructure with lazyWithPreload + Skeleton
+Last activity: 2026-02-21 — Completed 17-02: Skeleton screens for all 4 data-fetching pages
 
-Progress: [###.......] 30%
+Progress: [####......] 40%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 2 min
-- Total execution time: 0.03 hours
+- Total plans completed: 2
+- Average duration: 3.5 min
+- Total execution time: 0.12 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 17 | 1/3 | 2 min | 2 min |
+| 17 | 2/3 | 7 min | 3.5 min |
 | 18 | 0/4 | - | - |
 | 19 | 0/4 | - | - |
 | 20 | 0/3 | - | - |
 
 **Recent Trend:**
-- Last 5 plans: 2 min
-- Trend: New milestone
+- Last 5 plans: 2 min, 5 min
+- Trend: On track
 
 *Updated after each plan completion*
 | Phase 17 P01 | 2 | 2 tasks | 6 files |
+| Phase 17 P02 | 5 | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -54,6 +55,8 @@ Recent decisions affecting current work:
 - [Phase 17]: BackgroundSyncPlugin for offline review_logs POST/study_cards PATCH: queued in IndexedDB with 24h retention, not silently dropped
 - [Phase 17-01]: lazyPages.ts centralization avoids circular dependency between App.tsx and Sidebar.tsx (both need lazy page refs)
 - [Phase 17-01]: TagManagerSidebar wrapped in isTagManagerOpen conditional before Suspense to prevent premature chunk fetch
+- [Phase 17]: Skeleton guard uses both !isLoaded and showSkeleton: skeleton appears immediately on mount, 300ms minimum display prevents flicker
+- [Phase 17]: opacity-0 default on content wrapper before showContent is true prevents brief content visibility before fade starts
 
 ### Pending Todos
 
@@ -68,5 +71,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-21
-Stopped at: Completed 17-01-PLAN.md: Code splitting + Skeleton infrastructure
+Stopped at: Completed 17-02-PLAN.md: Page skeleton screens for all 4 data-fetching pages
 Resume file: None
