@@ -17,8 +17,8 @@ Requirements for v4.0 release. Each maps to roadmap phases.
 
 ### Service Worker
 
-- [ ] **SW-01**: PWA migrada para estratégia injectManifest (custom service worker)
-- [ ] **SW-02**: Funcionalidade offline existente preservada após migração
+- [x] **SW-01**: PWA migrada para estratégia injectManifest (custom service worker)
+- [x] **SW-02**: Funcionalidade offline existente preservada após migração
 
 ### Push Notifications
 
@@ -92,8 +92,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PERF-03 | Phase 17 | Pending |
 | PERF-04 | Phase 17 | Pending |
 | PERF-05 | Phase 17 | Pending |
-| SW-01 | Phase 17 | Pending |
-| SW-02 | Phase 17 | Pending |
+| SW-01 | Phase 17 | Complete |
+| SW-02 | Phase 17 | Complete |
 | PUSH-01 | Phase 18 | Pending |
 | PUSH-02 | Phase 18 | Pending |
 | PUSH-03 | Phase 18 | Pending |

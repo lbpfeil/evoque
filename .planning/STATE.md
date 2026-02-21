@@ -10,30 +10,30 @@ See: .planning/PROJECT.md (updated 2026-02-03)
 ## Current Position
 
 Phase: 17 of 20 (Performance Foundation)
-Plan: 0 of 3 in current phase
-Status: Ready to plan
-Last activity: 2026-02-03 — Roadmap created for v4.0 milestone
+Plan: 3 of 3 in current phase
+Status: In Progress
+Last activity: 2026-02-21 — Completed 17-03: Custom service worker + offline indicator
 
-Progress: [..........] 0%
+Progress: [###.......] 30%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 0
-- Average duration: -
-- Total execution time: 0 hours
+- Total plans completed: 1
+- Average duration: 2 min
+- Total execution time: 0.03 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 17 | 0/3 | - | - |
+| 17 | 1/3 | 2 min | 2 min |
 | 18 | 0/4 | - | - |
 | 19 | 0/4 | - | - |
 | 20 | 0/3 | - | - |
 
 **Recent Trend:**
-- Last 5 plans: -
+- Last 5 plans: 2 min
 - Trend: New milestone
 
 *Updated after each plan completion*
@@ -49,6 +49,8 @@ Recent decisions affecting current work:
 - [v4.0]: Push notifications via custom service worker (not Firebase)
 - [v4.0]: Client-side OCR with Tesseract.js (zero API costs, privacy)
 - [v4.0]: Isolated contexts for new features (avoid StoreContext bloat)
+- [Phase 17]: injectManifest over generateSW: custom sw.ts needed for Phase 18 push notification addEventListener handlers
+- [Phase 17]: BackgroundSyncPlugin for offline review_logs POST/study_cards PATCH: queued in IndexedDB with 24h retention, not silently dropped
 
 ### Pending Todos
 
@@ -62,6 +64,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-03
-Stopped at: Roadmap created for v4.0 milestone
+Last session: 2026-02-21
+Stopped at: Completed 17-03-PLAN.md: Custom service worker + offline indicator
 Resume file: None
