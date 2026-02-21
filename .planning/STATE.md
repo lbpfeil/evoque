@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-03)
 Phase: 17 of 20 (Performance Foundation)
 Plan: 3 of 3 in current phase
 Status: In Progress
-Last activity: 2026-02-21 — Completed 17-03: Custom service worker + offline indicator
+Last activity: 2026-02-21 — Completed 17-01: Code splitting infrastructure with lazyWithPreload + Skeleton
 
 Progress: [###.......] 30%
 
@@ -37,6 +37,7 @@ Progress: [###.......] 30%
 - Trend: New milestone
 
 *Updated after each plan completion*
+| Phase 17 P01 | 2 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -51,6 +52,8 @@ Recent decisions affecting current work:
 - [v4.0]: Isolated contexts for new features (avoid StoreContext bloat)
 - [Phase 17]: injectManifest over generateSW: custom sw.ts needed for Phase 18 push notification addEventListener handlers
 - [Phase 17]: BackgroundSyncPlugin for offline review_logs POST/study_cards PATCH: queued in IndexedDB with 24h retention, not silently dropped
+- [Phase 17-01]: lazyPages.ts centralization avoids circular dependency between App.tsx and Sidebar.tsx (both need lazy page refs)
+- [Phase 17-01]: TagManagerSidebar wrapped in isTagManagerOpen conditional before Suspense to prevent premature chunk fetch
 
 ### Pending Todos
 
@@ -65,5 +68,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-21
-Stopped at: Completed 17-03-PLAN.md: Custom service worker + offline indicator
+Stopped at: Completed 17-01-PLAN.md: Code splitting + Skeleton infrastructure
 Resume file: None

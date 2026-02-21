@@ -9,11 +9,11 @@ Requirements for v4.0 release. Each maps to roadmap phases.
 
 ### Performance
 
-- [ ] **PERF-01**: Páginas são carregadas via lazy loading (code splitting por rota)
+- [x] **PERF-01**: Páginas são carregadas via lazy loading (code splitting por rota)
 - [ ] **PERF-02**: Dashboard exibe skeleton loader enquanto dados carregam
 - [ ] **PERF-03**: Highlights exibe skeleton loader enquanto dados carregam
-- [ ] **PERF-04**: Modais pesados (OCR, TagManager) são carregados via lazy loading
-- [ ] **PERF-05**: Rotas adjacentes são pré-carregadas no hover de links de navegação
+- [x] **PERF-04**: Modais pesados (OCR, TagManager) são carregados via lazy loading
+- [x] **PERF-05**: Rotas adjacentes são pré-carregadas no hover de links de navegação
 
 ### Service Worker
 
@@ -87,11 +87,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PERF-01 | Phase 17 | Pending |
+| PERF-01 | Phase 17 | Complete |
 | PERF-02 | Phase 17 | Pending |
 | PERF-03 | Phase 17 | Pending |
-| PERF-04 | Phase 17 | Pending |
-| PERF-05 | Phase 17 | Pending |
+| PERF-04 | Phase 17 | Complete |
+| PERF-05 | Phase 17 | Complete |
 | SW-01 | Phase 17 | Complete |
 | SW-02 | Phase 17 | Complete |
 | PUSH-01 | Phase 18 | Pending |
