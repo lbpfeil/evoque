@@ -168,8 +168,10 @@ export function calculateStreaks(dateCountMap: Map<string, number>): { current: 
     if (i === 0) {
       tempStreak = 1;
     } else {
-      const prevDate = new Date(sortedDates[i - 1]);
-      const currDate = new Date(sortedDates[i]);
+      // Use parseLocalDate to avoid UTC-midnight timezone offset bug
+      // new Date("YYYY-MM-DD") parses as UTC midnight, which is wrong for users west of UTC
+      const prevDate = parseLocalDate(sortedDates[i - 1]);
+      const currDate = parseLocalDate(sortedDates[i]);
       const diffDays = Math.round((currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24));
 
       if (diffDays === 1) {

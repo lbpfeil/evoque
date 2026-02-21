@@ -211,10 +211,14 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
       else if (tagsData) setTags(tagsData.map(fromSupabaseTag));
 
       // Load review logs
+      // Note: .limit(10000) prevents silent truncation by Supabase's default 1000-row cap.
+      // Without this limit, users with >1000 review logs would see random gaps in the heatmap.
       const { data: logsData, error: logsError } = await supabase
         .from('review_logs')
         .select('*')
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .order('reviewed_at', { ascending: true })
+        .limit(10000);
 
       console.log('DEBUG: Review Logs Load', { count: logsData?.length, error: logsError, userId: user.id });
 
@@ -1520,7 +1524,7 @@ export const StoreProvider = ({ children }: React.PropsWithChildren) => {
         supabase.from('books').select('*').eq('user_id', user.id),
         supabase.from('highlights').select('*').eq('user_id', user.id),
         supabase.from('study_cards').select('*').eq('user_id', user.id),
-        supabase.from('review_logs').select('*').eq('user_id', user.id)
+        supabase.from('review_logs').select('*').eq('user_id', user.id).order('reviewed_at', { ascending: true }).limit(10000)
       ]);
 
       if (booksData.data) setBooks(booksData.data.map(fromSupabaseBook));
