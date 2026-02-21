@@ -89,6 +89,23 @@ const Sidebar = () => {
         </div>
       </div>
 
+      {/* Offline indicator — only visible when offline */}
+      {!isOnline && (
+        <div className="flex items-center gap-xs px-xs py-1">
+          <div className={ICON_SLOT}>
+            <WifiOff className="w-3.5 h-3.5 text-amber-500" />
+          </div>
+          <span
+            className={cn(
+              "text-caption text-amber-500 whitespace-nowrap transition-opacity duration-300",
+              isExpanded ? "opacity-100" : "opacity-0"
+            )}
+          >
+            Offline
+          </span>
+        </div>
+      )}
+
       {/* Navigation - fills remaining space above footer */}
       <nav
         className="flex-1 py-lg px-xs space-y-0.5 overflow-y-auto"
