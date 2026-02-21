@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense } from 'react';
 import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import BottomNav from './components/BottomNav';
@@ -11,13 +11,7 @@ import { I18nProvider } from './components/I18nProvider';
 import ErrorBoundary from './components/ErrorBoundary';
 import { Loader2 } from 'lucide-react';
 import { SpeedInsights } from "@vercel/speed-insights/react"
-
-// Lazy load pages for better performance (code splitting)
-const Dashboard = lazy(() => import('./pages/Dashboard'));
-const Highlights = lazy(() => import('./pages/Highlights'));
-const Study = lazy(() => import('./pages/Study'));
-const Settings = lazy(() => import('./pages/Settings'));
-const StudySession = lazy(() => import('./pages/StudySession'));
+import { Dashboard, Highlights, Study, Settings, StudySession } from './pages/lazyPages';
 
 // Loading fallback component for lazy-loaded routes
 const PageLoadingFallback = () => (

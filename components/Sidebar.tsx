@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Target, Settings, Highlighter, LogOut, ChevronUp, ChevronLeft, LayoutDashboard } from 'lucide-react';
+import { Target, Settings, Highlighter, LogOut, ChevronUp, ChevronLeft, LayoutDashboard, WifiOff } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from './AuthContext';
@@ -8,6 +8,8 @@ import { useStore } from './StoreContext';
 import { useSidebarContext } from './SidebarContext';
 import { ThemeToggle } from './ThemeToggle';
 import { Button } from './ui/button';
+import { Dashboard, Highlights, Study, Settings as SettingsPage } from '../pages/lazyPages';
+import { useOnlineStatus } from '../hooks/useOnlineStatus';
 
 // Fixed icon slot width - matches collapsed sidebar content area
 // Collapsed: w-14 (56px) - px-xs*2 (16px) = 40px
@@ -21,6 +23,7 @@ const Sidebar = () => {
   const { user, signOut } = useAuth();
   const { settings } = useStore();
   const { isExpanded, toggleCollapsed, handleMouseEnter, handleMouseLeave } = useSidebarContext();
+  const isOnline = useOnlineStatus();
   const [showLogout, setShowLogout] = useState(false);
 
   const handleLogout = async () => {
@@ -36,10 +39,10 @@ const Sidebar = () => {
   };
 
   const navItems = [
-    { name: t('nav.dashboard'), icon: LayoutDashboard, path: '/dashboard' },
-    { name: t('nav.study'), icon: Target, path: '/study' },
-    { name: t('nav.highlights'), icon: Highlighter, path: '/highlights' },
-    { name: t('nav.settings'), icon: Settings, path: '/settings' },
+    { name: t('nav.dashboard'), icon: LayoutDashboard, path: '/dashboard', component: Dashboard },
+    { name: t('nav.study'), icon: Target, path: '/study', component: Study },
+    { name: t('nav.highlights'), icon: Highlighter, path: '/highlights', component: Highlights },
+    { name: t('nav.settings'), icon: Settings, path: '/settings', component: SettingsPage },
   ];
 
   return (
@@ -95,6 +98,7 @@ const Sidebar = () => {
           <NavLink
             key={item.name}
             to={item.path}
+            onMouseEnter={() => item.component?.preload()}
             className={({ isActive }) =>
               cn(
                 "h-10 flex items-center rounded-md text-body font-medium transition-colors duration-200",
