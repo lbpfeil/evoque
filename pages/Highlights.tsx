@@ -1,11 +1,13 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStore } from '../components/StoreContext';
 import { Search, Tag as TagIcon, ChevronUp, ChevronDown, ChevronsUpDown, Book, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import { SortOption, Highlight } from '../types';
 import HighlightEditModal from '../components/HighlightEditModal';
 import HighlightHistoryModal from '../components/HighlightHistoryModal';
-import { TagManagerSidebar } from '../components/TagManagerSidebar';
+const TagManagerSidebar = lazy(() =>
+  import('../components/TagManagerSidebar').then(m => ({ default: m.TagManagerSidebar }))
+);
 import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../components/ui/command';
 import { cn } from '../lib/utils';
@@ -572,7 +574,11 @@ export const Highlights = () => {
       <HighlightHistoryModal highlightId={statsHighlightId} onClose={() => setStatsHighlightId(null)} />
 
       {/* Tag Manager Sidebar */}
-      <TagManagerSidebar open={isTagManagerOpen} onOpenChange={setIsTagManagerOpen} />
+      {isTagManagerOpen && (
+        <Suspense fallback={null}>
+          <TagManagerSidebar open={isTagManagerOpen} onOpenChange={setIsTagManagerOpen} />
+        </Suspense>
+      )}
     </div>
   );
 };
