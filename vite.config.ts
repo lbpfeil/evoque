@@ -14,6 +14,9 @@ export default defineConfig(({ mode }) => {
       plugins: [
         react(),
         VitePWA({
+          strategies: 'injectManifest',
+          srcDir: '.',
+          filename: 'sw.ts',
           registerType: 'autoUpdate',
           includeAssets: [
             'favicon-evq/favicon.ico',
@@ -47,22 +50,9 @@ export default defineConfig(({ mode }) => {
               }
             ]
           },
-          workbox: {
+          injectManifest: {
             globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-            runtimeCaching: [
-              {
-                urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
-                handler: 'NetworkFirst',
-                options: {
-                  cacheName: 'supabase-api',
-                  expiration: {
-                    maxEntries: 50,
-                    maxAgeSeconds: 60 * 60
-                  }
-                }
-              }
-            ]
-          }
+          },
         })
       ],
       define: {
